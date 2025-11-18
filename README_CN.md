@@ -37,19 +37,19 @@ Mac 的内置存储空间寸土寸金。**AppPorts** 允许您一键将 `/Applic
 
 | 欢迎页 (Welcome) | 主界面 (Main) |
 |:---:|:---:|
-| ![Welcome](images/welcome.png) | ![Main](images/main.png) |
+| ![Welcome](https://pic.cdn.shimoko.com/%E6%88%AA%E5%B1%8F2025-11-19%2002.51.24.png) | ![Main](https://pic.cdn.shimoko.com/%E6%88%AA%E5%B1%8F2025-11-19%2002.51.34.png) |
 
 | 深色模式 (Dark Mode) | 语言切换 (Localization) |
 |:---:|:---:|
-| ![Dark](images/dark.png) | ![Lang](images/lang.png) |
+| ![Dark](https://pic.cdn.shimoko.com/%E6%88%AA%E5%B1%8F2025-11-19%2002.51.45.png) | ![Lang](https://pic.cdn.shimoko.com/%E6%88%AA%E5%B1%8F2025-11-19%2002.52.11.png) |
 
 ## 🛠️ 安装与运行 (Installation)
 
 ### 系统要求
-* macOS 13.0 (Ventura) 或更高版本。
+* macOS 14.0 (Sonoma) 或更高版本。
 
 ### 下载安装
-请前往 [Releases](https://github.com/wzh4869/macappports/releases) 页面下载最新版本的 `AppPorts.dmg`。
+请前往 [Releases](https://github.com/wzh4869/AppPorts/releases) 页面下载最新版本的 `AppPorts.dmg`。
 
 ### ⚠️ 权限说明 (Permissions)
 首次运行时，AppPorts 需要 **“完全磁盘访问权限 (Full Disk Access)”** 才能读写 `/Applications` 目录。
@@ -67,11 +67,10 @@ Mac 的内置存储空间寸土寸金。**AppPorts** 允许您一键将 `/Applic
 
 1.  克隆仓库：
     ```bash
-    git clone [https://github.com/wzh4869/macappports.git](https://github.com/wzh4869/macappports.git)
+    git clone [https://github.com/wzh4869/AppPorts.git](https://github.com/wzh4869/AppPorts.git)
     ```
-2.  使用 **Xcode 15+** 打开项目。
-3.  确保 Signing & Capabilities 中的 Team 设置为您自己的开发者账号。
-4.  编译并运行 (`Cmd + R`)。
+2.  使用 **Xcode** 打开项目。
+3.  编译并运行。
 
 ## 🤝 贡献 (Contributing)
 
