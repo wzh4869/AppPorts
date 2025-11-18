@@ -85,7 +85,7 @@ Mac 的内置存储空间寸土寸金。**AppPorts** 允许您一键将 `/Applic
 
 <div align="center">
 
-Created by **Shimoko**
+Created by **Wzh4869**
 
 [个人网站](https://www.shimoko.com) • [GitHub](https://github.com/wzh4869)
 
