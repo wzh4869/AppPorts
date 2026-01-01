@@ -47,22 +47,45 @@ struct AppMoverApp: App {
             }
             
             CommandMenu("Language") {
-                Button("跟随系统 (System)") {
-                    languageManager.language = "system"
-                }
+                Button("跟随系统 (System)") { languageManager.language = "system" }
                 .keyboardShortcut("0", modifiers: [.command, .option])
                 
                 Divider()
                 
-                Button("English") {
-                    languageManager.language = "en"
+                Group {
+                    Button("🇺🇸 English") { languageManager.language = "en" }
+                    .keyboardShortcut("1", modifiers: [.command, .option])
+                    Button("🇨🇳 简体中文") { languageManager.language = "zh-Hans" }
+                    .keyboardShortcut("2", modifiers: [.command, .option])
+                    Button("🇭🇰 繁體中文") { languageManager.language = "zh-Hant" }
+                    .keyboardShortcut("3", modifiers: [.command, .option])
                 }
-                .keyboardShortcut("1", modifiers: [.command, .option])
+
+                Divider()
+                Text("AI Translated").font(.caption).foregroundColor(.secondary)
                 
-                Button("简体中文") {
-                    languageManager.language = "zh-Hans"
+                Group {
+                    Button("🇪🇸 Español (AI)") { languageManager.language = "es" }
+                    Button("🇫🇷 Français (AI)") { languageManager.language = "fr" }
+                    Button("🇵🇹 Português (AI)") { languageManager.language = "pt" }
+                    Button("🇮🇹 Italiano (AI)") { languageManager.language = "it" }
+                    Button("🇩🇪 Deutsch (AI)") { languageManager.language = "de" }
+                    Button("🇯🇵 日本語 (AI)") { languageManager.language = "ja" }
+                    Button("🇰🇷 한국어 (AI)") { languageManager.language = "ko" }
+                    Button("🇷🇺 Русский (AI)") { languageManager.language = "ru" }
                 }
-                .keyboardShortcut("2", modifiers: [.command, .option])
+                Group {
+                    Button("🇸🇦 العربية (AI)") { languageManager.language = "ar" }
+                    Button("🇮🇳 हिन्दी (AI)") { languageManager.language = "hi" }
+                    Button("🇻🇳 Tiếng Việt (AI)") { languageManager.language = "vi" }
+                    Button("🇹🇭 ไทย (AI)") { languageManager.language = "th" }
+                    Button("🇹🇷 Türkçe (AI)") { languageManager.language = "tr" }
+                    Button("🇳🇱 Nederlands (AI)") { languageManager.language = "nl" }
+                    Button("🇵🇱 Polski (AI)") { languageManager.language = "pl" }
+                    Button("🇮🇩 Indonesia (AI)") { languageManager.language = "id" }
+                    Button("🏁 Esperanto (AI)") { languageManager.language = "eo" }
+                    Button("⠃⠗ Braille") { languageManager.language = "br" }
+                }
             }
         }
     }

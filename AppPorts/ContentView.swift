@@ -8,36 +8,7 @@
 import SwiftUI
 import AppKit
 
-// MARK: - 数据模型
-struct AppItem: Identifiable, Equatable {
-    let id = UUID()
-    var name: String
-    var path: URL
-    var status: String
-    var isSystemApp: Bool = false
-    var isRunning: Bool = false
-
-    static func == (lhs: AppItem, rhs: AppItem) -> Bool {
-        lhs.id == rhs.id && lhs.name == rhs.name && lhs.status == rhs.status && lhs.isRunning == rhs.isRunning
-    }
-}
-
-enum AppMoverError: LocalizedError {
-    case permissionDenied(Error)
-    case generalError(Error)
-    case appIsRunning
-    
-    var errorDescription: String? {
-        switch self {
-        case .permissionDenied:
-            return "权限不足。请前往“系统设置 > 隐私与安全性 > 完全磁盘访问权限”，允许 AppPorts 访问磁盘，然后重启应用。"
-        case .generalError(let innerError):
-            return innerError.localizedDescription
-        case .appIsRunning:
-            return "该应用正在运行。请先退出应用，然后再试。"
-        }
-    }
-}
+// NOTE: AppItem and AppMoverError are in AppModels.swift
 
 // MARK: - UI 组件
 
@@ -52,8 +23,10 @@ struct StatusBadge: View {
             return ("运行中", "play.fill", .purple)
         } else if app.isSystemApp {
             return ("系统", "lock.fill", .gray)
-        } else if app.status == "外部" {
+        } else if app.status == "外部" { // Legacy fallback
             return ("外部", "externaldrive", .orange)
+        } else if app.status == "未链接" {
+            return ("未链接", "externaldrive.badge.xmark", .orange) // Or gray secondary? Orange implies attention.
         } else {
             return ("本地", "macmini", .secondary)
         }
@@ -75,19 +48,40 @@ struct StatusBadge: View {
         .overlay(
             Capsule().stroke(config.color.opacity(0.2), lineWidth: 0.5)
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(LocalizedStringKey(config.text))
+        .accessibilityAddTraits(.isStaticText)
     }
 }
 
-/// 应用图标视图
+/// 应用图标视图 - 异步加载优化
 struct AppIconView: View {
     let url: URL
+    @State private var icon: NSImage? = nil
     
     var body: some View {
-        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 40, height: 40)
-            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+        Group {
+            if let icon = icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            } else {
+                // Placeholder while loading
+                Color.clear
+            }
+        }
+        .frame(width: 40, height: 40)
+        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+        .accessibilityHidden(true)
+        .task {
+            // Async icon loading
+            if icon == nil {
+                let loadedIcon = await Task.detached(priority: .userInitiated) {
+                    return NSWorkspace.shared.icon(forFile: url.path)
+                }.value
+                await MainActor.run { self.icon = loadedIcon }
+            }
+        }
     }
 }
 
@@ -113,7 +107,21 @@ struct AppRowView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                 
-                StatusBadge(app: app)
+                HStack(spacing: 8) {
+                    StatusBadge(app: app)
+                    
+                    if let size = app.size {
+                        Text(size)
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                            .transition(.opacity)
+                    } else {
+                        Text("计算中...")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary.opacity(0.5))
+                            .transition(.opacity)
+                    }
+                }
             }
             
             Spacer()
@@ -130,10 +138,10 @@ struct AppRowView: View {
                 .help("断开此链接并删除文件")
             }
             
-            if showMoveBackButton && app.status == "外部" {
+            if showMoveBackButton {
                 Button(action: { onMoveBack(app) }) {
                     Image(systemName: "arrow.uturn.backward")
-                        .foregroundColor(.blue)
+                    .foregroundColor(.blue)
                 }
                 .buttonStyle(.plain)
                 .padding(6)
@@ -153,6 +161,28 @@ struct AppRowView: View {
             withAnimation(.easeInOut(duration: 0.2)) {
                 self.isHovered = hovering
             }
+        }
+        // Accessibility: Combine row into single element
+        .accessibilityElement(children: .combine)
+        // Custom Actions for VoiceOver (Swipe up/down)
+        .accessibilityActions {
+             if showDeleteLinkButton && app.status == "已链接" {
+                 Button(action: { onDeleteLink(app) }) {
+                     Text("断开") // "Disconnect"
+                 }
+             }
+             
+             if showMoveBackButton {
+                 Button(action: { onMoveBack(app) }) {
+                     Text("还原") // "Restore"
+                 }
+             }
+             
+             Button(action: {
+                 NSWorkspace.shared.activateFileViewerSelecting([app.path])
+             }) {
+                 Text("在 Finder 中显示")
+             }
         }
         .contextMenu {
             Button("在 Finder 中显示") {
@@ -362,6 +392,8 @@ struct ContentView: View {
                 Divider()
             }
             .background(.ultraThinMaterial) // Glassmorphism
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
         }
     }
     
@@ -405,16 +437,17 @@ struct ContentView: View {
         var body: some View {
             VStack(spacing: 10) {
                 Image(systemName: icon)
-                    .font(.largeTitle)
-                    .foregroundColor(.secondary.opacity(0.3))
+                .font(.largeTitle)
+                .foregroundColor(.secondary.opacity(0.3))
 
                 Text(LocalizedStringKey(text))
-                    .foregroundColor(.secondary.opacity(0.7))
+                .foregroundColor(.secondary.opacity(0.7))
             }
+            .accessibilityElement(children: .combine)
         }
     }
 
-    // MARK: - 逻辑函数 (保持不变)
+    // MARK: - 逻辑函数
     
     func getMoveButtonTitle() -> (text: String, isError: Bool) {
         guard let selectedId = selectedLocalApp,
@@ -437,8 +470,11 @@ struct ContentView: View {
     }
     
     var canLinkIn: Bool {
-        selectedExternalApp != nil &&
-        !(localApps.contains(where: { $0.name == externalApps.first(where: { $0.id == selectedExternalApp })?.name && $0.status == "本地" }))
+        guard let selectedId = selectedExternalApp,
+              let app = externalApps.first(where: { $0.id == selectedId }) else { return false }
+        
+        // Only allow linking if it is NOT already linked
+        return app.status == "未链接" || app.status == "外部"
     }
     
     func getRunningAppURLs() -> Set<URL> {
@@ -448,64 +484,68 @@ struct ContentView: View {
     }
     
     func scanLocalApps() {
-        self.localApps = []
-        var newApps: [AppItem] = []
-        let items = (try? fileManager.contentsOfDirectory(at: localAppsURL, includingPropertiesForKeys: [.isSymbolicLinkKey, .isDirectoryKey], options: .skipsHiddenFiles)) ?? []
-        
-        let runningAppURLs = getRunningAppURLs()
-        
-        for itemURL in items {
-            if itemURL.pathExtension == "app" {
-                let appName = itemURL.lastPathComponent
-                var status = "本地"
-                let isSystem = itemURL.path.hasPrefix("/System")
-                let isRunning = runningAppURLs.contains(itemURL)
-                
-                // Deep Symlink Check: Check if it is a directory AND contains a symlinked 'Contents'
-                if let resourceValues = try? itemURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey]) {
-                    if resourceValues.isSymbolicLink == true {
-                        // Old style symlink
-                        status = "已链接"
-                    } else if resourceValues.isDirectory == true {
-                        // Potential Deep Symlink
-                        let contentsURL = itemURL.appendingPathComponent("Contents")
-                        if let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
-                           contentsResourceValues.isSymbolicLink == true {
-                            status = "已链接"
-                        }
-                    }
-                }
-                
-                newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: isSystem, isRunning: isRunning))
+        // Run on background task to avoid blocking Main Thread
+        Task.detached(priority: .userInitiated) {
+            // Gather data needed for scanning
+            let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
+            let scanDir = self.localAppsURL
+            
+            // Use Actor
+            let scanner = AppScanner()
+            let newApps = await scanner.scanLocalApps(at: scanDir, runningAppURLs: runningAppURLs)
+            
+            // Update UI
+            await MainActor.run {
+                self.localApps = newApps
             }
+            
+            // Calculate sizes progressively using the same scanner actor
+            await self.calculateSizesProgressive(for: newApps, isLocal: true, scanner: scanner)
         }
-        self.localApps = self.sortApps(newApps)
     }
     
     func scanExternalApps() {
         guard let dir = externalDriveURL else { self.externalApps = []; return }
-        self.externalApps = []
-        var newApps: [AppItem] = []
-        let items = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: [.isSymbolicLinkKey], options: .skipsHiddenFiles)) ?? []
-        for itemURL in items {
-            if itemURL.pathExtension == "app" {
-                let appName = itemURL.lastPathComponent
-                var status = "外部"
-                // External apps should generally be real apps, but we check just in case
-                if let resourceValues = try? itemURL.resourceValues(forKeys: [.isSymbolicLinkKey]), resourceValues.isSymbolicLink == true { status = "已链接(异常)" }
-                newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: false, isRunning: false))
+        
+        Task.detached(priority: .userInitiated) {
+            let scanDir = dir
+            let localDir = URL(fileURLWithPath: "/Applications")
+            
+            let scanner = AppScanner()
+            let newApps = await scanner.scanExternalApps(at: scanDir, localAppsDir: localDir)
+            
+            await MainActor.run {
+                self.externalApps = newApps
             }
+             
+            // Calculate sizes progressively
+            await self.calculateSizesProgressive(for: newApps, isLocal: false, scanner: scanner)
         }
-        self.externalApps = self.sortApps(newApps)
     }
     
-    private func sortApps(_ apps: [AppItem]) -> [AppItem] {
-        return apps.sorted { app1, app2 in
-            let isApp1Linked = (app1.status == "已链接")
-            let isApp2Linked = (app2.status == "已链接")
-            if isApp1Linked && !isApp2Linked { return true }
-            else if !isApp1Linked && isApp2Linked { return false }
-            return app1.name < app2.name
+    func calculateSizesProgressive(for apps: [AppItem], isLocal: Bool, scanner: AppScanner) async {
+        for app in apps {
+             let sizeBytes = await scanner.calculateDirectorySize(at: app.path)
+             
+             await MainActor.run {
+                 let formatter = MeasurementFormatter()
+                 formatter.unitOptions = .naturalScale
+                 formatter.unitStyle = .short
+                 formatter.locale = LanguageManager.shared.locale
+                 
+                 let measurement = Measurement(value: Double(sizeBytes), unit: UnitInformationStorage.bytes)
+                 let sizeString = formatter.string(from: measurement)
+                 
+                 if isLocal {
+                     if let index = self.localApps.firstIndex(where: { $0.id == app.id }) {
+                         withAnimation { self.localApps[index].size = sizeString }
+                     }
+                 } else {
+                     if let index = self.externalApps.firstIndex(where: { $0.id == app.id }) {
+                         withAnimation { self.externalApps[index].size = sizeString }
+                     }
+                 }
+             }
         }
     }
     

@@ -29,7 +29,7 @@ struct AboutView: View {
                     .font(.title)
                     .fontWeight(.bold)
                 
-                Text("Version 1.1.0")
+                Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }

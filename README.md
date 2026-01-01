@@ -34,13 +34,21 @@ To macOS, the app still "exists" locally, allowing you to launch it as usual, bu
     * Developed natively with SwiftUI for a smooth, fluid experience.
     * Perfect compatibility with **Dark Mode**.
     * Supports **Bi-lingual** (English/Chinese), switchable via system or in-app menu.
-* **🔍 Quick Search**: Built-in search bar to quickly locate local or external applications.
+*   **♿️ Accessibility Plus**:
+    *   **VoiceOver Optimization**: Smart row announcements and custom Rotor actions.
+    *   **Semantic UI**: Hides decorative icons and ensures status badges are read clearly.
+    *   **Braille Support**: Added **Braille** language option, displaying UI text directly in Braille dots.
+*   **🌍 Global Ready**:
+    *   **20+ Languages Supported**:
+        🇺🇸 English, 🇨🇳 Simplified Chinese, 🇭🇰 Traditional Chinese, 🇯🇵 Japanese, 🇰🇷 Korean, 🇩🇪 German, 🇫🇷 French, 🇪🇸 Spanish, 🇮🇹 Italian, 🇵🇹 Portuguese, 🇷🇺 Russian, 🇸🇦 Arabic, 🇮🇳 Hindi, 🇻🇳 Vietnamese, 🇹🇭 Thai, 🇹🇷 Turkish, 🇳🇱 Dutch, 🇵🇱 Polish, 🇮🇩 Indonesian, 🏁 Esperanto, ⠃⠗ Braille
+    *   **Localized Formatting**: File sizes automatically respect regional formatting.
+*   **🔍 Quick Search**: Built-in search bar to quickly locate local or external applications.
 
-## 🏆 Why AppPorts? (Comparison)
+## 🏆 Why AppPorts?
 
 Compared to other solutions, AppPorts uses the unique **Contents Linking** technology, balancing aesthetics, compatibility, and system cleanliness.
 
-| Strategy | AppPorts (Contents Linking) | Traditional Symlink |
+| Strategy | AppPorts | Traditional Symlink |
 | :--- | :--- | :--- |
 | **Finder Icon** | ✅ **Native (No Arrow)** | ❌ Arrow Overlay |
 | **Launchpad** | ✅ **Perfect** | ⚠️ Unreliable |
