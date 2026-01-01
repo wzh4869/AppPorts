@@ -572,7 +572,19 @@ struct ContentView: View {
         }
     }
 
+    func checkApplicationsFolderWritePermission() throws {
+        let testFile = localAppsURL.appendingPathComponent(".permission_check_\(UUID().uuidString)")
+        do {
+            try "test".write(to: testFile, atomically: true, encoding: .utf8)
+            try fileManager.removeItem(at: testFile)
+        } catch {
+            throw AppMoverError.permissionDenied(error)
+        }
+    }
+
     func moveAndLink(appToMove: AppItem, destinationURL: URL) throws {
+        try checkApplicationsFolderWritePermission()
+        
         if isAppRunning(url: appToMove.path) {
             throw AppMoverError.appIsRunning
         }
@@ -584,8 +596,25 @@ struct ContentView: View {
             else { throw AppMoverError.generalError(NSError(domain: "AppMover", code: 3, userInfo: [NSLocalizedDescriptionKey: "目标已存在真实文件"])) }
         }
         
-        // 2. Move original app to external drive
-        try fileManager.moveItem(at: appToMove.path, to: destinationURL)
+        // 2. Move original app to external drive (Atomic Copy + Delete with Rollback)
+        do {
+            // A. Copy to destination
+            try fileManager.copyItem(at: appToMove.path, to: destinationURL)
+            
+            // B. Attempt to delete source
+            do {
+                try fileManager.removeItem(at: appToMove.path)
+            } catch {
+                // !!! CRITICAL ROLLBACK !!!
+                // If deleting source fails (e.g. Permission Denied mid-operation),
+                // we MUST delete the copied file on external drive to restore state.
+                try? fileManager.removeItem(at: destinationURL)
+                throw error
+            }
+        } catch {
+             // Re-throw any error from Copy or Delete (that wasn't suppressed)
+             throw error
+        }
         
         // 3. Create Deep Symlink Structure
         // Step A: Create the local .app directory (fake bundle)
@@ -602,6 +631,8 @@ struct ContentView: View {
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) throws {
+        try checkApplicationsFolderWritePermission()
+
         // 1. Check local destination
         if fileManager.fileExists(atPath: destinationURL.path) {
             // Check if it is a symlink (old style) or a directory (potentially new style or real app)
@@ -639,6 +670,8 @@ struct ContentView: View {
     }
     
     func deleteLink(app: AppItem) throws {
+        try checkApplicationsFolderWritePermission()
+
         // Handle both old symlink and new deep symlink
         let resourceValues = try? app.path.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
         
@@ -656,6 +689,8 @@ struct ContentView: View {
     }
     
     func moveBack(app: AppItem, localDestinationURL: URL) throws {
+        try checkApplicationsFolderWritePermission()
+        
         // 1. Clean up local spot
         if fileManager.fileExists(atPath: localDestinationURL.path) {
              let resourceValues = try? localDestinationURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
