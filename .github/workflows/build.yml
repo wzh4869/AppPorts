@@ -27,7 +27,11 @@ jobs:
             -scheme "AppPorts" \
             -configuration Release \
             -destination 'platform=macOS,arch=x86_64' \
-            -derivedDataPath build
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Zip Application
         run: |
