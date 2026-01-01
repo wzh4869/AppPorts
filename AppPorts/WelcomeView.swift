@@ -18,25 +18,11 @@ struct WelcomeView: View {
             
             //顶部 Header区域
             VStack(spacing: 16) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.blue, Color.purple]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 80, height: 80)
-                }
-                .compositingGroup()
-                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
-                .overlay(
-                    Image(systemName: "box.truck.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.white)
-                        .symbolEffect(.pulse, options: .repeating)
-                )
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 128, height: 128)
+                    .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
                 
                 Text("欢迎使用 AppPorts") // Key
                     .font(.system(size: 28, weight: .bold))

@@ -15,14 +15,17 @@ Easily migrate large applications to external storage while maintaining seamless
 
 ## ✨ Introduction
 
-Mac's built-in storage space is extremely precious. **AppPorts** allows you to move applications from your `/Applications` directory to an external drive (SSD, SD Card, or NAS) with a single click, and automatically creates a **Symbolic Link** in the original location.
+Mac's built-in storage space is extremely precious. **AppPorts** allows you to move applications from your `/Applications` directory to an external drive (SSD, SD Card, or NAS) with a single click, while keeping a valid **App Portal** in the original location.
 
-To macOS and Launchpad, the app still "exists" locally, allowing you to launch it as usual, but the storage occupied is on inexpensive external media.
+To macOS, the app still "exists" locally, allowing you to launch it as usual, but the storage occupied is on inexpensive external media.
 
 ## 🚀 Key Features
 
 * **📦 App Slimming**: One-click migration of multi-gigabyte applications (e.g., Logic Pro, Xcode, games) to an external drive.
-* **🔗 Seamless Linking**: Automatically creates soft links (symlinks) in place, preserving system indexes and ensuring applications launch correctly from Launchpad.
+* **🔗 Contents Linking**: A linking strategy optimized for macOS structure.
+    *   **Mechanism**: Retains the `.app` directory structure locally and symlinks only the internal `Contents` data directory to the external drive.
+    *   **Storage Usage**: Locally occupies only the filesystem metadata for the directory (negligible size).
+    *   **Compatibility**: Displays **no arrow icon** in Finder and supports the **"App Menu"** in macOS 26.
 * **🛡️ Safety First**:
     * Automatically identifies and locks **System Apps** to prevent accidental system corruption.
     * Checks the **Running Status** before migration to avoid corrupting active applications.
@@ -32,6 +35,18 @@ To macOS and Launchpad, the app still "exists" locally, allowing you to launch i
     * Perfect compatibility with **Dark Mode**.
     * Supports **Bi-lingual** (English/Chinese), switchable via system or in-app menu.
 * **🔍 Quick Search**: Built-in search bar to quickly locate local or external applications.
+
+## 🏆 Why AppPorts? (Comparison)
+
+Compared to other solutions, AppPorts uses the unique **Contents Linking** technology, balancing aesthetics, compatibility, and system cleanliness.
+
+| Strategy | AppPorts (Contents Linking) | Traditional Symlink |
+| :--- | :--- | :--- |
+| **Finder Icon** | ✅ **Native (No Arrow)** | ❌ Arrow Overlay |
+| **Launchpad** | ✅ **Perfect** | ⚠️ Unreliable |
+| **App Menu (macOS 26)**| ✅ **Perfect** | ❌ Unsupported |
+| **FS Cleanliness** | ✅ **Clean (1 Link)** | ✅ Clean (1 Link) |
+| **Maintenance** | ✅ **Instant** | ✅ Instant |
 
 ## 📸 Screenshots
 

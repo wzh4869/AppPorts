@@ -15,25 +15,11 @@ struct AboutView: View {
         VStack(spacing: 16) {
             
             // 1. LOGO 区域
-            ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.blue, Color.purple]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 88, height: 88)
-            }
-            .compositingGroup()
-            .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
-            .overlay(
-                Image(systemName: "box.truck.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(.white)
-                    .symbolEffect(.pulse, options: .repeating)
-            )
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 100, height: 100)
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
             .padding(.top, 35)
             .padding(.bottom, 15)
             
@@ -43,7 +29,7 @@ struct AboutView: View {
                     .font(.title)
                     .fontWeight(.bold)
                 
-                Text("Version 1.0.0")
+                Text("Version 1.1.0")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }

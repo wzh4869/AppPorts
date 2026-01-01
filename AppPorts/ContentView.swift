@@ -60,19 +60,21 @@ struct StatusBadge: View {
     }
     
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 4) {
             Image(systemName: config.icon)
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 9, weight: .bold))
             
-            // 使用 LocalizedStringKey 确保状态文字能被翻译
             Text(LocalizedStringKey(config.text))
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium, design: .rounded))
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
         .foregroundColor(config.color)
-        .background(config.color.opacity(0.12))
+        .background(config.color.opacity(0.1))
         .clipShape(Capsule())
+        .overlay(
+            Capsule().stroke(config.color.opacity(0.2), lineWidth: 0.5)
+        )
     }
 }
 
@@ -84,7 +86,8 @@ struct AppIconView: View {
         Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 36, height: 36)
+            .frame(width: 40, height: 40)
+            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
 
@@ -97,11 +100,13 @@ struct AppRowView: View {
     let onDeleteLink: (AppItem) -> Void
     let onMoveBack: (AppItem) -> Void
     
+    @State private var isHovered = false
+    
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             AppIconView(url: app.path)
             
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(app.name)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primary)
@@ -115,29 +120,40 @@ struct AppRowView: View {
             
             if showDeleteLinkButton && app.status == "已链接" {
                 Button(action: { onDeleteLink(app) }) {
-                    Text("断开")
-                        .padding(.horizontal, 2)
+                    Image(systemName: "link.badge.plus") // Icon only for cleaner look
+                        .foregroundColor(.red)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .tint(.red)
+                .buttonStyle(.plain) // Cleaner button style
+                .padding(6)
+                .background(Color.red.opacity(0.1))
+                .clipShape(Circle())
                 .help("断开此链接并删除文件")
             }
             
             if showMoveBackButton && app.status == "外部" {
                 Button(action: { onMoveBack(app) }) {
-                    Text("还原")
-                        .padding(.horizontal, 2)
+                    Image(systemName: "arrow.uturn.backward")
+                        .foregroundColor(.blue)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .tint(.blue)
+                .buttonStyle(.plain)
+                .padding(6)
+                .background(Color.blue.opacity(0.1))
+                .clipShape(Circle())
                 .help("将应用迁移回本地")
             }
         }
-        .padding(.vertical, 6)
-        .padding(.trailing, 4)
+        .padding(.vertical, 10) // Increased vertical padding
+        .padding(.horizontal, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(isSelected ? Color.accentColor.opacity(0.1) : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
+        )
         .contentShape(Rectangle())
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.2)) {
+                self.isHovered = hovering
+            }
+        }
         .contextMenu {
             Button("在 Finder 中显示") {
                 NSWorkspace.shared.activateFileViewerSelecting([app.path])
@@ -194,14 +210,8 @@ struct ContentView: View {
                                 onMoveBack: performMoveBack
                             )
                             .tag(app.id)
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(selectedLocalApp == app.id ? Color.accentColor.opacity(0.15) : Color.clear)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                            )
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 16))
+                            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)) // Add spacing around rows
+                            .listRowSeparator(.hidden) // Keep hidden separators
                         }
                         .listStyle(.plain)
                     }
@@ -236,14 +246,19 @@ struct ContentView: View {
                     if externalDriveURL == nil {
                         VStack(spacing: 12) {
                             Image(systemName: "externaldrive.badge.plus")
-                                .font(.system(size: 32))
-                                .foregroundColor(.secondary.opacity(0.5))
+                                .font(.system(size: 40))
+                                .symbolRenderingMode(.hierarchical)
+                                .foregroundColor(.accentColor)
                             
                             // 【修复点 2】直接使用字面量，SwiftUI 会自动翻译
                             Text("请选择外部存储路径")
+                                .font(.title3)
+                                .fontWeight(.medium)
                                 .foregroundColor(.secondary)
                             
                             Button("选择文件夹") { openPanelForExternalDrive() }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.large)
                         }
                     } else if filteredExternalApps.isEmpty {
                         EmptyStateView(icon: "folder", text: "空文件夹")
@@ -258,14 +273,8 @@ struct ContentView: View {
                                 onMoveBack: performMoveBack
                             )
                             .tag(app.id)
-                            .listRowBackground(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(selectedExternalApp == app.id ? Color.accentColor.opacity(0.15) : Color.clear)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                            )
+                            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
                             .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 16))
                         }
                         .listStyle(.plain)
                     }
@@ -275,7 +284,7 @@ struct ContentView: View {
             }
             .frame(minWidth: 320, maxWidth: .infinity)
         }
-        .frame(minWidth: 800, minHeight: 500)
+        .frame(minWidth: 900, minHeight: 600) // Increased window size
         .searchable(text: $searchText, placement: .sidebar, prompt: "搜索应用名称") // prompt 也会自动翻译
         .onAppear { scanLocalApps() }
         .onChange(of: externalDriveURL) { scanExternalApps() }
@@ -313,16 +322,17 @@ struct ContentView: View {
         
         var body: some View {
             VStack(spacing: 0) {
-                HStack {
+                HStack(alignment: .center, spacing: 16) {
                     Image(systemName: icon)
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    VStack(alignment: .leading, spacing: 2) {
+                        .font(.system(size: 24))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32)
+                        
+                    VStack(alignment: .leading, spacing: 4) {
                         // 将传入的 title 字符串转换为 Key，触发翻译
                         Text(LocalizedStringKey(title))
                             .font(.headline)
                         
-
                         Text(subtitle)
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -336,6 +346,7 @@ struct ContentView: View {
 
                         Button(LocalizedStringKey(btnText), action: action)
                             .controlSize(.small)
+                            .buttonStyle(.bordered)
                     }
                     
                     Button(action: onRefresh) {
@@ -343,12 +354,14 @@ struct ContentView: View {
                     }
                     .buttonStyle(.borderless)
                     .padding(.leading, 8)
+                    .help("刷新列表")
                 }
-                .padding(12)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
                 
                 Divider()
             }
-            .background(.ultraThinMaterial)
+            .background(.ultraThinMaterial) // Glassmorphism
         }
     }
     
@@ -361,23 +374,27 @@ struct ContentView: View {
         var body: some View {
             VStack(spacing: 0) {
                 Divider()
+                    .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: -1)
+                
                 HStack {
                     Spacer()
                     Button(action: action) {
-                        HStack {
-
+                        HStack(spacing: 8) {
                             Text(LocalizedStringKey(title))
+                                .fontWeight(.semibold)
                             Image(systemName: icon)
                         }
-                        .frame(minWidth: 120)
+                        .frame(maxWidth: .infinity) // Fill width
+                        .frame(height: 32)
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(!isEnabled)
-                    .controlSize(.regular)
-                    .padding(12)
+                    .controlSize(.large)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                 }
             }
-            .background(.bar)
+            .background(.bar) // Standard bar material
         }
     }
     
@@ -433,7 +450,7 @@ struct ContentView: View {
     func scanLocalApps() {
         self.localApps = []
         var newApps: [AppItem] = []
-        let items = (try? fileManager.contentsOfDirectory(at: localAppsURL, includingPropertiesForKeys: [.isSymbolicLinkKey], options: .skipsHiddenFiles)) ?? []
+        let items = (try? fileManager.contentsOfDirectory(at: localAppsURL, includingPropertiesForKeys: [.isSymbolicLinkKey, .isDirectoryKey], options: .skipsHiddenFiles)) ?? []
         
         let runningAppURLs = getRunningAppURLs()
         
@@ -443,9 +460,22 @@ struct ContentView: View {
                 var status = "本地"
                 let isSystem = itemURL.path.hasPrefix("/System")
                 let isRunning = runningAppURLs.contains(itemURL)
-                if let resourceValues = try? itemURL.resourceValues(forKeys: [.isSymbolicLinkKey]), resourceValues.isSymbolicLink == true {
-                    status = "已链接"
+                
+                // Deep Symlink Check: Check if it is a directory AND contains a symlinked 'Contents'
+                if let resourceValues = try? itemURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey]) {
+                    if resourceValues.isSymbolicLink == true {
+                        // Old style symlink
+                        status = "已链接"
+                    } else if resourceValues.isDirectory == true {
+                        // Potential Deep Symlink
+                        let contentsURL = itemURL.appendingPathComponent("Contents")
+                        if let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
+                           contentsResourceValues.isSymbolicLink == true {
+                            status = "已链接"
+                        }
+                    }
                 }
+                
                 newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: isSystem, isRunning: isRunning))
             }
         }
@@ -461,6 +491,7 @@ struct ContentView: View {
             if itemURL.pathExtension == "app" {
                 let appName = itemURL.lastPathComponent
                 var status = "外部"
+                // External apps should generally be real apps, but we check just in case
                 if let resourceValues = try? itemURL.resourceValues(forKeys: [.isSymbolicLinkKey]), resourceValues.isSymbolicLink == true { status = "已链接(异常)" }
                 newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: false, isRunning: false))
             }
@@ -506,32 +537,105 @@ struct ContentView: View {
             throw AppMoverError.appIsRunning
         }
         
+        // 1. Check destination
         if fileManager.fileExists(atPath: destinationURL.path) {
             let existingItemResourceValues = try? destinationURL.resourceValues(forKeys: [.isSymbolicLinkKey])
             if existingItemResourceValues?.isSymbolicLink == true { try fileManager.removeItem(at: destinationURL) }
             else { throw AppMoverError.generalError(NSError(domain: "AppMover", code: 3, userInfo: [NSLocalizedDescriptionKey: "目标已存在真实文件"])) }
         }
+        
+        // 2. Move original app to external drive
         try fileManager.moveItem(at: appToMove.path, to: destinationURL)
-        try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
+        
+        // 3. Create Deep Symlink Structure
+        // Step A: Create the local .app directory (fake bundle)
+        try fileManager.createDirectory(at: appToMove.path, withIntermediateDirectories: false, attributes: nil)
+        
+        // Step B: Create symlink for Contents inside the fake bundle
+        let localContentsURL = appToMove.path.appendingPathComponent("Contents")
+        let destinationContentsURL = destinationURL.appendingPathComponent("Contents")
+        
+        try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: destinationContentsURL)
+        
+        // Step C: (Optional but recommended) touch the directory to update timestamp for Launchpad
+        try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: appToMove.path.path)
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) throws {
+        // 1. Check local destination
         if fileManager.fileExists(atPath: destinationURL.path) {
-            let resourceValues = try? destinationURL.resourceValues(forKeys: [.isSymbolicLinkKey])
-            if resourceValues?.isSymbolicLink == true { try fileManager.removeItem(at: destinationURL) }
-            else { throw AppMoverError.generalError(NSError(domain: "AppMover", code: 1, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名真实应用"])) }
+            // Check if it is a symlink (old style) or a directory (potentially new style or real app)
+            let resourceValues = try? destinationURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
+            
+            if resourceValues?.isSymbolicLink == true {
+                // Old style symlink, safe to remove
+                try fileManager.removeItem(at: destinationURL)
+            } else if resourceValues?.isDirectory == true {
+                // Check if it's our deep symlink wrapper
+                let contentsURL = destinationURL.appendingPathComponent("Contents")
+                let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey])
+                
+                if contentsResourceValues?.isSymbolicLink == true {
+                    // It is a deep symlink wrapper, safe to remove (recursively)
+                    try fileManager.removeItem(at: destinationURL)
+                } else {
+                    // It's a real directory/app, abort!
+                    throw AppMoverError.generalError(NSError(domain: "AppMover", code: 1, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名真实应用"]))
+                }
+            } else {
+                throw AppMoverError.generalError(NSError(domain: "AppMover", code: 1, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名文件"]))
+            }
         }
-        try fileManager.createSymbolicLink(at: destinationURL, withDestinationURL: appToLink.path)
+        
+        // 2. Create Deep Symlink Structure
+        try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: false, attributes: nil)
+        
+        let localContentsURL = destinationURL.appendingPathComponent("Contents")
+        let externalContentsURL = appToLink.path.appendingPathComponent("Contents")
+        
+        try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: externalContentsURL)
+        
+        try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: destinationURL.path)
     }
     
-    func deleteLink(app: AppItem) throws { try fileManager.removeItem(at: app.path) }
+    func deleteLink(app: AppItem) throws {
+        // Handle both old symlink and new deep symlink
+        let resourceValues = try? app.path.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
+        
+        if resourceValues?.isSymbolicLink == true {
+            // Old style: just remove the file
+            try fileManager.removeItem(at: app.path)
+        } else if resourceValues?.isDirectory == true {
+            // New style: remove the whole directory wrapper
+            // Double check it contains a symlinked Contents to be safe?
+            // For now, assuming if status is "Link", logic allows removal.
+            try fileManager.removeItem(at: app.path)
+        } else {
+             throw AppMoverError.generalError(NSError(domain: "AppMover", code: 5, userInfo: [NSLocalizedDescriptionKey: "尝试删除非链接文件"]))
+        }
+    }
     
     func moveBack(app: AppItem, localDestinationURL: URL) throws {
+        // 1. Clean up local spot
         if fileManager.fileExists(atPath: localDestinationURL.path) {
-             let resourceValues = try? localDestinationURL.resourceValues(forKeys: [.isSymbolicLinkKey])
-            if resourceValues?.isSymbolicLink == true { try fileManager.removeItem(at: localDestinationURL) }
-            else { throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名文件"])) }
+             let resourceValues = try? localDestinationURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
+            
+            if resourceValues?.isSymbolicLink == true {
+                try fileManager.removeItem(at: localDestinationURL)
+            } else if resourceValues?.isDirectory == true {
+                 let contentsURL = localDestinationURL.appendingPathComponent("Contents")
+                 let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey])
+                 if contentsResourceValues?.isSymbolicLink == true {
+                     try fileManager.removeItem(at: localDestinationURL)
+                 } else {
+                     throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名真实文件"]))
+                 }
+            } else {
+                 throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名文件"]))
+            }
         }
+        
+        // 2. Move app back
         try fileManager.moveItem(at: app.path, to: localDestinationURL)
     }
     

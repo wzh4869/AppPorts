@@ -63,6 +63,9 @@
         }
       }
     },
+    "Version 1.1.0" : {
+
+    },
     "个人网站" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -94,6 +97,9 @@
           }
         }
       }
+    },
+    "刷新列表" : {
+
     },
     "去设置授予权限" : {
       "extractionState" : "manual",
