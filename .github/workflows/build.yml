@@ -26,7 +26,7 @@ jobs:
           xcodebuild clean build \
             -scheme "AppPorts" \
             -configuration Release \
-            -destination 'platform=macOS,arch=x86_64' \
+            -destination 'platform=macOS' \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
