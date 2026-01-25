@@ -74,6 +74,15 @@ Mac 的内置存储空间寸土寸金。**AppPorts** 允许您一键将 `/Applic
 ### 下载安装
 请前往 [Releases](https://github.com/wzh4869/AppPorts/releases) 页面下载最新版本的 `AppPorts.dmg`。
 
+
+### ⚠️ “AppPorts”已损坏，无法打开
+如果打开应用时遇到此提示（且系统建议移到废纸篓），这是因为应用没有进行开发者签名，被 macOS 的 Gatekeeper 机制拦截。
+（注意：以下命令假设您已将 AppPorts 拖入 **应用程序** 文件夹）
+您需要在终端运行以下命令来移除隔离属性，即可正常打开：
+```bash
+xattr -rd com.apple.quarantine /Applications/AppPorts.app
+```
+
 ### ⚠️ 权限说明
 首次运行时，AppPorts 需要 **“完全磁盘访问权限”** 才能读写 `/Applications` 目录。
 
@@ -83,6 +92,8 @@ Mac 的内置存储空间寸土寸金。**AppPorts** 允许您一键将 `/Applic
 4.  重启 AppPorts。
 
 *(应用内包含引导页面，可直接跳转至设置)*
+
+
 
 ## 🧑‍💻 开发构建
 

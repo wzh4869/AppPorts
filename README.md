@@ -74,6 +74,15 @@ Compared to other solutions, AppPorts uses the unique **Contents Linking** techn
 ### Download and Installation
 Please visit the [Releases](https://github.com/wzh4869/AppPorts/releases) page to download the latest `AppPorts.dmg`.
 
+
+### ⚠️ "AppPorts" is damaged and can't be opened
+If you encounter this error (and macOS suggests moving it to the Trash) when opening the app, it is because the application is not signed with an Apple Developer ID.
+(Note: The command below assumes you have moved AppPorts to the **/Applications** folder)
+To fix this, please run the following command in Terminal to remove the quarantine attribute:
+```bash
+xattr -rd com.apple.quarantine /Applications/AppPorts.app
+```
+
 ### ⚠️ Permissions
 Upon first run, AppPorts requires **Full Disk Access** to read and modify the `/Applications` directory.
 
@@ -82,7 +91,9 @@ Upon first run, AppPorts requires **Full Disk Access** to read and modify the `/
 3. Click the `+` button, add **AppPorts**, and turn on the toggle.
 4. Relaunch AppPorts.
 
+
 *(The application includes an in-app guide for direct navigation to settings)*
+
 
 ## 🧑‍💻 Development
 
