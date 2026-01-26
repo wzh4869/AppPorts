@@ -19,6 +19,14 @@ Mac's built-in storage space is extremely precious. **AppPorts** allows you to m
 
 To macOS, the app still "exists" locally, allowing you to launch it as usual, but the storage occupied is on inexpensive external media.
 
+### ⚠️ "AppPorts" is damaged and can't be opened
+If you encounter this error (and macOS suggests moving it to the Trash) when opening the app, it is because the application is not signed with an Apple Developer ID.
+(Note: The command below assumes you have moved AppPorts to the **/Applications** folder)
+To fix this, please run the following command in Terminal to remove the quarantine attribute:
+```bash
+xattr -rd com.apple.quarantine /Applications/AppPorts.app
+```
+
 ## 🚀 Key Features
 
 * **📦 App Slimming**: One-click migration of multi-gigabyte applications (e.g., Logic Pro, Xcode, games) to an external drive.
@@ -74,14 +82,6 @@ Compared to other solutions, AppPorts uses the unique **Contents Linking** techn
 ### Download and Installation
 Please visit the [Releases](https://github.com/wzh4869/AppPorts/releases) page to download the latest `AppPorts.dmg`.
 
-
-### ⚠️ "AppPorts" is damaged and can't be opened
-If you encounter this error (and macOS suggests moving it to the Trash) when opening the app, it is because the application is not signed with an Apple Developer ID.
-(Note: The command below assumes you have moved AppPorts to the **/Applications** folder)
-To fix this, please run the following command in Terminal to remove the quarantine attribute:
-```bash
-xattr -rd com.apple.quarantine /Applications/AppPorts.app
-```
 
 ### ⚠️ Permissions
 Upon first run, AppPorts requires **Full Disk Access** to read and modify the `/Applications` directory.
