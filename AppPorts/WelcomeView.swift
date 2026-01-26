@@ -92,47 +92,49 @@ struct WelcomeView: View {
                 // MARK: - Permission & Action
                 VStack(spacing: 24) {
                     // Permission Card
-                    HStack(alignment: .top, spacing: 14) {
-                        Image(systemName: "lock.shield.fill")
-                            .font(.title2)
-                            .foregroundColor(.orange)
-                            .padding(.top, 2)
-                        
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("需要“完全磁盘访问权限”")
-                                .font(.headline)
-                                .fontDesign(.rounded)
-                                .foregroundColor(.primary)
+                    if !hasPermission {
+                        HStack(alignment: .top, spacing: 14) {
+                            Image(systemName: "lock.shield.fill")
+                                .font(.title2)
+                                .foregroundColor(.orange)
+                                .padding(.top, 2)
                             
-                            Text("应用需要读写 /Applications 目录才能工作。请在系统设置中开启。")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            
-                            Button(action: openFullDiskAccessSettings) {
-                                HStack(spacing: 4) {
-                                    Text("去设置授予权限")
-                                    Image(systemName: "arrow.up.right")
-                                        .font(.system(size: 10))
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("需要“完全磁盘访问权限”")
+                                    .font(.headline)
+                                    .fontDesign(.rounded)
+                                    .foregroundColor(.primary)
+                                
+                                Text("应用需要读写 /Applications 目录才能工作。请在系统设置中开启。")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                
+                                Button(action: openFullDiskAccessSettings) {
+                                    HStack(spacing: 4) {
+                                        Text("去设置授予权限")
+                                        Image(systemName: "arrow.up.right")
+                                            .font(.system(size: 10))
+                                    }
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
                                 }
-                                .font(.caption)
-                                .fontWeight(.semibold)
+                                .buttonStyle(.link)
+                                .padding(.top, 2)
                             }
-                            .buttonStyle(.link)
-                            .padding(.top, 2)
                         }
+                        .padding(16)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityHint("双击打开系统设置")
                     }
-                    .padding(16)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(16)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.primary.opacity(0.05), lineWidth: 1)
-                    )
-                    .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
-                    .accessibilityElement(children: .combine)
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityHint("双击打开系统设置")
                     
                     // Main CTA
                     Button(action: {
@@ -167,9 +169,29 @@ struct WelcomeView: View {
                 .padding(20)
         }
         .onAppear {
+            checkPermission()
             withAnimation(.easeOut(duration: 0.8)) {
                 isAnimating = true
             }
+        }
+    }
+    
+    @State private var hasPermission = false
+    
+    func checkPermission() {
+        // Simple check: try to write a temp file to /Applications or read contents
+        // Or check if we can read a sensitive location.
+        // Reading /Applications usually requires permission for sandboxed apps, but we are not sandboxed?
+        // Let's try to contentsOfDirectory at /Applications.
+        // Actually, just checking if we can write to /Applications is the key for this app.
+        // But write checking is dangerous/intrusive.
+        // Let's rely on the FileManager check used in ContentView: checkApplicationsFolderWritePermission
+        // Simplified check here:
+        let testUrl = URL(fileURLWithPath: "/Applications")
+        if FileManager.default.isWritableFile(atPath: testUrl.path) {
+             hasPermission = true
+        } else {
+             hasPermission = false
         }
     }
     

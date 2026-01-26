@@ -10,9 +10,10 @@ struct AppItem: Identifiable, Equatable, Sendable {
     var isSystemApp: Bool = false
     var isRunning: Bool = false
     var size: String? = nil
+    var sizeBytes: Int64 = 0 // For sorting
 
     static func == (lhs: AppItem, rhs: AppItem) -> Bool {
-        lhs.id == rhs.id && lhs.name == rhs.name && lhs.status == rhs.status && lhs.isRunning == rhs.isRunning && lhs.size == rhs.size
+        lhs.id == rhs.id && lhs.name == rhs.name && lhs.status == rhs.status && lhs.isRunning == rhs.isRunning && lhs.size == rhs.size && lhs.sizeBytes == rhs.sizeBytes
     }
 }
 

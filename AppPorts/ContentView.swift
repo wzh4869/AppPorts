@@ -209,66 +209,116 @@ struct ContentView: View {
     @State private var showAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
+    
+    @State private var showUpdateAlert = false
+    @State private var updateURL: URL?
 
     private let fileManager = FileManager.default
 
-    var body: some View {
-        HSplitView {
-            // --- 左侧：本地应用 ---
-            VStack(spacing: 0) {
-                HeaderView(title: "Mac 本地应用", subtitle: "/Applications", icon: "macmini") {
-                    scanLocalApps()
-                }
-                
-                ZStack {
-                    Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
-                    
-                    if filteredLocalApps.isEmpty {
-                        if searchText.isEmpty {
-                            EmptyStateView(icon: "magnifyingglass", text: "正在扫描...")
-                        } else {
-                            EmptyStateView(icon: "doc.text.magnifyingglass", text: "未找到匹配应用")
-                        }
-                    } else {
-                        List(filteredLocalApps, selection: $selectedLocalApp) { app in
-                            AppRowView(
-                                app: app,
-                                isSelected: app.id == selectedLocalApp,
-                                showDeleteLinkButton: true,
-                                showMoveBackButton: false,
-                                onDeleteLink: performDeleteLink,
-                                onMoveBack: performMoveBack
-                            )
-                            .tag(app.id)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)) // Add spacing around rows
-                            .listRowSeparator(.hidden) // Keep hidden separators
-                        }
-                        .listStyle(.plain)
-                    }
-                }
-                
-                let buttonStatus = getMoveButtonTitle()
-                
-                ActionFooter(
-                    title: buttonStatus.text,
-                    icon: "arrow.right",
-                    isEnabled: canMoveOut,
-                    action: performMoveOut
-                )
-            }
-            .frame(minWidth: 320, maxWidth: .infinity)
-            
-            // --- 右侧：外部应用 ---
-            VStack(spacing: 0) {
-                HeaderView(
-                    title: "外部应用库",
+    // Monitors
+    @State private var localMonitor: FolderMonitor?
+    @State private var externalMonitor: FolderMonitor?
 
-                    subtitle: externalDriveURL?.path ?? "未选择".localized,
-                    icon: "externaldrive.fill",
-                    actionButtonText: "选择文件夹",
-                    onAction: openPanelForExternalDrive,
-                    onRefresh: { scanExternalApps() }
+    enum SortOption {
+        case name, size
+    }
+    @State private var sortOption: SortOption = .name
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // MARK: - Top Toolbar
+            HStack(spacing: 16) {
+                // Search Bar
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    TextField("搜索应用 (本地 / 外部)...", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 13))
+                }
+                .padding(8)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .cornerRadius(6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                 )
+                
+                // Sort Button
+                Menu {
+                    Picker("排序方式", selection: $sortOption) {
+                        Text("按名称").tag(SortOption.name)
+                        Text("按大小").tag(SortOption.size)
+                    }
+                } label: {
+                    Label("排序", systemImage: "line.3.horizontal.decrease.circle")
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("排序方式")
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(.ultraThinMaterial)
+            
+            Divider()
+            
+            HSplitView {
+                // --- 左侧：本地应用 ---
+                VStack(spacing: 0) {
+                    // Header Area (Restored to original simple style)
+                    HeaderView(title: "Mac 本地应用", subtitle: "/Applications", icon: "macmini") {
+                        scanLocalApps()
+                    }
+                    
+                    ZStack {
+                        Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+                        
+                        if filteredLocalApps.isEmpty {
+                            if searchText.isEmpty {
+                                EmptyStateView(icon: "magnifyingglass", text: "正在扫描...")
+                            } else {
+                                EmptyStateView(icon: "doc.text.magnifyingglass", text: "未找到匹配应用")
+                            }
+                        } else {
+                            List(filteredLocalApps, selection: $selectedLocalApp) { app in
+                                AppRowView(
+                                    app: app,
+                                    isSelected: app.id == selectedLocalApp,
+                                    showDeleteLinkButton: true,
+                                    showMoveBackButton: false,
+                                    onDeleteLink: performDeleteLink,
+                                    onMoveBack: performMoveBack
+                                )
+                                .tag(app.id)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)) // Add spacing around rows
+                                .listRowSeparator(.hidden) // Keep hidden separators
+                            }
+                            .listStyle(.plain)
+                        }
+                    }
+                    
+                    let buttonStatus = getMoveButtonTitle()
+                    
+                    ActionFooter(
+                        title: buttonStatus.text,
+                        icon: "arrow.right",
+                        isEnabled: canMoveOut,
+                        action: performMoveOut
+                    )
+                }
+                .frame(minWidth: 320, maxWidth: .infinity)
+                
+                // --- 右侧：外部应用 ---
+                VStack(spacing: 0) {
+                    HeaderView(
+                        title: "外部应用库",
+                        subtitle: externalDriveURL?.path ?? "未选择".localized,
+                        icon: "externaldrive.fill",
+                        actionButtonText: "选择文件夹",
+                        onAction: openPanelForExternalDrive,
+                        onRefresh: { scanExternalApps() }
+                    )
                 
                 ZStack {
                     Color(nsColor: .windowBackgroundColor).ignoresSafeArea()
@@ -314,15 +364,64 @@ struct ContentView: View {
             }
             .frame(minWidth: 320, maxWidth: .infinity)
         }
-        .frame(minWidth: 900, minHeight: 600) // Increased window size
-        .searchable(text: $searchText, placement: .sidebar, prompt: "搜索应用名称") // prompt 也会自动翻译
-        .onAppear { scanLocalApps() }
-        .onChange(of: externalDriveURL) { scanExternalApps() }
+    }
+    .frame(minWidth: 900, minHeight: 600) // Increased window size
+        .onAppear {
+            // Restore persistence
+            if let savedPath = UserDefaults.standard.string(forKey: "ExternalDrivePath") {
+                let url = URL(fileURLWithPath: savedPath)
+                var isDir: ObjCBool = false
+                if fileManager.fileExists(atPath: savedPath, isDirectory: &isDir), isDir.boolValue {
+                    self.externalDriveURL = url
+                }
+            }
+            
+            scanLocalApps()
+            
+            // Start local monitoring
+            startMonitoringLocal()
+            
+            // Check for updates
+            Task {
+                do {
+                    if let release = try await UpdateChecker.shared.checkForUpdates() {
+                        print("New version found: \(release.tagName)")
+                        await MainActor.run {
+                            self.alertTitle = "发现新版本"
+                            self.alertMessage = "发现新版本 \(release.tagName)。\n\(release.body)" // Simplified body?
+                            self.updateURL = URL(string: release.htmlUrl)
+                            self.showUpdateAlert = true
+                        }
+                    }
+                } catch {
+                    print("Update check failed: \(error)")
+                }
+            }
+        }
+        .onChange(of: externalDriveURL) { newValue in
+            // Persistence
+            if let url = newValue {
+                UserDefaults.standard.set(url.path, forKey: "ExternalDrivePath")
+                startMonitoringExternal(url: url)
+            } else {
+                UserDefaults.standard.removeObject(forKey: "ExternalDrivePath")
+                stopMonitoringExternal()
+            }
+            scanExternalApps()
+        }
         
         .alert(LocalizedStringKey(alertTitle), isPresented: $showAlert) {
             Button("好的", role: .cancel) { }
         } message: {
             Text(LocalizedStringKey(alertMessage))
+        }
+        .alert("发现新版本", isPresented: $showUpdateAlert) {
+            Button("前往下载", role: .none) {
+                if let url = updateURL { NSWorkspace.shared.open(url) }
+            }
+            Button("以后再说", role: .cancel) {}
+        } message: {
+            Text(alertMessage)
         }
     }
     
@@ -330,14 +429,33 @@ struct ContentView: View {
     
     var filteredLocalApps: [AppItem] {
         let apps = localApps
-        if searchText.isEmpty { return apps }
-        return apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        let filtered = searchText.isEmpty ? apps : apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        
+        return sortApps(filtered)
     }
     
     var filteredExternalApps: [AppItem] {
         let apps = externalApps
-        if searchText.isEmpty { return apps }
-        return apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        let filtered = searchText.isEmpty ? apps : apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        
+        return sortApps(filtered)
+    }
+    
+    func sortApps(_ apps: [AppItem]) -> [AppItem] {
+        switch sortOption {
+        case .name:
+            // Already sorted by name in scanner, but good to ensure
+            return apps // Scanner already sorts by Link status then Name
+        case .size:
+            return apps.sorted { 
+                 // Keep "Linked" on top? Maybe not for size sort. Let's strict size sort.
+                 // Or, if user wants size, we just sort by size.
+                 if $0.sizeBytes == $1.sizeBytes {
+                     return $0.name < $1.name
+                 }
+                 return $0.sizeBytes > $1.sizeBytes // Descending
+            }
+        }
     }
     
     // MARK: - 辅助组件
@@ -538,11 +656,17 @@ struct ContentView: View {
                  
                  if isLocal {
                      if let index = self.localApps.firstIndex(where: { $0.id == app.id }) {
-                         withAnimation { self.localApps[index].size = sizeString }
+                         withAnimation { 
+                            self.localApps[index].size = sizeString 
+                            self.localApps[index].sizeBytes = sizeBytes
+                         }
                      }
                  } else {
                      if let index = self.externalApps.firstIndex(where: { $0.id == app.id }) {
-                         withAnimation { self.externalApps[index].size = sizeString }
+                         withAnimation { 
+                            self.externalApps[index].size = sizeString 
+                            self.externalApps[index].sizeBytes = sizeBytes
+                         }
                      }
                  }
              }
@@ -739,11 +863,48 @@ struct ContentView: View {
         } catch { showError(title: "错误", message: error.localizedDescription) }
     }
     
+    
     func performMoveBack(app: AppItem) {
         let destination = localAppsURL.appendingPathComponent(app.name)
         do {
             try moveBack(app: app, localDestinationURL: destination)
             scanLocalApps(); scanExternalApps()
         } catch { showError(title: "错误", message: error.localizedDescription) }
+    }
+    
+    // MARK: - Monitoring Helpers
+    
+    func startMonitoringLocal() {
+        // Stop existing if any (though usually one)
+        localMonitor?.stopMonitoring()
+        
+        let monitor = FolderMonitor(url: localAppsURL)
+        monitor.startMonitoring {
+            // Debounce or just trigger?
+            // Re-scan
+            print("Local folder changed, scanning...")
+            Task { @MainActor in
+                self.scanLocalApps()
+            }
+        }
+        self.localMonitor = monitor
+    }
+    
+    func startMonitoringExternal(url: URL) {
+        externalMonitor?.stopMonitoring()
+        
+        let monitor = FolderMonitor(url: url)
+        monitor.startMonitoring {
+            print("External folder changed, scanning...")
+            Task { @MainActor in
+                self.scanExternalApps()
+            }
+        }
+        self.externalMonitor = monitor
+    }
+    
+    func stopMonitoringExternal() {
+        externalMonitor?.stopMonitoring()
+        externalMonitor = nil
     }
 }
