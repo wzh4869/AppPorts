@@ -547,6 +547,65 @@ data = {
         "pt": "Seus apps, em qualquer lugar.", "fr": "Vos applications, partout.", "it": "Le tue app, ovunque.", "ja": "あなたのアプリ、どこでも。",
         "eo": "Viaj aplikaĵoj, ie ajn.", "de": "Ihre Apps, überall.", "ko": "어디서나 당신의 앱.", "tr": "Uygulamalarınız, her yerde.",
         "vi": "Ứng dụng của bạn, ở bất cứ đâu.", "th": "แอปของคุณ ทุกที่", "nl": "Uw apps, overal.", "pl": "Twoje aplikacje, gdziekolwiek.", "id": "Aplikasi Anda, di mana saja."
+    },
+    
+    # --- New Strings (2026-01-26) ---
+    
+    "搜索应用 (本地 / 外部)...": {
+        "en": "Search apps (Local / External)...", "zh-Hans": "搜索应用 (本地 / 外部)...", "zh-Hant": "搜尋應用程式 (本地 / 外部)...",
+        "hi": "ऐप्स खोजें (स्थानीय / बाहरी)...", "es": "Buscar apps (Local / Externo)...", "ar": "بحث عن التطبيقات (محلي / خارجي)...", "ru": "Поиск приложений (Локальные / Внешние)...",
+        "pt": "Buscar apps (Local / Externo)...", "fr": "Rechercher des apps (Local / Externe)...", "it": "Cerca app (Locale / Esterno)...", "ja": "アプリを検索 (ローカル / 外部)...",
+        "eo": "Serĉi aplikaĵojn (Loka / Ekstera)...", "de": "Apps suchen (Lokal / Extern)...", "ko": "앱 검색 (로컬 / 외부)...", "tr": "Uygulamaları ara (Yerel / Harici)...",
+        "vi": "Tìm kiếm ứng dụng (Cục bộ / Bên ngoài)...", "th": "ค้นหาแอป (ในเครื่อง / ภายนอก)...", "nl": "Apps zoeken (Lokaal / Extern)...", "pl": "Szukaj aplikacji (Lokalne / Zewnętrzne)...", "id": "Cari aplikasi (Lokal / Eksternal)..."
+    },
+    "排序": {
+        "en": "Sort", "zh-Hans": "排序", "zh-Hant": "排序",
+        "hi": "क्रमबद्ध करें", "es": "Ordenar", "ar": "فرز", "ru": "Сортировка",
+        "pt": "Ordenar", "fr": "Trier", "it": "Ordina", "ja": "並べ替え",
+        "eo": "Ordigu", "de": "Sortieren", "ko": "정렬", "tr": "Sırala",
+        "vi": "Sắp xếp", "th": "เรียงลำดับ", "nl": "Sorteren", "pl": "Sortuj", "id": "Urutkan"
+    },
+    "排序方式": {
+        "en": "Sort Order", "zh-Hans": "排序方式", "zh-Hant": "排序方式",
+        "hi": "क्रमबद्ध करने का तरीका", "es": "Orden de clasificación", "ar": "ترتيب الفرز", "ru": "Порядок сортировки",
+        "pt": "Ordem de classificação", "fr": "Ordre de tri", "it": "Ordine di cernita", "ja": "並べ替え順",
+        "eo": "Ordo de ordigo", "de": "Sortierreihenfolge", "ko": "정렬 순서", "tr": "Sıralama Düzeni",
+        "vi": "Thứ tự sắp xếp", "th": "ลำดับการเรียง", "nl": "Sorteervolgorde", "pl": "Kolejność sortowania", "id": "Urutan Sortir"
+    },
+    "按名称": {
+        "en": "By Name", "zh-Hans": "按名称", "zh-Hant": "按名稱",
+        "hi": "नाम के अनुसार", "es": "Por nombre", "ar": "بالاسم", "ru": "По имени",
+        "pt": "Por nome", "fr": "Par nom", "it": "Per nome", "ja": "名前順",
+        "eo": "Laŭ Nomo", "de": "Nach Name", "ko": "이름순", "tr": "İsme Göre",
+        "vi": "Theo tên", "th": "ตามชื่อ", "nl": "Op naam", "pl": "Według nazwy", "id": "Berdasarkan Nama"
+    },
+    "按大小": {
+        "en": "By Size", "zh-Hans": "按大小", "zh-Hant": "按大小",
+        "hi": "आकार के अनुसार", "es": "Por tamaño", "ar": "بالحجم", "ru": "По размеру",
+        "pt": "Por tamanho", "fr": "Par taille", "it": "Per dimensione", "ja": "サイズ順",
+        "eo": "Laŭ Grandeco", "de": "Nach Größe", "ko": "크기순", "tr": "Boyuta Göre",
+        "vi": "Theo kích thước", "th": "ตามขนาด", "nl": "Op grootte", "pl": "Według rozmiaru", "id": "Berdasarkan Ukuran"
+    },
+    "发现新版本": {
+        "en": "New Version Found", "zh-Hans": "发现新版本", "zh-Hant": "發現新版本",
+        "hi": "नया संस्करण मिला", "es": "Nueva versión encontrada", "ar": "تم العثور على إصدار جديد", "ru": "Найден новый версия",
+        "pt": "Nova versão encontrada", "fr": "Nouvelle version trouvée", "it": "Nuova versione trovata", "ja": "新しいバージョンが見つかりました",
+        "eo": "Nova Versio Trovita", "de": "Neue Version gefunden", "ko": "새 버전 발견", "tr": "Yeni Sürüm Bulundu",
+        "vi": "Đã tìm thấy phiên bản mới", "th": "พบเวอร์ชันใหม่", "nl": "Nieuwe versie gevonden", "pl": "Znaleziono nową wersję", "id": "Versi Baru Ditemukan"
+    },
+    "前往下载": {
+        "en": "Download Now", "zh-Hans": "前往下载", "zh-Hant": "前往下載",
+        "hi": "अभी डाउनलोड करें", "es": "Descargar ahora", "ar": "تحميل الآن", "ru": "Скачать сейчас",
+        "pt": "Baixar agora", "fr": "Télécharger maintenant", "it": "Scarica ora", "ja": "今すぐダウンロード",
+        "eo": "Elŝutu Nun", "de": "Jetzt herunterladen", "ko": "지금 다운로드", "tr": "Şimdi İndir",
+        "vi": "Tải xuống ngay", "th": "ดาวน์โหลดเดี๋ยวนี้", "nl": "Nu downloaden", "pl": "Pobierz teraz", "id": "Unduh Sekarang"
+    },
+    "以后再说": {
+        "en": "Later", "zh-Hans": "以后再说", "zh-Hant": "以後再說",
+        "hi": "बाद में", "es": "Más tarde", "ar": "لاحقاً", "ru": "Позже",
+        "pt": "Mais tarde", "fr": "Plus tard", "it": "Più tardi", "ja": "後で",
+        "eo": "Poste", "de": "Später", "ko": "나중에", "tr": "Daha Sonra",
+        "vi": "Để sau", "th": "ภายหลัง", "nl": "Later", "pl": "Później", "id": "Nanti"
     }
 }
 
