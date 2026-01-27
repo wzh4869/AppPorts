@@ -111,9 +111,15 @@ If you are a developer and wish to build the project yourself:
 We welcome Issues and Pull Requests\!
 If you find translation errors or have suggestions for new features, please let us know.
 
-## 🔗 Recommended Projects
+##  Advanced Storage Management
 
 * [LazyMount-Mac](https://github.com/yuanweize/LazyMount-Mac): Easily expand Mac storage space — Automatically mount SMB shares and cloud storage at startup, no manual operation required.
+  > The perfect companion for AppPorts. LazyMount connects the storage, AppPorts handles the applications.
+    *   🎮 Game Libraries — Store Steam/Epic games on a NAS, play them like local installs
+    *   💾 Time Machine Backups — Back up to a remote server automatically
+    *   🎬 Media Libraries — Access your movie/music collection stored on a home server
+    *   📁 Project Archives — Keep large files on cheaper storage, access them on-demand
+    *   ☁️ Cloud Storage — Mount Google Drive, Dropbox, or any rclone-supported service as a local folder
 
 ## 📄 License
 
