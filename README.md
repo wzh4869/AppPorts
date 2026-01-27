@@ -114,6 +114,7 @@ If you find translation errors or have suggestions for new features, please let 
 ##  Advanced Storage Management
 
 * [LazyMount-Mac](https://github.com/yuanweize/LazyMount-Mac): Easily expand Mac storage space — Automatically mount SMB shares and cloud storage at startup, no manual operation required.
+    
   > The perfect companion for AppPorts. LazyMount connects the storage, AppPorts handles the applications.
     *   🎮 Game Libraries — Store Steam/Epic games on a NAS, play them like local installs
     *   💾 Time Machine Backups — Back up to a remote server automatically

@@ -114,7 +114,8 @@ xattr -rd com.apple.quarantine /Applications/AppPorts.app
 
 ## 🔗 进阶存储管理
 
-* [LazyMount-Mac](https://github.com/yuanweize/LazyMount-Mac)：轻松扩展 Mac 存储空间 —— 开机自动挂载 SMB 共享与云存储，无需任何手动操作。
+* [LazyMount-Mac](https://github.com/yuanweize/LazyMount-Mac)：轻松扩展 Mac 存储空间 —— 开机自动挂载 SMB 共享与云存储，无需任何手动操作。  
+   
   > AppPorts 的最佳拍档。LazyMount 负责连接存储，AppPorts 负责应用程序。
     *   🎮 **游戏库**：把 Steam/Epic 游戏放在 NAS 上，玩起来跟本地一样
     *   💾 **时间机器备份**：自动备份到远程服务器
