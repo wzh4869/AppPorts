@@ -111,6 +111,10 @@ If you are a developer and wish to build the project yourself:
 We welcome Issues and Pull Requests\!
 If you find translation errors or have suggestions for new features, please let us know.
 
+## 🔗 Recommended Projects
+
+* [LazyMount-Mac](https://github.com/yuanweize/LazyMount-Mac): Easily expand Mac storage space — Automatically mount SMB shares and cloud storage at startup, no manual operation required.
+
 ## 📄 License
 
 This project is open-source under the [MIT License](LICENSE).

@@ -112,6 +112,10 @@ xattr -rd com.apple.quarantine /Applications/AppPorts.app
 欢迎提交 Issue 或 Pull Request！
 如果您发现翻译错误或有新的功能建议，请随时告诉我们。
 
+## 🔗 推荐项目
+
+* [LazyMount-Mac](https://github.com/yuanweize/LazyMount-Mac)：轻松扩展 Mac 存储空间 —— 开机自动挂载 SMB 共享与云存储，无需任何手动操作
+
 ## 📄 许可证
 
 本项目基于 [MIT License](LICENSE) 开源。
