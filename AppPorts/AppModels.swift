@@ -21,6 +21,7 @@ enum AppMoverError: LocalizedError {
     case permissionDenied(Error)
     case generalError(Error)
     case appIsRunning
+    case appStoreAppError(Error)
     
     var errorDescription: String? {
         switch self {
@@ -30,6 +31,8 @@ enum AppMoverError: LocalizedError {
             return innerError.localizedDescription
         case .appIsRunning:
             return "该应用正在运行。请先退出应用，然后再试。"
+        case .appStoreAppError:
+            return "此 App Store 应用受系统保护，无法自动迁移。\n\n请尝试：\n1. 手动将应用移动到外部存储\n2. 然后回到 AppPorts 创建链接"
         }
     }
 }

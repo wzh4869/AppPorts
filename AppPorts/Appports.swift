@@ -41,13 +41,13 @@ struct AppMoverApp: App {
         .commands {
             // 原有的关于菜单
             CommandGroup(replacing: .appInfo) {
-                Button("关于 AppPorts...") {
+                Button("关于 AppPorts...".localized) {
                     showAboutSheet = true
                 }
             }
             
-            CommandMenu("Language") {
-                Button("跟随系统 (System)") { languageManager.language = "system" }
+            CommandMenu("语言".localized) {
+                Button("跟随系统 (System)".localized) { languageManager.language = "system" }
                 .keyboardShortcut("0", modifiers: [.command, .option])
                 
                 Divider()
@@ -85,6 +85,35 @@ struct AppMoverApp: App {
                     Button("🇮🇩 Indonesia (AI)") { languageManager.language = "id" }
                     Button("🏁 Esperanto (AI)") { languageManager.language = "eo" }
                     Button("⠃⠗ Braille") { languageManager.language = "br" }
+                }
+            }
+            
+            // 日志管理菜单
+            CommandMenu("日志".localized) {
+                Button("在 Finder 中查看日志".localized) {
+                    AppLogger.shared.openLogInFinder()
+                }
+                .keyboardShortcut("L", modifiers: [.command, .shift])
+                
+                Button("设置日志位置...".localized) {
+                    let panel = NSOpenPanel()
+                    panel.prompt = "选择日志保存位置".localized
+                    panel.canChooseFiles = false
+                    panel.canChooseDirectories = true
+                    panel.allowsMultipleSelection = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        let logFile = url.appendingPathComponent("AppPorts_Log.txt")
+                        AppLogger.shared.setLogPath(logFile)
+                    }
+                }
+                
+                Divider()
+                
+                Text("当前大小: \(AppLogger.shared.getLogSizeString())")
+                    .font(.caption)
+                
+                Button("清空日志".localized) {
+                    AppLogger.shared.clearLog()
                 }
             }
         }

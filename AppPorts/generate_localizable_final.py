@@ -50,6 +50,13 @@ data = {
         "eo": "Lingvo", "de": "Sprache", "ko": "언어", "tr": "Dil",
         "vi": "Ngôn ngữ", "th": "ภาษา", "nl": "Taal", "pl": "Język", "id": "Bahasa"
     },
+    "语言": {
+        "en": "Language", "zh-Hans": "语言", "zh-Hant": "語言",
+        "hi": "भाषा", "es": "Idioma", "ar": "لغة", "ru": "Язык",
+        "pt": "Idioma", "fr": "Langue", "it": "Lingua", "ja": "言語",
+        "eo": "Lingvo", "de": "Sprache", "ko": "언어", "tr": "Dil",
+        "vi": "Ngôn ngữ", "th": "ภาษา", "nl": "Taal", "pl": "Język", "id": "Bahasa"
+    },
     "Mac 本地应用": {
         "en": "Local Apps", "zh-Hans": "Mac 本地应用", "zh-Hant": "Mac 本地應用程式",
         "hi": "स्थानीय ऐप्स", "es": "Apps locales", "ar": "تطبيقات محلية", "ru": "Локальные приложения",
@@ -606,6 +613,173 @@ data = {
         "pt": "Mais tarde", "fr": "Plus tard", "it": "Più tardi", "ja": "後で",
         "eo": "Poste", "de": "Später", "ko": "나중에", "tr": "Daha Sonra",
         "vi": "Để sau", "th": "ภายหลัง", "nl": "Later", "pl": "Później", "id": "Nanti"
+    },
+    
+    # --- New Strings (2026-02-02) Batch Migration & Progress ---
+    
+    "正在迁移应用...": {
+        "en": "Migrating apps...", "zh-Hans": "正在迁移应用...", "zh-Hant": "正在遷移應用程式...",
+        "hi": "ऐप्स माइग्रेट हो रहे हैं...", "es": "Migrando apps...", "ar": "جاري نقل التطبيقات...", "ru": "Перенос приложений...",
+        "pt": "Migrando apps...", "fr": "Migration des apps...", "it": "Migrazione app...", "ja": "アプリを移行中...",
+        "eo": "Migrante aplikaĵojn...", "de": "Apps werden migriert...", "ko": "앱 마이그레이션 중...", "tr": "Uygulamalar taşınıyor...",
+        "vi": "Đang di chuyển ứng dụng...", "th": "กำลังย้ายแอป...", "nl": "Apps migreren...", "pl": "Migrowanie aplikacji...", "id": "Memigrasikan aplikasi..."
+    },
+    "迁移 %lld 个应用": {
+        "en": "Move %lld Apps", "zh-Hans": "迁移 %lld 个应用", "zh-Hant": "遷移 %lld 個應用程式",
+        "hi": "%lld ऐप्स स्थानांतरित करें", "es": "Mover %lld apps", "ar": "نقل %lld تطبيقات", "ru": "Переместить %lld приложений",
+        "pt": "Mover %lld apps", "fr": "Déplacer %lld apps", "it": "Sposta %lld app", "ja": "%lld アプリを移動",
+        "eo": "Movi %lld aplikaĵojn", "de": "%lld Apps verschieben", "ko": "%lld개 앱 이동", "tr": "%lld Uygulama Taşı",
+        "vi": "Di chuyển %lld ứng dụng", "th": "ย้าย %lld แอป", "nl": "%lld apps verplaatsen", "pl": "Przenieś %lld aplikacji", "id": "Pindahkan %lld Aplikasi"
+    },
+    "链接 %lld 个应用": {
+        "en": "Link %lld Apps", "zh-Hans": "链接 %lld 个应用", "zh-Hant": "連結 %lld 個應用程式",
+        "hi": "%lld ऐप्स लिंक करें", "es": "Enlazar %lld apps", "ar": "ربط %lld تطبيقات", "ru": "Связать %lld приложений",
+        "pt": "Vincular %lld apps", "fr": "Lier %lld apps", "it": "Collega %lld app", "ja": "%lld アプリをリンク",
+        "eo": "Ligi %lld aplikaĵojn", "de": "%lld Apps verknüpfen", "ko": "%lld개 앱 연결", "tr": "%lld Uygulama Bağla",
+        "vi": "Liên kết %lld ứng dụng", "th": "เชื่อมโยง %lld แอป", "nl": "%lld apps koppelen", "pl": "Połącz %lld aplikacji", "id": "Tautkan %lld Aplikasi"
+    },
+    "迁移回本地": {
+        "en": "Move Back to Local", "zh-Hans": "迁移回本地", "zh-Hant": "遷移回本地",
+        "hi": "स्थानीय में वापस ले जाएं", "es": "Mover de vuelta a local", "ar": "نقل إلى المحلي", "ru": "Вернуть в локальное",
+        "pt": "Mover de volta ao local", "fr": "Déplacer vers local", "it": "Sposta di nuovo in locale", "ja": "ローカルに戻す",
+        "eo": "Renigi al Loka", "de": "Zurück nach lokal verschieben", "ko": "로컬로 되돌리기", "tr": "Yerele Geri Taşı",
+        "vi": "Di chuyển về cục bộ", "th": "ย้ายกลับไปในเครื่อง", "nl": "Terug naar lokaal verplaatsen", "pl": "Przenieś z powrotem na dysk lokalny", "id": "Pindahkan Kembali ke Lokal"
+    },
+    "部分迁移失败": {
+        "en": "Some migrations failed", "zh-Hans": "部分迁移失败", "zh-Hant": "部分遷移失敗",
+        "hi": "कुछ माइग्रेशन विफल", "es": "Algunas migraciones fallaron", "ar": "فشلت بعض عمليات النقل", "ru": "Некоторые миграции не удались",
+        "pt": "Algumas migrações falharam", "fr": "Certaines migrations ont échoué", "it": "Alcune migrazioni non riuscite", "ja": "一部の移行に失敗しました",
+        "eo": "Kelkaj migradoj malsukcesis", "de": "Einige Migrationen fehlgeschlagen", "ko": "일부 마이그레이션 실패", "tr": "Bazı taşımalar başarısız oldu",
+        "vi": "Một số di chuyển thất bại", "th": "บางการย้ายล้มเหลว", "nl": "Sommige migraties mislukt", "pl": "Niektóre migracje nie powiodły się", "id": "Beberapa migrasi gagal"
+    },
+    "部分链接失败": {
+        "en": "Some links failed", "zh-Hans": "部分链接失败", "zh-Hant": "部分連結失敗",
+        "hi": "कुछ लिंक विफल", "es": "Algunos enlaces fallaron", "ar": "فشلت بعض الروابط", "ru": "Некоторые связи не удались",
+        "pt": "Alguns links falharam", "fr": "Certains liens ont échoué", "it": "Alcuni collegamenti non riusciti", "ja": "一部のリンクに失敗しました",
+        "eo": "Kelkaj ligoj malsukcesis", "de": "Einige Verknüpfungen fehlgeschlagen", "ko": "일부 연결 실패", "tr": "Bazı bağlantılar başarısız oldu",
+        "vi": "Một số liên kết thất bại", "th": "บางการเชื่อมโยงล้มเหลว", "nl": "Sommige koppelingen mislukt", "pl": "Niektóre połączenia nie powiodły się", "id": "Beberapa tautan gagal"
+    },
+    "含系统应用": {
+        "en": "Contains System App", "zh-Hans": "含系统应用", "zh-Hant": "含系統應用程式",
+        "hi": "सिस्टम ऐप शामिल है", "es": "Contiene app del sistema", "ar": "يحتوي على تطبيق نظام", "ru": "Содержит системное приложение",
+        "pt": "Contém app do sistema", "fr": "Contient app système", "it": "Contiene app di sistema", "ja": "システムアプリを含む",
+        "eo": "Enhavas Sisteman Aplikaĵon", "de": "Enthält System-App", "ko": "시스템 앱 포함", "tr": "Sistem Uygulaması İçerir",
+        "vi": "Chứa ứng dụng hệ thống", "th": "มีแอประบบ", "nl": "Bevat systeem-app", "pl": "Zawiera aplikację systemową", "id": "Berisi Aplikasi Sistem"
+    },
+    "含运行中应用": {
+        "en": "Contains Running App", "zh-Hans": "含运行中应用", "zh-Hant": "含執行中應用程式",
+        "hi": "चल रहा ऐप शामिल है", "es": "Contiene app en ejecución", "ar": "يحتوي على تطبيق قيد التشغيل", "ru": "Содержит работающее приложение",
+        "pt": "Contém app em execução", "fr": "Contient app en cours", "it": "Contiene app in esecuzione", "ja": "実行中のアプリを含む",
+        "eo": "Enhavas Funkcianta Aplikaĵon", "de": "Enthält laufende App", "ko": "실행 중인 앱 포함", "tr": "Çalışan Uygulama İçerir",
+        "vi": "Chứa ứng dụng đang chạy", "th": "มีแอปที่กำลังทำงาน", "nl": "Bevat actieve app", "pl": "Zawiera działającą aplikację", "id": "Berisi Aplikasi yang Berjalan"
+    },
+    "App Store 应用": {
+        "en": "App Store App", "zh-Hans": "App Store 应用", "zh-Hant": "App Store 應用程式",
+        "hi": "App Store ऐप", "es": "App de App Store", "ar": "تطبيق متجر التطبيقات", "ru": "Приложение App Store",
+        "pt": "App da App Store", "fr": "Application App Store", "it": "App dell'App Store", "ja": "App Store アプリ",
+        "eo": "App Store Aplikaĵo", "de": "App Store App", "ko": "App Store 앱", "tr": "App Store Uygulaması",
+        "vi": "Ứng dụng App Store", "th": "แอป App Store", "nl": "App Store-app", "pl": "Aplikacja App Store", "id": "Aplikasi App Store"
+    },
+    "继续迁移": {
+        "en": "Continue Migration", "zh-Hans": "继续迁移", "zh-Hant": "繼續遷移",
+        "hi": "माइग्रेशन जारी रखें", "es": "Continuar migración", "ar": "متابعة النقل", "ru": "Продолжить миграцию",
+        "pt": "Continuar migração", "fr": "Continuer la migration", "it": "Continua migrazione", "ja": "移行を続ける",
+        "eo": "Daŭrigu Migradon", "de": "Migration fortsetzen", "ko": "마이그레이션 계속", "tr": "Taşımaya Devam Et",
+        "vi": "Tiếp tục di chuyển", "th": "ดำเนินการย้ายต่อ", "nl": "Migratie voortzetten", "pl": "Kontynuuj migrację", "id": "Lanjutkan Migrasi"
+    },
+    "取消": {
+        "en": "Cancel", "zh-Hans": "取消", "zh-Hant": "取消",
+        "hi": "रद्द करें", "es": "Cancelar", "ar": "إلغاء", "ru": "Отмена",
+        "pt": "Cancelar", "fr": "Annuler", "it": "Annulla", "ja": "キャンセル",
+        "eo": "Nuligi", "de": "Abbrechen", "ko": "취소", "tr": "İptal",
+        "vi": "Hủy", "th": "ยกเลิก", "nl": "Annuleren", "pl": "Anuluj", "id": "Batal"
+    },
+    
+    # --- New Strings (2026-02-02) Menu & Alerts ---
+    
+    "日志": {
+        "en": "Logs", "zh-Hans": "日志", "zh-Hant": "日誌",
+        "hi": "लॉग", "es": "Registros", "ar": "السجلات", "ru": "Журналы",
+        "pt": "Logs", "fr": "Journaux", "it": "Log", "ja": "ログ",
+        "eo": "Protokoloj", "de": "Protokolle", "ko": "로그", "tr": "Günlükler",
+        "vi": "Nhật ký", "th": "บันทึก", "nl": "Logs", "pl": "Dzienniki", "id": "Log"
+    },
+    "在 Finder 中查看日志": {
+        "en": "View Log in Finder", "zh-Hans": "在 Finder 中查看日志", "zh-Hant": "在 Finder 中查看日誌",
+        "hi": "Finder में लॉग देखें", "es": "Ver registro en Finder", "ar": "عرض السجل في Finder", "ru": "Просмотреть журнал в Finder",
+        "pt": "Ver log no Finder", "fr": "Voir le journal dans le Finder", "it": "Visualizza log nel Finder", "ja": "Finderでログを表示",
+        "eo": "Vidi protokolon en Finder", "de": "Protokoll im Finder anzeigen", "ko": "Finder에서 로그 보기", "tr": "Finder'da Günlüğü Görüntüle",
+        "vi": "Xem nhật ký trong Finder", "th": "ดูบันทึกใน Finder", "nl": "Log bekijken in Finder", "pl": "Zobacz dziennik w Finderze", "id": "Lihat Log di Finder"
+    },
+    "设置日志位置...": {
+        "en": "Set Log Location...", "zh-Hans": "设置日志位置...", "zh-Hant": "設定日誌位置...",
+        "hi": "लॉग स्थान सेट करें...", "es": "Establecer ubicación del registro...", "ar": "تعيين موقع السجل...", "ru": "Установить расположение журнала...",
+        "pt": "Definir local do log...", "fr": "Définir l'emplacement du journal...", "it": "Imposta posizione log...", "ja": "ログの場所を設定...",
+        "eo": "Agordi protokolan lokon...", "de": "Protokollspeicherort festlegen...", "ko": "로그 위치 설정...", "tr": "Günlük Konumunu Ayarla...",
+        "vi": "Đặt vị trí nhật ký...", "th": "ตั้งค่าตำแหน่งบันทึก...", "nl": "Loglocatie instellen...", "pl": "Ustaw lokalizację dziennika...", "id": "Atur Lokasi Log..."
+    },
+    "选择日志保存位置": {
+        "en": "Choose Log Location", "zh-Hans": "选择日志保存位置", "zh-Hant": "選擇日誌儲存位置",
+        "hi": "लॉग स्थान चुनें", "es": "Elegir ubicación del registro", "ar": "اختر موقع السجل", "ru": "Выберите расположение журнала",
+        "pt": "Escolher local do log", "fr": "Choisir l'emplacement du journal", "it": "Scegli posizione log", "ja": "ログの保存場所を選択",
+        "eo": "Elektu protokolan lokon", "de": "Protokollspeicherort auswählen", "ko": "로그 위치 선택", "tr": "Günlük Konumunu Seç",
+        "vi": "Chọn vị trí lưu nhật ký", "th": "เลือกตำแหน่งบันทึก", "nl": "Loglocatie kiezen", "pl": "Wybierz lokalizację dziennika", "id": "Pilih Lokasi Log"
+    },
+    "当前大小: %@": {
+        "en": "Current Size: %@", "zh-Hans": "当前大小: %@", "zh-Hant": "目前大小: %@",
+        "hi": "वर्तमान आकार: %@", "es": "Tamaño actual: %@", "ar": "الحجم الحالي: %@", "ru": "Текущий размер: %@",
+        "pt": "Tamanho atual: %@", "fr": "Taille actuelle : %@", "it": "Dimensione attuale: %@", "ja": "現在のサイズ: %@",
+        "eo": "Nuna grandeco: %@", "de": "Aktuelle Größe: %@", "ko": "현재 크기: %@", "tr": "Mevcut Boyut: %@",
+        "vi": "Kích thước hiện tại: %@", "th": "ขนาดปัจจุบัน: %@", "nl": "Huidige grootte: %@", "pl": "Bieżący rozmiar: %@", "id": "Ukuran Saat Ini: %@"
+    },
+    "清空日志": {
+        "en": "Clear Log", "zh-Hans": "清空日志", "zh-Hant": "清空日誌",
+        "hi": "लॉग साफ़ करें", "es": "Borrar registro", "ar": "مسح السجل", "ru": "Очистить журнал",
+        "pt": "Limpar log", "fr": "Effacer le journal", "it": "Cancella log", "ja": "ログを消去",
+        "eo": "Viŝi protokolon", "de": "Protokoll löschen", "ko": "로그 지우기", "tr": "Günlüğü Temizle",
+        "vi": "Xóa nhật ký", "th": "ล้างบันทึก", "nl": "Log wissen", "pl": "Wyczyść dziennik", "id": "Hapus Log"
+    },
+    "App Store App": {
+        "en": "App Store App", "zh-Hans": "App Store 应用", "zh-Hant": "App Store 應用程式",
+        "hi": "App Store ऐप", "es": "App de App Store", "ar": "تطبيق App Store", "ru": "Приложение App Store",
+        "pt": "App da App Store", "fr": "Application App Store", "it": "App dell'App Store", "ja": "App Store アプリ",
+        "eo": "App Store Aplikaĵo", "de": "App Store App", "ko": "App Store 앱", "tr": "App Store Uygulaması",
+        "vi": "Ứng dụng App Store", "th": "แอป App Store", "nl": "App Store-app", "pl": "Aplikacja App Store", "id": "Aplikasi App Store"
+    },
+    "Continue Migration": {
+        "en": "Continue Migration", "zh-Hans": "继续迁移", "zh-Hant": "繼續遷移",
+        "hi": "माइग्रेशन जारी रखें", "es": "Continuar migración", "ar": "متابعة النقل", "ru": "Продолжить миграцию",
+        "pt": "Continuar migração", "fr": "Continuer la migration", "it": "Continua migrazione", "ja": "移行を続ける",
+        "eo": "Daŭrigu Migradon", "de": "Migration fortsetzen", "ko": "마이그레이션 계속", "tr": "Taşımaya Devam Et",
+        "vi": "Tiếp tục di chuyển", "th": "ดำเนินการย้ายต่อ", "nl": "Migratie voortzetten", "pl": "Kontynuuj migrację", "id": "Lanjutkan Migrasi"
+    },
+    "Cancel": {
+        "en": "Cancel", "zh-Hans": "取消", "zh-Hant": "取消",
+        "hi": "रद्द करें", "es": "Cancelar", "ar": "إلغاء", "ru": "Отмена",
+        "pt": "Cancelar", "fr": "Annuler", "it": "Annulla", "ja": "キャンセル",
+        "eo": "Nuligi", "de": "Abbrechen", "ko": "취소", "tr": "İptal",
+        "vi": "Hủy", "th": "ยกเลิก", "nl": "Annuleren", "pl": "Anuluj", "id": "Batal"
+    },
+    "Link Back to Local": {
+        "en": "Link Back to Local", "zh-Hans": "链接回本地", "zh-Hant": "連結回本地",
+        "hi": "स्थानीय से लिंक करें", "es": "Enlazar de nuevo a local", "ar": "الرابط العودة إلى المحلي", "ru": "Связать обратно с локальным",
+        "pt": "Vincular de volta ao local", "fr": "Lier à nouveau au local", "it": "Collega di nuovo al locale", "ja": "ローカルにリンクし直す",
+        "eo": "Ligi reen al Loka", "de": "Zurück zu Lokal verknüpfen", "ko": "로컬로 다시 연결", "tr": "Yerele Geri Bağla",
+        "vi": "Liên kết lại cục bộ", "th": "เชื่อมโยงกลับไปที่เครื่อง", "nl": "Link terug naar lokaal", "pl": "Połącz z powrotem z lokalnym", "id": "Tautkan Kembali ke Lokal"
+    },
+    "Move Back to Local": {
+        "en": "Move Back to Local", "zh-Hans": "迁移回本地", "zh-Hant": "遷移回本地",
+        "hi": "स्थानीय में वापस ले जाएं", "es": "Mover de vuelta a local", "ar": "نقل إلى المحلي", "ru": "Вернуть в локальное",
+        "pt": "Mover de volta ao local", "fr": "Déplacer vers local", "it": "Sposta di nuovo in locale", "ja": "ローカルに戻す",
+        "eo": "Renigi al Loka", "de": "Zurück nach lokal verschieben", "ko": "로컬로 되돌리기", "tr": "Yerele Geri Taşı",
+        "vi": "Di chuyển về cục bộ", "th": "ย้ายกลับไปในเครื่อง", "nl": "Terug naar lokaal verplaatsen", "pl": "Przenieś z powrotem na dysk lokalny", "id": "Pindahkan Kembali ke Lokal"
+    },
+    "Link %lld Apps": {
+        "en": "Link %lld Apps", "zh-Hans": "链接 %lld 个应用", "zh-Hant": "連結 %lld 個應用程式",
+        "hi": "%lld ऐप्स लिंक करें", "es": "Enlazar %lld apps", "ar": "ربط %lld تطبيقات", "ru": "Связать %lld приложений",
+        "pt": "Vincular %lld apps", "fr": "Lier %lld apps", "it": "Collega %lld app", "ja": "%lld アプリをリンク",
+        "eo": "Ligi %lld aplikaĵojn", "de": "%lld Apps verknüpfen", "ko": "%lld개 앱 연결", "tr": "%lld Uygulama Bağla",
+        "vi": "Liên kết %lld ứng dụng", "th": "เชื่อมโยง %lld แอป", "nl": "%lld apps koppelen", "pl": "Połącz %lld aplikacji", "id": "Tautkan %lld Aplikasi"
     }
 }
 
