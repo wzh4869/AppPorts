@@ -16,6 +16,12 @@ struct AppMoverApp: App {
     @State private var showWelcome = true
     @State private var showAboutSheet = false
     
+    init() {
+        // 应用启动时记录系统诊断信息
+        AppLogger.shared.log("========== AppPorts 启动 ==========")
+        AppLogger.shared.logSystemInfo()
+    }
+    
     var body: some Scene {
         WindowGroup {
             Group {
@@ -104,6 +110,34 @@ struct AppMoverApp: App {
                     if panel.runModal() == .OK, let url = panel.url {
                         let logFile = url.appendingPathComponent("AppPorts_Log.txt")
                         AppLogger.shared.setLogPath(logFile)
+                    }
+                }
+                
+                Divider()
+                
+                // 日志开关
+                Button(AppLogger.shared.isLoggingEnabled ? "✅ 启用日志记录" : "启用日志记录") {
+                    AppLogger.shared.isLoggingEnabled.toggle()
+                }
+                
+                // 日志大小设置
+                Menu("最大日志大小") {
+                    let currentSize = AppLogger.shared.maxLogSize
+                    
+                    Button(currentSize == 1 * 1024 * 1024 ? "✅ 1 MB" : "1 MB") {
+                        AppLogger.shared.maxLogSize = 1 * 1024 * 1024
+                    }
+                    Button(currentSize == 5 * 1024 * 1024 ? "✅ 5 MB" : "5 MB") {
+                        AppLogger.shared.maxLogSize = 5 * 1024 * 1024
+                    }
+                    Button(currentSize == 10 * 1024 * 1024 ? "✅ 10 MB" : "10 MB") {
+                        AppLogger.shared.maxLogSize = 10 * 1024 * 1024
+                    }
+                    Button(currentSize == 50 * 1024 * 1024 ? "✅ 50 MB" : "50 MB") {
+                        AppLogger.shared.maxLogSize = 50 * 1024 * 1024
+                    }
+                    Button(currentSize == 100 * 1024 * 1024 ? "✅ 100 MB" : "100 MB") {
+                        AppLogger.shared.maxLogSize = 100 * 1024 * 1024
                     }
                 }
                 

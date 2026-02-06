@@ -11,6 +11,10 @@ import SwiftUI
 struct AppStoreSettingsView: View {
     @AppStorage("allowAppStoreMigration") private var allowAppStoreMigration = false
     @AppStorage("allowIOSAppMigration") private var allowIOSAppMigration = false
+    
+    // 日志设置绑定
+    @AppStorage("LogEnabled") private var isLoggingEnabled = true
+    @AppStorage("MaxLogSizeBytes") private var maxLogSize = 2 * 1024 * 1024
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -114,6 +118,63 @@ struct AppStoreSettingsView: View {
             .background(Color.primary.opacity(0.03))
             .cornerRadius(12)
             
+            // 日志设置
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.text.magnifyingglass")
+                                .foregroundColor(.gray)
+                            Text("日志设置")
+                                .font(.headline)
+                        }
+                        Text("管理应用运行日志和诊断信息")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $isLoggingEnabled)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .help("启用/禁用日志记录")
+                }
+                
+                if isLoggingEnabled {
+                    Divider()
+                        .padding(.vertical, 4)
+                    
+                    HStack {
+                        Text("最大日志大小:")
+                        Spacer()
+                        Picker("", selection: $maxLogSize) {
+                            Text("1 MB").tag(1 * 1024 * 1024)
+                            Text("5 MB").tag(5 * 1024 * 1024)
+                            Text("10 MB").tag(10 * 1024 * 1024)
+                            Text("50 MB").tag(50 * 1024 * 1024)
+                            Text("100 MB").tag(100 * 1024 * 1024)
+                        }
+                        .frame(width: 100)
+                    }
+                    
+                    HStack {
+                        Button("在 Finder 中查看") {
+                            AppLogger.shared.openLogInFinder()
+                        }
+                        
+                        Spacer()
+                        
+                        Button("清空日志") {
+                            AppLogger.shared.clearLog()
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(Color.primary.opacity(0.03))
+            .cornerRadius(12)
+            
             Spacer()
             
             // 底部说明
@@ -126,7 +187,7 @@ struct AppStoreSettingsView: View {
             }
         }
         .padding(24)
-        .frame(minWidth: 420, minHeight: 380)
+        .frame(minWidth: 420, minHeight: 550)
     }
 }
 

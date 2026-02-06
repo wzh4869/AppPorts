@@ -256,6 +256,7 @@ struct ContentView: View {
                 var isDir: ObjCBool = false
                 if fileManager.fileExists(atPath: savedPath, isDirectory: &isDir), isDir.boolValue {
                     self.externalDriveURL = url
+                    AppLogger.shared.logExternalDriveInfo(at: url)
                 }
             }
             
@@ -637,7 +638,11 @@ struct ContentView: View {
         openPanel.allowsMultipleSelection = false
         openPanel.canChooseDirectories = true
         openPanel.canChooseFiles = false
-        if openPanel.runModal() == .OK { self.externalDriveURL = openPanel.urls.first }
+        if openPanel.runModal() == .OK, let url = openPanel.urls.first {
+            self.externalDriveURL = url
+            // 记录外接硬盘信息
+            AppLogger.shared.logExternalDriveInfo(at: url)
+        }
     }
     
     func showError(title: String, message: String) {
@@ -816,11 +821,13 @@ struct ContentView: View {
         if isIOSApp {
             // iOS 应用：使用直接符号链接（整个 .app）
             // 注意：iOS 应用无法使用深度链接策略，Finder 中会显示箭头
-            AppLogger.shared.log("检测到 iOS 应用，使用直接符号链接")
+            AppLogger.shared.log("迁移策略: iOS 应用 (直接符号链接)", level: "STRATEGY")
             try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
             AppLogger.shared.log("已创建符号链接: \(appToMove.path.path) -> \(destinationURL.path)")
         } else {
             // Mac 原生应用：使用 Contents 深度符号链接（隐藏 Finder 箭头）
+            AppLogger.shared.log("迁移策略: Mac 原生应用 (Contents 深度链接)", level: "STRATEGY")
+            
             // Step A: Create the local .app directory (fake bundle)
             try fileManager.createDirectory(at: appToMove.path, withIntermediateDirectories: false, attributes: nil)
             
@@ -895,37 +902,81 @@ struct ContentView: View {
     }
     
     func moveBack(app: AppItem, localDestinationURL: URL, progressHandler: FileCopier.ProgressHandler?) async throws {
+        AppLogger.shared.log("===== 开始还原应用 =====")
+        AppLogger.shared.log("应用名称: \(app.name)")
+        AppLogger.shared.log("源路径 (外部): \(app.path.path)")
+        AppLogger.shared.log("目标路径 (本地): \(localDestinationURL.path)")
+        
         try checkApplicationsFolderWritePermission()
+        AppLogger.shared.log("权限检查通过")
         
         // 1. Clean up local spot
         if fileManager.fileExists(atPath: localDestinationURL.path) {
-             let resourceValues = try? localDestinationURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
+            AppLogger.shared.log("本地存在同名项目，正在清理...")
+            let resourceValues = try? localDestinationURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
             
             if resourceValues?.isSymbolicLink == true {
                 try fileManager.removeItem(at: localDestinationURL)
+                AppLogger.shared.log("已清理本地符号链接")
             } else if resourceValues?.isDirectory == true {
+                 // Check for our fake bundle structure
                  let contentsURL = localDestinationURL.appendingPathComponent("Contents")
                  let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey])
-                 if contentsResourceValues?.isSymbolicLink == true {
+                 
+                 // Also check for Wrapper symlink (iOS apps)
+                 let wrapperURL = localDestinationURL.appendingPathComponent("Wrapper")
+                 let wrapperResourceValues = try? wrapperURL.resourceValues(forKeys: [.isSymbolicLinkKey])
+                 
+                 if contentsResourceValues?.isSymbolicLink == true || wrapperResourceValues?.isSymbolicLink == true {
                      try fileManager.removeItem(at: localDestinationURL)
+                     AppLogger.shared.log("已清理本地假壳/符号链接结构")
                  } else {
-                     throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名真实文件"]))
+                     let error = NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名真实文件，无法覆盖"])
+                     AppLogger.shared.logError("还原失败", error: error)
+                     throw AppMoverError.generalError(error)
                  }
             } else {
-                 throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名文件"]))
+                 let error = NSError(domain: "AppMover", code: 6, userInfo: [NSLocalizedDescriptionKey: "本地已存在同名文件，无法覆盖"])
+                 AppLogger.shared.logError("还原失败", error: error)
+                 throw AppMoverError.generalError(error)
             }
         }
         
         // 2. Copy app back with progress
+        AppLogger.shared.log("步骤1: 开始复制应用回本地...")
+        let startTime = Date()
         let copier = FileCopier()
+        
+        // 获取源文件大小用于日志
+        let sourceSize = (try? fileManager.attributesOfItem(atPath: app.path.path)[.size] as? Int64) ?? 0
+        
         try await copier.copyDirectory(
             from: app.path,
             to: localDestinationURL,
             progressHandler: progressHandler
         )
+        let duration = Date().timeIntervalSince(startTime)
+        AppLogger.shared.log("步骤1: 复制成功")
+        
+        // 记录性能日志
+        AppLogger.shared.logMigrationPerformance(
+            appName: app.name,
+            size: sourceSize > 0 ? sourceSize : 0, // 这里的 size 可能不准确因为是文件夹，但作为参考
+            duration: duration,
+            sourcePath: app.path.path,
+            destPath: localDestinationURL.path
+        )
         
         // 3. Delete original from external drive
-        try fileManager.removeItem(at: app.path)
+        AppLogger.shared.log("步骤2: 删除外部存储源文件...")
+        do {
+            try fileManager.removeItem(at: app.path)
+            AppLogger.shared.log("步骤2: 删除成功")
+            AppLogger.shared.log("===== 还原完成 =====")
+        } catch {
+            AppLogger.shared.logError("步骤2: 删除外部文件失败 (但不影响还原)", error: error)
+            // 不抛出错误，因为还原已经完成
+        }
     }
     
     func performMoveOut() {
