@@ -9,361 +9,15 @@ import SwiftUI
 import AppKit
 
 // NOTE: AppItem and AppMoverError are in AppModels.swift
+// NOTE: AppLogger is in Services/AppLogger.swift
 
-// MARK: - 日志工具
+// MARK: - UI 组件 (已提取到 Views/Components/)
+// ProgressOverlay -> Views/Components/ProgressOverlay.swift
+// StatusBadge -> Views/Components/StatusBadge.swift
+// AppIconView -> Views/Components/AppIconView.swift
+// AppRowView -> Views/Components/AppRowView.swift
 
-/// 日志记录器 - 支持自定义位置和大小限制
-class AppLogger {
-    static let shared = AppLogger()
-    
-    private let dateFormatter: DateFormatter
-    private let fileManager = FileManager.default
-    
-    // 用户设置键
-    private let logPathKey = "LogFilePath"
-    private let maxLogSizeKey = "MaxLogSizeBytes"
-    
-    // 默认最大日志大小: 2MB
-    private let defaultMaxSize: Int64 = 2 * 1024 * 1024
-    
-    /// 当前日志文件路径
-    var logFileURL: URL {
-        if let savedPath = UserDefaults.standard.string(forKey: logPathKey) {
-            return URL(fileURLWithPath: savedPath)
-        }
-        // 默认位置: 应用支持目录
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDir = appSupport.appendingPathComponent("AppPorts")
-        try? fileManager.createDirectory(at: appDir, withIntermediateDirectories: true)
-        return appDir.appendingPathComponent("AppPorts_Log.txt")
-    }
-    
-    /// 最大日志大小（字节）
-    var maxLogSize: Int64 {
-        get {
-            let saved = UserDefaults.standard.integer(forKey: maxLogSizeKey)
-            return saved > 0 ? Int64(saved) : defaultMaxSize
-        }
-        set {
-            UserDefaults.standard.set(Int(newValue), forKey: maxLogSizeKey)
-        }
-    }
-    
-    private init() {
-        dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    /// 设置日志文件路径
-    func setLogPath(_ url: URL) {
-        UserDefaults.standard.set(url.path, forKey: logPathKey)
-        log("日志路径已更改为: \(url.path)")
-    }
-    
-    /// 在 Finder 中打开日志文件
-    func openLogInFinder() {
-        let url = logFileURL
-        if fileManager.fileExists(atPath: url.path) {
-            NSWorkspace.shared.activateFileViewerSelecting([url])
-        } else {
-            // 如果日志文件不存在，打开其所在目录
-            NSWorkspace.shared.activateFileViewerSelecting([url.deletingLastPathComponent()])
-        }
-    }
-    
-    /// 清空日志
-    func clearLog() {
-        try? fileManager.removeItem(at: logFileURL)
-        log("日志已清空")
-    }
-    
-    func log(_ message: String, level: String = "INFO") {
-        let timestamp = dateFormatter.string(from: Date())
-        let logLine = "[\(timestamp)] [\(level)] \(message)\n"
-        
-        print(logLine) // 同时打印到控制台
-        
-        let url = logFileURL
-        
-        // 检查并执行日志轮转
-        rotateLogIfNeeded()
-        
-        if let data = logLine.data(using: .utf8) {
-            if fileManager.fileExists(atPath: url.path) {
-                if let fileHandle = try? FileHandle(forWritingTo: url) {
-                    fileHandle.seekToEndOfFile()
-                    fileHandle.write(data)
-                    fileHandle.closeFile()
-                }
-            } else {
-                // 确保目录存在
-                try? fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try? data.write(to: url)
-            }
-        }
-    }
-    
-    /// 日志轮转：当日志超过最大大小时，删除旧内容
-    private func rotateLogIfNeeded() {
-        let url = logFileURL
-        guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
-              let fileSize = attributes[.size] as? Int64,
-              fileSize > maxLogSize else {
-            return
-        }
-        
-        // 读取现有内容，保留后半部分
-        if let data = try? Data(contentsOf: url),
-           let content = String(data: data, encoding: .utf8) {
-            let lines = content.components(separatedBy: "\n")
-            let keepLines = lines.suffix(lines.count / 2) // 保留后半部分
-            let newContent = keepLines.joined(separator: "\n")
-            try? newContent.write(to: url, atomically: true, encoding: .utf8)
-        }
-    }
-    
-    func logError(_ message: String, error: Error? = nil) {
-        var fullMessage = message
-        if let error = error {
-            fullMessage += " | 错误: \(error.localizedDescription) | 类型: \(type(of: error))"
-            if let nsError = error as NSError? {
-                fullMessage += " | Domain: \(nsError.domain) | Code: \(nsError.code)"
-                if let underlying = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
-                    fullMessage += " | 底层错误: \(underlying)"
-                }
-            }
-        }
-        log(fullMessage, level: "ERROR")
-    }
-    
-    /// 获取日志大小的可读字符串
-    func getLogSizeString() -> String {
-        let url = logFileURL
-        guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
-              let fileSize = attributes[.size] as? Int64 else {
-            return "0 KB"
-        }
-        
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: fileSize)
-    }
-}
 
-// MARK: - 进度弹窗
-
-/// 迁移进度弹窗
-struct ProgressOverlay: View {
-    let current: Int
-    let total: Int
-    let appName: String
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("正在迁移应用...")
-                .font(.headline)
-            
-            ProgressView(value: Double(current), total: Double(max(total, 1)))
-                .progressViewStyle(.linear)
-                .frame(width: 300)
-            
-            Text(appName)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.primary)
-            
-            Text("\(current) / \(total)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding(32)
-        .background(.regularMaterial)
-        .cornerRadius(16)
-        .shadow(radius: 20)
-    }
-}
-
-// MARK: - UI 组件
-
-/// 状态胶囊
-struct StatusBadge: View {
-    let app: AppItem
-    
-    var config: (text: String, icon: String, color: Color) {
-        if app.status == "已链接" {
-            return ("已链接", "link", .green)
-        } else if app.isRunning {
-            return ("运行中", "play.fill", .purple)
-        } else if app.isSystemApp {
-            return ("系统", "lock.fill", .gray)
-        } else if app.status == "外部" { // Legacy fallback
-            return ("外部", "externaldrive", .orange)
-        } else if app.status == "未链接" {
-            return ("未链接", "externaldrive.badge.xmark", .orange) // Or gray secondary? Orange implies attention.
-        } else {
-            return ("本地", "macmini", .secondary)
-        }
-    }
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: config.icon)
-                .font(.system(size: 9, weight: .bold))
-            
-            Text(LocalizedStringKey(config.text))
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .foregroundColor(config.color)
-        .background(config.color.opacity(0.1))
-        .clipShape(Capsule())
-        .overlay(
-            Capsule().stroke(config.color.opacity(0.2), lineWidth: 0.5)
-        )
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(LocalizedStringKey(config.text))
-        .accessibilityAddTraits(.isStaticText)
-    }
-}
-
-/// 应用图标视图 - 异步加载优化
-struct AppIconView: View {
-    let url: URL
-    @State private var icon: NSImage? = nil
-    
-    var body: some View {
-        Group {
-            if let icon = icon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } else {
-                // Placeholder while loading
-                Color.clear
-            }
-        }
-        .frame(width: 40, height: 40)
-        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-        .accessibilityHidden(true)
-        .task {
-            // Async icon loading
-            if icon == nil {
-                let loadedIcon = await Task.detached(priority: .userInitiated) {
-                    return NSWorkspace.shared.icon(forFile: url.path)
-                }.value
-                await MainActor.run { self.icon = loadedIcon }
-            }
-        }
-    }
-}
-
-/// 列表行视图
-struct AppRowView: View {
-    let app: AppItem
-    let isSelected: Bool
-    let showDeleteLinkButton: Bool
-    let showMoveBackButton: Bool
-    let onDeleteLink: (AppItem) -> Void
-    let onMoveBack: (AppItem) -> Void
-    
-    @State private var isHovered = false
-    
-    var body: some View {
-        HStack(spacing: 14) {
-            AppIconView(url: app.path)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(app.name)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                
-                HStack(spacing: 8) {
-                    StatusBadge(app: app)
-                    
-                    if let size = app.size {
-                        Text(size)
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                            .transition(.opacity)
-                    } else {
-                        Text("计算中...")
-                            .font(.system(size: 10))
-                            .foregroundColor(.secondary.opacity(0.5))
-                            .transition(.opacity)
-                    }
-                }
-            }
-            
-            Spacer()
-            
-            if showDeleteLinkButton && app.status == "已链接" {
-                Button(action: { onDeleteLink(app) }) {
-                    Image(systemName: "link.badge.plus") // Icon only for cleaner look
-                        .foregroundColor(.red)
-                }
-                .buttonStyle(.plain) // Cleaner button style
-                .padding(6)
-                .background(Color.red.opacity(0.1))
-                .clipShape(Circle())
-                .help("断开此链接并删除文件")
-            }
-            
-            if showMoveBackButton {
-                Button(action: { onMoveBack(app) }) {
-                    Image(systemName: "arrow.uturn.backward")
-                    .foregroundColor(.blue)
-                }
-                .buttonStyle(.plain)
-                .padding(6)
-                .background(Color.blue.opacity(0.1))
-                .clipShape(Circle())
-                .help("将应用迁移回本地")
-            }
-        }
-        .padding(.vertical, 10) // Increased vertical padding
-        .padding(.horizontal, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(isSelected ? Color.accentColor.opacity(0.1) : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
-        )
-        .contentShape(Rectangle())
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                self.isHovered = hovering
-            }
-        }
-        // Accessibility: Combine row into single element
-        .accessibilityElement(children: .combine)
-        // Custom Actions for VoiceOver (Swipe up/down)
-        .accessibilityActions {
-             if showDeleteLinkButton && app.status == "已链接" {
-                 Button(action: { onDeleteLink(app) }) {
-                     Text("断开") // "Disconnect"
-                 }
-             }
-             
-             if showMoveBackButton {
-                 Button(action: { onMoveBack(app) }) {
-                     Text("还原") // "Restore"
-                 }
-             }
-             
-             Button(action: {
-                 NSWorkspace.shared.activateFileViewerSelecting([app.path])
-             }) {
-                 Text("在 Finder 中显示")
-             }
-        }
-        .contextMenu {
-            Button("在 Finder 中显示") {
-                NSWorkspace.shared.activateFileViewerSelecting([app.path])
-            }
-        }
-    }
-}
 
 // MARK: - 主视图
 struct ContentView: View {
@@ -397,6 +51,13 @@ struct ContentView: View {
     @State private var progressTotal = 0
     @State private var progressAppName = ""
     @State private var isMigrating = false
+    
+    // 设置页面
+    @State private var showAppStoreSettings = false
+    
+    // 单应用复制进度
+    @State private var progressBytes: Int64 = 0
+    @State private var progressTotalBytes: Int64 = 0
 
     private let fileManager = FileManager.default
 
@@ -441,6 +102,13 @@ struct ContentView: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
                 .help("排序方式")
+                
+                // App Store Settings Button
+                Button(action: { showAppStoreSettings = true }) {
+                    Label("设置", systemImage: "gearshape")
+                }
+                .buttonStyle(.borderless)
+                .help("App Store 应用迁移设置")
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -658,6 +326,10 @@ struct ContentView: View {
                 Text("选中的 \(totalCount) 个应用包含 \(count) 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。")
             }
         }
+        // App Store 设置页面
+        .sheet(isPresented: $showAppStoreSettings) {
+            AppStoreSettingsView()
+        }
         // 进度覆盖层
         .overlay {
             if showProgress {
@@ -668,7 +340,9 @@ struct ContentView: View {
                     ProgressOverlay(
                         current: progressCurrent,
                         total: progressTotal,
-                        appName: progressAppName
+                        appName: progressAppName,
+                        copiedBytes: progressBytes,
+                        totalBytes: progressTotalBytes
                     )
                 }
             }
@@ -980,10 +654,47 @@ struct ContentView: View {
         }
     }
     
-    /// 检测应用是否来自 App Store（通过检查 _MASReceipt 文件夹）
+    /// 检测应用是否来自 App Store（包括 iOS 应用）
     func isAppStoreApp(at url: URL) -> Bool {
+        // 检测 _MASReceipt（Mac App Store 收据）
         let receiptPath = url.appendingPathComponent("Contents/_MASReceipt")
-        return fileManager.fileExists(atPath: receiptPath.path)
+        if fileManager.fileExists(atPath: receiptPath.path) {
+            return true
+        }
+        
+        // 检测 iOS 应用
+        let infoPlistURL = url.appendingPathComponent("Contents/Info.plist")
+        if let plistData = try? Data(contentsOf: infoPlistURL),
+           let plist = try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any] {
+            
+            // UIDeviceFamily: 1=iPhone, 2=iPad
+            if let deviceFamily = plist["UIDeviceFamily"] as? [Int] {
+                let hasIPhoneOrIPad = deviceFamily.contains(1) || deviceFamily.contains(2)
+                let isMacCatalyst = deviceFamily.contains(6)
+                if hasIPhoneOrIPad && !isMacCatalyst {
+                    return true
+                }
+            }
+            
+            // LSRequiresIPhoneOS 仅 iOS 应用有
+            if plist["LSRequiresIPhoneOS"] as? Bool == true {
+                return true
+            }
+            
+            // DTPlatformName 检测
+            if let platform = plist["DTPlatformName"] as? String,
+               platform == "iphoneos" || platform == "iphonesimulator" {
+                return true
+            }
+        }
+        
+        // WrappedBundle 也是 iOS 应用
+        let wrappedBundleURL = url.appendingPathComponent("WrappedBundle")
+        if fileManager.fileExists(atPath: wrappedBundleURL.path) {
+            return true
+        }
+        
+        return false
     }
 
     func checkApplicationsFolderWritePermission() throws {
@@ -1033,7 +744,7 @@ struct ContentView: View {
         }
     }
 
-    func moveAndLink(appToMove: AppItem, destinationURL: URL) throws {
+    func moveAndLink(appToMove: AppItem, destinationURL: URL, progressHandler: FileCopier.ProgressHandler?) async throws {
         AppLogger.shared.log("===== 开始迁移应用 =====")
         AppLogger.shared.log("应用名称: \(appToMove.name)")
         AppLogger.shared.log("源路径: \(appToMove.path.path)")
@@ -1060,11 +771,16 @@ struct ContentView: View {
             }
         }
         
-        // 2. Move original app to external drive (Atomic Copy + Delete with Rollback)
+        // 2. Move original app to external drive (Copy with Progress + Delete with Rollback)
         do {
-            // A. Copy to destination
+            // A. Copy to destination with progress tracking
             AppLogger.shared.log("步骤1: 开始复制应用到外部存储...")
-            try fileManager.copyItem(at: appToMove.path, to: destinationURL)
+            let copier = FileCopier()
+            try await copier.copyDirectory(
+                from: appToMove.path,
+                to: destinationURL,
+                progressHandler: progressHandler
+            )
             AppLogger.shared.log("步骤1: 复制成功")
             
             // B. Attempt to delete source
@@ -1092,18 +808,32 @@ struct ContentView: View {
              throw error
         }
         
-        // 3. Create Deep Symlink Structure
-        // Step A: Create the local .app directory (fake bundle)
-        try fileManager.createDirectory(at: appToMove.path, withIntermediateDirectories: false, attributes: nil)
+        // 3. Create Symlink Structure based on app type
+        // 检测是否为 iOS 应用（使用 WrappedBundle 结构）
+        let wrappedBundleURL = destinationURL.appendingPathComponent("WrappedBundle")
+        let isIOSApp = fileManager.fileExists(atPath: wrappedBundleURL.path)
         
-        // Step B: Create symlink for Contents inside the fake bundle
-        let localContentsURL = appToMove.path.appendingPathComponent("Contents")
-        let destinationContentsURL = destinationURL.appendingPathComponent("Contents")
-        
-        try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: destinationContentsURL)
-        
-        // Step C: (Optional but recommended) touch the directory to update timestamp for Launchpad
-        try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: appToMove.path.path)
+        if isIOSApp {
+            // iOS 应用：使用直接符号链接（整个 .app）
+            // 注意：iOS 应用无法使用深度链接策略，Finder 中会显示箭头
+            AppLogger.shared.log("检测到 iOS 应用，使用直接符号链接")
+            try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
+            AppLogger.shared.log("已创建符号链接: \(appToMove.path.path) -> \(destinationURL.path)")
+        } else {
+            // Mac 原生应用：使用 Contents 深度符号链接（隐藏 Finder 箭头）
+            // Step A: Create the local .app directory (fake bundle)
+            try fileManager.createDirectory(at: appToMove.path, withIntermediateDirectories: false, attributes: nil)
+            
+            // Step B: Create symlink for Contents inside the fake bundle
+            let localContentsURL = appToMove.path.appendingPathComponent("Contents")
+            let destinationContentsURL = destinationURL.appendingPathComponent("Contents")
+            
+            try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: destinationContentsURL)
+            AppLogger.shared.log("已创建 Contents 符号链接: \(localContentsURL.path) -> \(destinationContentsURL.path)")
+            
+            // Step C: (Optional but recommended) touch the directory to update timestamp for Launchpad
+            try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: appToMove.path.path)
+        }
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) throws {
@@ -1164,7 +894,7 @@ struct ContentView: View {
         }
     }
     
-    func moveBack(app: AppItem, localDestinationURL: URL) throws {
+    func moveBack(app: AppItem, localDestinationURL: URL, progressHandler: FileCopier.ProgressHandler?) async throws {
         try checkApplicationsFolderWritePermission()
         
         // 1. Clean up local spot
@@ -1186,31 +916,83 @@ struct ContentView: View {
             }
         }
         
-        // 2. Move app back
-        try fileManager.moveItem(at: app.path, to: localDestinationURL)
+        // 2. Copy app back with progress
+        let copier = FileCopier()
+        try await copier.copyDirectory(
+            from: app.path,
+            to: localDestinationURL,
+            progressHandler: progressHandler
+        )
+        
+        // 3. Delete original from external drive
+        try fileManager.removeItem(at: app.path)
     }
     
     func performMoveOut() {
         guard let dest = externalDriveURL else { return }
         
+        // 读取用户设置
+        let allowAppStoreMigration = UserDefaults.standard.bool(forKey: "allowAppStoreMigration")
+        let allowIOSAppMigration = UserDefaults.standard.bool(forKey: "allowIOSAppMigration")
+        
         // 获取所有选中且可迁移的应用
         let validApps = selectedLocalApps.compactMap { id in
             localApps.first { $0.id == id }
-        }.filter { !$0.isSystemApp && !$0.isRunning && $0.status != "已链接" }
+        }.filter { app in
+            // 基本过滤条件
+            guard !app.isSystemApp && !app.isRunning && app.status != "已链接" else { return false }
+            
+            // 如果启用了迁移 iOS 应用，iOS 应用可以迁移
+            if app.isIOSApp {
+                return allowIOSAppMigration
+            }
+            
+            // 如果启用了迁移 App Store 应用，App Store 应用可以迁移
+            if app.isAppStoreApp {
+                return allowAppStoreMigration
+            }
+            
+            // 普通应用始终可以迁移
+            return true
+        }
+        
+        // 检查是否有应用被跳过
+        let skippedApps = selectedLocalApps.compactMap { id in
+            localApps.first { $0.id == id }
+        }.filter { app in
+            guard !app.isSystemApp && app.status != "已链接" else { return false }
+            
+            if app.isIOSApp && !allowIOSAppMigration {
+                return true
+            }
+            if app.isAppStoreApp && !allowAppStoreMigration {
+                return true
+            }
+            return false
+        }
+        
+        if !skippedApps.isEmpty && validApps.isEmpty {
+            // 生成提示信息
+            var message = ""
+            let hasIOSApps = skippedApps.contains { $0.isIOSApp }
+            let hasAppStoreApps = skippedApps.contains { $0.isAppStoreApp && !$0.isIOSApp }
+            
+            if hasIOSApps && hasAppStoreApps {
+                message = "选中的应用包含 App Store 应用和非原生应用。\n\n如需迁移，请在设置中启用相应选项。"
+            } else if hasIOSApps {
+                message = "非原生 (iPhone/iPad) 应用不支持迁移。\n\n如需迁移，请在设置中启用「允许迁移非原生应用」选项。"
+            } else {
+                message = "App Store 应用不支持迁移，因为迁移后将无法通过 App Store 更新。\n\n如需强制迁移，请在设置中启用相应选项。"
+            }
+            
+            showError(title: "无法迁移", message: message)
+            return
+        }
         
         guard !validApps.isEmpty else { return }
         
-        // 检测是否有 App Store 应用
-        let appStoreApps = validApps.filter { isAppStoreApp(at: $0.path) }
-        
-        if !appStoreApps.isEmpty {
-            // 有 App Store 应用，保存待处理的应用列表，显示确认弹窗
-            pendingAppStoreApps = validApps
-            showAppStoreConfirm = true
-        } else {
-            // 没有 App Store 应用，直接迁移
-            executeBatchMove(apps: validApps, destination: dest)
-        }
+        // 直接迁移符合条件的应用
+        executeBatchMove(apps: validApps, destination: dest)
     }
     
     /// 批量迁移应用
@@ -1229,18 +1011,22 @@ struct ContentView: View {
                 await MainActor.run {
                     progressAppName = app.name
                     progressCurrent += 1
+                    progressBytes = 0
+                    progressTotalBytes = 0
                 }
                 
                 let destURL = destination.appendingPathComponent(app.name)
                 
                 do {
-                    try moveAndLink(appToMove: app, destinationURL: destURL)
+                    try await moveAndLink(appToMove: app, destinationURL: destURL) { progress in
+                        await MainActor.run {
+                            self.progressBytes = progress.copiedBytes
+                            self.progressTotalBytes = progress.totalBytes
+                        }
+                    }
                 } catch {
                     errors.append("\(app.name): \(error.localizedDescription)")
                 }
-                
-                // 短暂延迟让 UI 更新
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1秒
             }
             
             await MainActor.run {
@@ -1312,11 +1098,36 @@ struct ContentView: View {
     
     
     func performMoveBack(app: AppItem) {
-        let destination = localAppsURL.appendingPathComponent(app.name)
-        do {
-            try moveBack(app: app, localDestinationURL: destination)
-            scanLocalApps(); scanExternalApps()
-        } catch { showError(title: "错误", message: error.localizedDescription) }
+        isMigrating = true
+        progressTotal = 1
+        progressCurrent = 1
+        progressAppName = app.name
+        progressBytes = 0
+        progressTotalBytes = 0
+        showProgress = true
+        
+        Task {
+            let destination = localAppsURL.appendingPathComponent(app.name)
+            do {
+                try await moveBack(app: app, localDestinationURL: destination) { progress in
+                    await MainActor.run {
+                        self.progressBytes = progress.copiedBytes
+                        self.progressTotalBytes = progress.totalBytes
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    showError(title: "错误", message: error.localizedDescription)
+                }
+            }
+            
+            await MainActor.run {
+                showProgress = false
+                isMigrating = false
+                scanLocalApps()
+                scanExternalApps()
+            }
+        }
     }
     
     /// 批量迁移回本地
@@ -1340,17 +1151,22 @@ struct ContentView: View {
                 await MainActor.run {
                     progressAppName = app.name
                     progressCurrent += 1
+                    progressBytes = 0
+                    progressTotalBytes = 0
                 }
                 
                 let destination = localAppsURL.appendingPathComponent(app.name)
                 
                 do {
-                    try moveBack(app: app, localDestinationURL: destination)
+                    try await moveBack(app: app, localDestinationURL: destination) { progress in
+                        await MainActor.run {
+                            self.progressBytes = progress.copiedBytes
+                            self.progressTotalBytes = progress.totalBytes
+                        }
+                    }
                 } catch {
                     errors.append("\(app.name): \(error.localizedDescription)")
                 }
-                
-                try? await Task.sleep(nanoseconds: 100_000_000)
             }
             
             await MainActor.run {

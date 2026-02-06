@@ -1,3 +1,9 @@
+//
+//  AppModels.swift
+//  AppPorts
+//
+//  Created by shimoko.com on 2026/2/6.
+//
 
 import Foundation
 
@@ -9,11 +15,13 @@ struct AppItem: Identifiable, Equatable, Sendable {
     var status: String
     var isSystemApp: Bool = false
     var isRunning: Bool = false
+    var isAppStoreApp: Bool = false
+    var isIOSApp: Bool = false  // iPhone/iPad 应用（非 Mac 原生）
     var size: String? = nil
     var sizeBytes: Int64 = 0 // For sorting
 
     static func == (lhs: AppItem, rhs: AppItem) -> Bool {
-        lhs.id == rhs.id && lhs.name == rhs.name && lhs.status == rhs.status && lhs.isRunning == rhs.isRunning && lhs.size == rhs.size && lhs.sizeBytes == rhs.sizeBytes
+        lhs.id == rhs.id && lhs.name == rhs.name && lhs.status == rhs.status && lhs.isRunning == rhs.isRunning && lhs.size == rhs.size && lhs.sizeBytes == rhs.sizeBytes && lhs.isAppStoreApp == rhs.isAppStoreApp && lhs.isIOSApp == rhs.isIOSApp
     }
 }
 

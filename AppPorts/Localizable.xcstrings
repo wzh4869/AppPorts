@@ -1,15 +1,8 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
-    "%lld / %lld" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
-          }
-        }
-      }
+    "" : {
+
     },
     "🇨🇳 简体中文" : {
 
@@ -389,6 +382,9 @@
           }
         }
       }
+    },
+    "App Store 应用迁移设置" : {
+
     },
     "AppPorts" : {
       "extractionState" : "manual",
@@ -2093,6 +2089,12 @@
         }
       }
     },
+    "允许迁移 Mac App Store 应用" : {
+
+    },
+    "允许迁移非原生应用" : {
+
+    },
     "关于 AppPorts..." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3275,6 +3277,12 @@
         }
       }
     },
+    "启用后可以迁移来自 iPhone/iPad 的非原生 Mac 应用（使用整体链接）" : {
+
+    },
+    "启用后可以迁移来自 Mac App Store 的原生 Mac 应用" : {
+
+    },
     "在 Finder 中显示" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4450,6 +4458,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已連結"
+          }
+        }
+      }
+    },
+    "应用 %lld / %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "应用 %1$lld / %2$lld"
           }
         }
       }
@@ -6680,6 +6698,9 @@
           }
         }
       }
+    },
+    "更改设置后，请刷新应用列表以查看效果" : {
+
     },
     "未找到匹配应用" : {
       "extractionState" : "manual",
@@ -9038,6 +9059,9 @@
           }
         }
       }
+    },
+    "设置" : {
+
     },
     "设置日志位置..." : {
       "extractionState" : "manual",
@@ -11933,6 +11957,9 @@
           }
         }
       }
+    },
+    "默认情况下，来自 App Store 的应用不允许迁移，因为迁移后将无法通过 App Store 更新。" : {
+
     }
   },
   "version" : "1.1"

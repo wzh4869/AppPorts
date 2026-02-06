@@ -1,3 +1,9 @@
+//
+//  AppScanner.swift
+//  AppPorts
+//
+//  Created by shimoko.com on 2026/2/6.
+//
 
 import Foundation
 
@@ -51,23 +57,89 @@ actor AppScanner {
                 let isSystem = itemURL.path.hasPrefix("/System")
                 let isRunning = runningAppURLs.contains(itemURL)
                 
+                // 检测是否为 App Store 应用
+                let (isAppStore, isIOS) = detectAppStoreAndIOSApp(at: itemURL)
+                
                 // Logic to detect if it's "Linked" (our custom deep symlink or standard symlink)
                 if let resourceValues = try? itemURL.resourceValues(forKeys: Set(keys)) {
                     if resourceValues.isSymbolicLink == true {
                         status = "已链接"
                     } else if resourceValues.isDirectory == true {
-                        // Check deeper for "Contents" symlink (Our Deep Symlink Strategy)
+                        // Check deeper for "Contents" symlink (Mac App Deep Symlink Strategy)
                         let contentsURL = itemURL.appendingPathComponent("Contents")
                         if let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
                            contentsResourceValues.isSymbolicLink == true {
                             status = "已链接"
                         }
+                        
+                        // Check for "Wrapper" symlink (iOS App Deep Symlink Strategy)
+                        let wrapperURL = itemURL.appendingPathComponent("Wrapper")
+                        if let wrapperResourceValues = try? wrapperURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
+                           wrapperResourceValues.isSymbolicLink == true {
+                            status = "已链接"
+                        }
                     }
                 }
-                newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: isSystem, isRunning: isRunning))
+                newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: isSystem, isRunning: isRunning, isAppStoreApp: isAppStore, isIOSApp: isIOS))
             }
         }
         return sortApps(newApps)
+    }
+    
+    /// 检测是否为 App Store 应用和 iOS 应用
+    private func detectAppStoreAndIOSApp(at appURL: URL) -> (isAppStore: Bool, isIOS: Bool) {
+        let fileManager = FileManager.default
+        
+        // 检测 _MASReceipt（Mac App Store 收据）
+        let masReceiptURL = appURL.appendingPathComponent("Contents/_MASReceipt")
+        let hasMASReceipt = fileManager.fileExists(atPath: masReceiptURL.path)
+        
+        // 读取 Info.plist 检测 iOS 应用
+        let infoPlistURL = appURL.appendingPathComponent("Contents/Info.plist")
+        
+        // iOS 应用可能在 WrappedBundle 中
+        let wrappedBundleURL = appURL.appendingPathComponent("WrappedBundle")
+        let hasWrappedBundle = fileManager.fileExists(atPath: wrappedBundleURL.path)
+        
+        var isIOSApp = false
+        var isAppStore = hasMASReceipt
+        
+        if let plistData = try? Data(contentsOf: infoPlistURL),
+           let plist = try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any] {
+            
+            // 检测 UIDeviceFamily（1=iPhone, 2=iPad）
+            if let deviceFamily = plist["UIDeviceFamily"] as? [Int] {
+                // 如果包含 1 或 2，但不包含 6（Mac Catalyst），则是 iOS 应用
+                let hasIPhoneOrIPad = deviceFamily.contains(1) || deviceFamily.contains(2)
+                let isMacCatalyst = deviceFamily.contains(6) // Mac Catalyst
+                if hasIPhoneOrIPad && !isMacCatalyst {
+                    isIOSApp = true
+                    isAppStore = true  // iOS 应用都来自 App Store
+                }
+            }
+            
+            // 检测 LSRequiresIPhoneOS（仅 iOS 应用有此键）
+            if plist["LSRequiresIPhoneOS"] as? Bool == true {
+                isIOSApp = true
+                isAppStore = true
+            }
+            
+            // 检测 DTPlatformName
+            if let platform = plist["DTPlatformName"] as? String {
+                if platform == "iphoneos" || platform == "iphonesimulator" {
+                    isIOSApp = true
+                    isAppStore = true
+                }
+            }
+        }
+        
+        // 如果有 WrappedBundle，也是 iOS 应用
+        if hasWrappedBundle {
+            isIOSApp = true
+            isAppStore = true
+        }
+        
+        return (isAppStore, isIOSApp)
     }
     
     func scanExternalApps(at dir: URL, localAppsDir: URL) -> [AppItem] {
