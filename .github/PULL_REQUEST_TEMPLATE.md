@@ -16,4 +16,4 @@
 <!-- [EN] If this is a UI change, please attach screenshots for reference -->
 
 ---
-*感谢你的贡献！ | Thank you for your contribution!*
+*感谢你的贡献！ | Thank you for your contribution!*💗
