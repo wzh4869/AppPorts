@@ -24,7 +24,7 @@ struct AppRowView: View {
             AppIconView(url: app.path)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(app.name)
+                Text(app.displayName)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.primary)
                     .lineLimit(1)
