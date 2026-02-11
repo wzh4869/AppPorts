@@ -7,9 +7,32 @@
 
 import SwiftUI
 
+// MARK: - 欢迎界面
+
+/// 应用首次启动的欢迎引导界面
+///
+/// 展示应用的核心功能、权限说明，并提供语言选择。主要功能：
+/// - 🎨 精美的渐变背景和动画效果
+/// - 📱 三大核心功能展示（应用瘦身、无感链接、随时还原）
+/// - 🔐 完全磁盘访问权限检查和引导
+/// - 🌐 多语言切换（20+ 语言支持）
+///
+/// ## 界面布局
+/// 从上到下包含：
+/// 1. **应用图标和标题**：带有缩放入场动画
+/// 2. **功能特性列表**：三个主要功能说明卡片
+/// 3. **权限提示卡片**：如果未授权则显示
+/// 4. **开始使用按钮**：进入主界面
+///
+/// - Note: 界面使用弹性动画，提升用户体验
 struct WelcomeView: View {
+    /// 控制欢迎界面显示/隐藏的绑定变量
     @Binding var showWelcomeScreen: Bool
+    
+    /// 语言管理器，用于多语言切换
     @ObservedObject private var languageManager = LanguageManager.shared
+    
+    /// 控制入场动画状态
     @State private var isAnimating = false
     
     var body: some View {

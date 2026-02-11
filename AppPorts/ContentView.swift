@@ -282,7 +282,7 @@ struct ContentView: View {
                 }
             }
         }
-        .onChange(of: externalDriveURL) { newValue in
+        .onChange(of: externalDriveURL) { oldValue, newValue in
             // Persistence
             if let url = newValue {
                 UserDefaults.standard.set(url.path, forKey: "ExternalDrivePath")
@@ -814,32 +814,52 @@ struct ContentView: View {
         }
         
         // 3. Create Symlink Structure based on app type
-        // 检测是否为 iOS 应用（使用 WrappedBundle 结构）
-        let wrappedBundleURL = destinationURL.appendingPathComponent("WrappedBundle")
-        let isIOSApp = fileManager.fileExists(atPath: wrappedBundleURL.path)
-        
-        if isIOSApp {
-            // iOS 应用：使用直接符号链接（整个 .app）
-            // 注意：iOS 应用无法使用深度链接策略，Finder 中会显示箭头
-            AppLogger.shared.log("迁移策略: iOS 应用 (直接符号链接)", level: "STRATEGY")
-            try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
-            AppLogger.shared.log("已创建符号链接: \(appToMove.path.path) -> \(destinationURL.path)")
+        if appToMove.isFolder {
+            // 文件夹类型：将文件夹内的每个 .app 单独链接回本地 /Applications
+            AppLogger.shared.log("迁移策略: 应用文件夹 (内部应用逐个链接)", level: "STRATEGY")
+            let folderContents = (try? fileManager.contentsOfDirectory(at: destinationURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+            let appsInFolder = folderContents.filter { $0.pathExtension == "app" }
+            let localAppsDir = appToMove.path.deletingLastPathComponent()
+            
+            for appURL in appsInFolder {
+                let appName = appURL.lastPathComponent
+                let localAppURL = localAppsDir.appendingPathComponent(appName)
+                
+                // 创建深层符号链接（Contents 级别）
+                try fileManager.createDirectory(at: localAppURL, withIntermediateDirectories: false, attributes: nil)
+                let localContentsURL = localAppURL.appendingPathComponent("Contents")
+                let externalContentsURL = appURL.appendingPathComponent("Contents")
+                try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: externalContentsURL)
+                AppLogger.shared.log("已链接文件夹内应用: \(appName)")
+            }
         } else {
-            // Mac 原生应用：使用 Contents 深度符号链接（隐藏 Finder 箭头）
-            AppLogger.shared.log("迁移策略: Mac 原生应用 (Contents 深度链接)", level: "STRATEGY")
+            // 检测是否为 iOS 应用（使用 WrappedBundle 结构）
+            let wrappedBundleURL = destinationURL.appendingPathComponent("WrappedBundle")
+            let isIOSApp = fileManager.fileExists(atPath: wrappedBundleURL.path)
             
-            // Step A: Create the local .app directory (fake bundle)
-            try fileManager.createDirectory(at: appToMove.path, withIntermediateDirectories: false, attributes: nil)
-            
-            // Step B: Create symlink for Contents inside the fake bundle
-            let localContentsURL = appToMove.path.appendingPathComponent("Contents")
-            let destinationContentsURL = destinationURL.appendingPathComponent("Contents")
-            
-            try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: destinationContentsURL)
-            AppLogger.shared.log("已创建 Contents 符号链接: \(localContentsURL.path) -> \(destinationContentsURL.path)")
-            
-            // Step C: (Optional but recommended) touch the directory to update timestamp for Launchpad
-            try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: appToMove.path.path)
+            if isIOSApp {
+                // iOS 应用：使用直接符号链接（整个 .app）
+                // 注意：iOS 应用无法使用深度链接策略，Finder 中会显示箭头
+                AppLogger.shared.log("迁移策略: iOS 应用 (直接符号链接)", level: "STRATEGY")
+                try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
+                AppLogger.shared.log("已创建符号链接: \(appToMove.path.path) -> \(destinationURL.path)")
+            } else {
+                // Mac 原生应用：使用 Contents 深度符号链接（隐藏 Finder 箭头）
+                AppLogger.shared.log("迁移策略: Mac 原生应用 (Contents 深度链接)", level: "STRATEGY")
+                
+                // Step A: Create the local .app directory (fake bundle)
+                try fileManager.createDirectory(at: appToMove.path, withIntermediateDirectories: false, attributes: nil)
+                
+                // Step B: Create symlink for Contents inside the fake bundle
+                let localContentsURL = appToMove.path.appendingPathComponent("Contents")
+                let destinationContentsURL = destinationURL.appendingPathComponent("Contents")
+                
+                try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: destinationContentsURL)
+                AppLogger.shared.log("已创建 Contents 符号链接: \(localContentsURL.path) -> \(destinationContentsURL.path)")
+                
+                // Step C: (Optional but recommended) touch the directory to update timestamp for Launchpad
+                try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: appToMove.path.path)
+            }
         }
     }
 
@@ -1098,30 +1118,47 @@ struct ContentView: View {
         // 获取所有选中且可链接的应用
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == "未链接" || $0.status == "外部" }
+        }.filter { $0.status == "未链接" || $0.status == "外部" || $0.status == "部分链接" }
         
         guard !validApps.isEmpty else { return }
         
         isMigrating = true
-        progressTotal = validApps.count
-        progressCurrent = 0
         showProgress = true
         
         var errors: [String] = []
         
+        // 展开文件夹，收集所有需要链接的单个 .app
+        var appsToLink: [(app: AppItem, sourcePath: URL)] = []
+        for app in validApps {
+            if app.isFolder {
+                // 文件夹：遍历内部的每个 .app
+                let folderContents = (try? fileManager.contentsOfDirectory(at: app.path, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+                for itemURL in folderContents where itemURL.pathExtension == "app" {
+                    appsToLink.append((app: app, sourcePath: itemURL))
+                }
+            } else {
+                appsToLink.append((app: app, sourcePath: app.path))
+            }
+        }
+        
+        progressTotal = appsToLink.count
+        progressCurrent = 0
+        
         Task {
-            for app in validApps {
+            for item in appsToLink {
+                let appName = item.sourcePath.lastPathComponent
                 await MainActor.run {
-                    progressAppName = app.name
+                    progressAppName = appName
                     progressCurrent += 1
                 }
                 
-                let destination = localAppsURL.appendingPathComponent(app.name)
+                let destination = localAppsURL.appendingPathComponent(appName)
+                let tempAppItem = AppItem(name: appName, path: item.sourcePath, status: "未链接")
                 
                 do {
-                    try linkApp(appToLink: app, destinationURL: destination)
+                    try linkApp(appToLink: tempAppItem, destinationURL: destination)
                 } catch {
-                    errors.append("\(app.name): \(error.localizedDescription)")
+                    errors.append("\(appName): \(error.localizedDescription)")
                 }
                 
                 try? await Task.sleep(nanoseconds: 100_000_000)
@@ -1132,6 +1169,7 @@ struct ContentView: View {
                 isMigrating = false
                 selectedExternalApps.removeAll()
                 scanLocalApps()
+                scanExternalApps()
                 
                 if !errors.isEmpty {
                     showError(title: "部分链接失败", message: errors.joined(separator: "\n"))
@@ -1152,7 +1190,7 @@ struct ContentView: View {
         isMigrating = true
         progressTotal = 1
         progressCurrent = 1
-        progressAppName = app.name
+        progressAppName = app.displayName
         progressBytes = 0
         progressTotalBytes = 0
         showProgress = true
@@ -1200,7 +1238,7 @@ struct ContentView: View {
         Task {
             for app in validApps {
                 await MainActor.run {
-                    progressAppName = app.name
+                    progressAppName = app.displayName
                     progressCurrent += 1
                     progressBytes = 0
                     progressTotalBytes = 0
@@ -1216,7 +1254,7 @@ struct ContentView: View {
                         }
                     }
                 } catch {
-                    errors.append("\(app.name): \(error.localizedDescription)")
+                    errors.append("\(app.displayName): \(error.localizedDescription)")
                 }
             }
             

@@ -7,8 +7,25 @@
 
 import SwiftUI
 
+// MARK: - 关于界面
+
+/// 应用的"关于"弹窗界面
+///
+/// 展示应用的基本信息和相关链接：
+/// - 🖼 应用图标和名称
+/// - 📌 当前版本号
+/// - 💬 感谢文案
+/// - 🔗 个人网站和 GitHub 项目链接
+///
+/// ## 界面尺寸
+/// 固定尺寸：380 x 480 点
+///
+/// ## 使用方式
+/// 通过应用菜单栏的"关于"选项打开此弹窗
+///
+/// - Note: 使用 SwiftUI Environment 的 dismiss 关闭弹窗
 struct AboutView: View {
-    
+    /// 环境变量：用于关闭弹窗
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -77,11 +94,30 @@ struct AboutView: View {
     }
 }
 
+// MARK: - 链接按钮组件
+
+/// 外部链接按钮组件
+///
+/// 带有图标和悬停效果的链接按钮，用于跳转到外部网页。
+///
+/// ## 设计特点
+/// - 左侧：图标
+/// - 中间：链接文本
+/// - 右侧：外部链接箭头
+/// - 悬停时：背景颜色加深
+///
+/// - Note: 使用 SwiftUI Link 组件，点击自动在浏览器打开
 struct LinkButton: View {
+    /// 按钮显示文本（本地化字符串键）
     let titleKey: LocalizedStringKey
+    
+    /// SF Symbols 图标名称
     let icon: String
+    
+    /// 跳转的目标 URL
     let url: String
     
+    /// 是否处于悬停状态
     @State private var isHovering = false
     
     var body: some View {

@@ -8,21 +8,68 @@
 import Foundation
 import AppKit
 
+// MARK: - 应用日志管理器
+
+/// 全局日志管理服务
+///
+/// 提供完整的日志记录、管理和系统诊断功能。支持：
+/// - 📝 多级别日志（INFO、ERROR、DIAG、DISK、PERF）
+/// - 💾 日志文件自动轮转（避免占用过多空间）
+/// - 🔧 系统信息诊断（硬件、软件、磁盘）
+/// - 📊 性能监控（迁移速度、耗时统计）
+/// - ⚙️ 用户可配置（文件路径、最大大小、启用/禁用）
+///
+/// ## 使用示例
+/// ```swift
+/// // 基本日志
+/// AppLogger.shared.log("应用启动")
+///
+/// // 错误日志
+/// AppLogger.shared.logError("操作失败", error: someError)
+///
+/// // 系统诊断
+/// AppLogger.shared.logSystemInfo()
+///
+/// // 性能监控
+/// AppLogger.shared.logMigrationPerformance(
+///     appName: "Xcode.app",
+///     size: 10_000_000_000,
+///     duration: 120.5,
+///     sourcePath: "/Applications/Xcode.app",
+///     destPath: "/Volumes/External/Xcode.app"
+/// )
+/// ```
+///
+/// - Note: 所有日志同时输出到控制台和文件（如果启用）
 class AppLogger {
+    /// 单例实例
     static let shared = AppLogger()
     
+    // MARK: - 私有属性
+    
+    /// 日期格式化器（格式：yyyy-MM-dd HH:mm:ss）
     private let dateFormatter: DateFormatter
+    
+    /// 文件管理器
     private let fileManager = FileManager.default
     
-    // 用户设置键
-    private let logPathKey = "LogFilePath"
-    private let maxLogSizeKey = "MaxLogSizeBytes"
-    private let logEnabledKey = "LogEnabled"
+    /// UserDefaults 存储键
+    private let logPathKey = "LogFilePath"         // 日志文件路径
+    private let maxLogSizeKey = "MaxLogSizeBytes"  // 最大日志大小
+    private let logEnabledKey = "LogEnabled"       // 日志启用状态
     
-    // 默认最大日志大小: 2MB
+    /// 默认最大日志大小: 2MB
     private let defaultMaxSize: Int64 = 2 * 1024 * 1024
     
+    // MARK: - 公共属性
+    
     /// 日志是否启用
+    ///
+    /// 控制日志是否写入文件。关闭后：
+    /// - 日志仍会输出到控制台（用于开发调试）
+    /// - 不会写入日志文件（节省磁盘空间）
+    ///
+    /// - Note: 默认为启用状态
     var isLoggingEnabled: Bool {
         get {
             // 默认为开启 (true)
@@ -39,6 +86,12 @@ class AppLogger {
     }
     
     /// 当前日志文件路径
+    ///
+    /// 返回日志文件的完整 URL。路径来源优先级：
+    /// 1. 用户自定义路径（通过 `setLogPath(_:)` 设置）
+    /// 2. 默认路径：`~/Library/Application Support/AppPorts/AppPorts_Log.txt`
+    ///
+    /// - Note: 如果目录不存在会自动创建
     var logFileURL: URL {
         if let savedPath = UserDefaults.standard.string(forKey: logPathKey) {
             return URL(fileURLWithPath: savedPath)
@@ -51,6 +104,15 @@ class AppLogger {
     }
     
     /// 最大日志大小（字节）
+    ///
+    /// 当日志文件超过此大小时，会自动执行轮转（删除旧内容，保留后半部分）。
+    ///
+    /// 常用值：
+    /// - 1 MB = 1,048,576 字节
+    /// - 5 MB = 5,242,880 字节
+    /// - 10 MB = 10,485,760 字节
+    ///
+    /// - Note: 默认为 2 MB
     var maxLogSize: Int64 {
         get {
             let saved = UserDefaults.standard.integer(forKey: maxLogSizeKey)
@@ -61,6 +123,11 @@ class AppLogger {
         }
     }
     
+    // MARK: - 初始化
+    
+    /// 私有初始化（单例模式）
+    ///
+    /// 配置日期格式化器用于日志时间戳
     private init() {
         dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
@@ -399,8 +466,8 @@ class AppLogger {
                    let firstStore = parent.first,
                    let storeIdentifier = firstStore["DeviceIdentifier"] as? String {
                     physicalStore = storeIdentifier
-                } else if let parent = plist["Partitions"] as? [[String: Any]] {
-                    // Try to finding physical store in partitions? Usually not needed for HFS
+                } else if plist["Partitions"] != nil {
+                    // HFS+ 分区不需要额外处理物理存储
                 }
             }
         } catch {

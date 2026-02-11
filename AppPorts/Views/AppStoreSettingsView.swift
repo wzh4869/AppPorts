@@ -7,14 +7,48 @@
 
 import SwiftUI
 
-/// 设置页面
+// MARK: - 设置界面
+
+/// 应用设置配置界面
+///
+/// 提供应用迁移行为和日志管理的配置选项：
+/// - 🏪 **App Store 应用迁移**：默认禁止，启用后无法通过 App Store 更新
+/// - 📱 **iOS 应用迁移**：默认禁止，启用后 Finder 图标会显示箭头
+/// - 📝 **日志设置**：启用/禁用日志、配置最大大小、查看/清空日志
+///
+/// ## 设置项说明
+///
+/// ### 1. Mac App Store 应用迁移
+/// - 默认禁止迁移来自 Mac App Store 的应用
+/// - 迁移后应用将无法通过 App Store 自动更新
+/// - 需要手动还原到 `/Applications` 后才能更新
+///
+/// ### 2. iOS/iPad 应用迁移
+/// - 默认禁止迁移 iOS/iPadOS 应用（在 Apple Silicon Mac 上运行）
+/// - iOS 应用使用整体链接方式迁移
+/// - 迁移后 Finder 中会显示箭头图标（macOS 系统行为）
+///
+/// ### 3. 日志设置
+/// - 启用/禁用日志记录
+/// - 配置最大日志文件大小（1MB - 100MB）
+/// - 在 Finder 中查看日志文件
+/// - 清空日志文件
+///
+/// - Note: 设置使用 `@AppStorage` 自动持久化到 UserDefaults
 struct AppStoreSettingsView: View {
+    /// 是否允许迁移 Mac App Store 应用
     @AppStorage("allowAppStoreMigration") private var allowAppStoreMigration = false
+    
+    /// 是否允许迁移 iOS/iPad 应用
     @AppStorage("allowIOSAppMigration") private var allowIOSAppMigration = false
     
-    // 日志设置绑定
+    /// 是否启用日志记录
     @AppStorage("LogEnabled") private var isLoggingEnabled = true
+    
+    /// 最大日志文件大小（字节）
     @AppStorage("MaxLogSizeBytes") private var maxLogSize = 2 * 1024 * 1024
+    
+    /// 环境变量：用于关闭弹窗
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -191,10 +225,30 @@ struct AppStoreSettingsView: View {
     }
 }
 
-/// 警告横幅组件
+// MARK: - 警告横幅组件
+
+/// 警告信息横幅组件
+///
+/// 用于显示重要提示和警告信息。
+///
+/// ## 视觉设计
+/// - 左侧：彩色图标
+/// - 右侧：提示文本
+/// - 背景：和图标颜色相匹配的淡色背景
+///
+/// ## 使用场景
+/// - 橙色警告：重要注意事项
+/// - 蓝色提示：一般信息说明
+///
+/// - Note: 圆角设计，和设置项卡片风格一致
 struct WarningBanner: View {
+    /// SF Symbols 图标名称
     let icon: String
+    
+    /// 图标和背景颜色
     let color: Color
+    
+    /// 提示文本
     let text: String
     
     var body: some View {
