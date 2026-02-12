@@ -132,12 +132,12 @@ struct AppMoverApp: App {
                 Divider()
                 
                 // 日志开关
-                Button(AppLogger.shared.isLoggingEnabled ? "✅ 启用日志记录" : "启用日志记录") {
+                Button(AppLogger.shared.isLoggingEnabled ? "✅ " + "启用日志记录".localized : "启用日志记录".localized) {
                     AppLogger.shared.isLoggingEnabled.toggle()
                 }
                 
                 // 日志大小设置
-                Menu("最大日志大小") {
+                Menu("最大日志大小".localized) {
                     let currentSize = AppLogger.shared.maxLogSize
                     
                     Button(currentSize == 1 * 1024 * 1024 ? "✅ 1 MB" : "1 MB") {

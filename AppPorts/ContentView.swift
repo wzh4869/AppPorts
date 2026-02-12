@@ -78,7 +78,7 @@ struct ContentView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
-                    TextField("搜索应用 (本地 / 外部)...", text: $searchText)
+                    TextField("搜索应用 (本地 / 外部)...".localized, text: $searchText)
                         .textFieldStyle(.plain)
                         .font(.system(size: 13))
                 }
@@ -92,12 +92,12 @@ struct ContentView: View {
                 
                 // Sort Button
                 Menu {
-                    Picker("排序方式", selection: $sortOption) {
-                        Text("按名称").tag(SortOption.name)
-                        Text("按大小").tag(SortOption.size)
+                    Picker("排序方式".localized, selection: $sortOption) {
+                        Text("按名称".localized).tag(SortOption.name)
+                        Text("按大小".localized).tag(SortOption.size)
                     }
                 } label: {
-                    Label("排序", systemImage: "line.3.horizontal.decrease.circle")
+                    Label("排序".localized, systemImage: "line.3.horizontal.decrease.circle")
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
@@ -105,10 +105,10 @@ struct ContentView: View {
                 
                 // App Store Settings Button
                 Button(action: { showAppStoreSettings = true }) {
-                    Label("设置", systemImage: "gearshape")
+                    Label("设置".localized, systemImage: "gearshape")
                 }
                 .buttonStyle(.borderless)
-                .help("App Store 应用迁移设置")
+                .help("App Store 应用迁移设置".localized)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -184,12 +184,12 @@ struct ContentView: View {
                                 .foregroundColor(.accentColor)
                             
                             // 【修复点 2】直接使用字面量，SwiftUI 会自动翻译
-                            Text("请选择外部存储路径")
+                            Text("请选择外部存储路径".localized)
                                 .font(.title3)
                                 .fontWeight(.medium)
                                 .foregroundColor(.secondary)
                             
-                            Button("选择文件夹") { openPanelForExternalDrive() }
+                            Button("选择文件夹".localized) { openPanelForExternalDrive() }
                                 .buttonStyle(.borderedProminent)
                                 .controlSize(.large)
                         }
@@ -294,18 +294,18 @@ struct ContentView: View {
             scanExternalApps()
         }
         
-        .alert(LocalizedStringKey(alertTitle), isPresented: $showAlert) {
-            Button("好的", role: .cancel) { }
+        .alert(LocalizedStringKey(alertTitle.localized), isPresented: $showAlert) {
+            Button("好的".localized, role: .cancel) { }
         } message: {
-            Text(LocalizedStringKey(alertMessage))
+            Text(LocalizedStringKey(alertMessage.localized))
         }
-        .alert("发现新版本", isPresented: $showUpdateAlert) {
-            Button("前往下载", role: .none) {
+        .alert("发现新版本".localized, isPresented: $showUpdateAlert) {
+            Button("前往下载".localized, role: .none) {
                 if let url = updateURL { NSWorkspace.shared.open(url) }
             }
-            Button("以后再说", role: .cancel) {}
+            Button("以后再说".localized, role: .cancel) {}
         } message: {
-            Text(alertMessage)
+            Text(alertMessage.localized)
         }
         // App Store 应用迁移确认弹窗
         .alert("App Store 应用".localized, isPresented: $showAppStoreConfirm) {
@@ -403,7 +403,7 @@ struct ContentView: View {
                         
                     VStack(alignment: .leading, spacing: 4) {
                         // 将传入的 title 字符串转换为 Key，触发翻译
-                        Text(LocalizedStringKey(title))
+                        Text(title.localized)
                             .font(.headline)
                         
                         Text(subtitle)
@@ -417,7 +417,7 @@ struct ContentView: View {
                     
                     if let btnText = actionButtonText, let action = onAction {
 
-                        Button(LocalizedStringKey(btnText), action: action)
+                        Button(btnText.localized, action: action)
                             .controlSize(.small)
                             .buttonStyle(.bordered)
                     }
@@ -455,7 +455,7 @@ struct ContentView: View {
                     Spacer()
                     Button(action: action) {
                         HStack(spacing: 8) {
-                            Text(LocalizedStringKey(title))
+                            Text(title.localized)
                                 .fontWeight(.semibold)
                             Image(systemName: icon)
                         }
@@ -483,7 +483,7 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .foregroundColor(.secondary.opacity(0.3))
 
-                Text(LocalizedStringKey(text))
+                Text(text.localized)
                 .foregroundColor(.secondary.opacity(0.7))
             }
             .accessibilityElement(children: .combine)

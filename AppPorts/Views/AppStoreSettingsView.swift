@@ -58,7 +58,7 @@ struct AppStoreSettingsView: View {
                 Image(systemName: "app.badge.checkmark")
                     .font(.title2)
                     .foregroundColor(.blue)
-                Text("设置")
+                Text("设置".localized)
                     .font(.title2.bold())
                 
                 Spacer()
@@ -70,12 +70,12 @@ struct AppStoreSettingsView: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("关闭")
+                .help("关闭".localized)
             }
             .padding(.bottom, 8)
             
             // 说明
-            Text("默认情况下，来自 App Store 的应用不允许迁移，因为迁移后将无法通过 App Store 更新。")
+            Text("默认情况下，来自 App Store 的应用不允许迁移，因为迁移后将无法通过 App Store 更新。".localized)
                 .font(.callout)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -89,10 +89,10 @@ struct AppStoreSettingsView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "applelogo")
                                 .foregroundColor(.blue)
-                            Text("允许迁移 Mac App Store 应用")
+                            Text("允许迁移 Mac App Store 应用".localized)
                                 .font(.headline)
                         }
-                        Text("启用后可以迁移来自 Mac App Store 的原生 Mac 应用")
+                        Text("启用后可以迁移来自 Mac App Store 的原生 Mac 应用".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -108,7 +108,7 @@ struct AppStoreSettingsView: View {
                     WarningBanner(
                         icon: "exclamationmark.triangle.fill",
                         color: .orange,
-                        text: "迁移后的 App Store 应用将无法自动更新，需要手动还原后才能更新"
+                        text: "迁移后的 App Store 应用将无法自动更新，需要手动还原后才能更新".localized
                     )
                 }
             }
@@ -124,10 +124,10 @@ struct AppStoreSettingsView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "iphone")
                                 .foregroundColor(.pink)
-                            Text("允许迁移非原生应用")
+                            Text("允许迁移非原生应用".localized)
                                 .font(.headline)
                         }
-                        Text("启用后可以迁移来自 iPhone/iPad 的非原生 Mac 应用（使用整体链接）")
+                        Text("启用后可以迁移来自 iPhone/iPad 的非原生 Mac 应用（使用整体链接）".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -143,7 +143,7 @@ struct AppStoreSettingsView: View {
                     WarningBanner(
                         icon: "info.circle.fill",
                         color: .blue,
-                        text: "由于 iOS 应用结构限制，迁移后 Finder 图标会显示箭头（macOS 系统行为）"
+                        text: "由于 iOS 应用结构限制，迁移后 Finder 图标会显示箭头（macOS 系统行为）".localized
                     )
                 }
             }
@@ -159,10 +159,10 @@ struct AppStoreSettingsView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "doc.text.magnifyingglass")
                                 .foregroundColor(.gray)
-                            Text("日志设置")
+                            Text("日志设置".localized)
                                 .font(.headline)
                         }
-                        Text("管理应用运行日志和诊断信息")
+                        Text("管理应用运行日志和诊断信息".localized)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -172,7 +172,7 @@ struct AppStoreSettingsView: View {
                     Toggle("", isOn: $isLoggingEnabled)
                         .toggleStyle(.switch)
                         .labelsHidden()
-                        .help("启用/禁用日志记录")
+                        .help("启用/禁用日志记录".localized)
                 }
                 
                 if isLoggingEnabled {
@@ -180,7 +180,7 @@ struct AppStoreSettingsView: View {
                         .padding(.vertical, 4)
                     
                     HStack {
-                        Text("最大日志大小:")
+                        Text("最大日志大小".localized + ":")
                         Spacer()
                         Picker("", selection: $maxLogSize) {
                             Text("1 MB").tag(1 * 1024 * 1024)
@@ -193,13 +193,13 @@ struct AppStoreSettingsView: View {
                     }
                     
                     HStack {
-                        Button("在 Finder 中查看") {
+                        Button("在 Finder 中查看".localized) {
                             AppLogger.shared.openLogInFinder()
                         }
                         
                         Spacer()
                         
-                        Button("清空日志") {
+                        Button("清空日志".localized) {
                             AppLogger.shared.clearLog()
                         }
                     }
@@ -215,7 +215,7 @@ struct AppStoreSettingsView: View {
             HStack {
                 Image(systemName: "info.circle")
                     .foregroundColor(.secondary)
-                Text("更改设置后，请刷新应用列表以查看效果")
+                Text("更改设置后，请刷新应用列表以查看效果".localized)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

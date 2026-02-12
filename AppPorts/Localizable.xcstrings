@@ -124,9 +124,6 @@
     "✅ 100 MB" : {
 
     },
-    "✅ 启用日志记录" : {
-
-    },
     "⠃⠗ Braille" : {
 
     },
@@ -416,9 +413,6 @@
         }
       }
     },
-    "App Store 应用迁移设置" : {
-
-    },
     "AppPorts" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -546,6 +540,137 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AppPorts"
+          }
+        }
+      }
+    },
+    "Auto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تلقائي"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠥⠞⠕"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aŭtomata"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्वचालित"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Авто"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัตโนมัติ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
           }
         }
       }
@@ -2123,10 +2248,266 @@
       }
     },
     "允许迁移 Mac App Store 应用" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "السماح بترحيل تطبيقات Mac App Store"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠇⠇⠕⠺ ⠠⠍⠁⠉ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠁⠏⠏ ⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migration von Mac App Store-Apps erlauben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Mac App Store App Migration"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesi Migradon de Mac App Store Aplikaĵoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir migración de apps de Mac App Store"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autoriser la migration des apps Mac App Store"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैक ऐप स्टोर ऐप माइग्रेशन की अनुमति दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izinkan Migrasi Aplikasi Mac App Store"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti migrazione app Mac App Store"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Storeアプリの移行を許可"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Store 앱 마이그레이션 허용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migratie van Mac App Store-apps toestaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwalaj na migrację aplikacji Mac App Store"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir migração de apps da Mac App Store"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешить миграцию приложений Mac App Store"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อนุญาตให้ย้ายแอป Mac App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Store Uygulama Taşımasına İzin Ver"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cho phép di chuyển ứng dụng Mac App Store"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许迁移 Mac App Store 应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許遷移 Mac App Store 應用程式"
+          }
+        }
+      }
     },
     "允许迁移非原生应用" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "السماح بترحيل التطبيقات غير الأصلية"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠇⠇⠕⠺ ⠠⠝⠕⠝⠤⠠⠝⠁⠞⠊⠧⠑ ⠠⠁⠏⠏ ⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migration von nicht-nativen Apps erlauben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Non-Native App Migration"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesi Migradon de Ne-Denaskaj Aplikaĵoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir migración de apps no nativas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autoriser la migration d'apps non natives"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गैर-मूल ऐप माइग्रेशन की अनुमति दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izinkan Migrasi Aplikasi Non-Nativa"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti migrazione app non native"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "非ネイティブアプリの移行を許可"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비기본 앱 마이그레이션 허용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migratie van niet-native apps toestaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwalaj na migrację aplikacji nienatywnych"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir migração de apps não nativos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешить миграцию не нативных приложений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อนุญาตให้ย้ายแอปที่ไม่ใช่แอปดั้งเดิม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yerel Olmayan Uygulama Taşımasına İzin Ver"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cho phép di chuyển ứng dụng không phải gốc"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许迁移非原生应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許遷移非原生應用程式"
+          }
+        }
+      }
     },
     "关于 AppPorts..." : {
       "extractionState" : "manual",
@@ -2391,10 +2772,135 @@
       }
     },
     "最大日志大小" : {
-
-    },
-    "最大日志大小:" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أقصى حجم للسجل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠁⠭ ⠠⠇⠕⠛ ⠠⠎⠊⠵⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max. Protokollgröße"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max Log Size"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimuma Protokola Grandeco"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño máx. de registro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille max du journal"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अधिकतम लॉग आकार"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukuran Log Maks"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dim. max log"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大ログサイズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대 로그 크기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max. loggrootte"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maks. rozmiar dziennika"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho máx. do log"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Макс. размер журнала"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขนาดบันทึกสูงสุด"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maks. Günlük Boyutu"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kích thước nhật ký tối đa"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大日志大小"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大日誌大小"
+          }
+        }
+      }
     },
     "刷新列表" : {
       "extractionState" : "manual",
@@ -3316,17 +3822,529 @@
         }
       }
     },
-    "启用/禁用日志记录" : {
-
-    },
     "启用后可以迁移来自 iPhone/iPad 的非原生 Mac 应用（使用整体链接）" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قم بالتمكين لترحيل تطبيقات iPhone/iPad (باستخدام الربط السلس)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠝⠁⠃⠇⠑ ⠞⠕ ⠍⠊⠛⠗⠁⠞⠑ ⠊⠠⠏⠓⠕⠝⠑⠌⠊⠠⠏⠁⠙ ⠁⠏⠏⠎ ⠐⠣⠥⠎⠊⠝⠛ ⠎⠑⠁⠍⠇⠑⠎⠎ ⠇⠊⠝⠅⠊⠝⠛⠐⠜"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivieren, um iPhone/iPad-Apps zu migrieren (mit nahtloser Verknüpfung)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable to migrate iPhone/iPad apps (using seamless linking)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ebligu por migri iPhone/iPad-aplikaĵojn (uzante senjuntan ligadon)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habilite para migrar apps de iPhone/iPad (usando enlace perfecto)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activez pour migrer les apps iPhone/iPad (liaison transparente)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone/iPad ऐप्स को माइग्रेट करने के लिए सक्षम करें (सीमलेस लिंकिंग का उपयोग करके)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktifkan untuk memigrasikan aplikasi iPhone/iPad (menggunakan penautan mulus)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita per migrare app iPhone/iPad (collegamento continuo)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効にすると、iPhone/iPadアプリを移行できます（シームレスリンクを使用）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone/iPad 앱을 마이그레이션하려면 활성화하세요 (원활한 연결 사용)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel in om iPhone/iPad-apps te migreren (met naadloze koppeling)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz, aby migrować aplikacje iPhone/iPad (używając płynnego łączenia)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative para migrar apps de iPhone/iPad (usando vinculação perfeita)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включите для миграции приложений iPhone/iPad (с использованием бесшовной связи)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดใช้งานเพื่อย้ายแอป iPhone/iPad (ใช้การเชื่อมโยงที่ราบรื่น)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone/iPad uygulamalarını taşımak için etkinleştirin (kesintisiz bağlantı kullanarak)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật để di chuyển ứng dụng iPhone/iPad (sử dụng liên kết liền mạch)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用后可以迁移来自 iPhone/iPad 的非原生 Mac 应用（使用整体链接）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用後可以遷移來自 iPhone/iPad 的非原生 Mac 應用程式（使用整體連結）"
+          }
+        }
+      }
     },
     "启用后可以迁移来自 Mac App Store 的原生 Mac 应用" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قم بالتمكين لترحيل تطبيقات Mac الأصلية من Mac App Store"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠝⠁⠃⠇⠑ ⠞⠕ ⠍⠊⠛⠗⠁⠞⠑ ⠝⠁⠞⠊⠧⠑ ⠠⠍⠁⠉ ⠁⠏⠏⠎ ⠋⠗⠕⠍ ⠠⠍⠁⠉ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivieren, um native Mac-Apps aus dem Mac App Store zu migrieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable to migrate native Mac apps from Mac App Store"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ebligu por migri denaskajn Mac-aplikaĵojn de Mac App Store"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habilite para migrar apps nativas de Mac desde Mac App Store"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activez pour migrer les apps Mac natives du Mac App Store"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैक ऐप स्टोर से मूल मैक ऐप्स को माइग्रेट करने के लिए सक्षम करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktifkan untuk memigrasikan aplikasi Mac asli dari Mac App Store"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita per migrare app Mac native dal Mac App Store"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効にすると、Mac App StoreからネイティブMacアプリを移行できます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Store에서 기본 Mac 앱을 마이그레이션하려면 활성화하세요"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel in om native Mac-apps van Mac App Store te migreren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz, aby migrować natywne aplikacje Mac z Mac App Store"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative para migrar apps nativos do Mac da Mac App Store"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включите для миграции нативных приложений Mac из Mac App Store"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดใช้งานเพื่อย้ายแอป Mac ดั้งเดิมจาก Mac App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac App Store'dan yerel Mac uygulamalarını taşımak için etkinleştirin"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật để di chuyển ứng dụng Mac gốc từ Mac App Store"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用后可以迁移来自 Mac App Store 的原生 Mac 应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用後可以遷移來自 Mac App Store 的原生 Mac 應用程式"
+          }
+        }
+      }
     },
     "启用日志记录" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تمكين التسجيل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠝⠁⠃⠇⠑ ⠠⠇⠕⠛⠛⠊⠝⠛"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokollierung aktivieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Logging"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ebligi Protokoladon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habilitar registro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer la journalisation"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लॉगिंग सक्षम करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktifkan Pencatatan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita registrazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログ記録を有効にする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로깅 활성화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loggen inschakelen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz logowanie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habilitar Log"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить журналирование"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดใช้งานการบันทึก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Günlüğe Kaydetmeyi Etkinleştir"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bật ghi nhật ký"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用日志记录"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用日誌記錄"
+          }
+        }
+      }
+    },
+    "商店" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متجر"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠞⠕⠗⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendejo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienda"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्टोर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toko"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ストア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스토어"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sklep"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loja"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Магазин"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ร้านค้า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mağaza"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cửa hàng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "商店"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "商店"
+          }
+        }
+      }
     },
     "在 Finder 中显示" : {
       "extractionState" : "manual",
@@ -3460,7 +4478,135 @@
       }
     },
     "在 Finder 中查看" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض في Finder"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠧⠊⠑⠺ ⠊⠝ ⠠⠋⠊⠝⠙⠑⠗"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Finder anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View in Finder"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidi en Finder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver en Finder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir dans le Finder"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder में देखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lihat di Finder"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vedi nel Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderで表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에서 보기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekijk in Finder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz w Finderze"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver no Finder"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Посмотреть в Finder"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดูใน Finder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder'da Görüntüle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem trong Finder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Finder 中查看"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Finder 中查看"
+          }
+        }
+      }
     },
     "在 Finder 中查看日志" : {
       "extractionState" : "manual",
@@ -6748,10 +7894,266 @@
       }
     },
     "日志设置" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إعدادات السجل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠕⠛ ⠠⠎⠑⠞⠞⠊⠝⠛⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokolleinstellungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log Settings"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokolaj Agordoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración de registro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paramètres du journal"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लॉग सेटिंग्स"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pengaturan Log"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni log"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログ設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그 설정"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loginstellingen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawienia dziennika"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurações de Log"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки журнала"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การตั้งค่าบันทึก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Günlük Ayarları"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài đặt nhật ký"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日志设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日誌設定"
+          }
+        }
+      }
     },
     "更改设置后，请刷新应用列表以查看效果" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يرجى تحديث قائمة التطبيقات بعد تغيير الإعدادات."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠏⠇⠑⠁⠎⠑ ⠗⠑⠋⠗⠑⠎⠓ ⠞⠓⠑ ⠁⠏⠏ ⠇⠊⠎⠞ ⠁⠋⠞⠑⠗ ⠉⠓⠁⠝⠛⠊⠝⠛ ⠎⠑⠞⠞⠊⠝⠛⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte aktualisieren Sie die App-Liste nach Änderung der Einstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please refresh the app list after changing settings."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bonvolu refreŝigi la aplikaĵan liston post ŝanĝo de agordoj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualice la lista de apps después de cambiar la configuración."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veuillez actualiser la liste des apps après avoir modifié les paramètres."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेटिंग्स बदलने के बाद कृपया ऐप सूची को ताज़ा करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harap segarkan daftar aplikasi setelah mengubah pengaturan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna l'elenco delle app dopo aver modificato le impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定変更後、アプリリストを更新してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정을 변경한 후 앱 목록을 새로 고치십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vernieuw de app-lijst na het wijzigen van instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odśwież listę aplikacji po zmianie ustawień."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualize a lista de apps após alterar as configurações."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пожалуйста, обновите список приложений после изменения настроек."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โปรดรีเฟรชรายการแอปหลังจากเปลี่ยนการตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayarları değiştirdikten sonra lütfen uygulama listesini yenileyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vui lòng làm mới danh sách ứng dụng sau khi thay đổi cài đặt."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改设置后，请刷新应用列表以查看效果"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改設定後，請重新整理應用程式列表以查看效果"
+          }
+        }
+      }
     },
     "未找到匹配应用" : {
       "extractionState" : "manual",
@@ -8063,6 +9465,137 @@
         }
       }
     },
+    "由于 iOS 应用结构限制，迁移后 Finder 图标会显示箭头（macOS 系统行为）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بسبب هيكل تطبيق iOS، سيظهر رمز Finder سهمًا بعد الترحيل (سلوك نظام macOS)."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠥⠑ ⠞⠕ ⠊⠠⠕⠠⠎ ⠁⠏⠏ ⠎⠞⠗⠥⠉⠞⠥⠗⠑⠂ ⠠⠋⠊⠝⠙⠑⠗ ⠊⠉⠕⠝ ⠺⠊⠇⠇ ⠎⠓⠕⠺ ⠁⠝ ⠁⠗⠗⠕⠺ ⠁⠋⠞⠑⠗ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠐⠣⠍⠁⠉⠠⠕⠠⠎ ⠎⠽⠎⠞⠑⠍ ⠃⠑⠓⠁⠧⠊⠕⠗⠐⠜⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgrund der iOS-App-Struktur zeigt das Finder-Symbol nach der Migration einen Pfeil (macOS-Systemverhalten)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due to iOS app structure, Finder icon will show an arrow after migration (macOS system behavior)."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro strukturo de iOS-aplikaĵo, Finder-ikono montros sagon post migrado (sisteme konduto de macOS)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debido a la estructura de la app iOS, el icono del Finder mostrará una flecha (comportamiento del sistema macOS)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En raison de la structure de l'app iOS, l'icône du Finder affichera une flèche (comportement système macOS)."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS ऐप संरचना के कारण, माइग्रेशन के बाद फाइंडर आइकन एक तीर दिखाएगा (macOS सिस्टम व्यवहार)।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karena struktur aplikasi iOS, ikon Finder akan menampilkan panah setelah migrasi (perilaku sistem macOS)."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A causa della struttura dell'app iOS, l'icona del Finder mostrerà una freccia (comportamento di sistema macOS)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOSアプリの構造上、移行後のFinderアイコンには矢印が表示されます（macOSの仕様）。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS 앱 구조로 인해 마이그레이션 후 Finder 아이콘에 화살표가 표시됩니다(macOS 시스템 동작)."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vanwege de structuur van iOS-apps toont het Finder-pictogram een pijl na migratie (macOS-systeemgedrag)."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ze względu na strukturę aplikacji iOS, ikona Findera pokaże strzałkę po migracji (zachowanie systemu macOS)."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devido à estrutura do app iOS, o ícone do Finder mostrará uma seta (comportamento do sistema macOS)."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Из-за структуры приложения iOS значок Finder будет показывать стрелку (системное поведение macOS)."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เนื่องจากโครงสร้างแอป iOS ไอคอน Finder จะแสดงลูกศรหลังจากย้าย (พฤติกรรมของระบบ macOS)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS uygulama yapısı nedeniyle, Finder simgesi taşıma işleminden sonra bir ok gösterecektir (macOS sistem davranışı)."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do cấu trúc ứng dụng iOS, biểu tượng Finder sẽ hiển thị mũi tên sau khi di chuyển (hành vi hệ thống macOS)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由于 iOS 应用结构限制，迁移后 Finder 图标会显示箭头（macOS 系统行为）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由於 iOS 應用程式結構限制，遷移後 Finder 圖示會顯示箭頭（macOS 系統行為）"
+          }
+        }
+      }
+    },
     "目标已存在真实文件" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8457,7 +9990,135 @@
       }
     },
     "管理应用运行日志和诊断信息" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إدارة سجلات التطبيق والتشخيصات."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠁⠝⠁⠛⠑ ⠁⠏⠏ ⠇⠕⠛⠎ ⠁⠝⠙ ⠙⠊⠁⠛⠝⠕⠎⠞⠊⠉⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Protokolle und Diagnosen verwalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage app logs and diagnostics."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administri aplikaĵajn protokolojn kaj diagnozojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administrar registros y diagnósticos de la app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer les journaux et diagnostics de l'app."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप लॉग और निदान प्रबंधित करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kelola log dan diagnostik aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci log e diagnostica dell'app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのログと診断情報を管理します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 로그 및 진단을 관리합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beheer app-logs en diagnostiek."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzaj dziennikami i diagnostyką aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerenciar logs e diagnósticos do app."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление журналами и диагностикой."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จัดการบันทึกและการวินิจฉัยแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama günlüklerini ve tanılamayı yönetin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản lý nhật ký và chẩn đoán ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理应用运行日志和诊断信息"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理應用程式執行日誌和診斷資訊"
+          }
+        }
+      }
     },
     "系统" : {
       "extractionState" : "manual",
@@ -9115,7 +10776,135 @@
       }
     },
     "设置" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإعدادات"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠑⠞⠞⠊⠝⠛⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agordoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paramètres"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेटिंग्स"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pengaturan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instellingen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawienia"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurações"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การตั้งค่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayarlar"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài đặt"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
     },
     "设置日志位置..." : {
       "extractionState" : "manual",
@@ -10034,6 +11823,137 @@
         }
       }
     },
+    "迁移后的 App Store 应用将无法自动更新，需要手动还原后才能更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يمكن تحديث التطبيقات المنقولة تلقائيًا. استعد يدويًا للتحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑⠙ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠉⠁⠝⠝⠕⠞ ⠁⠥⠞⠕⠤⠥⠏⠙⠁⠞⠑⠲ ⠠⠗⠑⠎⠞⠕⠗⠑ ⠍⠁⠝⠥⠁⠇⠇⠽ ⠞⠕ ⠥⠏⠙⠁⠞⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrierte Apps werden nicht automatisch aktualisiert. Zum Aktualisieren manuell wiederherstellen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrated App Store apps cannot auto-update. Restore manually to update."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migritaj aplikaĵoj ne aŭtomate ĝisdatigas. Restarigu mane por ĝisdatigi."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las apps migradas no se actualizan automáticamente. Restaure manualmente para actualizar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les apps migrées ne se mettent pas à jour auto. Restaurez manuellement pour mettre à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "माइग्रेटेड ऐप स्टोर ऐप्स ऑटो-अपडेट नहीं हो सकते। अपडेट करने के लिए मैन्युअल रूप से पुनर्स्थापित करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi yang dimigrasikan tidak dapat diperbarui otomatis. Pulihkan secara manual untuk memperbarui."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le app migrate non si aggiornano automaticamente. Ripristina manualmente per aggiornare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行したアプリは自動更新されません。更新するには手動で復元してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마이그레이션된 앱은 자동 업데이트되지 않습니다. 업데이트하려면 수동으로 복원하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemigreerde apps updaten niet automatisch. Herstel handmatig om te updaten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrowane aplikacje nie aktualizują się automatycznie. Przywróć ręcznie, aby zaktualizować."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps migrados não atualizam automaticamente. Restaure manualmente para atualizar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мигрированные приложения не обновляются автом. Восстановите вручную для обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปที่ย้ายแล้วจะไม่อัปเดตอัตโนมัติ กู้คืนด้วยตนเองเพื่ออัปเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taşınan uygulamalar otomatik güncellenmez. Güncellemek için manuel olarak geri yükleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đã di chuyển không tự cập nhật. Khôi phục thủ công để cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移后的 App Store 应用将无法自动更新，需要手动还原后才能更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移後的 App Store 應用程式將無法自動更新，需要手動還原後才能更新"
+          }
+        }
+      }
+    },
     "迁移回本地" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10559,17 +12479,266 @@
       }
     },
     "选中的 %lld 个应用包含 %lld 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。" : {
+      "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تتضمن التطبيقات المحددة %lld تطبيقًا %lld من App Store. سيتم حذفها عبر Finder (صوت سلة المهملات).\n\nهذا طبيعي."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠑⠇⠑⠉⠞⠑⠙ %⠇⠇⠙ ⠁⠏⠏⠎ ⠊⠝⠉⠇⠥⠙⠑ %⠇⠇⠙ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎⠲ ⠠⠞⠓⠑⠽ ⠺⠊⠇⠇ ⠃⠑ ⠙⠑⠇⠑⠞⠑⠙ ⠧⠊⠁ ⠠⠋⠊⠝⠙⠑⠗ ⠐⠣⠞⠗⠁⠎⠓ ⠎⠕⠥⠝⠙⠐⠜⠲\n\n⠠⠞⠓⠊⠎ ⠊⠎ ⠝⠕⠗⠍⠁⠇⠂ ⠁⠏⠏⠎ ⠁⠗⠑ ⠎⠁⠋⠑⠇⠽ ⠍⠕⠧⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte %lld Apps enthalten %lld App Store-Apps. Sie werden über den Finder gelöscht.\n\nDas ist normal."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected %lld apps include %lld App Store apps. They will be deleted via Finder (trash sound).\n\nThis is normal, apps are safely moved."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elektitaj %lld aplikaĵoj inkluzivas %lld App Store-aplikaĵojn. Ili estos forigitaj per Finder.\n\nĈi tio estas normala."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las %lld apps seleccionadas incluyen %lld de App Store. Se eliminarán vía Finder (sonido papelera).\n\nEs normal, se mueven con seguridad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les %lld apps sélectionnées incluent %lld apps App Store. Elles seront supprimées via Finder.\n\nC'est normal."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चयनित %lld ऐप्स में %lld ऐप स्टोर ऐप्स शामिल हैं। उन्हें फाइंडर (कचरा ध्वनि) के माध्यम से हटा दिया जाएगा।\n\nयह सामान्य है, ऐप्स सुरक्षित रूप से स्थानांतरित हो जाते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dipilih %lld aplikasi termasuk %lld aplikasi App Store. Mereka akan dihapus melalui Finder.\n\nIni normal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le %lld app selezionate includono %lld app App Store. Verranno eliminate tramite Finder.\n\nÈ normale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択された %lld 個のアプリには %lld 個のApp Storeアプリが含まれています。Finder経由で削除されます（ゴミ箱の音）。\n\nこれは正常です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택된 %lld개 앱에 %lld개의 App Store 앱이 포함되어 있습니다. Finder를 통해 삭제됩니다.\n\n이는 정상입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geselecteerde %lld apps bevatten %lld App Store-apps. Ze worden verwijderd via Finder.\n\nDit is normaal."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybrane aplikacje (%lld) zawierają aplikacje z App Store (%lld). Zostaną usunięte przez Finder.\n\nTo normalne."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os %lld apps selecionados incluem %lld da App Store. Serão excluídos via Finder.\n\nIsso é normal."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрано %lld приложений, включая %lld из App Store. Они будут удалены через Finder.\n\nЭто нормальный процесс."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปที่เลือก %lld รายการมีแอป App Store %lld รายการ จะถูกลบผ่าน Finder\n\nนี่เป็นเรื่องปกติ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilen %lld uygulama, %lld App Store uygulaması içeriyor. Finder aracılığıyla silinecekler.\n\nBu normaldir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã chọn %lld ứng dụng bao gồm %lld ứng dụng App Store. Chúng sẽ bị xóa qua Finder.\n\nĐiều này là bình thường."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "选中的 %1$lld 个应用包含 %2$lld 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。"
+            "state" : "translated",
+            "value" : "选中的 %lld 个应用包含 %lld 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選中的 %lld 個應用程式包含 %lld 個 App Store 應用程式，遷移時會使用 Finder 刪除，您會聽到垃圾桶的聲音。\n\n這是正常的，應用程式會被安全地移動到外部儲存。"
           }
         }
       }
     },
     "选中的 %lld 个应用均来自 App Store，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جميع التطبيقات المحددة البالغ عددها %lld هي من App Store. سيتم حذفها عبر Finder أثناء الترحيل (ستسمع صوت سلة المهملات).\n\nهذا طبيعي، يتم نقل التطبيقات بأمان."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠇⠇ %⠇⠇⠙ ⠎⠑⠇⠑⠉⠞⠑⠙ ⠁⠏⠏⠎ ⠁⠗⠑ ⠋⠗⠕⠍ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑⠲ ⠠⠞⠓⠑⠽ ⠺⠊⠇⠇ ⠃⠑ ⠙⠑⠇⠑⠞⠑⠙ ⠧⠊⠁ ⠠⠋⠊⠝⠙⠑⠗ ⠙⠥⠗⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠐⠣⠽⠕⠥⠄⠇⠇ ⠓⠑⠁⠗ ⠁ ⠞⠗⠁⠎⠓ ⠎⠕⠥⠝⠙⠐⠜⠲\n\n⠠⠞⠓⠊⠎ ⠊⠎ ⠝⠕⠗⠍⠁⠇⠂ ⠁⠏⠏⠎ ⠁⠗⠑ ⠎⠁⠋⠑⠇⠽ ⠍⠕⠧⠑⠙ ⠞⠕ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle %lld ausgewählten Apps stammen aus dem App Store. Sie werden während der Migration über den Finder gelöscht (Papierkorb-Geräusch).\n\nDas ist normal, Apps werden sicher verschoben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All %lld selected apps are from App Store. They will be deleted via Finder during migration (you'll hear a trash sound).\n\nThis is normal, apps are safely moved to external drive."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉiuj %lld elektitaj aplikaĵoj estas de App Store. Ili estos forigitaj per Finder dum migrado (vi aŭdos rubsonon).\n\nĈi tio estas normala, aplikaĵoj estas sekure movitaj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las %lld apps seleccionadas son de App Store. Se eliminarán mediante Finder durante la migración (oirá un sonido de papelera).\n\nEsto es normal, las apps se mueven de forma segura."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les %lld apps sélectionnées proviennent de l'App Store. Elles seront supprimées via le Finder (son de corbeille).\n\nC'est normal, les apps sont déplacées en toute sécurité."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सभी %lld चयनित ऐप्स ऐप स्टोर से हैं। माइग्रेशन के दौरान उन्हें फाइंडर के माध्यम से हटा दिया जाएगा (आपको कचरे की आवाज़ सुनाई देगी)।\n\nयह सामान्य है, ऐप्स सुरक्षित रूप से बाहरी ड्राइव में ले जाए जाते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua %lld aplikasi yang dipilih berasal dari App Store. Mereka akan dihapus melalui Finder selama migrasi (Anda akan mendengar suara sampah).\n\nIni normal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutte le %lld app selezionate provengono dall'App Store. Verranno eliminate tramite Finder (sentirai un suono).\n\nÈ normale, le app vengono spostate in sicurezza."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択された %lld 個のアプリはすべてApp Storeからのものです。移行中にFinder経由で削除されます（ゴミ箱の音がします）。\n\nこれは正常であり、アプリは安全に外部ドライブに移動されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택된 %lld개 앱 모두 App Store 앱입니다. 마이그레이션 중 Finder를 통해 삭제됩니다(휴지통 소리가 들림).\n\n이는 정상이며 앱은 안전하게 이동됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle %lld geselecteerde apps komen uit de App Store. Ze worden verwijderd via Finder tijdens migratie (u hoort een prullenbakgeluid).\n\nDit is normaal."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystkie wybrane aplikacje (%lld) pochodzą z App Store. Zostaną usunięte przez Finder podczas migracji (usłyszysz dźwięk kosza).\n\nTo normalne."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos os %lld apps selecionados são da App Store. Serão excluídos via Finder durante a migração (som de lixo).\n\nIsso é normal, apps são movidos com segurança."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все %lld выбранных приложений из App Store. Они будут удалены через Finder (вы услышите звук корзины).\n\nЭто нормально, приложения перемещаются на внешний диск."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปที่เลือกทั้งหมด %lld แอปมาจาก App Store จะถูกลบผ่าน Finder ระหว่างการย้าย (คุณจะได้ยินเสียงถังขยะ)\n\nนี่เป็นเรื่องปกติ แอปจะถูกย้ายอย่างปลอดภัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilen %lld uygulamanın tümü App Store'dandır. Taşıma sırasında Finder aracılığıyla silineceklerdir (çöp kutusu sesi duyacaksınız).\n\nBu normaldir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tất cả %lld ứng dụng đã chọn đều từ App Store. Chúng sẽ bị xóa qua Finder trong quá trình di chuyển (bạn sẽ nghe thấy tiếng rác).\n\nĐiều này là bình thường."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选中的 %lld 个应用均来自 App Store，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選中的 %lld 個應用程式均來自 App Store，遷移時會使用 Finder 刪除，您會聽到垃圾桶的聲音。\n\n這是正常的，應用程式會被安全地移動到外部儲存。"
+          }
+        }
+      }
     },
     "选择文件夹" : {
       "extractionState" : "manual",
@@ -10960,6 +13129,137 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "部分遷移失敗"
+          }
+        }
+      }
+    },
+    "部分链接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مرتبط جزئيا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠏⠁⠗⠞⠊⠁⠇⠇⠽ ⠠⠇⠊⠝⠅⠑⠙"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilweise verknüpft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partially Linked"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte Ligita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parcialmente enlazado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partiellement lié"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आंशिक रूप से लिंक किया गया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tautan Sebagian"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parzialmente collegato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "部分的にリンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "부분적으로 연결됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gedeeltelijk gekoppeld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Częściowo połączone"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parcialmente vinculado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Частично связано"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เชื่อมโยงบางส่วน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kısmen Bağlı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liên kết một phần"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "部分链接"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "部分連結"
           }
         }
       }
@@ -11881,6 +14181,137 @@
         }
       }
     },
+    "非原生" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير أصلي"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠝⠕⠝⠤⠠⠝⠁⠞⠊⠧⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht-nativ"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non-Native"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne-Denaska"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No nativo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non natif"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गैर-मूल"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non-Nativa"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non nativo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "非ネイティブ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비기본"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet-native"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nienatywny"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não nativo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не нативный"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ใช่แอปดั้งเดิม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yerel Olmayan"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không phải gốc"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "非原生"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "非原生"
+          }
+        }
+      }
+    },
     "项目地址" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12013,7 +14444,135 @@
       }
     },
     "默认情况下，来自 App Store 的应用不允许迁移，因为迁移后将无法通过 App Store 更新。" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "افتراضيًا، لا يُسمح بترحيل تطبيقات App Store لأنه لا يمكن تحديثها عبر App Store بعد الترحيل."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠃⠽ ⠙⠑⠋⠁⠥⠇⠞⠂ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠁⠗⠑ ⠝⠕⠞ ⠁⠇⠇⠕⠺⠑⠙ ⠞⠕ ⠍⠊⠛⠗⠁⠞⠑ ⠃⠑⠉⠁⠥⠎⠑ ⠞⠓⠑⠽ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠥⠏⠙⠁⠞⠑⠙ ⠧⠊⠁ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠋⠞⠑⠗ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standardmäßig dürfen App Store-Apps nicht migriert werden, da sie nach der Migration nicht mehr über den App Store aktualisiert werden können."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By default, App Store apps are not allowed to migrate because they cannot be updated via App Store after migration."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Defaŭlte, App Store-aplikaĵoj ne rajtas migri ĉar ili ne povas esti ĝisdatigitaj per App Store post migrado."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por defecto, no se permite migrar apps de App Store porque no se pueden actualizar tras la migración."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par défaut, la migration des apps App Store est interdite car elles ne peuvent plus être mises à jour via l'App Store après."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डिफ़ॉल्ट रूप से, ऐप स्टोर ऐप्स को माइग्रेट करने की अनुमति नहीं है क्योंकि माइग्रेशन के बाद उन्हें ऐप स्टोर के माध्यम से अपडेट नहीं किया जा सकता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secara default, aplikasi App Store tidak diizinkan untuk migrasi karena tidak dapat diperbarui melalui App Store setelah migrasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per impostazione predefinita, le app dell'App Store non possono essere migrate perché non aggiornabili dopo la migrazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デフォルトでは、App Storeアプリの移行は許可されていません。移行後はApp Store経由で更新できなくなるためです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기본적으로 App Store 앱은 마이그레이션 후 App Store를 통해 업데이트할 수 없으므로 마이그레이션이 허용되지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standaard mogen App Store-apps niet worden gemigreerd omdat ze na migratie niet meer via de App Store kunnen worden bijgewerkt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Domyślnie aplikacje z App Store nie mogą być migrowane, ponieważ po migracji nie można ich aktualizować przez App Store."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por padrão, apps da App Store não podem ser migrados pois não atualizam via App Store após migração."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "По умолчанию миграция приложений App Store запрещена, так как они не обновляются через App Store после переноса."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตามค่าเริ่มต้น แอป App Store จะไม่ได้รับอนุญาตให้ย้ายเนื่องจากไม่สามารถอัปเดตผ่าน App Store ได้หลังจากย้าย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varsayılan olarak, App Store uygulamalarının taşınmasına izin verilmez çünkü taşındıktan sonra App Store üzerinden güncellenemezler."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo mặc định, ứng dụng App Store không được phép di chuyển vì chúng không thể cập nhật qua App Store sau khi di chuyển."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认情况下，来自 App Store 的应用不允许迁移，因为迁移后将无法通过 App Store 更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設情況下，來自 App Store 的應用程式不允許遷移，因為遷移後將無法透過 App Store 更新。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

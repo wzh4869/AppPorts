@@ -39,7 +39,7 @@ struct AppRowView: View {
                             .foregroundColor(.secondary)
                             .transition(.opacity)
                     } else {
-                        Text("计算中...")
+                        Text("计算中...".localized)
                             .font(.system(size: 10))
                             .foregroundColor(.secondary.opacity(0.5))
                             .transition(.opacity)
@@ -58,7 +58,7 @@ struct AppRowView: View {
                 .padding(6)
                 .background(Color.red.opacity(0.1))
                 .clipShape(Circle())
-                .help("断开此链接并删除文件")
+                .help("断开此链接并删除文件".localized)
             }
             
             if showMoveBackButton {
@@ -70,7 +70,7 @@ struct AppRowView: View {
                 .padding(6)
                 .background(Color.blue.opacity(0.1))
                 .clipShape(Circle())
-                .help("将应用迁移回本地")
+                .help("将应用迁移回本地".localized)
             }
         }
         .padding(.vertical, 10)
@@ -91,24 +91,24 @@ struct AppRowView: View {
         .accessibilityActions {
              if showDeleteLinkButton && app.status == "已链接" {
                  Button(action: { onDeleteLink(app) }) {
-                     Text("断开")
+                     Text("断开".localized)
                  }
              }
              
              if showMoveBackButton {
                  Button(action: { onMoveBack(app) }) {
-                     Text("还原")
+                     Text("还原".localized)
                  }
              }
              
              Button(action: {
                  NSWorkspace.shared.activateFileViewerSelecting([app.path])
              }) {
-                 Text("在 Finder 中显示")
+                 Text("在 Finder 中显示".localized)
              }
         }
         .contextMenu {
-            Button("在 Finder 中显示") {
+            Button("在 Finder 中显示".localized) {
                 NSWorkspace.shared.activateFileViewerSelecting([app.path])
             }
         }

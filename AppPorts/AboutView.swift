@@ -42,18 +42,18 @@ struct AboutView: View {
             
             // 2. 文字信息
             VStack(spacing: 6) {
-                Text("AppPorts")
+                Text("AppPorts".localized)
                     .font(.title)
                     .fontWeight(.bold)
                 
-                Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")".localized)
+                Text(String(format: "Version %@".localized, Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
             .padding(.bottom, 8)
             
             // 3. 描述文案
-            Text("感谢你使用本工具，外置硬盘拯救世界！")
+            Text("感谢你使用本工具，外置硬盘拯救世界！".localized)
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.primary.opacity(0.9))
@@ -63,14 +63,14 @@ struct AboutView: View {
             // 4. 链接区域 (垂直排列)
             VStack(spacing: 12) {
                 LinkButton(
-                    titleKey: "个人网站",
+                    title: "个人网站".localized,
                     icon: "globe",
                     url: "https://www.shimoko.com"
                 )
                 
 
                 LinkButton(
-                    titleKey: "项目地址",
+                    title: "项目地址".localized,
                     icon: "terminal.fill",
                     url: "https://github.com/wzh4869/AppPorts"
                 )
@@ -80,7 +80,7 @@ struct AboutView: View {
             Spacer()
             
             // 5. 关闭按钮
-            Button("关闭") {
+            Button("关闭".localized) {
                 dismiss()
             }
             .buttonStyle(.borderedProminent)
@@ -109,7 +109,7 @@ struct AboutView: View {
 /// - Note: 使用 SwiftUI Link 组件，点击自动在浏览器打开
 struct LinkButton: View {
     /// 按钮显示文本（本地化字符串键）
-    let titleKey: LocalizedStringKey
+    let title: String
     
     /// SF Symbols 图标名称
     let icon: String
@@ -126,7 +126,7 @@ struct LinkButton: View {
                 Image(systemName: icon)
                     .frame(width: 20)
                 
-                Text(titleKey)
+                Text(title)
                     .fontWeight(.medium)
                 
                 Spacer()

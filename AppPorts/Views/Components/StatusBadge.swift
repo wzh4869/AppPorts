@@ -70,7 +70,7 @@ struct StatusBadge: View {
             Image(systemName: config.icon)
                 .font(.system(size: 9, weight: .bold))
             
-            Text(LocalizedStringKey(config.text))
+            Text(config.text.localized)
                 .font(.system(size: 10, weight: .medium, design: .rounded))
         }
         .padding(.horizontal, 8)
@@ -82,7 +82,7 @@ struct StatusBadge: View {
             Capsule().stroke(config.color.opacity(0.2), lineWidth: 0.5)
         )
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(LocalizedStringKey(config.text))
+        .accessibilityLabel(config.text.localized)
         .accessibilityAddTraits(.isStaticText)
     }
 }

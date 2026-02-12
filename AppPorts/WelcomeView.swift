@@ -61,7 +61,7 @@ struct WelcomeView: View {
                         .opacity(isAnimating ? 1 : 0)
                         
                     VStack(spacing: 8) {
-                        Text("欢迎使用 AppPorts")
+                        Text("欢迎使用 AppPorts".localized)
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .foregroundStyle(
                                 LinearGradient(
@@ -71,7 +71,7 @@ struct WelcomeView: View {
                                 )
                             )
                         
-                        Text("您的应用，随处安家。") // New Key needed, or reuse generic
+                        Text("您的应用，随处安家。".localized) // New Key needed, or reuse generic
                             .font(.system(size: 16, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                     }
@@ -88,22 +88,22 @@ struct WelcomeView: View {
                     FeatureRow(
                         icon: "externaldrive.fill.badge.plus",
                         color: .orange,
-                        titleKey: "应用瘦身",
-                        descriptionKey: "将庞大的应用程序一键迁移至外部移动硬盘，释放宝贵的 Mac 本地空间。"
+                        title: "应用瘦身".localized,
+                        description: "将庞大的应用程序一键迁移至外部移动硬盘，释放宝贵的 Mac 本地空间。".localized
                     )
                     
                     FeatureRow(
                         icon: "link",
                         color: .green,
-                        titleKey: "无感链接",
-                        descriptionKey: "在原位置自动创建符号链接，系统和 Launchpad 依然能正常识别应用。"
+                        title: "无感链接".localized,
+                        description: "在原位置自动创建符号链接，系统和 Launchpad 依然能正常识别应用。".localized
                     )
                     
                     FeatureRow(
                         icon: "arrow.uturn.backward.circle.fill",
                         color: .blue,
-                        titleKey: "随时还原",
-                        descriptionKey: "需要时，可随时将应用一键完整迁回本地 /Applications 目录。"
+                        title: "随时还原".localized,
+                        description: "需要时，可随时将应用一键完整迁回本地 /Applications 目录。".localized
                     )
                 }
                 .padding(.horizontal, 40)
@@ -123,19 +123,19 @@ struct WelcomeView: View {
                                 .padding(.top, 2)
                             
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("需要“完全磁盘访问权限”")
+                                Text("需要“完全磁盘访问权限”".localized)
                                     .font(.headline)
                                     .fontDesign(.rounded)
                                     .foregroundColor(.primary)
                                 
-                                Text("应用需要读写 /Applications 目录才能工作。请在系统设置中开启。")
+                                Text("应用需要读写 /Applications 目录才能工作。请在系统设置中开启。".localized)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
                                 
                                 Button(action: openFullDiskAccessSettings) {
                                     HStack(spacing: 4) {
-                                        Text("去设置授予权限")
+                                        Text("去设置授予权限".localized)
                                         Image(systemName: "arrow.up.right")
                                             .font(.system(size: 10))
                                     }
@@ -166,7 +166,7 @@ struct WelcomeView: View {
                         }
                     }) {
                         HStack {
-                            Text("我已授权，开始使用")
+                            Text("我已授权，开始使用".localized)
                             Image(systemName: "arrow.right")
                         }
                         .font(.headline.weight(.bold))
@@ -340,8 +340,8 @@ struct LanguageSwitcher: View {
 struct FeatureRow: View {
     let icon: String
     let color: Color
-    let titleKey: LocalizedStringKey
-    let descriptionKey: LocalizedStringKey
+    let title: String
+    let description: String
     
     @State private var isHovered = false
     
@@ -358,13 +358,13 @@ struct FeatureRow: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(titleKey)
+                Text(title)
                     .font(.headline)
                     .fontDesign(.rounded)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
                 
-                Text(descriptionKey)
+                Text(description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
