@@ -70,40 +70,61 @@ struct ContentView: View {
     }
     @State private var sortOption: SortOption = .name
 
+    // MARK: - Tab
+    enum MainTab { case apps, dataDirs }
+    @State private var mainTab: MainTab = .apps
+
     var body: some View {
         VStack(spacing: 0) {
             // MARK: - Top Toolbar
             HStack(spacing: 16) {
-                // Search Bar
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    TextField("搜索应用 (本地 / 外部)...".localized, text: $searchText)
-                        .textFieldStyle(.plain)
-                        .font(.system(size: 13))
-                }
-                .padding(8)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .cornerRadius(6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 1)
-                )
-                
-                // Sort Button
-                Menu {
-                    Picker("排序方式".localized, selection: $sortOption) {
-                        Text("按名称".localized).tag(SortOption.name)
-                        Text("按大小".localized).tag(SortOption.size)
+                // Tab 切换器
+                HStack(spacing: 2) {
+                    TabButton(title: "📦 " + "应用".localized, isSelected: mainTab == .apps) {
+                        withAnimation { mainTab = .apps }
                     }
-                } label: {
-                    Label("排序".localized, systemImage: "line.3.horizontal.decrease.circle")
+                    TabButton(title: "🗄️ " + "数据目录".localized, isSelected: mainTab == .dataDirs) {
+                        withAnimation { mainTab = .dataDirs }
+                    }
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                .help("排序方式")
-                
-                // App Store Settings Button
+                .padding(3)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .cornerRadius(8)
+
+                if mainTab == .apps {
+                    // Search Bar
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                        TextField("搜索应用 (本地 / 外部)...".localized, text: $searchText)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 13))
+                    }
+                    .padding(8)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .cornerRadius(6)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+                    )
+
+                    // Sort Button
+                    Menu {
+                        Picker("排序方式".localized, selection: $sortOption) {
+                            Text("按名称".localized).tag(SortOption.name)
+                            Text("按大小".localized).tag(SortOption.size)
+                        }
+                    } label: {
+                        Label("排序".localized, systemImage: "line.3.horizontal.decrease.circle")
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
+                    .help("排序方式")
+                }
+
+                Spacer()
+
+                // App Store Settings Button（始终显示）
                 Button(action: { showAppStoreSettings = true }) {
                     Label("设置".localized, systemImage: "gearshape")
                 }
@@ -113,9 +134,18 @@ struct ContentView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
             .background(.ultraThinMaterial)
-            
+
             Divider()
-            
+
+            // MARK: - 主内容区（Tab 切换）
+            if mainTab == .dataDirs {
+                DataDirsView(
+                    externalDriveURL: externalDriveURL,
+                    localApps: localApps,
+                    onSelectExternalDrive: openPanelForExternalDrive
+                )
+            } else {
+
             HSplitView {
                 // --- 左侧：本地应用 ---
                 VStack(spacing: 0) {
@@ -246,9 +276,10 @@ struct ContentView: View {
                 .background(Color(nsColor: .windowBackgroundColor))
             }
             .frame(minWidth: 320, maxWidth: .infinity)
+            } // end HSplitView for mainTab == .apps
+            } // end else for mainTab == .apps
         }
-    }
-    .frame(minWidth: 900, minHeight: 600) // Increased window size
+        .frame(minWidth: 900, minHeight: 600) // Increased window size
         .onAppear {
             // Restore persistence
             if let savedPath = UserDefaults.standard.string(forKey: "ExternalDrivePath") {
@@ -487,6 +518,28 @@ struct ContentView: View {
                 .foregroundColor(.secondary.opacity(0.7))
             }
             .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// Tab 切换按钮（顶部工具栏用）
+    struct TabButton: View {
+        let title: String
+        let isSelected: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                Text(title.localized)
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? .accentColor : .secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+                    )
+            }
+            .buttonStyle(.plain)
         }
     }
 
