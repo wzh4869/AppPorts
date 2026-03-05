@@ -254,6 +254,11 @@ struct DataDirsView: View {
                 // 外部存储路径提示
                 if externalDriveURL == nil { externalDriveWarning }
 
+                // 统计栏
+                if !libraryItems.isEmpty {
+                    statsBar(items: libraryItems)
+                }
+
                 ZStack {
                     Color(nsColor: .windowBackgroundColor).ignoresSafeArea()
 
