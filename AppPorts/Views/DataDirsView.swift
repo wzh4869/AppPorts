@@ -63,23 +63,15 @@ struct DataDirsView: View {
     var body: some View {
         VStack(spacing: 0) {
             // ── 顶部 Tab 选择器 ──────────────────────────────────
-            HStack(spacing: 0) {
-                ForEach(DataTab.allCases, id: \.self) { tab in
-                    Button(action: { withAnimation { selectedTab = tab } }) {
-                        VStack(spacing: 4) {
-                            Text(tab.rawValue.localized)
-                                .font(.system(size: 13, weight: selectedTab == tab ? .semibold : .regular))
-                                .foregroundColor(selectedTab == tab ? .accentColor : .secondary)
-                            Rectangle()
-                                .fill(selectedTab == tab ? Color.accentColor : Color.clear)
-                                .frame(height: 2)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 12)
-                        .padding(.bottom, 0)
+            HStack(spacing: 16) {
+                Picker("", selection: $selectedTab) {
+                    ForEach(DataTab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue.localized).tag(tab)
                     }
-                    .buttonStyle(.plain)
                 }
+                .pickerStyle(.segmented)
+                .frame(width: 200)
+
                 Spacer()
 
                 // 刷新按钮
@@ -88,13 +80,14 @@ struct DataDirsView: View {
                         .rotationEffect(.degrees(isScanning ? 360 : 0))
                         .animation(isScanning ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isScanning)
                 }
-                .buttonStyle(.borderless)
-                .padding(.trailing, 16)
-                .padding(.top, 8)
+                .buttonStyle(.plain)
+                .foregroundColor(.secondary)
                 .disabled(isScanning)
                 .help("刷新列表")
             }
-            .background(.ultraThinMaterial)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(.regularMaterial)
 
             Divider()
 
@@ -189,44 +182,43 @@ struct DataDirsView: View {
         HSplitView {
             // 左侧：应用选择列表
             VStack(spacing: 0) {
-                HStack {
+                HStack(spacing: 8) {
+                    Image(systemName: "app.badge")
+                        .font(.system(size: 14))
+                        .foregroundColor(.accentColor)
                     Text("选择应用".localized)
-                        .font(.headline)
-                        .padding(.leading, 16)
+                        .font(.system(size: 13, weight: .semibold))
                     Spacer()
+                    if !localApps.isEmpty {
+                        let count = localApps.filter { !$0.isFolder }.count
+                        Text("\(count)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.primary.opacity(0.06))
+                            .clipShape(Capsule())
+                    }
                 }
+                .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
+                .background(.regularMaterial)
                 Divider()
 
                 if localApps.isEmpty {
                     ContentView.EmptyStateView(icon: "app.dashed", text: "无本地应用")
                 } else {
                     let filteredApps = localApps.filter { !$0.isFolder }
-                    List(filteredApps, id: \.id) { app in
-                        HStack(spacing: 10) {
-                            AppIconView(url: app.path)
-                                .frame(width: 28, height: 28)
-                            Text(app.name.replacingOccurrences(of: ".app", with: ""))
-                                .font(.system(size: 13))
-                                .lineLimit(1)
-                            Spacer()
+                    ScrollView {
+                        LazyVStack(spacing: 2) {
+                            ForEach(filteredApps, id: \.id) { app in
+                                AppListRow(app: app, isSelected: selectedApp?.id == app.id)
+                                    .onTapGesture { selectedApp = app }
+                            }
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 6)
                         .padding(.horizontal, 8)
-                        .background(
-                            selectedApp?.id == app.id
-                            ? Color.accentColor.opacity(0.12)
-                            : Color.clear
-                        )
-                        .cornerRadius(6)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedApp = app
-                        }
                     }
-                    .listStyle(.plain)
                 }
             }
             .frame(minWidth: 200, maxWidth: 280)
@@ -317,22 +309,24 @@ struct DataDirsView: View {
         formatter.allowedUnits = [.useMB, .useGB]
 
         return HStack(spacing: 20) {
-            Label("\(items.count) 个目录", systemImage: "folder")
+            Label("\(items.count) 个目录", systemImage: "folder.fill")
+                .foregroundColor(.secondary)
             if total > 0 {
-                Label(formatter.string(fromByteCount: total) + " 可迁移", systemImage: "arrow.up.circle")
-                    .foregroundColor(.blue)
+                Label(formatter.string(fromByteCount: total) + " 可释放", systemImage: "sparkles")
+                    .foregroundColor(.accentColor)
+                    .fontWeight(.medium)
             }
             if linked > 0 {
-                Label("\(linked) 个已链接", systemImage: "link")
+                Label("\(linked) 个已链接", systemImage: "link.circle.fill")
                     .foregroundColor(.green)
             }
             Spacer()
         }
-        .font(.system(size: 11))
-        .foregroundColor(.secondary)
+        .font(.system(size: 12))
         .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial)
+        .overlay(Rectangle().frame(height: 1).foregroundColor(Color.primary.opacity(0.05)), alignment: .bottom)
     }
 
     private var loadingView: some View {
@@ -507,6 +501,54 @@ struct DataDirsView: View {
                     self.showError = true
                 }
             }
+        }
+    }
+}
+
+// MARK: - 应用选择列表行
+
+/// 左侧应用列表行视图（带 Hover 和选中态）
+private struct AppListRow: View {
+    let app: AppItem
+    let isSelected: Bool
+
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            // 选中指示条
+            RoundedRectangle(cornerRadius: 2)
+                .fill(isSelected ? Color.accentColor : .clear)
+                .frame(width: 3, height: 24)
+
+            AppIconView(url: app.path)
+                .frame(width: 32, height: 32)
+                .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
+
+            Text(app.name.replacingOccurrences(of: ".app", with: ""))
+                .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                .foregroundColor(isSelected ? .primary : .primary.opacity(0.85))
+                .lineLimit(1)
+
+            Spacer()
+
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.accentColor)
+            }
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isSelected
+                      ? Color.accentColor.opacity(0.12)
+                      : (isHovered ? Color.primary.opacity(0.04) : .clear))
+        )
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) { isHovered = hovering }
         }
     }
 }

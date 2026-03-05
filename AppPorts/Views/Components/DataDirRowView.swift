@@ -20,7 +20,7 @@ struct DataDirRowView: View {
         HStack(spacing: 12) {
             // 图标
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(iconColor.opacity(0.12))
                     .frame(width: 38, height: 38)
                 Image(systemName: item.type.icon)
@@ -75,13 +75,18 @@ struct DataDirRowView: View {
             // 操作按钮
             operationButtons
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .padding(.horizontal, 12)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(isSelected
-                      ? Color.accentColor.opacity(0.1)
-                      : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
+                      ? Color.accentColor.opacity(0.15)
+                      : (isHovered ? Color(nsColor: .controlBackgroundColor) : .clear))
+                .shadow(color: isHovered && !isSelected ? Color.black.opacity(0.04) : .clear, radius: 4, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(isSelected ? Color.accentColor.opacity(0.3) : (isHovered ? Color.primary.opacity(0.05) : .clear), lineWidth: 1)
         )
         .contentShape(Rectangle())
         .onHover { hovering in
@@ -103,33 +108,41 @@ struct DataDirRowView: View {
             // 不可迁移的目录：显示禁用按钮 + tooltip
             Image(systemName: "lock.fill")
                 .font(.system(size: 13))
-                .foregroundColor(.secondary)
+                .foregroundColor(.secondary.opacity(0.5))
                 .help(item.nonMigratableReason ?? "此目录不支持迁移")
         } else if item.status == "已链接" {
             // 已链接：显示「还原」按钮
             Button(action: { onRestore(item) }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.uturn.backward")
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.uturn.backward.circle.fill")
                     Text("还原".localized)
                 }
                 .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule().fill(Color.orange.gradient)
+                )
             }
-            .buttonStyle(.bordered)
-            .tint(.orange)
-            .controlSize(.small)
+            .buttonStyle(.plain)
             .help("将数据目录还原到本地")
         } else if item.status == "本地" {
             // 本地：显示「迁移」按钮
             Button(action: { onMigrate(item) }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.right")
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.right.circle.fill")
                     Text("迁移".localized)
                 }
                 .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule().fill(Color.accentColor.gradient)
+                )
             }
-            .buttonStyle(.bordered)
-            .tint(.blue)
-            .controlSize(.small)
+            .buttonStyle(.plain)
             .help("将数据目录迁移到外部存储")
         }
     }
@@ -149,13 +162,18 @@ struct PriorityBadge: View {
     let priority: DataDirPriority
 
     var body: some View {
-        Text(priority.rawValue)
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundColor(color)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2)
-            .background(color.opacity(0.12))
-            .clipShape(Capsule())
+        HStack(spacing: 4) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(priority.rawValue)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(color)
+        }
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(color.opacity(0.1))
+        .clipShape(Capsule())
     }
 
     private var color: Color {
@@ -173,13 +191,25 @@ struct DataDirStatusBadge: View {
     let status: String
 
     var body: some View {
-        Text(status.localized)
-            .font(.system(size: 10, weight: .semibold))
-            .foregroundColor(foregroundColor)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(backgroundColor)
-            .clipShape(Capsule())
+        HStack(spacing: 4) {
+            Image(systemName: statusIcon)
+                .font(.system(size: 8))
+            Text(status.localized)
+                .font(.system(size: 10, weight: .medium))
+        }
+        .foregroundColor(foregroundColor)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(backgroundColor)
+        .clipShape(Capsule())
+    }
+
+    private var statusIcon: String {
+        switch status {
+        case "已链接": return "link"
+        case "本地":   return "internaldrive"
+        default:       return "questionmark"
+        }
     }
 
     private var foregroundColor: Color {
@@ -192,9 +222,9 @@ struct DataDirStatusBadge: View {
 
     private var backgroundColor: Color {
         switch status {
-        case "已链接": return .green.opacity(0.15)
-        case "本地":   return Color(nsColor: .controlBackgroundColor)
-        default:       return .gray.opacity(0.1)
+        case "已链接": return .green.opacity(0.12)
+        case "本地":   return Color.primary.opacity(0.05)
+        default:       return .gray.opacity(0.08)
         }
     }
 }
