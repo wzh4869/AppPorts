@@ -415,7 +415,7 @@ struct DataDirsView: View {
             return
         }
 
-        let destPath = dest.appendingPathComponent(item.path.lastPathComponent)
+        let destPath = dest.appendingPathComponent(item.type.rawValue).appendingPathComponent(item.path.lastPathComponent)
         let sizeInfo = item.size.map { "，大小约 \($0)" } ?? ""
 
         confirmTitle = "迁移数据目录"
@@ -427,7 +427,7 @@ struct DataDirsView: View {
 
         迁移完成后，原路径将自动变成符号链接，相关工具无需任何修改即可继续使用。
         """
-        confirmAction = { performMigrate(item, to: dest) }
+        confirmAction = { performMigrate(item, to: destPath.deletingLastPathComponent()) }
         showConfirm = true
     }
 

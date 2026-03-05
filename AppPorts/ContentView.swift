@@ -914,6 +914,10 @@ struct ContentView: View {
                 try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: appToMove.path.path)
             }
         }
+        
+        // 锁定外部结构，防止被应用内自动更新机制 (如 Sparkle/ShipIt) 意外移至废纸篓
+        AppLogger.shared.log("锁定外部项目，防止被修改或删除...")
+        try? fileManager.setAttributes([.immutable: true], ofItemAtPath: destinationURL.path)
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) throws {
@@ -1041,8 +1045,9 @@ struct ContentView: View {
         )
         
         // 3. Delete original from external drive
-        AppLogger.shared.log("步骤2: 删除外部存储源文件...")
+        AppLogger.shared.log("步骤2: 解锁并删除外部存储源文件...")
         do {
+            try? fileManager.setAttributes([.immutable: false], ofItemAtPath: app.path.path)
             try fileManager.removeItem(at: app.path)
             AppLogger.shared.log("步骤2: 删除成功")
             AppLogger.shared.log("===== 还原完成 =====")
