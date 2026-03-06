@@ -61,6 +61,40 @@ struct ContentView: View {
 
     private let fileManager = FileManager.default
 
+    /// 某些会自更新的应用（如 VS Code / Cursor / Electron + Squirrel / Sparkle）
+    /// 对 bundle 结构假设更强，使用 Contents 深层链接时更容易在更新后损坏入口。
+    /// 这类应用回退到整个 .app 的传统符号链接兼容性更好。
+    private func prefersWholeAppSymlink(for appURL: URL) -> Bool {
+        let frameworkCandidates = [
+            "Contents/Frameworks/Squirrel.framework",
+            "Contents/Frameworks/Sparkle.framework"
+        ]
+
+        for relativePath in frameworkCandidates {
+            if fileManager.fileExists(atPath: appURL.appendingPathComponent(relativePath).path) {
+                return true
+            }
+        }
+
+        let nameCandidates = ["shipit", "autoupdate", "updater", "update"]
+        let searchRoots = [
+            appURL.appendingPathComponent("Contents/MacOS"),
+            appURL.appendingPathComponent("Contents/Frameworks")
+        ]
+
+        for root in searchRoots {
+            let items = (try? fileManager.contentsOfDirectory(at: root, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+            if items.contains(where: { item in
+                let name = item.lastPathComponent.lowercased()
+                return nameCandidates.contains(where: { name.contains($0) })
+            }) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     // Monitors
     @State private var localMonitor: FolderMonitor?
     @State private var externalMonitor: FolderMonitor?
@@ -836,11 +870,18 @@ struct ContentView: View {
             // 检测是否为 iOS 应用（使用 WrappedBundle 结构）
             let wrappedBundleURL = destinationURL.appendingPathComponent("WrappedBundle")
             let isIOSApp = fileManager.fileExists(atPath: wrappedBundleURL.path)
+            let shouldUseWholeAppSymlink = prefersWholeAppSymlink(for: destinationURL)
             
             if isIOSApp {
                 // iOS 应用：使用直接符号链接（整个 .app）
                 // 注意：iOS 应用无法使用深度链接策略，Finder 中会显示箭头
                 AppLogger.shared.log("迁移策略: iOS 应用 (直接符号链接)", level: "STRATEGY")
+                try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
+                AppLogger.shared.log("已创建符号链接: \(appToMove.path.path) -> \(destinationURL.path)")
+            } else if shouldUseWholeAppSymlink {
+                // 某些自更新应用（如 Squirrel / Sparkle）更依赖完整 bundle 结构。
+                // 对它们使用传统整体符号链接，兼容性比 Contents 深链更好。
+                AppLogger.shared.log("迁移策略: 自更新应用 (整体符号链接兼容模式)", level: "STRATEGY")
                 try fileManager.createSymbolicLink(at: appToMove.path, withDestinationURL: destinationURL)
                 AppLogger.shared.log("已创建符号链接: \(appToMove.path.path) -> \(destinationURL.path)")
             } else {
@@ -891,14 +932,21 @@ struct ContentView: View {
             }
         }
         
-        // 2. Create Deep Symlink Structure
-        try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: false, attributes: nil)
-        
-        let localContentsURL = destinationURL.appendingPathComponent("Contents")
-        let externalContentsURL = appToLink.path.appendingPathComponent("Contents")
-        
-        try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: externalContentsURL)
-        
+        let shouldUseWholeAppSymlink = prefersWholeAppSymlink(for: appToLink.path)
+
+        if shouldUseWholeAppSymlink {
+            AppLogger.shared.log("链接策略: 自更新应用 (整体符号链接兼容模式)", level: "STRATEGY")
+            try fileManager.createSymbolicLink(at: destinationURL, withDestinationURL: appToLink.path)
+        } else {
+            // 2. Create Deep Symlink Structure
+            try fileManager.createDirectory(at: destinationURL, withIntermediateDirectories: false, attributes: nil)
+
+            let localContentsURL = destinationURL.appendingPathComponent("Contents")
+            let externalContentsURL = appToLink.path.appendingPathComponent("Contents")
+
+            try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: externalContentsURL)
+        }
+
         try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: destinationURL.path)
     }
     
