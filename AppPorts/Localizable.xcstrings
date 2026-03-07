@@ -18831,7 +18831,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bitte zuerst externen Speicherpfad auswählen"
+            "value": "Bitte zuerst einen externen Speicherpfad auswählen"
           }
         },
         "en": {
@@ -18843,7 +18843,7 @@
         "eo": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bonvolu elekti eksteran stokadon unue"
+            "value": "Bonvolu unue elekti eksteran stokadan vojon"
           }
         },
         "es": {
@@ -18861,19 +18861,19 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "पहले एक बाहरी संग्रहण पथ चुनें"
+            "value": "कृपया पहले बाहरी संग्रहण पथ चुनें"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Silakan pilih jalur penyimpanan eksternal terlebih dahulu"
+            "value": "Harap pilih jalur penyimpanan eksternal terlebih dahulu"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Selezionare prima un percorso di archiviazione esterno"
+            "value": "Seleziona prima un percorso di archiviazione esterna"
           }
         },
         "ja": {
@@ -18909,13 +18909,13 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Сначала выберите путь внешнего хранилища"
+            "value": "Сначала выберите путь к внешнему хранилищу"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "กรุณาเลือกเส้นทางพื้นที่จัดเก็บภายนอกก่อน"
+            "value": "กรุณาเลือกพาธที่เก็บข้อมูลภายนอกก่อน"
           }
         },
         "tr": {
@@ -40303,31 +40303,31 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld تطبيقات)"
           }
         },
         "br": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ ⠐⠣%⠇⠇⠙ ⠁⠏⠏⠎⠐⠜"
+            "value": "%@ ⠐⠣%⠇⠇⠙ ⠠⠁⠏⠏⠎⠐⠜"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld Apps)"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld Apps)"
           }
         },
         "eo": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld aplikaĵoj)"
           }
         },
         "es": {
@@ -40345,31 +40345,31 @@
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld ऐप्स)"
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld aplikasi)"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld app)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld 個のアプリ)"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld 개 앱)"
           }
         },
         "nl": {
@@ -40381,7 +40381,7 @@
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld aplikacji)"
           }
         },
         "pt": {
@@ -40393,25 +40393,25 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld приложений)"
           }
         },
         "th": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld แอป)"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld uygulama)"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld apps)"
+            "value": "%@ (%lld ứng dụng)"
           }
         },
         "zh-Hans": {
@@ -40423,7 +40423,7 @@
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ (%lld 个應用程式)"
+            "value": "%@ (%lld 個應用程式)"
           }
         }
       }
@@ -44092,6 +44092,137 @@
           "stringUnit": {
             "state": "translated",
             "value": "⠠⠎⠊⠵⠑⠒ %@"
+          }
+        }
+      }
+    },
+    "，大小约 %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", size about %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "，大小约 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "，大小約 %@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", आकार लगभग %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", tamaño aprox. %@"
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "، الحجم تقريباً %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", размер ок. %@"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", tamanho aprox. %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", taille env. %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", dimensione circa %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "、サイズ約 %@"
+          }
+        },
+        "eo": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", grandeco ĉirkaŭ %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", Größe ca. %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "，크기 약 %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", boyut yaklaşık %@"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", kích thước khoảng %@"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " ขนาดประมาณ %@"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", grootte ca. %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", rozmiar ok. %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", ukuran sekitar %@"
+          }
+        },
+        "br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⠂ ⠎⠊⠵⠑ ⠁⠃⠕⠥⠞ %@"
           }
         }
       }
