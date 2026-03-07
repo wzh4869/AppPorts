@@ -20,6 +20,7 @@ struct Contributor: Identifiable {
 private let contributors: [Contributor] = [
     Contributor(name: "wzh4869", github: "wzh4869"),
     Contributor(name: "sulimu2", github: "sulimu2"),
+    Contributor(name: "2han9wen71an", github: "2han9wen71an"),
 ]
 
 // MARK: - 关于界面
@@ -110,7 +111,7 @@ struct AboutView: View {
             
         }
         .padding(30)
-        .frame(width: 380, height: 500)
+        .frame(width: 380, height: 540)
     }
 }
 
