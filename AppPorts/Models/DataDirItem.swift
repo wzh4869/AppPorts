@@ -110,7 +110,8 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
 
     /// 当前状态
     /// - "本地"：正常存在于本机
-    /// - "已链接"：已迁移到外部，本地为符号链接
+    /// - "已链接"：由 AppPorts 迁移到外部，本地为受管符号链接
+    /// - "现有软链"：检测到已有符号链接，但并非 AppPorts 迁移结果
     /// - "未找到"：路径不存在
     var status: String = "本地"
 

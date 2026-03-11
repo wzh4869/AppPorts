@@ -13,6 +13,7 @@ struct DataDirRowView: View {
     let isSelected: Bool
     let onMigrate: (DataDirItem) -> Void
     let onRestore: (DataDirItem) -> Void
+    let onManageExistingLink: (DataDirItem) -> Void
 
     @State private var isHovered = false
 
@@ -62,7 +63,7 @@ struct DataDirRowView: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.primary)
                         .monospacedDigit()
-                } else if item.status != "已链接" {
+                } else if item.status != "已链接" && item.status != "现有软链" {
                     Text("计算中...".localized)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary.opacity(0.5))
@@ -127,6 +128,29 @@ struct DataDirRowView: View {
             }
             .buttonStyle(.plain)
             .help("将数据目录还原到本地".localized)
+        } else if item.status == "现有软链" {
+            if item.linkedDestination != nil {
+                Button(action: { onManageExistingLink(item) }) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "slider.horizontal.3")
+                        Text("链接详情".localized)
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule().fill(Color.teal.gradient)
+                    )
+                }
+                .buttonStyle(.plain)
+                .help("查看现有软链路径，并可将其纳入 AppPorts 管理".localized)
+            } else {
+                Image(systemName: "link.badge.questionmark")
+                    .font(.system(size: 13))
+                    .foregroundColor(.teal.opacity(0.85))
+                    .help("检测到已有符号链接，非 AppPorts 迁移结果".localized)
+            }
         } else if item.status == "本地" {
             // 本地：显示「迁移」按钮
             Button(action: { onMigrate(item) }) {
@@ -207,6 +231,7 @@ struct DataDirStatusBadge: View {
     private var statusIcon: String {
         switch status {
         case "已链接": return "link"
+        case "现有软链": return "link.badge.questionmark"
         case "本地":   return "internaldrive"
         default:       return "questionmark"
         }
@@ -215,6 +240,7 @@ struct DataDirStatusBadge: View {
     private var foregroundColor: Color {
         switch status {
         case "已链接": return .green
+        case "现有软链": return .teal
         case "本地":   return .secondary
         default:       return .gray
         }
@@ -223,6 +249,7 @@ struct DataDirStatusBadge: View {
     private var backgroundColor: Color {
         switch status {
         case "已链接": return .green.opacity(0.12)
+        case "现有软链": return .teal.opacity(0.14)
         case "本地":   return Color.primary.opacity(0.05)
         default:       return .gray.opacity(0.08)
         }

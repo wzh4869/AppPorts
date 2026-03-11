@@ -41,7 +41,7 @@ private struct KnownDotFolder {
 /// ## 功能
 /// 1. 根据 AppItem（BundleID + AppName）扫描 ~/Library/ 关联目录
 /// 2. 扫描内置已知 dotFolder 列表（~/.npm、~/.m2 等）
-/// 3. 检测每个目录当前状态（本地 / 已链接 / 未找到）
+/// 3. 检测每个目录当前状态（本地 / 已链接 / 现有软链 / 未找到）
 ///
 /// ## 使用示例
 /// ```swift
@@ -55,6 +55,18 @@ actor DataDirScanner {
 
     private let fileManager = FileManager.default
     private let homeDir = URL(fileURLWithPath: NSHomeDirectory())
+    private var historicalManagedLinksCache: Set<String>? = nil
+    private let managedLinkMarkerFileName = ".appports-link-metadata.plist"
+    private let managedLinkIdentifier = "com.shimoko.AppPorts"
+    private let managedLinkSchemaVersion = 1
+
+    private struct ManagedLinkMetadata: Codable, Sendable {
+        let schemaVersion: Int
+        let managedBy: String
+        let sourcePath: String
+        let destinationPath: String
+        let dataDirType: String
+    }
 
     // MARK: - 内置已知 dotFolder 列表
 
@@ -274,8 +286,7 @@ actor DataDirScanner {
             // 跳过不存在的目录
             guard fileManager.fileExists(atPath: fullPath.path) else { continue }
 
-            let status = detectStatus(at: fullPath)
-            let linkedDest = detectLinkedDestination(at: fullPath)
+            let inspection = inspectItem(at: fullPath, type: .dotFolder)
 
             var item = DataDirItem(
                 name: known.name.localized,
@@ -286,8 +297,8 @@ actor DataDirScanner {
                 isMigratable: known.isMigratable,
                 nonMigratableReason: known.nonMigratableReason?.localized
             )
-            item.status = status
-            item.linkedDestination = linkedDest
+            item.status = inspection.status
+            item.linkedDestination = inspection.linkedDestination
 
             results.append(item)
         }
@@ -295,9 +306,9 @@ actor DataDirScanner {
         return results.sorted { $0.priority < $1.priority }
     }
 
-    /// 扫描指定应用在 ~/Library/ 下的关联数据目录
+    /// 扫描指定应用的关联数据目录
     ///
-    /// 根据应用的 BundleID 和名称，在标准 Library 子目录中查找匹配目录。
+    /// 默认会在 `~/Library/` 标准子目录中查找，同时为少数特殊安装方式补充额外目录。
     ///
     /// - Parameter app: 要查找关联数据的应用
     /// - Returns: 找到的关联数据目录列表（未计算大小）
@@ -324,8 +335,7 @@ actor DataDirScanner {
             let candidates = findMatchingDirs(in: baseURL, bundleID: bundleID, appName: appName)
 
             for candidateURL in candidates {
-                let status = detectStatus(at: candidateURL)
-                let linkedDest = detectLinkedDestination(at: candidateURL)
+                let inspection = inspectItem(at: candidateURL, type: config.type)
 
                 var item = DataDirItem(
                     name: "\(config.type.rawValue.localized): \(candidateURL.lastPathComponent)",
@@ -336,14 +346,16 @@ actor DataDirScanner {
                     isMigratable: true
                 )
                 item.associatedAppName = appName
-                item.status = status
-                item.linkedDestination = linkedDest
+                item.status = inspection.status
+                item.linkedDestination = inspection.linkedDestination
 
                 results.append(item)
             }
         }
 
-        return results.sorted { $0.priority < $1.priority }
+        results.append(contentsOf: scanSpecialAssociatedDirs(for: app, bundleID: bundleID, appName: appName))
+
+        return deduplicate(items: results).sorted { $0.priority < $1.priority }
     }
 
     /// 异步计算单个目录大小
@@ -368,6 +380,10 @@ actor DataDirScanner {
 
         var size: Int64 = 0
         for case let fileURL as URL in enumerator {
+            if fileURL.lastPathComponent == managedLinkMarkerFileName {
+                continue
+            }
+
             guard let values = try? fileURL.resourceValues(forKeys: Set(resourceKeys)) else { continue }
             if values.isSymbolicLink == true { continue }
             if values.isRegularFile == true, let fileSize = values.fileSize {
@@ -378,6 +394,115 @@ actor DataDirScanner {
     }
 
     // MARK: - 私有辅助方法
+
+    /// 补充少数“入口 app 与真实安装根目录分离”的应用目录。
+    ///
+    /// 当前主要覆盖 Conda 发行版：
+    /// `/Applications/Anaconda-Navigator.app -> /opt/anaconda3/Anaconda-Navigator.app`
+    private func scanSpecialAssociatedDirs(for app: AppItem, bundleID: String?, appName: String) -> [DataDirItem] {
+        guard isCondaDistribution(bundleID: bundleID, appName: appName) else { return [] }
+
+        var results: [DataDirItem] = []
+        let installRootCandidates = condaInstallRootCandidates(for: app)
+
+        for candidateURL in installRootCandidates {
+            guard fileManager.fileExists(atPath: candidateURL.path) else { continue }
+
+            let inspection = inspectItem(at: candidateURL, type: .custom)
+
+            var item = DataDirItem(
+                name: "Conda 安装目录: \(candidateURL.lastPathComponent)",
+                path: candidateURL,
+                type: .custom,
+                priority: .critical,
+                description: "Conda Python 发行版根目录（包含解释器、包、环境和 Navigator 相关文件）",
+                isMigratable: true
+            )
+            item.associatedAppName = appName
+            item.status = inspection.status
+            item.linkedDestination = inspection.linkedDestination
+
+            results.append(item)
+        }
+
+        return deduplicate(items: results)
+    }
+
+    private func isCondaDistribution(bundleID: String?, appName: String) -> Bool {
+        let normalizedBundleID = (bundleID ?? "").lowercased()
+        let normalizedName = appName.lowercased()
+
+        return normalizedBundleID.contains("anaconda")
+            || normalizedBundleID.contains("conda")
+            || normalizedName.contains("anaconda")
+            || normalizedName.contains("miniconda")
+            || normalizedName.contains("conda")
+    }
+
+    private func condaInstallRootCandidates(for app: AppItem) -> [URL] {
+        var candidates: [URL] = []
+
+        if let resolvedBundleURL = resolveRealAppBundleURL(for: app.path) {
+            let installRoot = resolvedBundleURL.deletingLastPathComponent()
+            if installRoot.path != app.path.deletingLastPathComponent().path {
+                candidates.append(installRoot)
+            }
+        }
+
+        let staticCandidatePaths = [
+            "/opt/anaconda3",
+            "/opt/miniconda3",
+            "/usr/local/anaconda3",
+            "/usr/local/miniconda3",
+            homeDir.appendingPathComponent("anaconda3").path,
+            homeDir.appendingPathComponent("miniconda3").path
+        ]
+
+        for path in staticCandidatePaths {
+            candidates.append(URL(fileURLWithPath: path))
+        }
+
+        return deduplicate(urls: candidates)
+    }
+
+    private func resolveRealAppBundleURL(for appURL: URL) -> URL? {
+        guard let values = try? appURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
+              values.isSymbolicLink == true,
+              let rawPath = try? fileManager.destinationOfSymbolicLink(atPath: appURL.path) else {
+            return nil
+        }
+
+        let resolvedURL = URL(fileURLWithPath: rawPath, relativeTo: appURL.deletingLastPathComponent()).standardizedFileURL
+        return resolvedURL.pathExtension == "app" ? resolvedURL : nil
+    }
+
+    private func deduplicate(items: [DataDirItem]) -> [DataDirItem] {
+        var seen = Set<String>()
+        var deduplicated: [DataDirItem] = []
+
+        for item in items {
+            let key = item.path.standardizedFileURL.path
+            if seen.insert(key).inserted {
+                deduplicated.append(item)
+            }
+        }
+
+        return deduplicated
+    }
+
+    private func deduplicate(urls: [URL]) -> [URL] {
+        var seen = Set<String>()
+        var deduplicated: [URL] = []
+
+        for url in urls {
+            let key = url.standardizedFileURL.path
+            if seen.insert(key).inserted {
+                deduplicated.append(url.standardizedFileURL)
+            }
+        }
+
+        return deduplicated
+    }
 
     /// 在指定目录中查找与应用匹配的子目录
     ///
@@ -451,23 +576,123 @@ actor DataDirScanner {
         return plist["CFBundleIdentifier"] as? String
     }
 
-    /// 检测目录当前状态
-    private func detectStatus(at url: URL) -> String {
+    /// 检测目录当前状态，并区分 AppPorts 受管链接和已有软链接。
+    private func inspectItem(at url: URL, type: DataDirType) -> (status: String, linkedDestination: URL?) {
         guard let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey]) else {
-            return fileManager.fileExists(atPath: url.path) ? "本地" : "未找到"
+            return (fileManager.fileExists(atPath: url.path) ? "本地" : "未找到", nil)
         }
-        if values.isSymbolicLink == true { return "已链接" }
-        if values.isDirectory == true    { return "本地" }
-        return "未找到"
+
+        if values.isSymbolicLink == true {
+            let linkedDestination = resolveSymlinkDestination(at: url)
+            guard let linkedDestination else {
+                return ("现有软链", nil)
+            }
+
+            if isAppPortsManagedLink(from: url, to: linkedDestination, type: type) {
+                return ("已链接", linkedDestination)
+            }
+
+            return ("现有软链", linkedDestination)
+        }
+
+        if values.isDirectory == true {
+            return ("本地", nil)
+        }
+
+        return ("未找到", nil)
     }
 
-    /// 如果是符号链接，返回链接目标 URL；否则返回 nil
-    private func detectLinkedDestination(at url: URL) -> URL? {
-        guard let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey]),
-              values.isSymbolicLink == true else { return nil }
-        if let dest = try? fileManager.destinationOfSymbolicLink(atPath: url.path) {
-            return URL(fileURLWithPath: dest)
+    private func resolveSymlinkDestination(at url: URL) -> URL? {
+        guard let rawPath = try? fileManager.destinationOfSymbolicLink(atPath: url.path) else { return nil }
+        return URL(fileURLWithPath: rawPath, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
+    }
+
+    /// AppPorts 管理的数据目录链接会落在：
+    /// 1. 目标目录中存在 AppPorts 写入的隐藏元数据
+    /// 2. 或者命中历史日志中的迁移记录（兼容旧版本）
+    private func isAppPortsManagedLink(from sourceURL: URL, to destinationURL: URL, type: DataDirType) -> Bool {
+        let standardizedSource = sourceURL.standardizedFileURL
+        let standardizedDestination = destinationURL.standardizedFileURL
+
+        if let metadata = readManagedLinkMetadata(in: standardizedDestination) {
+            return metadata.schemaVersion == managedLinkSchemaVersion
+                && metadata.managedBy == managedLinkIdentifier
+                && metadata.sourcePath == standardizedSource.path
+                && metadata.destinationPath == standardizedDestination.path
+                && metadata.dataDirType == type.rawValue
         }
+
+        return historicalManagedLinks().contains(linkRecordKey(source: standardizedSource.path, destination: standardizedDestination.path))
+    }
+
+    private func readManagedLinkMetadata(in destinationURL: URL) -> ManagedLinkMetadata? {
+        let markerURL = markerURL(for: destinationURL)
+        guard let data = try? Data(contentsOf: markerURL) else { return nil }
+        return try? PropertyListDecoder().decode(ManagedLinkMetadata.self, from: data)
+    }
+
+    private func historicalManagedLinks() -> Set<String> {
+        if let historicalManagedLinksCache {
+            return historicalManagedLinksCache
+        }
+
+        let logURL = AppLogger.shared.logFileURL
+        guard let data = try? Data(contentsOf: logURL),
+              let content = String(data: data, encoding: .utf8) else {
+            historicalManagedLinksCache = []
+            return []
+        }
+
+        var records = Set<String>()
+        for line in content.components(separatedBy: .newlines) {
+            guard let (sourcePath, destinationPath) = parseManagedLinkRecord(from: line) else { continue }
+            records.insert(linkRecordKey(source: sourcePath, destination: destinationPath))
+        }
+
+        historicalManagedLinksCache = records
+        return records
+    }
+
+    private func parseManagedLinkRecord(from line: String) -> (String, String)? {
+        let prefixes = [
+            "步骤3: 符号链接创建成功: ",
+            "创建符号链接: "
+        ]
+
+        for prefix in prefixes {
+            guard let range = line.range(of: prefix) else { continue }
+            let payload = String(line[range.upperBound...])
+            if let (sourcePath, destinationPath) = splitLoggedLinkPayload(payload) {
+                let source = URL(fileURLWithPath: sourcePath).standardizedFileURL.path
+                let destination = URL(fileURLWithPath: destinationPath).standardizedFileURL.path
+                return (source, destination)
+            }
+        }
+
         return nil
+    }
+
+    private func splitLoggedLinkPayload(_ payload: String) -> (String, String)? {
+        let separators = [" → ", " -> "]
+
+        for separator in separators {
+            guard let range = payload.range(of: separator) else { continue }
+            let source = String(payload[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let destination = String(payload[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if !source.isEmpty && !destination.isEmpty {
+                return (source, destination)
+            }
+        }
+
+        return nil
+    }
+
+    private func linkRecordKey(source: String, destination: String) -> String {
+        source + "\n" + destination
+    }
+
+    private func markerURL(for directoryURL: URL) -> URL {
+        directoryURL.appendingPathComponent(managedLinkMarkerFileName)
     }
 }

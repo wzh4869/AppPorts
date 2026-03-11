@@ -44,6 +44,7 @@ struct DataDirsView: View {
     @State private var showConfirm = false
     @State private var confirmTitle = ""
     @State private var confirmMessage = ""
+    @State private var confirmActionTitle = "继续".localized
     @State private var confirmAction: (() -> Void)? = nil
 
     // 错误弹窗
@@ -106,7 +107,7 @@ struct DataDirsView: View {
         }
         // 确认弹窗
         .alert(LocalizedStringKey(confirmTitle), isPresented: $showConfirm) {
-            Button("继续".localized, role: .none) { confirmAction?() }
+            Button(confirmActionTitle, role: .none) { confirmAction?() }
             Button("取消".localized, role: .cancel) {}
         } message: {
             Text(confirmMessage)
@@ -163,7 +164,8 @@ struct DataDirsView: View {
                                     item: item,
                                     isSelected: selectedItemID == item.id,
                                     onMigrate: { askMigrate($0) },
-                                    onRestore: { askRestore($0) }
+                                    onRestore: { askRestore($0) },
+                                    onManageExistingLink: { askManageExistingLink($0) }
                                 )
                                 .onTapGesture { selectedItemID = item.id }
                                 .padding(.horizontal, 10)
@@ -268,7 +270,8 @@ struct DataDirsView: View {
                                         item: item,
                                         isSelected: selectedItemID == item.id,
                                         onMigrate: { askMigrate($0) },
-                                        onRestore: { askRestore($0) }
+                                        onRestore: { askRestore($0) },
+                                        onManageExistingLink: { askManageExistingLink($0) }
                                     )
                                     .onTapGesture { selectedItemID = item.id }
                                     .padding(.horizontal, 10)
@@ -304,6 +307,7 @@ struct DataDirsView: View {
     private func statsBar(items: [DataDirItem]) -> some View {
         let total = items.filter { $0.status == "本地" }.reduce(0) { $0 + $1.sizeBytes }
         let linked = items.filter { $0.status == "已链接" }.count
+        let existingSymlinks = items.filter { $0.status == "现有软链" }.count
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         formatter.allowedUnits = [.useMB, .useGB]
@@ -319,6 +323,10 @@ struct DataDirsView: View {
             if linked > 0 {
                 Label(String(format: "%lld 个已链接".localized, Int64(linked)), systemImage: "link.circle.fill")
                     .foregroundColor(.green)
+            }
+            if existingSymlinks > 0 {
+                Label(String(format: "%lld 个现有软链".localized, Int64(existingSymlinks)), systemImage: "link.badge.questionmark")
+                    .foregroundColor(.teal)
             }
             Spacer()
         }
@@ -418,6 +426,7 @@ struct DataDirsView: View {
         let sizeInfo = item.size.map { String(format: "，大小约 %@".localized, $0) } ?? ""
 
         confirmTitle = "迁移数据目录".localized
+        confirmActionTitle = "继续".localized
         confirmMessage = """
         将「\(item.name)」迁移到外部存储\(sizeInfo)。
 
@@ -434,6 +443,7 @@ struct DataDirsView: View {
         let linkedDest = item.linkedDestination?.path ?? "（未知）"
 
         confirmTitle = "还原数据目录".localized
+        confirmActionTitle = "继续".localized
         confirmMessage = """
         将「\(item.name)」从外部存储还原到本地。
 
@@ -443,6 +453,27 @@ struct DataDirsView: View {
         还原完成后，外部存储中的副本将被删除。
         """
         confirmAction = { performRestore(item) }
+        showConfirm = true
+    }
+
+    private func askManageExistingLink(_ item: DataDirItem) {
+        guard let linkedDest = item.linkedDestination else {
+            errorMessage = "无法读取现有软链的目标路径".localized
+            showError = true
+            return
+        }
+
+        confirmTitle = "现有软链".localized
+        confirmActionTitle = "规范化管理".localized
+        confirmMessage = """
+        检测到「\(item.name)」已经是一个现有软链。
+
+        软链路径：\(item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
+        目标路径：\(linkedDest.path)
+
+        选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。
+        """
+        confirmAction = { performManageExistingLink(item, target: linkedDest) }
         showConfirm = true
     }
 
@@ -497,6 +528,23 @@ struct DataDirsView: View {
             } catch {
                 await MainActor.run {
                     self.showProgress = false
+                    self.errorMessage = error.localizedDescription
+                    self.showError = true
+                }
+            }
+        }
+    }
+
+    private func performManageExistingLink(_ item: DataDirItem, target: URL) {
+        Task {
+            let mover = DataDirMover()
+            do {
+                try await mover.createLink(localPath: item.path, externalPath: target)
+                await MainActor.run {
+                    self.reloadCurrentTab()
+                }
+            } catch {
+                await MainActor.run {
                     self.errorMessage = error.localizedDescription
                     self.showError = true
                 }

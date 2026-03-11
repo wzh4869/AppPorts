@@ -35,6 +35,8 @@ import Foundation
 ///
 /// - Note: 使用 Actor 确保所有方法在隔离的执行上下文中运行，保证线程安全
 actor FileCopier {
+
+    private let managedLinkMarkerFileName = ".appports-link-metadata.plist"
     
     // MARK: - 公共类型
     
@@ -171,6 +173,10 @@ actor FileCopier {
         
         // 遍历所有文件
         for case let fileURL as URL in enumerator {
+            if fileURL.lastPathComponent == managedLinkMarkerFileName {
+                continue
+            }
+
             guard let resourceValues = try? fileURL.resourceValues(forKeys: Set(resourceKeys)) else { continue }
             
             // 跳过符号链接（避免重复计算）
@@ -266,6 +272,11 @@ actor FileCopier {
         // 遍历每个项目
         for itemURL in contents {
             let itemName = itemURL.lastPathComponent
+
+            if itemName == managedLinkMarkerFileName {
+                continue
+            }
+
             let destItemURL = destination.appendingPathComponent(itemName)
             
             let resourceValues = try itemURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey])
