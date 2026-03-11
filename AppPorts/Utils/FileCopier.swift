@@ -35,6 +35,9 @@ import Foundation
 ///
 /// - Note: 使用 Actor 确保所有方法在隔离的执行上下文中运行，保证线程安全
 actor FileCopier {
+
+    private let managedLinkMarkerFileName = ".appports-link-metadata.plist"
+    private let managedLinkMetadataSidecarSuffix = ".appports-link-metadata.plist"
     
     // MARK: - 公共类型
     
@@ -99,6 +102,26 @@ actor FileCopier {
         to destination: URL,
         progressHandler: ProgressHandler?
     ) async throws {
+        let sourceValues = try source.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+
+        if sourceValues.isRegularFile == true {
+            let totalBytes = Int64(sourceValues.fileSize ?? 0)
+
+            if let handler = progressHandler {
+                await handler(Progress(copiedBytes: 0, totalBytes: totalBytes, currentFile: source.lastPathComponent))
+            }
+
+            let parentURL = destination.deletingLastPathComponent()
+            try fileManager.createDirectory(at: parentURL, withIntermediateDirectories: true, attributes: nil)
+            try fileManager.copyItem(at: source, to: destination)
+            copyExtendedAttributes(from: source, to: destination)
+
+            if let handler = progressHandler {
+                await handler(Progress(copiedBytes: totalBytes, totalBytes: totalBytes, currentFile: source.lastPathComponent))
+            }
+            return
+        }
+
         // 1. 计算源目录总大小（用于进度百分比计算）
         let totalBytes = calculateDirectorySize(at: source)
         
@@ -171,6 +194,10 @@ actor FileCopier {
         
         // 遍历所有文件
         for case let fileURL as URL in enumerator {
+            if isManagedLinkMetadataFile(fileURL.lastPathComponent) {
+                continue
+            }
+
             guard let resourceValues = try? fileURL.resourceValues(forKeys: Set(resourceKeys)) else { continue }
             
             // 跳过符号链接（避免重复计算）
@@ -266,6 +293,11 @@ actor FileCopier {
         // 遍历每个项目
         for itemURL in contents {
             let itemName = itemURL.lastPathComponent
+
+            if isManagedLinkMetadataFile(itemName) {
+                continue
+            }
+
             let destItemURL = destination.appendingPathComponent(itemName)
             
             let resourceValues = try itemURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey])
@@ -320,5 +352,10 @@ actor FileCopier {
                 }
             }
         }
+    }
+
+    private func isManagedLinkMetadataFile(_ fileName: String) -> Bool {
+        fileName == managedLinkMarkerFileName
+            || (fileName.hasPrefix(".") && fileName.hasSuffix(managedLinkMetadataSidecarSuffix))
     }
 }

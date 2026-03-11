@@ -36,29 +36,26 @@ actor AppScanner {
     
     /// 计算目录大小
     ///
-    /// 递归计算目录树的总大小，跳过符号链接以避免重复计算。
+    /// 递归计算目录树的总大小。
     ///
     /// - Parameter url: 目录 URL
     /// - Returns: 目录总大小（字节）
     ///
-    /// - Note: 符号链接被快速跳过，不会递归进入链接目标
+    /// - Note:
+    ///   - 普通目录：跳过内部符号链接，避免重复计算
+    ///   - `.app` 包：会尽量解析入口 symlink 或 `Contents` 深层链接，得到真实体积
     func calculateDirectorySize(at url: URL) -> Int64 {
         let fileManager = FileManager.default
         var size: Int64 = 0
-        
-        // 快速路径：优先检查是否为符号链接
-        if let resourceValues = try? url.resourceValues(forKeys: [.isSymbolicLinkKey]),
-           resourceValues.isSymbolicLink == true {
-            // 符号链接直接返回 0（不计算链接目标的大小）
-            return 0
-        }
+        let scanURL = resolveSizeCalculationURL(for: url)
+        guard fileManager.fileExists(atPath: scanURL.path) else { return 0 }
         
         // 需要获取的资源键
-        let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
+        let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey]
         
         // 创建目录枚举器（深度优先遍历）
         guard let enumerator = fileManager.enumerator(
-            at: url,
+            at: scanURL,
             includingPropertiesForKeys: resourceKeys,
             options: [.skipsHiddenFiles], // 跳过隐藏文件提升性能
             errorHandler: nil
@@ -67,6 +64,7 @@ actor AppScanner {
         // 累加所有文件大小
         for case let fileURL as URL in enumerator {
             let resourceValues = try? fileURL.resourceValues(forKeys: Set(resourceKeys))
+            if resourceValues?.isSymbolicLink == true { continue }
             if let fileSize = resourceValues?.fileSize { size += Int64(fileSize) }
         }
         return size
@@ -99,39 +97,12 @@ actor AppScanner {
             // 只处理 .app 扩展名的项目
             if itemURL.pathExtension == "app" {
                 let appName = itemURL.lastPathComponent
-                var status = "本地"
+                let status = detectLocalAppStatus(at: itemURL)
                 let isSystem = itemURL.path.hasPrefix("/System")
                 let isRunning = runningAppURLs.contains(itemURL)
                 
                 // 检测是否为 App Store 应用和 iOS 应用
                 let (isAppStore, isIOS) = detectAppStoreAndIOSApp(at: itemURL)
-                
-                // 检测链接状态
-                // 1. 标准符号链接检测
-                if let resourceValues = try? itemURL.resourceValues(forKeys: Set(keys)) {
-                    if resourceValues.isSymbolicLink == true {
-                        status = "已链接"
-                    } else if resourceValues.isDirectory == true {
-                        // 2. 深层符号链接检测（检查 Contents 目录）
-                        let contentsURL = itemURL.appendingPathComponent("Contents")
-                        if let contentsValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
-                           contentsValues.isSymbolicLink == true {
-                            status = "已链接"
-                        } else {
-                            // 3. 更深层检测（检查 MacOS 和 Resources 目录）
-                            let macOSURL = contentsURL.appendingPathComponent("MacOS")
-                            let resourcesURL = contentsURL.appendingPathComponent("Resources")
-                            
-                            if let macOSValues = try? macOSURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
-                               macOSValues.isSymbolicLink == true {
-                                status = "已链接"
-                            } else if let resourcesValues = try? resourcesURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
-                                      resourcesValues.isSymbolicLink == true {
-                                status = "已链接"
-                            }
-                        }
-                    }
-                }
                 newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: isSystem, isRunning: isRunning, isAppStoreApp: isAppStore, isIOSApp: isIOS))
             }
             // 处理包含 .app 的文件夹（如 Microsoft Office、Adobe Creative Cloud 等套件）
@@ -163,6 +134,105 @@ actor AppScanner {
     }
     
     // MARK: - 私有辅助方法
+
+    /// 检测本地 `.app` 的显示状态。
+    ///
+    /// 规则：
+    /// - AppPorts 创建的跨卷链接：显示为“已链接”
+    /// - 安装器自带的同卷入口 symlink（如 `/Applications` -> `/opt/anaconda3/...`）：仍视为“本地”
+    private func detectLocalAppStatus(at appURL: URL) -> String {
+        if let linkDest = resolveSymlinkDestination(of: appURL) {
+            return isCrossVolumeLink(fromPortalAt: appURL, to: linkDest) ? "已链接" : "本地"
+        }
+
+        let contentsURL = appURL.appendingPathComponent("Contents")
+        if let linkDest = resolveSymlinkDestination(of: contentsURL) {
+            return isCrossVolumeLink(fromPortalAt: appURL, to: linkDest) ? "已链接" : "本地"
+        }
+
+        let macOSURL = contentsURL.appendingPathComponent("MacOS")
+        if let linkDest = resolveSymlinkDestination(of: macOSURL) {
+            return isCrossVolumeLink(fromPortalAt: appURL, to: linkDest) ? "已链接" : "本地"
+        }
+
+        let resourcesURL = contentsURL.appendingPathComponent("Resources")
+        if let linkDest = resolveSymlinkDestination(of: resourcesURL) {
+            return isCrossVolumeLink(fromPortalAt: appURL, to: linkDest) ? "已链接" : "本地"
+        }
+
+        return "本地"
+    }
+
+    /// 为体积计算解析真实目标。
+    ///
+    /// 支持两类结构：
+    /// - `/Applications/Foo.app -> /somewhere/Foo.app`
+    /// - 本地空壳 `.app`，其 `Contents`/`MacOS`/`Resources` 指向外部真实 bundle
+    private func resolveSizeCalculationURL(for url: URL) -> URL {
+        if let rootTarget = resolveSymlinkDestination(of: url) {
+            return enclosingAppBundleURL(for: rootTarget)
+        }
+
+        guard url.pathExtension == "app" else { return url }
+
+        let contentsURL = url.appendingPathComponent("Contents")
+        if let contentsTarget = resolveSymlinkDestination(of: contentsURL) {
+            return enclosingAppBundleURL(for: contentsTarget)
+        }
+
+        let macOSURL = contentsURL.appendingPathComponent("MacOS")
+        if let macOSTarget = resolveSymlinkDestination(of: macOSURL) {
+            return enclosingAppBundleURL(for: macOSTarget)
+        }
+
+        let resourcesURL = contentsURL.appendingPathComponent("Resources")
+        if let resourcesTarget = resolveSymlinkDestination(of: resourcesURL) {
+            return enclosingAppBundleURL(for: resourcesTarget)
+        }
+
+        return url
+    }
+
+    private func resolveSymlinkDestination(of url: URL) -> URL? {
+        guard let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey]),
+              values.isSymbolicLink == true,
+              let rawPath = try? FileManager.default.destinationOfSymbolicLink(atPath: url.path) else {
+            return nil
+        }
+
+        let parent = url.deletingLastPathComponent()
+        return URL(fileURLWithPath: rawPath, relativeTo: parent).standardizedFileURL
+    }
+
+    private func enclosingAppBundleURL(for url: URL) -> URL {
+        var candidate = url.standardizedFileURL
+
+        while true {
+            if candidate.pathExtension == "app" {
+                return candidate
+            }
+
+            let parent = candidate.deletingLastPathComponent()
+            if parent.path == candidate.path {
+                return url.standardizedFileURL
+            }
+            candidate = parent
+        }
+    }
+
+    private func isCrossVolumeLink(fromPortalAt portalURL: URL, to destinationURL: URL) -> Bool {
+        let sourceValues = try? portalURL.deletingLastPathComponent().resourceValues(forKeys: [.volumeIdentifierKey])
+        let destValues = try? destinationURL.resourceValues(forKeys: [.volumeIdentifierKey])
+
+        let sourceVolumeID = sourceValues?.allValues[.volumeIdentifierKey]
+        let destVolumeID = destValues?.allValues[.volumeIdentifierKey]
+
+        if let sourceVolumeID, let destVolumeID {
+            return String(describing: sourceVolumeID) != String(describing: destVolumeID)
+        }
+
+        return destinationURL.standardizedFileURL.path.hasPrefix("/Volumes/")
+    }
     
     /// 检测是否为 App Store 应用和 iOS 应用
     ///
