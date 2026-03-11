@@ -32,6 +32,19 @@ private struct KnownDotFolder {
     }
 }
 
+private struct AppMatchProfile {
+    let exactMatches: Set<String>
+    let containsMatches: [String]
+    let shortPrefixMatches: [String]
+}
+
+private struct AppDataSearchConfig {
+    let localBaseURL: URL
+    let type: DataDirType
+    let priority: DataDirPriority
+    let description: String
+}
+
 // MARK: - 数据目录扫描器
 
 /// 扫描应用关联数据目录和已知工具 dotFolder
@@ -57,6 +70,7 @@ actor DataDirScanner {
     private let homeDir = URL(fileURLWithPath: NSHomeDirectory())
     private var historicalManagedLinksCache: Set<String>? = nil
     private let managedLinkMarkerFileName = ".appports-link-metadata.plist"
+    private let managedLinkMetadataSidecarSuffix = ".appports-link-metadata.plist"
     private let managedLinkIdentifier = "com.shimoko.AppPorts"
     private let managedLinkSchemaVersion = 1
 
@@ -297,8 +311,7 @@ actor DataDirScanner {
                 isMigratable: known.isMigratable,
                 nonMigratableReason: known.nonMigratableReason?.localized
             )
-            item.status = inspection.status
-            item.linkedDestination = inspection.linkedDestination
+            applyInspectionResult(to: &item, inspection: inspection, externalRootURL: nil)
 
             results.append(item)
         }
@@ -310,52 +323,90 @@ actor DataDirScanner {
     ///
     /// 默认会在 `~/Library/` 标准子目录中查找，同时为少数特殊安装方式补充额外目录。
     ///
-    /// - Parameter app: 要查找关联数据的应用
+    /// - Parameters:
+    ///   - app: 要查找关联数据的应用
+    ///   - externalRootURL: 已选择的外部存储根目录。若存在，会额外扫描其镜像目录中的可接回数据。
     /// - Returns: 找到的关联数据目录列表（未计算大小）
-    func scanLibraryDirs(for app: AppItem) -> [DataDirItem] {
+    func scanLibraryDirs(for app: AppItem, externalRootURL: URL? = nil) -> [DataDirItem] {
         guard !app.isFolder else { return [] }
 
         // 从 Info.plist 读取 BundleID
         let bundleID = readBundleID(from: app.path)
         let appName = app.name.replacingOccurrences(of: ".app", with: "")
+        let matchProfile = buildMatchProfile(bundleID: bundleID, appName: appName)
 
-        var results: [DataDirItem] = []
+        var resultsByPath: [String: DataDirItem] = [:]
 
-        // 需要搜索的目录配置
-        let searchConfigs: [(baseRelative: String, type: DataDirType, priority: DataDirPriority, desc: String)] = [
-            ("Library/Application Support", .applicationSupport, .critical,    "应用核心数据（设置、数据库等）"),
-            ("Library/Containers",          .containers,         .critical,    "沙盒容器数据（App Store 应用）"),
-            ("Library/Group Containers",    .groupContainers,    .recommended, "应用组共享数据"),
-            ("Library/Caches",              .caches,             .optional,    "应用缓存（可重建）"),
-            ("Library/Saved Application State", .savedState,     .optional,    "窗口状态恢复数据"),
-        ]
+        for config in appDataSearchConfigs() {
+            let localCandidates = findMatchingDirs(in: config.localBaseURL, matchProfile: matchProfile)
 
-        for config in searchConfigs {
-            let baseURL = homeDir.appendingPathComponent(config.baseRelative)
-            let candidates = findMatchingDirs(in: baseURL, bundleID: bundleID, appName: appName)
-
-            for candidateURL in candidates {
+            for candidateURL in localCandidates {
                 let inspection = inspectItem(at: candidateURL, type: config.type)
 
-                var item = DataDirItem(
-                    name: "\(config.type.rawValue.localized): \(candidateURL.lastPathComponent)",
+                var item = makeAppDataItem(
+                    name: candidateURL.lastPathComponent,
                     path: candidateURL,
                     type: config.type,
                     priority: config.priority,
-                    description: config.desc.localized,
-                    isMigratable: true
+                    description: config.description,
+                    appName: appName
                 )
-                item.associatedAppName = appName
-                item.status = inspection.status
-                item.linkedDestination = inspection.linkedDestination
+                applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
 
-                results.append(item)
+                resultsByPath[candidateURL.standardizedFileURL.path] = item
+
+                if config.type == .containers {
+                    for nestedItem in scanNestedContainerDataLinks(
+                        in: candidateURL,
+                        priority: config.priority,
+                        appName: appName,
+                        externalRootURL: externalRootURL
+                    ) {
+                        resultsByPath[nestedItem.path.standardizedFileURL.path] = nestedItem
+                    }
+                }
+            }
+
+            for externalBaseURL in externalBaseURLs(for: config.localBaseURL, externalRootURL: externalRootURL) {
+                let externalCandidates = findMatchingDirs(in: externalBaseURL, matchProfile: matchProfile)
+
+                for externalCandidate in externalCandidates {
+                    guard let localURL = mapExternalCandidate(
+                        externalCandidate,
+                        from: externalBaseURL,
+                        to: config.localBaseURL
+                    ) else { continue }
+
+                    let localKey = localURL.standardizedFileURL.path
+                    if resultsByPath[localKey] != nil { continue }
+                    if fileManager.fileExists(atPath: localURL.path) { continue }
+
+                    var item = makeAppDataItem(
+                        name: localURL.lastPathComponent,
+                        path: localURL,
+                        type: config.type,
+                        priority: config.priority,
+                        description: config.description,
+                        appName: appName
+                    )
+                    item.status = "待接回"
+                    item.linkedDestination = externalCandidate.standardizedFileURL
+
+                    resultsByPath[localKey] = item
+                }
             }
         }
 
-        results.append(contentsOf: scanSpecialAssociatedDirs(for: app, bundleID: bundleID, appName: appName))
+        for item in scanSpecialAssociatedDirs(for: app, bundleID: bundleID, appName: appName, externalRootURL: externalRootURL) {
+            resultsByPath[item.path.standardizedFileURL.path] = item
+        }
 
-        return deduplicate(items: results).sorted { $0.priority < $1.priority }
+        return Array(resultsByPath.values).sorted {
+            if $0.priority != $1.priority {
+                return $0.priority < $1.priority
+            }
+            return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
     }
 
     /// 异步计算单个目录大小
@@ -364,13 +415,23 @@ actor DataDirScanner {
     /// - Returns: 大小（字节）
     func calculateSize(for item: DataDirItem) -> Int64 {
         // 如果是已链接状态，我们需要计算链接目标（外部存储）的大小
-        let scanURL = item.linkedDestination ?? item.path
-        
+        var scanURL = item.linkedDestination ?? item.path
+        let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]
+
+        if item.linkedDestination == nil,
+           let values = try? scanURL.resourceValues(forKeys: Set(resourceKeys)),
+           values.isSymbolicLink == true,
+           let resolvedURL = resolveSymlinkDestination(at: scanURL) {
+            scanURL = resolvedURL
+        }
+
         guard fileManager.fileExists(atPath: scanURL.path) else { return 0 }
 
-        let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey]
-        
-        // 如果起始路径本身就是符号链接（且没被 linkedDestination 覆盖），enumerator 会自动处理
+        if let values = try? scanURL.resourceValues(forKeys: Set(resourceKeys)),
+           values.isRegularFile == true {
+            return Int64(values.fileSize ?? 0)
+        }
+
         guard let enumerator = fileManager.enumerator(
             at: scanURL,
             includingPropertiesForKeys: resourceKeys,
@@ -380,7 +441,7 @@ actor DataDirScanner {
 
         var size: Int64 = 0
         for case let fileURL as URL in enumerator {
-            if fileURL.lastPathComponent == managedLinkMarkerFileName {
+            if isManagedLinkMetadataFile(fileURL.lastPathComponent) {
                 continue
             }
 
@@ -395,11 +456,425 @@ actor DataDirScanner {
 
     // MARK: - 私有辅助方法
 
+    private func appDataSearchConfigs() -> [AppDataSearchConfig] {
+        let libraryRoot = homeDir.appendingPathComponent("Library")
+
+        return [
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Application Support"),
+                type: .applicationSupport,
+                priority: .critical,
+                description: "应用核心数据（设置、数据库等）"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Preferences"),
+                type: .preferences,
+                priority: .critical,
+                description: "应用偏好设置与工作区配置"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Containers"),
+                type: .containers,
+                priority: .critical,
+                description: "沙盒容器数据（App Store 应用）"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Group Containers"),
+                type: .groupContainers,
+                priority: .recommended,
+                description: "应用组共享数据"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Application Scripts"),
+                type: .applicationScripts,
+                priority: .recommended,
+                description: "扩展脚本与共享扩展数据"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("WebKit"),
+                type: .webKit,
+                priority: .recommended,
+                description: "WebKit 本地存储与网页登录状态"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Caches"),
+                type: .caches,
+                priority: .optional,
+                description: "应用缓存（可重建）"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("HTTPStorages"),
+                type: .httpStorages,
+                priority: .optional,
+                description: "网络会话与 Cookie 存储"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Logs"),
+                type: .logs,
+                priority: .optional,
+                description: "应用日志与诊断数据"
+            ),
+            AppDataSearchConfig(
+                localBaseURL: libraryRoot.appendingPathComponent("Saved Application State"),
+                type: .savedState,
+                priority: .optional,
+                description: "窗口状态恢复数据"
+            )
+        ]
+    }
+
+    private func scanNestedContainerDataLinks(
+        in containerURL: URL,
+        priority: DataDirPriority,
+        appName: String,
+        externalRootURL: URL?
+    ) -> [DataDirItem] {
+        let dataURL = containerURL.appendingPathComponent("Data")
+        guard fileManager.fileExists(atPath: dataURL.path) else { return [] }
+
+        var results: [DataDirItem] = []
+
+        for childURL in directoryEntries(at: dataURL) {
+            guard let targetURL = resolveSymlinkDestination(at: childURL),
+                  shouldSurfaceNestedContainerLink(from: childURL, to: targetURL, externalRootURL: externalRootURL) else {
+                continue
+            }
+
+            let inspection = inspectItem(at: childURL, type: .containers)
+            let relativeSuffix = childURL.path.replacingOccurrences(of: containerURL.path + "/", with: "")
+
+            var item = DataDirItem(
+                name: "容器子目录: \(relativeSuffix)",
+                path: childURL,
+                type: .containers,
+                priority: priority,
+                description: "容器内部拆分迁移的数据目录（如聊天记录、下载文件或运行时数据）".localized,
+                isMigratable: true
+            )
+            item.associatedAppName = appName
+            item.linkedDestination = inspection.linkedDestination ?? targetURL
+            applyInspectionResult(
+                to: &item,
+                inspection: (inspection.status, inspection.linkedDestination ?? targetURL),
+                externalRootURL: externalRootURL
+            )
+
+            results.append(item)
+        }
+
+        return deduplicate(items: results)
+    }
+
+    private func shouldSurfaceNestedContainerLink(from sourceURL: URL, to targetURL: URL, externalRootURL: URL?) -> Bool {
+        let standardizedTargetPath = targetURL.standardizedFileURL.path
+        let standardizedHomePath = homeDir.standardizedFileURL.path
+
+        if standardizedTargetPath.hasPrefix(standardizedHomePath + "/") {
+            return false
+        }
+
+        let allowedRoot: URL
+        if let externalRootURL,
+           let mountedVolumeRoot = mountedVolumeRoot(for: externalRootURL) {
+            allowedRoot = mountedVolumeRoot
+        } else if let externalRootURL {
+            allowedRoot = externalRootURL.standardizedFileURL
+        } else {
+            allowedRoot = URL(fileURLWithPath: "/Volumes")
+        }
+
+        let rootPath = allowedRoot.standardizedFileURL.path
+        return standardizedTargetPath == rootPath || standardizedTargetPath.hasPrefix(rootPath + "/")
+    }
+
+    private func makeAppDataItem(
+        name: String,
+        path: URL,
+        type: DataDirType,
+        priority: DataDirPriority,
+        description: String,
+        appName: String
+    ) -> DataDirItem {
+        var item = DataDirItem(
+            name: "\(type.rawValue.localized): \(name)",
+            path: path,
+            type: type,
+            priority: priority,
+            description: description.localized,
+            isMigratable: true
+        )
+        item.associatedAppName = appName
+        return item
+    }
+
+    private func applyInspectionResult(
+        to item: inout DataDirItem,
+        inspection: (status: String, linkedDestination: URL?),
+        externalRootURL: URL?
+    ) {
+        item.status = inspection.status
+        item.linkedDestination = inspection.linkedDestination
+
+        guard inspection.status == "已链接",
+              let linkedDestination = inspection.linkedDestination,
+              needsNormalization(for: item, currentTarget: linkedDestination, externalRootURL: externalRootURL) else {
+            return
+        }
+
+        item.status = "待规范"
+    }
+
+    private func needsNormalization(for item: DataDirItem, currentTarget: URL, externalRootURL: URL?) -> Bool {
+        normalizedManagementDestination(for: item, currentTarget: currentTarget, externalRootURL: externalRootURL).standardizedFileURL.path
+            != currentTarget.standardizedFileURL.path
+    }
+
+    private func normalizedManagementDestination(for item: DataDirItem, currentTarget: URL, externalRootURL: URL?) -> URL {
+        if let externalRootURL {
+            return suggestedDestinationPath(for: item, under: externalRootURL)
+        }
+
+        if item.type != .dotFolder {
+            let libraryRoot = homeDir.appendingPathComponent("Library").standardizedFileURL.path
+            let localPath = item.path.standardizedFileURL.path
+
+            if localPath.hasPrefix(libraryRoot + "/") {
+                let relativePath = String(localPath.dropFirst(libraryRoot.count + 1))
+                if let range = currentTarget.standardizedFileURL.path.range(of: "/Library/\(relativePath)") {
+                    let basePath = String(currentTarget.standardizedFileURL.path[..<range.lowerBound])
+                    return URL(fileURLWithPath: basePath).appendingPathComponent(relativePath)
+                }
+            }
+        }
+
+        return currentTarget.standardizedFileURL
+    }
+
+    private func suggestedDestinationPath(for item: DataDirItem, under externalRoot: URL) -> URL {
+        guard item.type != .dotFolder else {
+            return externalRoot.appendingPathComponent(item.type.rawValue).appendingPathComponent(item.path.lastPathComponent)
+        }
+
+        let standardizedPath = item.path.standardizedFileURL.path
+        let libraryRoot = homeDir.appendingPathComponent("Library").standardizedFileURL.path
+
+        if standardizedPath.hasPrefix(libraryRoot + "/") {
+            let relativePath = String(standardizedPath.dropFirst(libraryRoot.count + 1))
+            return externalRoot.appendingPathComponent(relativePath)
+        }
+
+        return externalRoot.appendingPathComponent(item.type.rawValue).appendingPathComponent(item.path.lastPathComponent)
+    }
+
+    private func buildMatchProfile(bundleID: String?, appName: String) -> AppMatchProfile {
+        var exactMatches = Set<String>()
+        var containsMatches: [String] = []
+        var shortPrefixMatches: [String] = []
+
+        let cleanedAppName = appName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let strippedVariants = strippedNameVariants(for: cleanedAppName)
+
+        for variant in strippedVariants {
+            exactMatches.insert(variant)
+            let compact = compactName(variant)
+            if !compact.isEmpty {
+                exactMatches.insert(compact)
+            }
+        }
+
+        for token in strippedVariants.flatMap({ tokens(from: $0) }) {
+            if token.count <= 3 {
+                shortPrefixMatches.append(token)
+            } else {
+                containsMatches.append(token)
+            }
+        }
+
+        if let bundleID, !bundleID.isEmpty {
+            exactMatches.insert(bundleID)
+
+            let components = bundleID.split(separator: ".").map(String.init)
+            if components.count >= 2 {
+                for index in 1..<components.count {
+                    let suffix = components[index...].joined(separator: ".")
+                    if suffix.count >= 3 {
+                        containsMatches.append(suffix)
+                    }
+                }
+            }
+        }
+
+        return AppMatchProfile(
+            exactMatches: exactMatches,
+            containsMatches: deduplicate(strings: containsMatches),
+            shortPrefixMatches: deduplicate(strings: shortPrefixMatches)
+        )
+    }
+
+    private func strippedNameVariants(for appName: String) -> [String] {
+        var variants = Set<String>()
+        let trimmed = appName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        variants.insert(trimmed)
+
+        let yearStripped = trimmed.replacingOccurrences(
+            of: #"\s+(19|20)\d{2}$"#,
+            with: "",
+            options: .regularExpression
+        )
+        if !yearStripped.isEmpty {
+            variants.insert(yearStripped)
+        }
+
+        let versionStripped = trimmed.replacingOccurrences(
+            of: #"\s+\d+([._-]\d+)*$"#,
+            with: "",
+            options: .regularExpression
+        )
+        if !versionStripped.isEmpty {
+            variants.insert(versionStripped)
+        }
+
+        return variants.filter { !$0.isEmpty }
+    }
+
+    private func tokens(from rawName: String) -> [String] {
+        let separators = CharacterSet.whitespacesAndNewlines
+            .union(.punctuationCharacters)
+            .union(.symbols)
+
+        return rawName
+            .components(separatedBy: separators)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { token in
+                guard !token.isEmpty else { return false }
+                if token.allSatisfy(\.isNumber) {
+                    return false
+                }
+                return token.count >= 2
+            }
+    }
+
+    private func compactName(_ rawName: String) -> String {
+        rawName
+            .components(separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters))
+            .joined()
+    }
+
+    private func deduplicate(strings: [String]) -> [String] {
+        var seen = Set<String>()
+        var results: [String] = []
+
+        for string in strings where !string.isEmpty {
+            let key = string.lowercased()
+            if seen.insert(key).inserted {
+                results.append(string)
+            }
+        }
+
+        return results
+    }
+
+    private func externalBaseURLs(for localBaseURL: URL, externalRootURL: URL?) -> [URL] {
+        guard let externalRootURL,
+              let mirroredSubpath = mirroredExternalSubpath(for: localBaseURL) else { return [] }
+
+        var candidates: [URL] = []
+        let rootCandidates = deduplicate(urls: externalSearchRoots(from: externalRootURL) + siblingExternalRoots(for: mirroredSubpath, externalRootURL: externalRootURL))
+
+        for rootURL in rootCandidates {
+            candidates.append(rootURL.appendingPathComponent(mirroredSubpath))
+
+            if mirroredSubpath.hasPrefix("Library/") {
+                let legacySubpath = String(mirroredSubpath.dropFirst("Library/".count))
+                candidates.append(rootURL.appendingPathComponent(legacySubpath))
+            }
+        }
+
+        return deduplicate(urls: candidates)
+    }
+
+    private func externalSearchRoots(from externalRootURL: URL) -> [URL] {
+        let standardizedRoot = externalRootURL.standardizedFileURL
+        var candidates = [standardizedRoot]
+
+        guard let volumeRoot = mountedVolumeRoot(for: standardizedRoot) else {
+            return deduplicate(urls: candidates)
+        }
+
+        var cursor = standardizedRoot
+        while cursor.path != volumeRoot.path {
+            let parent = cursor.deletingLastPathComponent().standardizedFileURL
+            guard parent.path.hasPrefix(volumeRoot.path) else { break }
+            candidates.append(parent)
+            cursor = parent
+        }
+
+        candidates.append(volumeRoot)
+        return deduplicate(urls: candidates)
+    }
+
+    private func siblingExternalRoots(for mirroredSubpath: String, externalRootURL: URL) -> [URL] {
+        guard let volumeRoot = mountedVolumeRoot(for: externalRootURL) else { return [] }
+
+        let legacySubpath = mirroredSubpath.hasPrefix("Library/")
+            ? String(mirroredSubpath.dropFirst("Library/".count))
+            : nil
+
+        return directoryEntries(at: volumeRoot).filter { candidateRoot in
+            let standardizedCandidateRoot = candidateRoot.standardizedFileURL
+
+            if standardizedCandidateRoot.path == externalRootURL.standardizedFileURL.path {
+                return false
+            }
+
+            if fileManager.fileExists(atPath: standardizedCandidateRoot.appendingPathComponent(mirroredSubpath).path) {
+                return true
+            }
+
+            if let legacySubpath,
+               fileManager.fileExists(atPath: standardizedCandidateRoot.appendingPathComponent(legacySubpath).path) {
+                return true
+            }
+
+            return false
+        }
+    }
+
+    private func mountedVolumeRoot(for url: URL) -> URL? {
+        let pathComponents = url.standardizedFileURL.pathComponents
+        guard pathComponents.count >= 3,
+              pathComponents[1] == "Volumes" else { return nil }
+
+        return URL(fileURLWithPath: "/Volumes/\(pathComponents[2])").standardizedFileURL
+    }
+
+    private func mirroredExternalSubpath(for localBaseURL: URL) -> String? {
+        let standardizedLocalBase = localBaseURL.standardizedFileURL
+        let homeLibraryRoot = homeDir.appendingPathComponent("Library").standardizedFileURL.path
+
+        guard standardizedLocalBase.path.hasPrefix(homeLibraryRoot + "/") else { return nil }
+
+        let libraryRelativePath = String(standardizedLocalBase.path.dropFirst(homeLibraryRoot.count + 1))
+        return "Library/" + libraryRelativePath
+    }
+
+    private func mapExternalCandidate(_ externalURL: URL, from externalBaseURL: URL, to localBaseURL: URL) -> URL? {
+        let standardizedExternal = externalURL.standardizedFileURL.path
+        let standardizedBase = externalBaseURL.standardizedFileURL.path
+
+        guard standardizedExternal.hasPrefix(standardizedBase + "/") else { return nil }
+
+        let relativePath = String(standardizedExternal.dropFirst(standardizedBase.count + 1))
+        return localBaseURL.appendingPathComponent(relativePath).standardizedFileURL
+    }
+
     /// 补充少数“入口 app 与真实安装根目录分离”的应用目录。
     ///
     /// 当前主要覆盖 Conda 发行版：
     /// `/Applications/Anaconda-Navigator.app -> /opt/anaconda3/Anaconda-Navigator.app`
-    private func scanSpecialAssociatedDirs(for app: AppItem, bundleID: String?, appName: String) -> [DataDirItem] {
+    private func scanSpecialAssociatedDirs(for app: AppItem, bundleID: String?, appName: String, externalRootURL: URL?) -> [DataDirItem] {
         guard isCondaDistribution(bundleID: bundleID, appName: appName) else { return [] }
 
         var results: [DataDirItem] = []
@@ -419,8 +894,7 @@ actor DataDirScanner {
                 isMigratable: true
             )
             item.associatedAppName = appName
-            item.status = inspection.status
-            item.linkedDestination = inspection.linkedDestination
+            applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
 
             results.append(item)
         }
@@ -504,66 +978,69 @@ actor DataDirScanner {
         return deduplicated
     }
 
-    /// 在指定目录中查找与应用匹配的子目录
+    /// 在指定目录中查找与应用匹配的子目录。
     ///
-    /// 匹配规则（按优先级）：
-    /// 1. 目录名 == BundleID（如 `com.apple.logic10`）
-    /// 2. 目录名 == AppName（如 `Logic Pro`）
-    /// 3. 目录名包含 BundleID 前缀（用于 Group Containers）
-    private func findMatchingDirs(in baseURL: URL, bundleID: String?, appName: String) -> [URL] {
+    /// 除了顶层目录外，还会额外检查一层子目录，用于覆盖：
+    /// - `Application Support/Adobe/Adobe Photoshop 2026`
+    /// - `Group Containers/FN2V63AD2J.com.tencent/qqex`
+    private func findMatchingDirs(in baseURL: URL, matchProfile: AppMatchProfile) -> [URL] {
         guard fileManager.fileExists(atPath: baseURL.path) else { return [] }
 
+        var matched: [URL] = []
+        let topLevelEntries = directoryEntries(at: baseURL)
+
+        for itemURL in topLevelEntries {
+            if matchesDirectoryName(itemURL.lastPathComponent, profile: matchProfile) {
+                matched.append(itemURL)
+                continue
+            }
+
+            for childURL in directoryEntries(at: itemURL) where matchesDirectoryName(childURL.lastPathComponent, profile: matchProfile) {
+                matched.append(childURL)
+            }
+        }
+
+        return deduplicate(urls: matched)
+    }
+
+    private func directoryEntries(at baseURL: URL) -> [URL] {
         let contents = (try? fileManager.contentsOfDirectory(
             at: baseURL,
             includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             options: .skipsHiddenFiles
         )) ?? []
 
-        var matched: [URL] = []
-
-        for itemURL in contents {
-            let dirName = itemURL.lastPathComponent
+        return contents.filter { itemURL in
             let resourceValues = try? itemURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             let isDir = resourceValues?.isDirectory ?? false
             let isSymlink = resourceValues?.isSymbolicLink ?? false
-            
-            // 只要是目录或者指向目录的符号链接都接受
-            guard isDir || isSymlink else { continue }
+            return isDir || isSymlink
+        }
+    }
 
-            // 规则1：精确匹配 BundleID
-            if let bid = bundleID, dirName == bid {
-                matched.append(itemURL)
-                continue
+    private func matchesDirectoryName(_ rawName: String, profile: AppMatchProfile) -> Bool {
+        let compactDirName = compactName(rawName)
+
+        for exact in profile.exactMatches {
+            if rawName.localizedCaseInsensitiveCompare(exact) == .orderedSame {
+                return true
             }
-
-            // 规则2：精确匹配 AppName（忽略大小写）
-            if dirName.localizedCaseInsensitiveCompare(appName) == .orderedSame {
-                matched.append(itemURL)
-                continue
-            }
-
-            // 规则3：BundleID 前缀匹配（用于 Group Containers，如 group.com.apple.logic）
-            if let bid = bundleID, !bid.isEmpty {
-                let bidComponents = bid.split(separator: ".")
-                // 取 BundleID 后两段作为关键词，例如 com.apple.logic10 → apple.logic10
-                if bidComponents.count >= 2 {
-                    let keyword = bidComponents.dropFirst().joined(separator: ".")
-                    if dirName.localizedCaseInsensitiveContains(keyword) {
-                        matched.append(itemURL)
-                        continue
-                    }
-                }
-            }
-
-            // 规则4：目录名包含应用名（模糊匹配，用于非标准命名）
-            if appName.count >= 4,
-               dirName.localizedCaseInsensitiveContains(appName) {
-                matched.append(itemURL)
-                continue
+            if !compactDirName.isEmpty && compactDirName.localizedCaseInsensitiveCompare(exact) == .orderedSame {
+                return true
             }
         }
 
-        return matched
+        for needle in profile.containsMatches where rawName.localizedCaseInsensitiveContains(needle) || compactDirName.localizedCaseInsensitiveContains(needle) {
+            return true
+        }
+
+        for prefix in profile.shortPrefixMatches {
+            if rawName.lowercased().hasPrefix(prefix.lowercased()) || compactDirName.lowercased().hasPrefix(prefix.lowercased()) {
+                return true
+            }
+        }
+
+        return false
     }
 
     /// 从 Info.plist 读取 BundleID
@@ -693,6 +1170,20 @@ actor DataDirScanner {
     }
 
     private func markerURL(for directoryURL: URL) -> URL {
-        directoryURL.appendingPathComponent(managedLinkMarkerFileName)
+        let standardizedURL = directoryURL.standardizedFileURL
+        let values = try? standardizedURL.resourceValues(forKeys: [.isDirectoryKey])
+
+        if values?.isDirectory == true {
+            return standardizedURL.appendingPathComponent(managedLinkMarkerFileName)
+        }
+
+        return standardizedURL
+            .deletingLastPathComponent()
+            .appendingPathComponent(".\(standardizedURL.lastPathComponent)\(managedLinkMetadataSidecarSuffix)")
+    }
+
+    private func isManagedLinkMetadataFile(_ fileName: String) -> Bool {
+        fileName == managedLinkMarkerFileName
+            || (fileName.hasPrefix(".") && fileName.hasSuffix(managedLinkMetadataSidecarSuffix))
     }
 }

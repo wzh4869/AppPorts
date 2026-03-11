@@ -13,12 +13,22 @@ import Foundation
 enum DataDirType: String, CaseIterable, Sendable {
     /// ~/Library/Application Support/ 下的应用数据
     case applicationSupport = "Application Support"
+    /// ~/Library/Preferences/ 下的应用偏好与配置
+    case preferences = "Preferences"
     /// ~/Library/Containers/ 下的沙盒应用数据
     case containers = "Containers"
     /// ~/Library/Group Containers/ 下的共享数据
     case groupContainers = "Group Containers"
     /// ~/Library/Caches/ 下的应用缓存
     case caches = "Caches"
+    /// ~/Library/WebKit/ 下的 WebKit 本地存储
+    case webKit = "WebKit"
+    /// ~/Library/HTTPStorages/ 下的网络会话数据
+    case httpStorages = "HTTPStorages"
+    /// ~/Library/Application Scripts/ 下的扩展脚本数据
+    case applicationScripts = "Application Scripts"
+    /// ~/Library/Logs/ 下的应用日志
+    case logs = "Logs"
     /// ~/Library/Saved Application State/ 下的窗口状态
     case savedState = "Saved State"
     /// ~/.xxx 工具直写目录
@@ -30,9 +40,14 @@ enum DataDirType: String, CaseIterable, Sendable {
     var icon: String {
         switch self {
         case .applicationSupport: return "doc.fill"
+        case .preferences:        return "slider.horizontal.3"
         case .containers:         return "shippingbox.fill"
         case .groupContainers:    return "square.grid.2x2.fill"
         case .caches:             return "arrow.2.circlepath"
+        case .webKit:             return "globe"
+        case .httpStorages:       return "network"
+        case .applicationScripts: return "scroll.fill"
+        case .logs:               return "text.justify.left"
         case .savedState:         return "clock.arrow.circlepath"
         case .dotFolder:          return "wrench.fill"
         case .custom:             return "folder.badge.plus"
@@ -43,7 +58,7 @@ enum DataDirType: String, CaseIterable, Sendable {
 // MARK: - 迁移优先级
 
 /// 目录迁移的重要程度建议
-enum DataDirPriority: String, Sendable, Comparable {
+enum DataDirPriority: String, CaseIterable, Sendable, Comparable {
     /// 重要：迁移后必须正常工作，影响应用核心功能
     case critical    = "重要"
     /// 推荐：占用空间大，迁移收益高
@@ -111,7 +126,9 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     /// 当前状态
     /// - "本地"：正常存在于本机
     /// - "已链接"：由 AppPorts 迁移到外部，本地为受管符号链接
+    /// - "待规范"：已被 AppPorts 接管，但外部目标仍在非规范路径
     /// - "现有软链"：检测到已有符号链接，但并非 AppPorts 迁移结果
+    /// - "待接回"：本地路径缺失，但外部已存在可直接接回的目录
     /// - "未找到"：路径不存在
     var status: String = "本地"
 

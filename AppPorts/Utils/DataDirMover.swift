@@ -24,6 +24,7 @@ actor DataDirMover {
     private let fileManager = FileManager.default
     private let homeDir = URL(fileURLWithPath: NSHomeDirectory())
     private let managedLinkMarkerFileName = ".appports-link-metadata.plist"
+    private let managedLinkMetadataSidecarSuffix = ".appports-link-metadata.plist"
     private let managedLinkIdentifier = "com.shimoko.AppPorts"
     private let managedLinkSchemaVersion = 1
 
@@ -94,6 +95,7 @@ actor DataDirMover {
             AppLogger.shared.log("步骤1.5: 已写入 AppPorts 链接标记")
         } catch {
             AppLogger.shared.logError("步骤1.5: 写入 AppPorts 链接标记失败，执行回滚", error: error)
+            try? removeManagedLinkMetadata(in: destPath)
             try? fileManager.removeItem(at: destPath)
             throw DataDirError.metadataWriteFailed(error)
         }
@@ -106,6 +108,7 @@ actor DataDirMover {
         } catch {
             // 回滚：删除外部已复制的目录
             AppLogger.shared.logError("步骤2: 删除失败，执行回滚", error: error)
+            try? removeManagedLinkMetadata(in: destPath)
             try? fileManager.removeItem(at: destPath)
             AppLogger.shared.log("回滚：已删除外部副本")
             throw DataDirError.deletionFailed(error)
@@ -123,6 +126,7 @@ actor DataDirMover {
             let emergencyCopier = FileCopier()
             try? await emergencyCopier.copyDirectory(from: destPath, to: sourcePath, progressHandler: nil)
             try? removeManagedLinkMetadata(in: sourcePath)
+            try? removeManagedLinkMetadata(in: destPath)
             try? fileManager.removeItem(at: destPath)
             AppLogger.shared.log("紧急回滚完成：数据已恢复到本地")
             throw DataDirError.symlinkFailed(error)
@@ -197,6 +201,7 @@ actor DataDirMover {
         // 3. 删除外部目录
         AppLogger.shared.log("步骤3: 删除外部目录...")
         do {
+            try? removeManagedLinkMetadata(in: externalPath)
             try fileManager.removeItem(at: externalPath)
             AppLogger.shared.log("步骤3: 完成")
         } catch {
@@ -226,6 +231,11 @@ actor DataDirMover {
             throw DataDirError.externalNotFound(externalPath)
         }
 
+        let parentURL = localPath.deletingLastPathComponent()
+        if !fileManager.fileExists(atPath: parentURL.path) {
+            try fileManager.createDirectory(at: parentURL, withIntermediateDirectories: true)
+        }
+
         // 如果本地路径已存在符号链接，先删除
         if let values = try? localPath.resourceValues(forKeys: [.isSymbolicLinkKey]),
            values.isSymbolicLink == true {
@@ -251,6 +261,61 @@ actor DataDirMover {
         } catch {
             try? removeManagedLinkMetadata(in: externalPath)
             throw DataDirError.symlinkFailed(error)
+        }
+    }
+
+    /// 将现有软链接纳入 AppPorts 管理，并在需要时迁移到规范路径。
+    ///
+    /// 如果当前外部路径与规范路径不同，会先移动外部目录/文件，再重建本地软链接。
+    func normalizeManagedLink(
+        localPath: URL,
+        currentExternalPath: URL,
+        normalizedExternalPath: URL
+    ) throws {
+        let standardizedCurrent = currentExternalPath.standardizedFileURL
+        let standardizedNormalized = normalizedExternalPath.standardizedFileURL
+
+        AppLogger.shared.log("开始规范化管理: \(localPath.path)")
+        AppLogger.shared.log("当前外部路径: \(standardizedCurrent.path)")
+        AppLogger.shared.log("规范目标路径: \(standardizedNormalized.path)")
+
+        guard fileManager.fileExists(atPath: standardizedCurrent.path) else {
+            throw DataDirError.externalNotFound(standardizedCurrent)
+        }
+
+        if standardizedCurrent == standardizedNormalized {
+            try createLink(localPath: localPath, externalPath: standardizedCurrent)
+            return
+        }
+
+        let normalizedParent = standardizedNormalized.deletingLastPathComponent()
+        try checkWritePermission(at: normalizedParent)
+
+        if fileManager.fileExists(atPath: standardizedNormalized.path) {
+            throw DataDirError.destinationExists(standardizedNormalized)
+        }
+
+        do {
+            try fileManager.moveItem(at: standardizedCurrent, to: standardizedNormalized)
+            AppLogger.shared.log("规范化管理: 已移动外部数据到规范路径")
+        } catch {
+            AppLogger.shared.logError("规范化管理: 移动外部数据失败", error: error)
+            throw DataDirError.copyFailed(error)
+        }
+
+        do {
+            try createLink(localPath: localPath, externalPath: standardizedNormalized)
+            AppLogger.shared.log("规范化管理: 已重建本地软链接")
+        } catch {
+            AppLogger.shared.logError("规范化管理: 重建本地软链接失败，尝试回滚外部路径", error: error)
+
+            if !fileManager.fileExists(atPath: standardizedCurrent.path),
+               fileManager.fileExists(atPath: standardizedNormalized.path) {
+                try? fileManager.moveItem(at: standardizedNormalized, to: standardizedCurrent)
+            }
+
+            try? createLink(localPath: localPath, externalPath: standardizedCurrent)
+            throw error
         }
     }
 
@@ -291,7 +356,16 @@ actor DataDirMover {
     }
 
     private func markerURL(for directoryURL: URL) -> URL {
-        directoryURL.appendingPathComponent(managedLinkMarkerFileName)
+        let standardizedURL = directoryURL.standardizedFileURL
+        let values = try? standardizedURL.resourceValues(forKeys: [.isDirectoryKey])
+
+        if values?.isDirectory == true {
+            return standardizedURL.appendingPathComponent(managedLinkMarkerFileName)
+        }
+
+        return standardizedURL
+            .deletingLastPathComponent()
+            .appendingPathComponent(".\(standardizedURL.lastPathComponent)\(managedLinkMetadataSidecarSuffix)")
     }
 
     private func inferType(for localPath: URL) -> DataDirType? {
@@ -300,9 +374,14 @@ actor DataDirMover {
 
         let mappings: [(URL, DataDirType)] = [
             (libraryRoot.appendingPathComponent("Application Support"), .applicationSupport),
+            (libraryRoot.appendingPathComponent("Preferences"), .preferences),
             (libraryRoot.appendingPathComponent("Containers"), .containers),
             (libraryRoot.appendingPathComponent("Group Containers"), .groupContainers),
+            (libraryRoot.appendingPathComponent("Application Scripts"), .applicationScripts),
             (libraryRoot.appendingPathComponent("Caches"), .caches),
+            (libraryRoot.appendingPathComponent("WebKit"), .webKit),
+            (libraryRoot.appendingPathComponent("HTTPStorages"), .httpStorages),
+            (libraryRoot.appendingPathComponent("Logs"), .logs),
             (libraryRoot.appendingPathComponent("Saved Application State"), .savedState)
         ]
 
