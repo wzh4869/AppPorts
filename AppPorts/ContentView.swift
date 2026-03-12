@@ -956,9 +956,7 @@ struct ContentView: View {
             }
         }
         
-        // 锁定外部结构，防止被应用内自动更新机制 (如 Sparkle/ShipIt) 意外移至废纸篓
-        AppLogger.shared.log("锁定外部项目，防止被修改或删除...")
-        try? fileManager.setAttributes([.immutable: true], ofItemAtPath: destinationURL.path)
+        AppLogger.shared.log("迁移完成：不再对外部应用自动加锁", level: "INFO")
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) throws {

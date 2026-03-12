@@ -352,29 +352,9 @@ actor AppScanner {
                 
                 // 检查本地是否存在符号链接
                 let localAppURL = localAppsDir.appendingPathComponent(appName)
-                if fileManager.fileExists(atPath: localAppURL.path) {
-                    // 1. 检查标准符号链接（整个 .app 是符号链接）
-                    if let resourceValues = try? localAppURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
-                       resourceValues.isSymbolicLink == true {
-                        // 验证符号链接是否指向当前外部应用
-                        if let linkDest = try? fileManager.destinationOfSymbolicLink(atPath: localAppURL.path),
-                           linkDest == itemURL.path {
-                            status = "已链接"
-                        }
-                    } else if let resourceValues = try? localAppURL.resourceValues(forKeys: [.isDirectoryKey]),
-                              resourceValues.isDirectory == true {
-                        // 2. 检查深层符号链接（Contents 是符号链接）
-                        let localContentsURL = localAppURL.appendingPathComponent("Contents")
-                        if let contentsValues = try? localContentsURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
-                           contentsValues.isSymbolicLink == true {
-                            // 验证 Contents 符号链接是否指向当前外部应用的 Contents
-                            let externalContentsURL = itemURL.appendingPathComponent("Contents")
-                            if let linkDest = try? fileManager.destinationOfSymbolicLink(atPath: localContentsURL.path),
-                               linkDest == externalContentsURL.path {
-                                status = "已链接"
-                            }
-                        }
-                    }
+                if isLocalAppLinked(localAppURL, toExternalApp: itemURL) {
+                    status = "已链接"
+                    clearImmutableFlagIfNeeded(at: itemURL)
                 }
                 newApps.append(AppItem(name: appName, path: itemURL, status: status, isSystemApp: false, isRunning: false))
             }
@@ -395,8 +375,9 @@ actor AppScanner {
                     for appURL in appsInFolder {
                         let appName = appURL.lastPathComponent
                         let localAppURL = localAppsDir.appendingPathComponent(appName)
-                        if fileManager.fileExists(atPath: localAppURL.path) {
+                        if isLocalAppLinked(localAppURL, toExternalApp: appURL) {
                             linkedCount += 1
+                            clearImmutableFlagIfNeeded(at: appURL)
                         }
                     }
                     
@@ -423,6 +404,40 @@ actor AppScanner {
             }
         }
         return sortApps(newApps)
+    }
+
+    private func isLocalAppLinked(_ localAppURL: URL, toExternalApp externalAppURL: URL) -> Bool {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: localAppURL.path) else { return false }
+
+        if let resourceValues = try? localAppURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
+           resourceValues.isSymbolicLink == true,
+           let linkDest = try? fileManager.destinationOfSymbolicLink(atPath: localAppURL.path),
+           URL(fileURLWithPath: linkDest, relativeTo: localAppURL.deletingLastPathComponent()).standardizedFileURL == externalAppURL.standardizedFileURL {
+            return true
+        }
+
+        if let resourceValues = try? localAppURL.resourceValues(forKeys: [.isDirectoryKey]),
+           resourceValues.isDirectory == true {
+            let localContentsURL = localAppURL.appendingPathComponent("Contents")
+            if let contentsValues = try? localContentsURL.resourceValues(forKeys: [.isSymbolicLinkKey]),
+               contentsValues.isSymbolicLink == true,
+               let linkDest = try? fileManager.destinationOfSymbolicLink(atPath: localContentsURL.path) {
+                let resolvedContentsURL = URL(fileURLWithPath: linkDest, relativeTo: localContentsURL.deletingLastPathComponent()).standardizedFileURL
+                return resolvedContentsURL == externalAppURL.appendingPathComponent("Contents").standardizedFileURL
+            }
+        }
+
+        return false
+    }
+
+    private func clearImmutableFlagIfNeeded(at url: URL) {
+        let fileManager = FileManager.default
+        guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
+              let isImmutable = attributes[.immutable] as? Bool,
+              isImmutable else { return }
+
+        try? fileManager.setAttributes([.immutable: false], ofItemAtPath: url.path)
     }
     
     /// 应用列表排序
