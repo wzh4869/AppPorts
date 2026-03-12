@@ -31,6 +31,13 @@ import Foundation
 ///
 /// - Note: 使用 Actor 确保所有扫描操作在后台线程串行执行，不阻塞 UI
 actor AppScanner {
+
+    enum AppSizeMode {
+        /// 解析到真实 bundle/目录后计算内容体积。
+        case logicalContent
+        /// 保留本地入口结构，仅计算壳 app 或 symlink 本身占用。
+        case localPortal
+    }
     
     // MARK: - 公共 API
     
@@ -44,14 +51,29 @@ actor AppScanner {
     /// - Note:
     ///   - 普通目录：跳过内部符号链接，避免重复计算
     ///   - `.app` 包：会尽量解析入口 symlink 或 `Contents` 深层链接，得到真实体积
-    func calculateDirectorySize(at url: URL) -> Int64 {
+    func calculateDirectorySize(at url: URL, mode: AppSizeMode = .logicalContent) -> Int64 {
         let fileManager = FileManager.default
         var size: Int64 = 0
-        let scanURL = resolveSizeCalculationURL(for: url)
+        let scanURL: URL
+        let shouldCountSymlinkEntries: Bool
+
+        switch mode {
+        case .logicalContent:
+            scanURL = resolveSizeCalculationURL(for: url)
+            shouldCountSymlinkEntries = false
+        case .localPortal:
+            scanURL = url
+            shouldCountSymlinkEntries = true
+        }
         guard fileManager.fileExists(atPath: scanURL.path) else { return 0 }
         
         // 需要获取的资源键
-        let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey]
+        let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]
+
+        if let values = try? scanURL.resourceValues(forKeys: Set(resourceKeys)),
+           values.isDirectory != true {
+            return Int64(values.fileSize ?? 0)
+        }
         
         // 创建目录枚举器（深度优先遍历）
         guard let enumerator = fileManager.enumerator(
@@ -64,10 +86,23 @@ actor AppScanner {
         // 累加所有文件大小
         for case let fileURL as URL in enumerator {
             let resourceValues = try? fileURL.resourceValues(forKeys: Set(resourceKeys))
-            if resourceValues?.isSymbolicLink == true { continue }
+            if resourceValues?.isSymbolicLink == true {
+                if shouldCountSymlinkEntries {
+                    size += Int64(resourceValues?.fileSize ?? 0)
+                }
+                continue
+            }
             if let fileSize = resourceValues?.fileSize { size += Int64(fileSize) }
         }
         return size
+    }
+
+    /// 根据显示场景选择应用体积计算方式。
+    ///
+    /// 本地列表中的“已链接”应用应显示本地入口壳体积；外部列表和普通本地应用显示真实内容体积。
+    func calculateDisplayedSize(for app: AppItem, isLocalEntry: Bool) -> Int64 {
+        let mode: AppSizeMode = (isLocalEntry && app.status == "已链接") ? .localPortal : .logicalContent
+        return calculateDirectorySize(at: app.path, mode: mode)
     }
     
     /// 扫描本地应用目录

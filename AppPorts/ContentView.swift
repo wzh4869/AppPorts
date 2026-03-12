@@ -689,7 +689,7 @@ struct ContentView: View {
     
     func calculateSizesProgressive(for apps: [AppItem], isLocal: Bool, scanner: AppScanner) async {
         for app in apps {
-             let sizeBytes = await scanner.calculateDirectorySize(at: app.path)
+             let sizeBytes = await scanner.calculateDisplayedSize(for: app, isLocalEntry: isLocal)
              
              await MainActor.run {
                  let formatter = MeasurementFormatter()
