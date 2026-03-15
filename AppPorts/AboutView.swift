@@ -34,7 +34,6 @@ private let fallbackContributors: [Contributor] = [
     Contributor(name: "wzh4869", github: "wzh4869"),
     Contributor(name: "sulimu2", github: "sulimu2"),
     Contributor(name: "2han9wen71an", github: "2han9wen71an"),
-    Contributor(name: "shimoko", github: "shimoko"),
 ]
 
 private struct GitHubContributorResponse: Decodable {
