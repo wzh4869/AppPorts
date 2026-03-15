@@ -9,6 +9,12 @@ import Foundation
 
 // MARK: - 数据模型
 
+enum AppContainerKind: String, Sendable {
+    case standaloneApp
+    case singleAppContainer
+    case appSuiteFolder
+}
+
 /// 应用程序项目数据模型
 ///
 /// 代表一个 macOS 应用程序的完整信息，包括基本属性、状态和特殊标识。
@@ -38,8 +44,14 @@ struct AppItem: Identifiable, Equatable, Sendable {
     var name: String
     
     /// 应用的完整文件路径
-    /// - Note: 可能指向本地 /Applications 或外部存储设备
+    /// - Note: 这是实际操作路径；对“单应用容器”场景会指向外层文件夹
     var path: URL
+
+    /// 实际用于展示图标和读取 bundle 信息的 app 路径
+    ///
+    /// - Note: 对普通 `.app` 与多应用套件，此值等于 `path` 或为 `nil`
+    /// - Note: 对“单应用容器”场景，此值指向容器内唯一的 `.app`
+    var bundleURL: URL? = nil
     
     // MARK: - 状态属性
     
@@ -83,6 +95,9 @@ struct AppItem: Identifiable, Equatable, Sendable {
     /// 是否为包含多个应用的文件夹（如 Microsoft Office 文件夹）
     /// - Note: 文件夹项可以批量迁移其中的所有应用
     var isFolder: Bool = false
+
+    /// 容器类型
+    var containerKind: AppContainerKind = .standaloneApp
     
     /// 如果是文件夹，包含的应用数量
     /// - Note: 仅当 isFolder 为 true 时有效
@@ -91,11 +106,25 @@ struct AppItem: Identifiable, Equatable, Sendable {
     /// 用于 UI 显示的名称
     /// - 普通应用：直接返回 name
     /// - 文件夹：返回 "文件夹名 (X 个应用)"
-    var displayName: String {
+    /// - 单应用容器：返回内部 app 的名称
+    nonisolated var displayName: String {
         if isFolder {
             return String(format: "%@ (%lld 个应用)".localized, name, Int64(appCount))
         }
+        if let bundleURL {
+            return bundleURL.lastPathComponent
+        }
         return name
+    }
+
+    /// UI 展示图标与 bundle 元数据时使用的 URL
+    nonisolated var displayURL: URL {
+        bundleURL ?? path
+    }
+
+    /// 是否按“整个文件夹”执行迁移/还原/链接
+    nonisolated var usesFolderOperation: Bool {
+        isFolder || containerKind == .singleAppContainer
     }
 
     // MARK: - Equatable 实现
@@ -110,7 +139,9 @@ struct AppItem: Identifiable, Equatable, Sendable {
         lhs.size == rhs.size &&
         lhs.sizeBytes == rhs.sizeBytes &&
         lhs.isAppStoreApp == rhs.isAppStoreApp &&
-        lhs.isIOSApp == rhs.isIOSApp
+        lhs.isIOSApp == rhs.isIOSApp &&
+        lhs.bundleURL == rhs.bundleURL &&
+        lhs.containerKind == rhs.containerKind
     }
 }
 

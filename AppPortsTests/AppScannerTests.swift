@@ -63,46 +63,51 @@ final class AppScannerTests: XCTestCase {
         XCTAssertEqual(displayedSize, logicalSize)
     }
 
-    func testScanExternalAppsIncludesLinkedSuiteFolderNestedUnderSelectedRoot() async throws {
+    func testLocalScanPrefersSingleAppContainerOverStandaloneDuplicate() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
-        let nestedSuitesURL = workspace.externalRootURL.appendingPathComponent("Suites")
-        let externalFolderURL = nestedSuitesURL.appendingPathComponent("Microsoft Office")
-        let localFolderURL = workspace.localAppsURL.appendingPathComponent("Microsoft Office")
+        let standaloneAppURL = workspace.localAppsURL.appendingPathComponent("Adobe Photoshop 2026.app")
+        let containerURL = workspace.localAppsURL.appendingPathComponent("Adobe Photoshop 2026")
+        let nestedAppURL = containerURL.appendingPathComponent("Adobe Photoshop 2026.app")
 
-        try fileManager.createDirectory(at: nestedSuitesURL, withIntermediateDirectories: true)
-        try createAppBundle(at: externalFolderURL.appendingPathComponent("Word.app"), payloadSize: 1024)
-        try createAppBundle(at: externalFolderURL.appendingPathComponent("Excel.app"), payloadSize: 1024)
-        try fileManager.createSymbolicLink(at: localFolderURL, withDestinationURL: externalFolderURL)
+        try createAppBundle(at: standaloneAppURL, payloadSize: 1024, bundleID: "com.example.photoshop")
+        try createAppBundle(at: nestedAppURL, payloadSize: 1024, bundleID: "com.example.photoshop")
 
-        let scanner = AppScanner()
-        let externalItems = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        let items = await AppScanner().scanLocalApps(at: workspace.localAppsURL, runningAppURLs: Set<URL>())
 
-        let linkedFolder = try XCTUnwrap(externalItems.first { $0.path.standardizedFileURL == externalFolderURL.standardizedFileURL })
-        XCTAssertEqual(linkedFolder.status, "已链接")
-        XCTAssertTrue(linkedFolder.isFolder)
-        XCTAssertEqual(linkedFolder.appCount, 2)
+        XCTAssertEqual(items.count, 1)
+        let item = try XCTUnwrap(items.first)
+        XCTAssertEqual(item.containerKind, .singleAppContainer)
+        XCTAssertEqual(item.path.standardizedFileURL, containerURL.standardizedFileURL)
+        XCTAssertEqual(item.displayURL.standardizedFileURL, nestedAppURL.standardizedFileURL)
+        XCTAssertTrue(item.usesFolderOperation)
+        XCTAssertEqual(item.displayName, "Adobe Photoshop 2026.app")
     }
 
-    func testScanLocalAppsDetectsLinkedSuiteFolderSymlink() async throws {
+    func testExternalScanPrefersSingleAppContainerOverStandaloneDuplicate() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
-        let externalFolderURL = workspace.externalRootURL.appendingPathComponent("Microsoft Office")
-        let localFolderURL = workspace.localAppsURL.appendingPathComponent("Microsoft Office")
+        let standaloneAppURL = workspace.externalRootURL.appendingPathComponent("Adobe Illustrator 2026.app")
+        let containerURL = workspace.externalRootURL.appendingPathComponent("Adobe Illustrator 2026")
+        let nestedAppURL = containerURL.appendingPathComponent("Adobe Illustrator 2026.app")
 
-        try createAppBundle(at: externalFolderURL.appendingPathComponent("Word.app"), payloadSize: 1024)
-        try createAppBundle(at: externalFolderURL.appendingPathComponent("Excel.app"), payloadSize: 1024)
-        try fileManager.createSymbolicLink(at: localFolderURL, withDestinationURL: externalFolderURL)
+        try createAppBundle(at: standaloneAppURL, payloadSize: 1024, bundleID: "com.example.illustrator")
+        try createAppBundle(at: nestedAppURL, payloadSize: 1024, bundleID: "com.example.illustrator")
+        try fileManager.createSymbolicLink(
+            at: workspace.localAppsURL.appendingPathComponent("Adobe Illustrator 2026"),
+            withDestinationURL: containerURL
+        )
 
-        let scanner = AppScanner()
-        let localItems = await scanner.scanLocalApps(at: workspace.localAppsURL, runningAppURLs: [])
+        let items = await AppScanner().scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
 
-        let linkedFolder = try XCTUnwrap(localItems.first { $0.path.standardizedFileURL == localFolderURL.standardizedFileURL })
-        XCTAssertEqual(linkedFolder.status, "已链接")
-        XCTAssertTrue(linkedFolder.isFolder)
-        XCTAssertEqual(linkedFolder.appCount, 2)
+        XCTAssertEqual(items.count, 1)
+        let item = try XCTUnwrap(items.first)
+        XCTAssertEqual(item.containerKind, .singleAppContainer)
+        XCTAssertEqual(item.status, "已链接")
+        XCTAssertEqual(item.path.standardizedFileURL, containerURL.standardizedFileURL)
+        XCTAssertEqual(item.displayURL.standardizedFileURL, nestedAppURL.standardizedFileURL)
     }
 
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {
@@ -120,7 +125,7 @@ final class AppScannerTests: XCTestCase {
         try? fileManager.removeItem(at: rootURL)
     }
 
-    private func createAppBundle(at appURL: URL, payloadSize: Int) throws {
+    private func createAppBundle(at appURL: URL, payloadSize: Int, bundleID: String? = nil) throws {
         let contentsURL = appURL.appendingPathComponent("Contents")
         let macOSURL = contentsURL.appendingPathComponent("MacOS")
         let resourcesURL = contentsURL.appendingPathComponent("Resources")
@@ -133,5 +138,11 @@ final class AppScannerTests: XCTestCase {
 
         let payloadURL = resourcesURL.appendingPathComponent("payload.bin")
         try Data(repeating: 0x42, count: payloadSize).write(to: payloadURL)
+
+        let plist: [String: Any] = [
+            "CFBundleIdentifier": bundleID ?? "com.example.\(appURL.deletingPathExtension().lastPathComponent.lowercased().replacingOccurrences(of: " ", with: "-"))"
+        ]
+        let plistData = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+        try plistData.write(to: contentsURL.appendingPathComponent("Info.plist"))
     }
 }

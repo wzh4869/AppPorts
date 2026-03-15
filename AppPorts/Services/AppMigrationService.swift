@@ -106,7 +106,7 @@ struct AppMigrationService {
                     ("app_name", appToMove.name),
                     ("source_path", appToMove.path.path),
                     ("destination_path", destinationURL.path),
-                    ("is_folder", appToMove.isFolder ? "true" : "false")
+                    ("is_folder", appToMove.usesFolderOperation ? "true" : "false")
                 ]
             )
         }
@@ -119,8 +119,8 @@ struct AppMigrationService {
                 ("app_name", appToMove.name),
                 ("source_path", appToMove.path.path),
                 ("destination_path", destinationURL.path),
-                ("is_folder", appToMove.isFolder ? "true" : "false"),
-                ("app_count", appToMove.isFolder ? String(appToMove.appCount) : nil),
+                ("is_folder", appToMove.usesFolderOperation ? "true" : "false"),
+                ("app_count", appToMove.usesFolderOperation ? String(appToMove.appCount) : nil),
                 ("status", appToMove.status),
                 ("is_running", isRunning ? "true" : "false"),
                 ("has_finder_fallback", deleteSourceFallback == nil ? "false" : "true")
@@ -316,7 +316,7 @@ struct AppMigrationService {
                     ("app_name", appToLink.name),
                     ("source_path", appToLink.path.path),
                     ("destination_path", destinationURL.path),
-                    ("is_folder", appToLink.isFolder ? "true" : "false")
+                    ("is_folder", appToLink.usesFolderOperation ? "true" : "false")
                 ]
             )
         }
@@ -382,7 +382,7 @@ struct AppMigrationService {
             }
         }
 
-        let portalKind = preferredPortalKind(for: appToLink.path)
+        let portalKind: LocalPortalKind = appToLink.usesFolderOperation ? .wholeAppSymlink : preferredPortalKind(for: appToLink.path)
         AppLogger.shared.logContext(
             "本地入口策略",
             details: [("operation_id", operationID), ("portal_kind", portalKindDescription(portalKind))]
@@ -516,7 +516,7 @@ struct AppMigrationService {
                     ("app_name", app.name),
                     ("external_path", app.path.path),
                     ("local_destination", localDestinationURL.path),
-                    ("is_folder", app.isFolder ? "true" : "false")
+                    ("is_folder", app.usesFolderOperation ? "true" : "false")
                 ]
             )
         }
@@ -529,8 +529,8 @@ struct AppMigrationService {
                 ("app_name", app.name),
                 ("external_path", app.path.path),
                 ("local_destination", localDestinationURL.path),
-                ("is_folder", app.isFolder ? "true" : "false"),
-                ("app_count", app.isFolder ? String(app.appCount) : nil),
+                ("is_folder", app.usesFolderOperation ? "true" : "false"),
+                ("app_count", app.usesFolderOperation ? String(app.appCount) : nil),
                 ("status", app.status)
             ]
         )
@@ -830,7 +830,7 @@ struct AppMigrationService {
             return
         }
 
-        if appToMove.isFolder {
+        if appToMove.usesFolderOperation {
             AppLogger.shared.log("迁移策略: 应用文件夹 (整体符号链接)", level: "STRATEGY")
             try createLocalPortal(
                 at: appToMove.path,
@@ -895,7 +895,7 @@ struct AppMigrationService {
                 ("app_name", appToMove.name),
                 ("source_path", appToMove.path.path),
                 ("destination_path", destinationURL.path),
-                ("is_folder", appToMove.isFolder ? "true" : "false")
+                    ("is_folder", appToMove.usesFolderOperation ? "true" : "false")
             ],
             level: "WARN"
         )

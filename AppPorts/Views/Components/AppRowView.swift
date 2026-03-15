@@ -21,7 +21,7 @@ struct AppRowView: View {
     
     var body: some View {
         HStack(spacing: 14) {
-            AppIconView(url: app.path)
+            AppIconView(url: app.displayURL)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(app.displayName)

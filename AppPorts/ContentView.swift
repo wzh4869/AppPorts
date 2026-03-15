@@ -374,7 +374,7 @@ struct ContentView: View {
                 pendingAppStoreApps = []
             }
         } message: {
-            let count = Int64(pendingAppStoreApps.filter { isAppStoreApp(at: $0.path) }.count)
+            let count = Int64(pendingAppStoreApps.filter { isAppStoreApp(at: $0.displayURL) }.count)
             let totalCount = Int64(pendingAppStoreApps.count)
             if count == totalCount {
                 Text(String(format: "选中的 %lld 个应用均来自 App Store，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。".localized, totalCount))
@@ -409,14 +409,18 @@ struct ContentView: View {
     
     var filteredLocalApps: [AppItem] {
         let apps = localApps
-        let filtered = searchText.isEmpty ? apps : apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        let filtered = searchText.isEmpty ? apps : apps.filter {
+            $0.displayName.localizedCaseInsensitiveContains(searchText) || $0.name.localizedCaseInsensitiveContains(searchText)
+        }
         
         return sortApps(filtered)
     }
     
     var filteredExternalApps: [AppItem] {
         let apps = externalApps
-        let filtered = searchText.isEmpty ? apps : apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        let filtered = searchText.isEmpty ? apps : apps.filter {
+            $0.displayName.localizedCaseInsensitiveContains(searchText) || $0.name.localizedCaseInsensitiveContains(searchText)
+        }
         
         return sortApps(filtered)
     }
@@ -431,7 +435,7 @@ struct ContentView: View {
                  // Keep "Linked" on top? Maybe not for size sort. Let's strict size sort.
                  // Or, if user wants size, we just sort by size.
                  if $0.sizeBytes == $1.sizeBytes {
-                     return $0.name < $1.name
+                     return $0.displayName < $1.displayName
                  }
                  return $0.sizeBytes > $1.sizeBytes // Descending
             }
@@ -858,7 +862,7 @@ struct ContentView: View {
         try await service.moveAndLink(
             appToMove: appToMove,
             destinationURL: destinationURL,
-            isRunning: isAppRunning(url: appToMove.path),
+            isRunning: isAppRunning(url: appToMove.displayURL),
             deleteSourceFallback: AppMigrationService.removeItemViaFinder(at:),
             progressHandler: progressHandler
         )
@@ -1097,8 +1101,10 @@ struct ContentView: View {
                 let tempAppItem = AppItem(
                     name: appName,
                     path: item.sourcePath,
+                    bundleURL: item.app.bundleURL,
                     status: "未链接",
                     isFolder: item.app.isFolder,
+                    containerKind: item.app.containerKind,
                     appCount: item.app.appCount
                 )
                 AppLogger.shared.logContext(
