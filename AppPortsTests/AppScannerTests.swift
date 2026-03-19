@@ -154,6 +154,33 @@ final class AppScannerTests: XCTestCase {
         XCTAssertEqual(item.displayURL.standardizedFileURL, nestedAppURL.standardizedFileURL)
     }
 
+    func testExternalSuiteDoesNotCountSameNamedLocalAppLinkedElsewhereAsPartiallyLinked() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let officeSuiteURL = workspace.externalRootURL.appendingPathComponent("Microsoft Office")
+        let officeWordURL = officeSuiteURL.appendingPathComponent("Word.app")
+        let officeExcelURL = officeSuiteURL.appendingPathComponent("Excel.app")
+
+        let unrelatedRootURL = workspace.rootURL.appendingPathComponent("UnrelatedExternal")
+        let unrelatedWordURL = unrelatedRootURL.appendingPathComponent("Word.app")
+        let localWordURL = workspace.localAppsURL.appendingPathComponent("Word.app")
+
+        try fileManager.createDirectory(at: unrelatedRootURL, withIntermediateDirectories: true)
+        try createAppBundle(at: officeWordURL, payloadSize: 1024, bundleID: "com.microsoft.word")
+        try createAppBundle(at: officeExcelURL, payloadSize: 1024, bundleID: "com.microsoft.excel")
+        try createAppBundle(at: unrelatedWordURL, payloadSize: 1024, bundleID: "com.microsoft.word")
+        try fileManager.createSymbolicLink(at: localWordURL, withDestinationURL: unrelatedWordURL)
+
+        let items = await AppScanner().scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+
+        XCTAssertEqual(items.count, 1)
+        let item = try XCTUnwrap(items.first)
+        XCTAssertEqual(item.containerKind, .appSuiteFolder)
+        XCTAssertEqual(item.path.standardizedFileURL, officeSuiteURL.standardizedFileURL)
+        XCTAssertEqual(item.status, "未链接")
+    }
+
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {
         let rootURL = fileManager.temporaryDirectory.appendingPathComponent("AppScannerTests-\(UUID().uuidString)")
         let localAppsURL = rootURL.appendingPathComponent("Applications")

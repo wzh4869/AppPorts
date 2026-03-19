@@ -262,8 +262,8 @@ actor AppScanner {
     }
 
     private func detectLocalFolderStatus(at folderURL: URL) -> String {
-        if let linkDest = resolveSymlinkDestination(of: folderURL) {
-            return isCrossVolumeLink(fromPortalAt: folderURL, to: linkDest) ? "已链接" : "本地"
+        if resolveSymlinkDestination(of: folderURL) != nil {
+            return "已链接"
         }
 
         return "本地"
