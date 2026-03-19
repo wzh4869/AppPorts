@@ -148,7 +148,7 @@ If you find translation errors or have suggestions for new features, please let 
 [![Star History Chart](https://api.star-history.com/image?repos=wzh4869/AppPorts&type=date&legend=top-left)](https://www.star-history.com/?repos=wzh4869%2FAppPorts&type=date&legend=top-left)
 ## 📄 License
 
-This project is open-source under the [MIT License](LICENSE).
+This project is open-source under the [Apache License 2.0](LICENSE).
 
 <br>
 <div align="center">
