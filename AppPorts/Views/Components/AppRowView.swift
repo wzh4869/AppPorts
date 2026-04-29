@@ -86,27 +86,12 @@ struct AppRowView: View {
             }
         }
         // Accessibility: Combine row into single element
-        .accessibilityElement(children: .combine)
-        // Custom Actions for VoiceOver (Swipe up/down)
-        .accessibilityActions {
-             if showDeleteLinkButton && app.status == "已链接" {
-                 Button(action: { onDeleteLink(app) }) {
-                     Text("断开".localized)
-                 }
-             }
-             
-             if showMoveBackButton {
-                 Button(action: { onMoveBack(app) }) {
-                     Text("还原".localized)
-                 }
-             }
-             
-             Button(action: {
-                 NSWorkspace.shared.activateFileViewerSelecting([app.path])
-             }) {
-                 Text("在 Finder 中显示".localized)
-             }
-        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            Text(app.displayName) + Text(", ") +
+            Text(app.status.localized) +
+            (app.size.map { Text(", \($0)") } ?? Text(""))
+        )
         .contextMenu {
             Button("在 Finder 中显示".localized) {
                 NSWorkspace.shared.activateFileViewerSelecting([app.path])

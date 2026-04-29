@@ -124,86 +124,86 @@ struct DataDirRowView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(
-                    Capsule().fill(Color.orange.gradient)
-                )
-            }
-            .buttonStyle(.plain)
-            .help("将数据目录还原到本地".localized)
-        } else if item.status == "待规范" {
-            if item.linkedDestination != nil {
-                Button(action: { onNormalizeManagedLink(item) }) {
+                    .background(
+                        Capsule().fill(Color.orange)
+                    )
+                }
+                .buttonStyle(.plain)
+                .help("将数据目录还原到本地".localized)
+            } else if item.status == "待规范" {
+                if item.linkedDestination != nil {
+                    Button(action: { onNormalizeManagedLink(item) }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                            Text("整理".localized)
+                        }
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule().fill(Color.mint)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .help("将已接管的链接整理到 AppPorts 规范路径".localized)
+                }
+            } else if item.status == "现有软链" {
+                if item.linkedDestination != nil {
+                    Button(action: { onManageExistingLink(item) }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "slider.horizontal.3")
+                            Text("链接详情".localized)
+                        }
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule().fill(Color.teal)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .help("查看现有软链路径，并可将其纳入 AppPorts 管理".localized)
+                } else {
+                    Image(systemName: "link.badge.questionmark")
+                        .font(.system(size: 13))
+                        .foregroundColor(.teal.opacity(0.85))
+                        .help("检测到已有符号链接，非 AppPorts 迁移结果".localized)
+                }
+            } else if item.status == "待接回" {
+                if item.linkedDestination != nil {
+                    Button(action: { onRelinkExternalData(item) }) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.triangle.branch")
+                            Text("接回".localized)
+                        }
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule().fill(Color.indigo)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .help("外部目录已存在，在原路径补建符号链接".localized)
+                }
+            } else if item.status == "本地" {
+                // 本地：显示「迁移」按钮
+                Button(action: { onMigrate(item) }) {
                     HStack(spacing: 5) {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                        Text("整理".localized)
+                        Image(systemName: "arrow.right.circle.fill")
+                        Text("迁移".localized)
                     }
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(
-                        Capsule().fill(Color.mint.gradient)
+                        Capsule().fill(Color.accentColor)
                     )
                 }
-                .buttonStyle(.plain)
-                .help("将已接管的链接整理到 AppPorts 规范路径".localized)
-            }
-        } else if item.status == "现有软链" {
-            if item.linkedDestination != nil {
-                Button(action: { onManageExistingLink(item) }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "slider.horizontal.3")
-                        Text("链接详情".localized)
-                    }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        Capsule().fill(Color.teal.gradient)
-                    )
-                }
-                .buttonStyle(.plain)
-                .help("查看现有软链路径，并可将其纳入 AppPorts 管理".localized)
-            } else {
-                Image(systemName: "link.badge.questionmark")
-                    .font(.system(size: 13))
-                    .foregroundColor(.teal.opacity(0.85))
-                    .help("检测到已有符号链接，非 AppPorts 迁移结果".localized)
-            }
-        } else if item.status == "待接回" {
-            if item.linkedDestination != nil {
-                Button(action: { onRelinkExternalData(item) }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "arrow.triangle.branch")
-                        Text("接回".localized)
-                    }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        Capsule().fill(Color.indigo.gradient)
-                    )
-                }
-                .buttonStyle(.plain)
-                .help("外部目录已存在，在原路径补建符号链接".localized)
-            }
-        } else if item.status == "本地" {
-            // 本地：显示「迁移」按钮
-            Button(action: { onMigrate(item) }) {
-                HStack(spacing: 5) {
-                    Image(systemName: "arrow.right.circle.fill")
-                    Text("迁移".localized)
-                }
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(
-                    Capsule().fill(Color.accentColor.gradient)
-                )
-            }
             .buttonStyle(.plain)
             .help("将数据目录迁移到外部存储".localized)
         }

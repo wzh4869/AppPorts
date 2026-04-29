@@ -125,7 +125,6 @@ struct WelcomeView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("需要“完全磁盘访问权限”".localized)
                                     .font(.headline)
-                                    .fontDesign(.rounded)
                                     .foregroundColor(.primary)
                                 
                                 Text("应用需要读写 /Applications 目录才能工作。请在系统设置中开启。".localized)
@@ -135,12 +134,11 @@ struct WelcomeView: View {
                                 
                                 Button(action: openFullDiskAccessSettings) {
                                     HStack(spacing: 4) {
-                                        Text("去设置授予权限".localized)
+                                        Text("去设置授予权限".localized).fontWeight(.semibold)
                                         Image(systemName: "arrow.up.right")
                                             .font(.system(size: 10))
                                     }
                                     .font(.caption)
-                                    .fontWeight(.semibold)
                                 }
                                 .buttonStyle(.link)
                                 .padding(.top, 2)
@@ -306,7 +304,6 @@ struct FeatureRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                    .fontDesign(.rounded)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
                 

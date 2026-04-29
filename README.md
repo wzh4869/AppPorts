@@ -94,7 +94,7 @@ AppPorts does not migrate every app in the same way. It picks a local portal str
 ## 🛠️ Installation
 
 ### System Requirements
-* macOS 14.0 (Sonoma) or newer.
+* macOS 12.0 (Monterey) or newer.
 
 ### Download and Installation
 Please visit the [official website](https://appports.shimoko.com/) or the [Releases](https://github.com/wzh4869/AppPorts/releases) page to download the latest `AppPorts.dmg`.

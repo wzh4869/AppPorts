@@ -123,10 +123,10 @@ struct DataDirsView: View {
         .onAppear {
             reloadCurrentTab()
         }
-        .onChange(of: selectedTab) { _, _ in
+        .onChange(of: selectedTab) { _ in
             reloadCurrentTab()
         }
-        .onChange(of: languageManager.language) { _, _ in
+        .onChange(of: languageManager.language) { _ in
             reloadCurrentTab()
         }
         // 确认弹窗
@@ -276,7 +276,7 @@ struct DataDirsView: View {
                 }
             }
             .frame(minWidth: 200, maxWidth: 280)
-            .onChange(of: selectedApp) { _, newApp in
+            .onChange(of: selectedApp) { newApp in
                 if let app = newApp { scanLibraryDirs(for: app) }
                 else { libraryItems = [] }
             }
@@ -519,7 +519,6 @@ struct DataDirsView: View {
                     systemImage: "sparkles"
                 )
                     .foregroundColor(.accentColor)
-                    .fontWeight(.medium)
             }
             if linked > 0 {
                 Label(String(format: "%lld 个已链接".localized, Int64(linked)), systemImage: "link.circle.fill")

@@ -64,6 +64,9 @@ struct ContentView: View {
     // Monitors
     @State private var localMonitor: FolderMonitor?
     @State private var externalMonitor: FolderMonitor?
+    
+    // Track previous external drive URL for logging
+    @State private var previousExternalDriveURL: URL?
 
     enum SortOption {
         case name, size
@@ -175,7 +178,6 @@ struct ContentView: View {
                                 )
                                 .tag(app.id)
                                 .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)) // Add spacing around rows
-                                .listRowSeparator(.hidden) // Keep hidden separators
                             }
                             .listStyle(.plain)
                         }
@@ -237,7 +239,6 @@ struct ContentView: View {
                             )
                             .tag(app.id)
                             .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
-                            .listRowSeparator(.hidden)
                         }
                         .listStyle(.plain)
                     }
@@ -330,14 +331,15 @@ struct ContentView: View {
                 }
             }
         }
-        .onChange(of: externalDriveURL) { oldValue, newValue in
+        .onChange(of: externalDriveURL) { newValue in
             AppLogger.shared.logContext(
                 "外部路径变更",
                 details: [
-                    ("old_path", oldValue?.path),
+                    ("old_path", previousExternalDriveURL?.path),
                     ("new_path", newValue?.path)
                 ]
             )
+            previousExternalDriveURL = newValue
             // Persistence
             if let url = newValue {
                 UserDefaults.standard.set(url.path, forKey: "ExternalDrivePath")

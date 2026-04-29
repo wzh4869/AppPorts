@@ -58,6 +58,7 @@ enum AppLanguageCatalog {
         AppLanguageOption(code: "id", nativeName: "Indonesia", flag: "🇮🇩", isAITranslated: true, keyboardShortcut: nil),
         AppLanguageOption(code: "eo", nativeName: "Esperanto", flag: "🏁", isAITranslated: true, keyboardShortcut: nil),
         AppLanguageOption(code: "br", nativeName: "Braille", flag: "⠃⠗", isAITranslated: false, keyboardShortcut: nil),
+        AppLanguageOption(code: "zh-martian", nativeName: "煋仌呅", flag: "👽", isAITranslated: false, keyboardShortcut: nil),
     ]
 
     static let selectableLanguages = primaryLanguages + aiTranslatedLanguages
