@@ -9,6 +9,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "sass": "^1.99.0",
     "vue": "^3.5.34"
   }
