@@ -4,6 +4,16 @@ outline: deep
 
 # Registro de Cambios
 
+## v1.6.2
+
+- Nuevo: Re-firmado automático al iniciar sesión. Re-firma automáticamente las apps migradas con caducadas cada vez que el usuario inicia sesión, sin acción manual. Activado por defecto, se puede desactivar en Ajustes
+- Mejora: Stub Portal ahora usa un lanzador binario Mach-O nativo en lugar del script bash heredado, corrigiendo el problema de que hacer doble clic en documentos asociados en Finder no podía abrir la app externa (#42)
+- Mejora: Diseño de la página Acerca de optimizado con área de contenido desplazable, corrigiendo que el contenido se cortara cuando la ventana era demasiado pequeña
+- Corregido: El Stub Portal nativo se identificaba incorrectamente como una app local regular
+- Corregido: No se podía limpiar correctamente el Stub Portal nativo al mover apps de vuelta al almacenamiento local
+- Corregido: El shell de la app se trataba como una app completa durante las operaciones de vinculación inversa
+- Corregido: AutoResignInstaller informaba éxito silenciosamente cuando la instalación fallaba
+
 ## v1.6.1
 
 - Corregido: El re-firmado automático después de la migración del directorio de datos ahora firma correctamente la app real externa en lugar del shell stub local

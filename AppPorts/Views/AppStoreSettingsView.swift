@@ -48,6 +48,9 @@ struct AppStoreSettingsView: View {
     /// 最大日志文件大小（字节）
     @AppStorage("MaxLogSizeBytes") private var maxLogSize = 2 * 1024 * 1024
     
+    /// 是否启用开机自动重签名（默认开启）
+    @AppStorage("autoResignAtLogin") private var autoResignAtLogin = true
+
     /// 环境变量：用于关闭弹窗
     @Environment(\.dismiss) private var dismiss
 
@@ -230,9 +233,52 @@ struct AppStoreSettingsView: View {
             .padding()
             .background(Color.primary.opacity(0.03))
             .cornerRadius(12)
-            
+
+            // 开机自动重签名
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .foregroundColor(.orange)
+                            Text("开机自动重签名".localized)
+                                .font(.headline)
+                        }
+                        Text("macOS 重启后 Gatekeeper 可能使 Ad-hoc 签名失效。开启后每次登录自动对已迁移应用重新签名。".localized)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer()
+
+                    Toggle("", isOn: $autoResignAtLogin)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .onChange(of: autoResignAtLogin) { enabled in
+                            if enabled {
+                                do {
+                                    try AutoResignInstaller.install()
+                                } catch {
+                                    AppLogger.shared.logError(
+                                        "安装自动重签名失败",
+                                        error: error,
+                                        errorCode: "AUTO-RESIGN-INSTALL-FAILED"
+                                    )
+                                    autoResignAtLogin = false
+                                }
+                            } else {
+                                AutoResignInstaller.uninstall()
+                            }
+                        }
+                }
+            }
+            .padding()
+            .background(Color.primary.opacity(0.03))
+            .cornerRadius(12)
+
             Spacer()
-            
+
             // 底部说明
             HStack {
                 Image(systemName: "info.circle")

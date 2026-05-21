@@ -55,8 +55,9 @@ Crea un shell `.app` mínimo localmente, que llama a `open` para iniciar la app 
 ```text
 /Applications/SomeApp.app/
 ├── Contents/
-│   ├── MacOS/launcher          # script de lanzamiento bash
+│   ├── MacOS/launcher          # lanzador binario nativo (o script bash)
 │   ├── Resources/AppIcon.icns  # icono copiado de la app real
+│   ├── Resources/real_app_path.txt  # ruta de la app real en almacenamiento externo
 │   ├── Info.plist              # archivo de configuración simplificado
 │   └── PkgInfo                 # archivo identificador estándar
 ```
@@ -69,7 +70,7 @@ Crea un shell `.app` mínimo localmente, que llama a `open` para iniciar la app 
 
 Para aplicaciones macOS nativas:
 
-1. Crea el script de lanzamiento `Contents/MacOS/launcher` (contenido: `open "<ruta de la app externa>"`)
+1. Crea el lanzador binario nativo Mach-O `Contents/MacOS/launcher` (o script bash como alternativa) y el archivo `Contents/Resources/real_app_path.txt` con la ruta de la app real en almacenamiento externo
 2. Copia `PkgInfo` y archivos de icono de la app externa
 3. Genera `Info.plist` simplificado del `Info.plist` de la app externa:
    - Establece `CFBundleExecutable` en `launcher`

@@ -412,8 +412,22 @@ struct AppMigrationService {
                 let contentsURL = destinationURL.appendingPathComponent("Contents")
                 let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey])
 
-                // stub portal: 有 launcher 脚本的假壳
-                if fileManager.fileExists(atPath: contentsURL.appendingPathComponent("MacOS/launcher").path) {
+                // stub portal: 有 AppPorts launcher 的假壳
+                let launcherURL = contentsURL.appendingPathComponent("MacOS/launcher")
+                let isStubPortal: Bool = {
+                    if !fileManager.fileExists(atPath: launcherURL.path) { return false }
+                    let pathFile = contentsURL.appendingPathComponent("Resources/real_app_path.txt")
+                    if let raw = try? String(contentsOf: pathFile, encoding: .utf8),
+                       !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        return true
+                    }
+                    if let script = try? String(contentsOf: launcherURL, encoding: .utf8),
+                       script.contains("REAL_APP=") {
+                        return true
+                    }
+                    return false
+                }()
+                if isStubPortal {
                     try fileManager.removeItem(at: destinationURL)
                 } else if contentsResourceValues?.isSymbolicLink == true {
                     try fileManager.removeItem(at: destinationURL)
@@ -1016,10 +1030,18 @@ struct AppMigrationService {
             return .wholeAppSymlink
         }
 
-        // Stub Portal：Contents/MacOS/launcher 脚本存在
+        // Stub Portal：验证 launcher 是 AppPorts stub（real_app_path.txt 或 bash REAL_APP=）
         let launcherPath = localContentsURL.appendingPathComponent("MacOS/launcher")
         if fileManager.fileExists(atPath: launcherPath.path) {
-            return .stubPortal
+            let pathFile = localContentsURL.appendingPathComponent("Resources/real_app_path.txt")
+            if let raw = try? String(contentsOf: pathFile, encoding: .utf8),
+               !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return .stubPortal
+            }
+            if let script = try? String(contentsOf: launcherPath, encoding: .utf8),
+               script.contains("REAL_APP=") {
+                return .stubPortal
+            }
         }
 
         return nil
@@ -1051,12 +1073,22 @@ struct AppMigrationService {
             return .wholeAppSymlink
         }
 
-        // Stub Portal：检查 launcher 脚本是否指向目标外部 app
+        // Stub Portal：检查 launcher 是否指向目标外部 app
         let launcherPath = localContentsURL.appendingPathComponent("MacOS/launcher")
-        if fileManager.fileExists(atPath: launcherPath.path),
-           let script = try? String(contentsOf: launcherPath, encoding: .utf8),
-           script.contains(standardizedExternalURL.path) {
-            return .stubPortal
+        if fileManager.fileExists(atPath: launcherPath.path) {
+            // 原生 launcher：从 real_app_path.txt 读取
+            let pathFile = localContentsURL.appendingPathComponent("Resources/real_app_path.txt")
+            if let raw = try? String(contentsOf: pathFile, encoding: .utf8) {
+                let realPath = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !realPath.isEmpty && realPath == standardizedExternalURL.path {
+                    return .stubPortal
+                }
+            }
+            // 旧版 bash launcher：检查脚本内容
+            if let script = try? String(contentsOf: launcherPath, encoding: .utf8),
+               script.contains(standardizedExternalURL.path) {
+                return .stubPortal
+            }
         }
 
         return nil
@@ -1128,7 +1160,7 @@ struct AppMigrationService {
         try fm.createDirectory(at: localResources, withIntermediateDirectories: true, attributes: nil)
 
         // 2. 写入 launcher 脚本
-        try writeLauncher(at: localMacOS, externalURL: externalURL)
+        try writeBashLauncher(at: localMacOS, externalURL: externalURL)
 
         // 3. 从 iOS app 内部提取图标并转换为 .icns
         let wrapperDir = fm.fileExists(atPath: externalURL.appendingPathComponent("Wrapper").path)
@@ -1189,8 +1221,10 @@ struct AppMigrationService {
         // 1. 创建目录结构
         try fm.createDirectory(at: localMacOS, withIntermediateDirectories: true, attributes: nil)
 
-        // 2. 写入 launcher 脚本
-        try writeLauncher(at: localMacOS, externalURL: externalURL)
+        // 2. 复制原生 launcher 二进制
+        let localResources = localContents.appendingPathComponent("Resources")
+        try fm.createDirectory(at: localResources, withIntermediateDirectories: true, attributes: nil)
+        try copyNativeLauncher(to: localMacOS, resourcesDir: localResources, externalURL: externalURL)
 
         // 3. 复制 PkgInfo
         let externalPkgInfo = externalContents.appendingPathComponent("PkgInfo")
@@ -1199,8 +1233,6 @@ struct AppMigrationService {
         }
 
         // 4. 仅复制图标文件
-        let localResources = localContents.appendingPathComponent("Resources")
-        try fm.createDirectory(at: localResources, withIntermediateDirectories: true, attributes: nil)
         if let plistData = try? Data(contentsOf: externalContents.appendingPathComponent("Info.plist")),
            let plist = try? PropertyListSerialization.propertyList(from: plistData, format: nil) as? [String: Any],
            let iconName = plist["CFBundleIconFile"] as? String {
@@ -1238,8 +1270,26 @@ struct AppMigrationService {
         AppLogger.shared.log("已创建 macOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
 
-    /// 写入 launcher 脚本
-    private func writeLauncher(at macosDir: URL, externalURL: URL) throws {
+    /// 复制原生 launcher 二进制，并写入 real_app_path.txt
+    private func copyNativeLauncher(to macosDir: URL, resourcesDir: URL, externalURL: URL) throws {
+        // 从 AppPorts bundle 中复制预编译的原生 launcher 二进制
+        guard let bundledLauncher = Bundle.main.url(forResource: "StubLauncherBinary", withExtension: nil) else {
+            // 降级：如果找不到原生二进制，回退到 bash 脚本
+            AppLogger.shared.log("未找到原生 launcher 二进制，回退到 bash 脚本", level: "WARN")
+            try writeBashLauncher(at: macosDir, externalURL: externalURL)
+            return
+        }
+        let launcherPath = macosDir.appendingPathComponent("launcher")
+        try fileManager.copyItem(at: bundledLauncher, to: launcherPath)
+        try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: launcherPath.path)
+
+        // 写入 real_app_path.txt，原生 launcher 读取此文件获取真实应用路径
+        let realAppPathFile = resourcesDir.appendingPathComponent("real_app_path.txt")
+        try externalURL.path.write(to: realAppPathFile, atomically: true, encoding: .utf8)
+    }
+
+    /// 写入 bash launcher 脚本（降级回退或 iOS stub 用）
+    private func writeBashLauncher(at macosDir: URL, externalURL: URL) throws {
         let launcherPath = macosDir.appendingPathComponent("launcher")
         let script = """
             #!/bin/bash

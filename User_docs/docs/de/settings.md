@@ -22,8 +22,11 @@ macOS 15.1 und neuer unterstützt die native App Store-App-Installation auf exte
 | Einstellung | Beschreibung | Standard |
 |-------------|--------------|---------|
 | Automatisch neu signieren | Führt automatisch Ad-hoc-Neuzeichnung bei assoziierten Apps nach der Datenverzeichnismigration aus | Aus |
+| Automatisch neu signieren bei Anmeldung | Signiert migrierte Apps mit abgelaufenen Signaturen bei jeder Benutzeranmeldung automatisch neu | Ein |
 
 Wenn aktiviert, sichert jede Datenverzeichnismigration automatisch die ursprüngliche Signatur und führt die Neuzeichnung aus, um „Beschädigt"-Meldungen nach der Migration zu vermeiden.
+
+Wenn „Automatisch neu signieren bei Anmeldung" aktiviert ist, wird ein LaunchAgent (`com.shimoko.AppPorts.re-sign`) installiert, der bei jeder Benutzeranmeldung die Signatursicherungsdatensätze durchsucht und Apps, deren Ad-hoc-Signaturen abgelaufen sind, automatisch neu signiert. Neuzeichnungsprotokolle werden in die Standardprotokolldatei von AppPorts geschrieben.
 
 ::: tip 💡 Automatische Neuzeichnung für verknüpfte Apps
 Für verknüpfte Apps (Status: „Verknüpft") löst die automatische Neuzeichnung automatisch den **realen externen App-Pfad** hinter der Stub-Portal-Shell oder dem symbolischen Link auf und stellt sicher, dass Signaturänderungen auf das tatsächliche Anwendungspaket angewendet werden. Sicherung und Neuzeichnung werden anhand der Bundle ID der realen App identifiziert.

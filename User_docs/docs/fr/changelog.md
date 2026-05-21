@@ -4,6 +4,16 @@ outline: deep
 
 # Journal des modifications
 
+## v1.6.2
+
+- Nouveau : Re-signature automatique à la connexion. Re-signe automatiquement les applications migrées avec des signatures expirées à chaque connexion de l'utilisateur, sans action manuelle. Activé par défaut, peut être désactivé dans les Paramètres
+- Amélioration : Stub Portal utilise désormais un lanceur binaire Mach-O natif au lieu du script bash hérité, corrigeant le problème où un double-clic sur les documents associés dans le Finder ne parvenait pas à ouvrir l'application externe (#42)
+- Amélioration : Mise en page de la page À propos optimisée avec une zone de contenu défilable, corrigeant le contenu tronqué lorsque la fenêtre est trop petite
+- Corrigé : Le Stub Portal natif était incorrectement identifié comme une application locale normale
+- Corrigé : Impossible de nettoyer correctement le Stub Portal natif lors du déplacement des applications vers le stockage local
+- Corrigé : Le shell de l'application était traité comme une application complète lors des opérations de liaison inverse
+- Corrigé : AutoResignInstaller signalait un succès silencieusement lorsque l'installation échouait
+
 ## v1.6.1
 
 - Corrigé : La re-signature automatique après la migration du répertoire de données signe maintenant correctement la vraie application externe au lieu du shell stub local

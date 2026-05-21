@@ -55,8 +55,9 @@ Erstellt lokal eine minimale `.app`-Hülle, die `open` aufruft, um die echte App
 ```text
 /Applications/SomeApp.app/
 ├── Contents/
-│   ├── MacOS/launcher          # Bash-Launch-Skript
-│   ├── Resources/AppIcon.icns  # Von der echten App kopiertes Icon
+│   ├── MacOS/launcher                    # Nativer Binärstarter (oder Bash-Skript)
+│   ├── Resources/real_app_path.txt       # Externer Pfad der echten App
+│   ├── Resources/AppIcon.icns            # Von der echten App kopiertes Icon
 │   ├── Info.plist              # Vereinfachte Konfigurationsdatei
 │   └── PkgInfo                 # Standard-Kennungsdatei
 ```
@@ -69,7 +70,7 @@ Erstellt lokal eine minimale `.app`-Hülle, die `open` aufruft, um die echte App
 
 Für native macOS-Apps:
 
-1. `Contents/MacOS/launcher`-Launch-Skript erstellen (Inhalt: `open "<externer App-Pfad>"`)
+1. Nativen Binärstarter erstellen und externen App-Pfad in `real_app_path.txt` schreiben
 2. `PkgInfo`- und Icon-Dateien von der externen App kopieren
 3. Vereinfachte `Info.plist` aus der externen App-`Info.plist` generieren:
    - `CFBundleExecutable` auf `launcher` setzen

@@ -178,97 +178,96 @@ struct AboutView: View {
     @StateObject private var contributorsViewModel = ContributorsViewModel()
     
     var body: some View {
-        VStack(spacing: 20) {
-            
+        VStack(spacing: 0) {
             // 1. LOGO 区域
             Image(nsImage: NSApplication.shared.applicationIconImage)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 104, height: 104)
                 .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
-            .padding(.top, 32)
-            .padding(.bottom, 10)
-            
+                .padding(.top, 32)
+                .padding(.bottom, 10)
+
             // 2. 文字信息
             VStack(spacing: 6) {
                 Text("AppPorts".localized)
                     .font(.system(size: 22, weight: .bold))
                     .fontWeight(.bold)
-                
+
                 Text(String(format: "Version %@".localized, Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
-            .padding(.bottom, 4)
-            
-            // 3. 描述文案
-            Text("感谢你使用本工具，外置硬盘拯救世界！".localized)
-                .font(.body)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.primary.opacity(0.9))
-                .padding(.horizontal, 12)
-            
-            // 4. 贡献者区域
-            VStack(alignment: .leading, spacing: 12) {
-                Text("项目贡献者".localized)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 8)
 
-                ScrollView {
-                    LazyVStack(spacing: 10) {
-                        ForEach(contributorsViewModel.contributors) { contributor in
-                            ContributorButton(contributor: contributor)
+            // 3. 可滚动内容区域
+            ScrollView {
+                VStack(spacing: 20) {
+                    // 描述文案
+                    Text("感谢你使用本工具，外置硬盘拯救世界！".localized)
+                        .font(.body)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.primary.opacity(0.9))
+                        .padding(.horizontal, 12)
+
+                    // 4. 贡献者区域
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("项目贡献者".localized)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        LazyVStack(spacing: 10) {
+                            ForEach(contributorsViewModel.contributors) { contributor in
+                                ContributorButton(contributor: contributor)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
                     }
-                    .frame(maxWidth: .infinity)
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.primary.opacity(0.04))
+                    )
+                    .padding(.horizontal, 24)
+
+                    // 5. 官方链接
+                    VStack(spacing: 10) {
+                        LinkButton(
+                            title: "官方网站".localized,
+                            icon: "globe",
+                            url: "https://appports.shimoko.com/"
+                        )
+
+                        LinkButton(
+                            title: "用户文档".localized,
+                            icon: "book.fill",
+                            url: "https://docs-appports.shimoko.com/"
+                        )
+
+                        LinkButton(
+                            title: "项目地址".localized,
+                            icon: "terminal.fill",
+                            url: "https://github.com/wzh4869/AppPorts"
+                        )
+                    }
+                    .padding(.horizontal, 24)
                 }
-                .frame(minHeight: 150, maxHeight: 220)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.primary.opacity(0.04))
-            )
-            .padding(.horizontal, 24)
-            .padding(.top, 4)
-            
-            // 5. 官方链接
-            VStack(spacing: 10) {
-                LinkButton(
-                    title: "官方网站".localized,
-                    icon: "globe",
-                    url: "https://appports.shimoko.com/"
-                )
 
-                LinkButton(
-                    title: "用户文档".localized,
-                    icon: "book.fill",
-                    url: "https://docs-appports.shimoko.com/"
-                )
-
-                LinkButton(
-                    title: "项目地址".localized,
-                    icon: "terminal.fill",
-                    url: "https://github.com/wzh4869/AppPorts"
-                )
-            }
-            .padding(.horizontal, 24)
-            
-            Spacer()
-            
-            // 6. 关闭按钮
+            // 6. 关闭按钮（固定在底部）
+            Divider()
             Button("关闭".localized) {
                 dismiss()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.regular)
             .keyboardShortcut(.defaultAction)
-            .padding(.bottom, 30)
-            
+            .padding(.vertical, 16)
         }
-        .padding(30)
-        .frame(width: 440, height: 660)
+        .frame(width: 440, height: 640)
         .task {
             contributorsViewModel.loadIfNeeded()
         }

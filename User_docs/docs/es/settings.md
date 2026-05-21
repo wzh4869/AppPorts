@@ -22,8 +22,9 @@ macOS 15.1 y posteriores soportan la instalación nativa de aplicaciones App Sto
 | Configuración | Descripción | Predeterminado |
 |---------------|-------------|----------------|
 | Re-firmado Automático | Ejecuta automáticamente el re-firmado Ad-hoc en aplicaciones asociadas después de la migración del directorio de datos | Desactivado |
+| Re-firmado al iniciar sesión | Re-firma automáticamente las apps migradas con firmas caducadas cada vez que el usuario inicia sesión | Activado |
 
-Cuando está habilitado, cada migración de directorio de datos hace automáticamente una copia de seguridad de la firma original y ejecuta el re-firmado para evitar mensajes de "Dañado" después de la migración.
+Cuando está habilitado, cada migración de directorio de datos hace automáticamente una copia de seguridad de la firma original y ejecuta el re-firmado para evitar mensajes de "Dañado" después de la migración. El re-firmado al iniciar sesión utiliza un LaunchAgent de macOS para ejecutarse automáticamente en segundo plano cada vez que el usuario inicia sesión, garantizando que las firmas caducadas se renueven sin intervención manual.
 
 ::: tip 💡 Re-firmado automático para apps vinculadas
 Para apps vinculadas (estado: "Vinculada"), el re-firmado automático resuelve automáticamente la **ruta real de la app externa** detrás del shell Stub Portal o el enlace simbólico, asegurando que los cambios de firma se apliquen al paquete de aplicación real. La copia de seguridad y el re-firmado se identifican por el Bundle ID de la app real.

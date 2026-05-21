@@ -1508,6 +1508,49 @@ DICT = {
     },
     "无法读取外部目录路径": {"en": "Unable to read the external directory path", "zh-Hans": "无法读取外部目录路径", "zh-Hant": "無法讀取外部目錄路徑"},
     "接回外部数据": {"en": "Relink External Data", "zh-Hans": "接回外部数据", "zh-Hant": "接回外部資料"},
+    "开机自动重签名": {
+        "en": "Auto Re-sign at Login", "zh-Hans": "开机自动重签名", "zh-Hant": "開機自動重簽名",
+        "hi": "लॉगिन पर ऑटो री-साइन", "es": "Re-firmado al iniciar sesión", "ar": "إعادة التوقيع التلقائي عند تسجيل الدخول", "ru": "Автопереподпись при входе",
+        "pt": "Re-assinatura ao fazer login", "fr": "Re-signature à la connexion", "it": "Firma automatica al login", "ja": "ログイン時自動再署名",
+        "eo": "Aŭtomata resubskribo ĉe ensaluto", "de": "Automatische Neuzeichnung bei Anmeldung", "ko": "로그인 시 자동 재서명", "tr": "Girişte Otomatik Yeniden İmzalama",
+        "vi": "Tự động ký lại khi đăng nhập", "th": "เซ็นใหม่อัตโนมัติเมื่อเข้าสู่ระบบ", "nl": "Auto-hertekening bij aanmelding", "pl": "Automatyczne podpisywanie przy logowaniu", "id": "Tanda Ulang Otomatis saat Login"
+    },
+    "macOS 重启后 Gatekeeper 可能使 Ad-hoc 签名失效。开启后每次登录自动对已迁移应用重新签名。": {
+        "en": "Gatekeeper may invalidate Ad-hoc signatures after macOS restart. When enabled, automatically re-signs migrated apps each time you log in.",
+        "zh-Hans": "macOS 重启后 Gatekeeper 可能使 Ad-hoc 签名失效。开启后每次登录自动对已迁移应用重新签名。",
+        "zh-Hant": "macOS 重啟後 Gatekeeper 可能使 Ad-hoc 簽名失效。開啟後每次登入自動對已遷移應用重新簽名。",
+        "hi": "macOS पुनरारंभ के बाद Gatekeeper Ad-hoc हस्ताक्षर अमान्य कर सकता है। सक्षम होने पर, लॉगिन करते समय माइग्रेट किए गए ऐप्स को स्वचालित रूप से फिर से साइन करता है।",
+        "es": "Gatekeeper puede invalidar las firmas Ad-hoc después del reinicio de macOS. Cuando está activado, re-firma automáticamente las apps migradas cada vez que inicias sesión.",
+        "ar": "قد يُلغي Gatekeeper توقيعات Ad-hoc بعد إعادة تشغيل macOS. عند التفعيل، يتم إعادة توقيع التطبيقات المُرحّلة تلقائياً عند كل تسجيل دخول.",
+        "ru": "Gatekeeper может аннулировать Ad-hoc подписи после перезагрузки macOS. При включении автоматически переподписывает мигрированные приложения при каждом входе.",
+        "pt": "O Gatekeeper pode invalidar assinaturas Ad-hoc após o reinício do macOS. Quando ativado, re-assina automaticamente os apps migrados cada vez que você faz login.",
+        "fr": "Gatekeeper peut invalider les signatures Ad-hoc après le redémarrage de macOS. Lorsqu'activé, re-signe automatiquement les applications migrées à chaque connexion.",
+        "it": "Gatekeeper potrebbe invalidare le firme Ad-hoc dopo il riavvio di macOS. Quando attivato, firma automaticamente le app migrate ad ogni accesso.",
+        "ja": "macOSの再起動後、GatekeeperがAd-hoc署名を無効にする場合があります。有効にすると、ログインするたびに移行済みアプリを自動的に再署名します。",
+        "eo": "Gatekeeper povas nuligi Ad-hoc subskribojn post macOS rekomenco. Kiam aktivigite, aŭtomate resubskribas migritajn aplikaĵojn ĉe ensaluto.",
+        "de": "Gatekeeper kann Ad-hoc-Signaturen nach einem macOS-Neustart ungültig machen. Wenn aktiviert, werden migrierte Apps bei jeder Anmeldung automatisch neu signiert.",
+        "ko": "macOS 재시작 후 Gatekeeper가 Ad-hoc 서명을 무효화할 수 있습니다. 활성화하면 로그인할 때마다 마이그레이션된 앱을 자동으로 재서명합니다.",
+        "tr": "Gatekeeper, macOS yeniden başlatıldıktan sonra Ad-hoc imzaları geçersiz kılabilir. Etkinleştirildiğinde, her giriş yaptığınızda taşınan uygulamaları otomatik olarak yeniden imzalar.",
+        "vi": "Gatekeeper có thể vô hiệu hóa chữ ký Ad-hoc sau khi macOS khởi động lại. Khi bật, tự động ký lại các ứng dụng đã di chuyển mỗi khi bạn đăng nhập.",
+        "th": "Gatekeeper อาจทำให้ลายเซ็น Ad-hoc ไม่ถูกต้องหลังจากรีสตาร์ท macOS เมื่อเปิดใช้งาน จะเซ็นใหม่แอปที่ย้ายแล้วโดยอัตโนมัติทุกครั้งที่เข้าสู่ระบบ",
+        "nl": "Gatekeeper kan Ad-hoc handtekeningen ongeldig maken na macOS herstart. Wanneer ingeschakeld, worden migreerde apps automatisch opnieuw ondertekend bij elke aanmelding.",
+        "pl": "Gatekeeper może unieważnić podpisy Ad-hoc po ponownym uruchomieniu macOS. Po włączeniu automatycznie podpisuje migrowane aplikacje przy każdym logowaniu.",
+        "id": "Gatekeeper dapat membatalkan tanda tangan Ad-hoc setelah macOS dimulai ulang. Saat diaktifkan, secara otomatis menandatangani ulang aplikasi yang dimigrasi setiap kali Anda login."
+    },
+    "找不到重签名脚本，安装失败": {
+        "en": "Re-sign script not found, installation failed", "zh-Hans": "找不到重签名脚本，安装失败", "zh-Hant": "找不到重簽名腳本，安裝失敗",
+        "hi": "री-साइन स्क्रिप्ट नहीं मिली, इंस्टॉलेशन विफल", "es": "Script de re-firmado no encontrado, instalación fallida", "ar": "نص إعادة التوقيع غير موجود، فشل التثبيت", "ru": "Скрипт переподписи не найден, установка не удалась",
+        "pt": "Script de re-assinatura não encontrado, instalação falhou", "fr": "Script de re-signature introuvable, échec de l'installation", "it": "Script di ri-firma non trovato, installazione non riuscita", "ja": "再署名スクリプトが見つかりません、インストール失敗",
+        "eo": "Resubskribo-skripto ne trovita, instalo malsukcesis", "de": "Neuzeichnungs-Skript nicht gefunden, Installation fehlgeschlagen", "ko": "재서명 스크립트를 찾을 수 없음, 설치 실패", "tr": "Yeniden imzalama betiği bulunamadı, yükleme başarısız",
+        "vi": "Không tìm thấy script ký lại, cài đặt thất bại", "th": "ไม่พบสคริปต์เซ็นใหม่ การติดตั้งล้มเหลว", "nl": "Hertekeningscript niet gevonden, installatie mislukt", "pl": "Nie znaleziono skryptu ponownego podpisywania, instalacja nie powiodła się", "id": "Skrip tanda ulang tidak ditemukan, instalasi gagal"
+    },
+    "LaunchAgent 加载失败": {
+        "en": "LaunchAgent failed to load", "zh-Hans": "LaunchAgent 加载失败", "zh-Hant": "LaunchAgent 載入失敗",
+        "hi": "LaunchAgent लोड होने में विफल", "es": "Error al cargar LaunchAgent", "ar": "فشل تحميل LaunchAgent", "ru": "Ошибка загрузки LaunchAgent",
+        "pt": "Falha ao carregar LaunchAgent", "fr": "Échec du chargement de LaunchAgent", "it": "Caricamento LaunchAgent non riuscito", "ja": "LaunchAgentの読み込みに失敗しました",
+        "eo": "LaunchAgent malsukcesis ŝargi", "de": "LaunchAgent konnte nicht geladen werden", "ko": "LaunchAgent 로드 실패", "tr": "LaunchAgent yüklenemedi",
+        "vi": "LaunchAgent tải thất bại", "th": "ไม่สามารถโหลด LaunchAgent ได้", "nl": "LaunchAgent laden mislukt", "pl": "Nie udało się załadować LaunchAgent", "id": "LaunchAgent gagal dimuat"
+    },
 }
 
 

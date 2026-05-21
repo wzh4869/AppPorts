@@ -103,10 +103,6 @@ struct StatusBadge: View {
     
     /// 检查外部 app 是否被 uchg 锁定
     private static func isExternalAppLocked(app: AppItem) -> Bool {
-        if app.status == "已链接" && !app.hasSelfUpdater {
-            return false
-        }
-
         let externalPath: String
 
         // 外部 app：直接检查自身
@@ -146,8 +142,17 @@ struct StatusBadge: View {
         return resolved.path.hasPrefix("/Volumes/") ? resolved.path : nil
     }
 
-    /// stub portal：从 launcher 脚本提取外部路径
+    /// stub portal：从原生 launcher 的 real_app_path.txt 或旧版 bash 脚本提取外部路径
     private static func resolveExternalPathFromLauncher(app: AppItem) -> String? {
+        // 新版原生 launcher：从 real_app_path.txt 读取
+        let pathFile = app.path.appendingPathComponent("Contents/Resources/real_app_path.txt")
+        if let raw = try? String(contentsOf: pathFile, encoding: .utf8),
+           !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let path = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            return path.hasPrefix("/Volumes/") ? path : nil
+        }
+
+        // 旧版 bash launcher：从脚本中提取 REAL_APP='...'
         let launcher = app.path.appendingPathComponent("Contents/MacOS/launcher")
         guard let script = try? String(contentsOf: launcher, encoding: .utf8),
               let range = script.range(of: "REAL_APP='") else { return nil }

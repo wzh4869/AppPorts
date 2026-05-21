@@ -4,6 +4,16 @@ outline: deep
 
 # Changelog
 
+## v1.6.2
+
+- New: Auto re-sign at login. Automatically re-signs migrated apps with expired signatures each time the user logs in, no manual action needed. Enabled by default, can be turned off in Settings
+- Improvement: Stub Portal now uses a native Mach-O binary launcher instead of the legacy bash script, fixing the issue where double-clicking associated documents in Finder could not open the external app (#42)
+- Improvement: About page layout optimized with scrollable content area, fixing content being cut off when the window is too small
+- Fix: Native Stub Portal being incorrectly identified as a regular local app
+- Fix: Unable to properly clean up native Stub Portal when moving apps back to local storage
+- Fix: App shell being treated as a complete app during link-back-to-local operations
+- Fix: AutoResignInstaller silently succeeding when installation fails
+
 ## v1.6.1
 
 - Fixed: Auto-re-signing after data directory migration now correctly signs the real external app instead of the local stub shell

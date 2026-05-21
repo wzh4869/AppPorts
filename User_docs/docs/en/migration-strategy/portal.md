@@ -55,8 +55,9 @@ Creates a minimal `.app` shell locally, calling `open` to launch the real app on
 ```text
 /Applications/SomeApp.app/
 ├── Contents/
-│   ├── MacOS/launcher          # bash launch script
-│   ├── Resources/AppIcon.icns  # icon copied from real app
+│   ├── MacOS/launcher                    # native binary launcher (or bash script)
+│   ├── Resources/real_app_path.txt       # external real app path
+│   ├── Resources/AppIcon.icns            # icon copied from real app
 │   ├── Info.plist              # simplified config file
 │   └── PkgInfo                 # standard identifier file
 ```
@@ -69,7 +70,7 @@ Creates a minimal `.app` shell locally, calling `open` to launch the real app on
 
 For native macOS apps:
 
-1. Create `Contents/MacOS/launcher` launch script (content: `open "<external app path>"`)
+1. Create native binary launcher and write external app path to `real_app_path.txt`
 2. Copy `PkgInfo` and icon files from the external app
 3. Generate simplified `Info.plist` from the external app's `Info.plist`:
    - Set `CFBundleExecutable` to `launcher`

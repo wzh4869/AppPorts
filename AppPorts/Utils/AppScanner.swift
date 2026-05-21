@@ -293,16 +293,25 @@ actor AppScanner {
             return "本地"
         }
 
-        // Stub Portal：检查 launcher 脚本引用的外部 app 是否存在
+        // Stub Portal：检查 launcher 引用的外部 app 是否存在
         let launcherPath = contentsURL.appendingPathComponent("MacOS/launcher")
-        if fm.fileExists(atPath: launcherPath.path),
-           let script = try? String(contentsOf: launcherPath, encoding: .utf8) {
-            // 提取 REAL_APP='...' 中的路径
-            if let range = script.range(of: "REAL_APP='") {
-                let afterQuote = script[range.upperBound...]
-                if let endQuote = afterQuote.range(of: "'") {
-                    let realAppPath = String(afterQuote[..<endQuote.lowerBound])
-                    return fm.fileExists(atPath: realAppPath) ? "已链接" : "孤立链接"
+        if fm.fileExists(atPath: launcherPath.path) {
+            // 原生 launcher：从 real_app_path.txt 读取
+            let pathFile = contentsURL.appendingPathComponent("Resources/real_app_path.txt")
+            if let raw = try? String(contentsOf: pathFile, encoding: .utf8) {
+                let realPath = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !realPath.isEmpty {
+                    return fm.fileExists(atPath: realPath) ? "已链接" : "孤立链接"
+                }
+            }
+            // 旧版 bash launcher：提取 REAL_APP='...'
+            if let script = try? String(contentsOf: launcherPath, encoding: .utf8) {
+                if let range = script.range(of: "REAL_APP='") {
+                    let afterQuote = script[range.upperBound...]
+                    if let endQuote = afterQuote.range(of: "'") {
+                        let realAppPath = String(afterQuote[..<endQuote.lowerBound])
+                        return fm.fileExists(atPath: realAppPath) ? "已链接" : "孤立链接"
+                    }
                 }
             }
         }
@@ -350,6 +359,11 @@ actor AppScanner {
             return enclosingAppBundleURL(for: frameworksTarget)
         }
 
+        // Stub Portal：从 real_app_path.txt 或 bash launcher 解析外部 app
+        if let externalTarget = resolveExternalRealApp(from: url) {
+            return externalTarget
+        }
+
         return url
     }
 
@@ -395,11 +409,22 @@ actor AppScanner {
             return true
         }
 
-        // Stub Portal：launcher 脚本包含外部 app 路径
+        // Stub Portal：检查 launcher 引用的外部 app 路径
         let launcherPath = localContentsURL.appendingPathComponent("MacOS/launcher")
-        if let script = try? String(contentsOf: launcherPath, encoding: .utf8),
-           script.contains(standardizedExternalAppURL.path) {
-            return true
+        if FileManager.default.fileExists(atPath: launcherPath.path) {
+            // 原生 launcher：从 real_app_path.txt 读取
+            let pathFile = localContentsURL.appendingPathComponent("Resources/real_app_path.txt")
+            if let raw = try? String(contentsOf: pathFile, encoding: .utf8) {
+                let realPath = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !realPath.isEmpty && realPath == standardizedExternalAppURL.path {
+                    return true
+                }
+            }
+            // 旧版 bash launcher：检查脚本内容
+            if let script = try? String(contentsOf: launcherPath, encoding: .utf8),
+               script.contains(standardizedExternalAppURL.path) {
+                return true
+            }
         }
 
         return false
@@ -454,6 +479,14 @@ actor AppScanner {
         let frameworksURL = contentsURL.appendingPathComponent("Frameworks")
         if let frameworksDestination = resolveSymlinkDestination(of: frameworksURL) {
             return enclosingAppBundleURL(for: frameworksDestination)
+        }
+
+        // Stub Portal：从 real_app_path.txt 或 bash launcher 提取外部路径
+        let launcherPath = contentsURL.appendingPathComponent("MacOS/launcher")
+        if FileManager.default.fileExists(atPath: launcherPath.path) {
+            if let resolved = resolveExternalRealApp(from: localAppURL) {
+                return resolved
+            }
         }
 
         return nil
@@ -1033,7 +1066,18 @@ actor AppScanner {
             return target
         }
 
-        // Stub Portal：从 launcher 脚本解析外部路径
+        // Stub Portal：从原生 launcher 的 real_app_path.txt 解析外部路径
+        let realAppPathFile = localURL.appendingPathComponent("Contents/Resources/real_app_path.txt")
+        if let raw = try? String(contentsOf: realAppPathFile, encoding: .utf8),
+           !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let realPath = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            let url = URL(fileURLWithPath: realPath)
+            if FileManager.default.fileExists(atPath: url.path) {
+                return url
+            }
+        }
+
+        // Stub Portal（旧版 bash launcher）：从 launcher 脚本解析外部路径
         let launcherPath = localURL.appendingPathComponent("Contents/MacOS/launcher")
         if let script = try? String(contentsOf: launcherPath, encoding: .utf8) {
             let pattern = "REAL_APP='([^']+)'"

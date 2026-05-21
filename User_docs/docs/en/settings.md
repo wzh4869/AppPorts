@@ -22,8 +22,11 @@ macOS 15.1 and later support native App Store app installation to external drive
 | Setting | Description | Default |
 |---------|-------------|---------|
 | Auto Re-sign | Automatically executes Ad-hoc re-signing on associated apps after data directory migration | Off |
+| Auto Re-sign at Login | Automatically re-signs migrated apps with expired signatures each time the user logs in | On |
 
 When enabled, each data directory migration automatically backs up the original signature and executes re-signing to avoid "Damaged" prompts after migration.
+
+When "Auto Re-sign at Login" is enabled, a LaunchAgent (`com.shimoko.AppPorts.re-sign`) is installed to scan signature backup records at each user login and automatically re-sign apps whose Ad-hoc signatures have expired. Re-sign logs are written to the AppPorts default log file.
 
 ::: tip 💡 Auto-Re-signing for Linked Apps
 For linked apps (status: "Linked"), auto-re-signing automatically resolves the **real external app path** behind the Stub Portal shell or symlink, ensuring signature changes are applied to the actual application package. Backup and re-signing operations are identified by the real app's Bundle ID.
