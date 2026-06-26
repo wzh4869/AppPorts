@@ -72421,115 +72421,115 @@
         }
       }
     },
-    "正在删除原目录..." : {
+    "正在切换本地入口..." : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "br" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⠠⠙⠑⠇⠑⠞⠊⠝⠛ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠙⠊⠗⠑⠉⠞⠕⠗⠽⠲⠲⠲"
+            "value" : "Switching local entry..."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Switching local entry..."
           }
         },
         "vi" : {
@@ -72541,19 +72541,19 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在删除原目录..."
+            "value" : "正在切换本地入口..."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在删除原目錄..."
+            "value" : "正在切換本地入口..."
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在删除原目录..."
+            "value" : "正在切换本地入口..."
           }
         }
       }

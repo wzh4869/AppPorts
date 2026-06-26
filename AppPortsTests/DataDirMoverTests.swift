@@ -101,7 +101,39 @@ final class DataDirMoverTests: XCTestCase {
 
         try assertRealDirectory(localDataURL)
         XCTAssertEqual(try String(contentsOf: localDataURL.appendingPathComponent("payload.txt")), "rollback-safe")
-        XCTAssertFalse(fileManager.fileExists(atPath: externalDataURL.path))
+        try assertRealDirectory(externalDataURL)
+        XCTAssertEqual(try String(contentsOf: externalDataURL.appendingPathComponent("payload.txt")), "rollback-safe")
+    }
+
+    func testMigrateKeepsExternalCopyWhenLocalBackupCleanupFails() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localDataURL = workspace.homeURL
+            .appendingPathComponent("Library/Caches/com.example.backup-cleanup")
+        let externalBaseURL = workspace.externalRootURL
+            .appendingPathComponent("Library/Caches")
+        let externalDataURL = externalBaseURL.appendingPathComponent(localDataURL.lastPathComponent)
+
+        try createDirectoryWithPayload(at: localDataURL, payload: "backup-cleanup-safe")
+
+        let item = DataDirItem(
+            name: "BackupCleanup",
+            path: localDataURL,
+            type: .caches,
+            priority: .optional,
+            description: "Backup cleanup failure fixture",
+            isMigratable: true
+        )
+
+        let mover = DataDirMover(homeDir: workspace.homeURL, failSourceBackupCleanup: true)
+        try await mover.migrate(item: item, to: externalBaseURL, progressHandler: nil)
+
+        try assertSymlink(localDataURL, pointsTo: externalDataURL)
+        XCTAssertEqual(try String(contentsOf: externalDataURL.appendingPathComponent("payload.txt")), "backup-cleanup-safe")
+
+        let parentContents = try fileManager.contentsOfDirectory(atPath: localDataURL.deletingLastPathComponent().path)
+        XCTAssertTrue(parentContents.contains { $0.contains(".appports-migration-backup-") })
     }
 
     func testMigrateRemovesPartialExternalDirectoryWhenCopyFails() async throws {
