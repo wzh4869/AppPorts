@@ -1413,7 +1413,7 @@ struct AppMigrationService {
             if [ -d "$REAL_APP" ]; then
                 open "$REAL_APP"
             else
-                osascript -e 'display dialog "外部存储未连接，请连接后重试。" buttons {"好"} default button 1 with icon caution'
+                osascript -e 'display dialog "External storage is not connected. Connect it and try again." buttons {"OK"} default button 1 with icon caution'
             fi
             """
         try script.write(to: launcherPath, atomically: true, encoding: .utf8)
