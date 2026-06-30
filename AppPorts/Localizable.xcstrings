@@ -1601,7 +1601,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "(Unknown)"
+            "value" : "(неизвестно)"
           }
         },
         "th" : {
@@ -3243,7 +3243,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld pending relink"
+            "value" : "%lld к возврату"
           }
         },
         "th" : {
@@ -3380,7 +3380,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld to normalize"
+            "value" : "%lld к нормализации"
           }
         },
         "th" : {
@@ -3517,7 +3517,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld existing symlinks"
+            "value" : "%lld существующих симлинков"
           }
         },
         "th" : {
@@ -11863,7 +11863,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store apps and non-native apps can be migrated directly without manual enabling. App Store will automatically manage app updates on external disks."
+            "value" : "Приложения из App Store и неродные приложения можно переносить напрямую, без ручного включения. App Store автоматически управляет обновлениями приложений на внешнем диске."
           }
         },
         "th" : {
@@ -12822,7 +12822,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts requires \"App Management\" permission to migrate app data. Please enable AppPorts in System Settings and restart the app."
+            "value" : "AppPorts требуется разрешение «Управление приложениями», чтобы переносить данные приложений. Включите AppPorts в Системных настройках и перезапустите приложение."
           }
         },
         "th" : {
@@ -21453,7 +21453,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ natively supports external installation of App Store apps"
+            "value" : "macOS 15.1+ нативно поддерживает установку приложений из App Store на внешний диск"
           }
         },
         "th" : {
@@ -21590,7 +21590,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ поддерживает установку приложений из App Store на внешний диск.\n\nОткройте App Store → Настройки и включите «Загружать и устанавливать большие приложения на отдельный диск», затем выберите текущий внешний диск.\n\nПосле настройки нажмите «Я настроил», и AppPorts автоматически создаст папку Applications и обнаружит эти приложения."
           }
         },
         "th" : {
@@ -27487,7 +27487,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
+            "value" : "Следующие приложения поддерживают автообновление; после переноса обновление внутри приложения может привести к потере внешней копии:\n\n%@\n\n• Заблокированная миграция: внешнее приложение блокируется, что предотвращает повреждение при обновлении; для обновления нужно вернуть его через AppPorts\n• Незаблокированная миграция: внешнее приложение не блокируется, обновление внутри приложения может удалить внешнюю копию\n\nДля защиты данных рекомендуется выбрать заблокированную миграцию."
           }
         },
         "th" : {
@@ -28857,7 +28857,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to write AppPorts link marker: %@"
+            "value" : "Не удалось записать метку ссылки AppPorts: %@"
           }
         },
         "th" : {
@@ -30364,7 +30364,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Не удалось создать символическую ссылку, данные аварийно восстановлены: %@"
           }
         },
         "th" : {
@@ -30501,7 +30501,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to delete original directory: %@"
+            "value" : "Не удалось удалить исходный каталог: %@"
           }
         },
         "th" : {
@@ -32829,7 +32829,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Double-click to open System Settings"
+            "value" : "Двойной клик — открыть Системные настройки"
           }
         },
         "th" : {
@@ -33788,7 +33788,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Optional"
+            "value" : "Необязательно"
           }
         },
         "th" : {
@@ -34747,7 +34747,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable/Disable logging"
+            "value" : "Включить/выключить журналирование"
           }
         },
         "th" : {
@@ -34884,7 +34884,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enables migration of non-native Mac apps from iPhone/iPad"
+            "value" : "После включения можно переносить неродные Mac-приложения с iPhone/iPad"
           }
         },
         "th" : {
@@ -36802,7 +36802,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copy failed: %@"
+            "value" : "Ошибка копирования: %@"
           }
         },
         "th" : {
@@ -37213,7 +37213,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "External storage directory does not exist: %@"
+            "value" : "Каталог на внешнем хранилище не существует: %@"
           }
         },
         "th" : {
@@ -40501,7 +40501,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Восстановить «%1$@» с внешнего хранилища локально.\n\nВнешний путь: %2$@\nВосстановить в: %3$@\n\nПосле восстановления копия на внешнем хранилище будет удалена."
           }
         },
         "th" : {
@@ -40775,7 +40775,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Перенести «%1$@» на внешнее хранилище%2$@.\n\nИсходный путь: %3$@\nЦелевой путь: %4$@\n\nПосле переноса исходный путь автоматически станет символической ссылкой, и связанные инструменты продолжат работать без каких-либо изменений."
           }
         },
         "th" : {
@@ -40912,7 +40912,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Move managed links to the AppPorts canonical path"
+            "value" : "Привести управляемые ссылки к каноническому пути AppPorts"
           }
         },
         "th" : {
@@ -41323,7 +41323,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate data directory to external storage"
+            "value" : "Перенести каталог данных на внешнее хранилище"
           }
         },
         "th" : {
@@ -41460,7 +41460,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore data directory to local"
+            "value" : "Восстановить каталог данных локально"
           }
         },
         "th" : {
@@ -43515,7 +43515,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Data"
+            "value" : "Данные приложений"
           }
         },
         "th" : {
@@ -47351,7 +47351,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The current path differs from the AppPorts canonical path. This operation will move the external data to the canonical path and recreate the local symlink."
+            "value" : "Текущий путь отличается от канонического. Эта операция переместит внешние данные по каноническому пути и пересоздаст локальную символическую ссылку."
           }
         },
         "th" : {
@@ -47488,7 +47488,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The current path already matches the AppPorts canonical path."
+            "value" : "Текущий путь уже соответствует каноническому пути AppPorts."
           }
         },
         "th" : {
@@ -53653,7 +53653,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alphabetical"
+            "value" : "По алфавиту"
           }
         },
         "th" : {
@@ -55160,7 +55160,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recommended"
+            "value" : "Рекомендуется"
           }
         },
         "th" : {
@@ -58037,7 +58037,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Automatically perform Ad-hoc re-signing on associated apps after data migration to avoid Finder \"damaged\" warnings"
+            "value" : "После переноса данных автоматически выполнять ad-hoc переподпись связанных приложений, чтобы Finder не сообщал «повреждено»"
           }
         },
         "th" : {
@@ -59133,7 +59133,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No local apps found"
+            "value" : "Нет локальных приложений"
           }
         },
         "th" : {
@@ -59955,7 +59955,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cannot read symlink target: %@"
+            "value" : "Не удалось прочитать цель символической ссылки: %@"
           }
         },
         "th" : {
@@ -62421,7 +62421,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not Found"
+            "value" : "Не найдено"
           }
         },
         "th" : {
@@ -65161,7 +65161,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View the existing symlink target and optionally bring it under AppPorts management"
+            "value" : "Посмотреть путь существующей символической ссылки и при желании передать её под управление AppPorts"
           }
         },
         "th" : {
@@ -65709,7 +65709,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Обнаружено, что «%1$@» уже является существующей символической ссылкой.\n\nПуть ссылки: %2$@\nЦелевой путь: %3$@\n\nПосле выбора «Нормализовать управление» AppPorts возьмёт эту ссылку под управление, и в дальнейшем её можно будет восстановить напрямую."
           }
         },
         "th" : {
@@ -65846,7 +65846,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Обнаружено, что «%1$@» уже под управлением AppPorts, но внешняя цель всё ещё находится по старому пути.\n\nТекущий внешний путь: %2$@\nКанонический путь: %3$@\n\nПосле продолжения появится повторное подтверждение и будет выполнен реальный перенос."
           }
         },
         "th" : {
@@ -65983,7 +65983,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Обнаружено, что каталог данных «%1$@» уже существует на внешнем хранилище, но по локальному исходному пути ещё нет ссылки.\n\nЛокальный исходный путь: %2$@\nВнешний каталог: %3$@\n\nПосле выбора «Связать снова» AppPorts создаст символическую ссылку по исходному пути и возьмёт её под управление."
           }
         },
         "th" : {
@@ -66120,7 +66120,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An existing symbolic link was detected. It was not created by AppPorts"
+            "value" : "Обнаружена существующая символическая ссылка, созданная не AppPorts"
           }
         },
         "th" : {
@@ -66531,7 +66531,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Writing management marker..."
+            "value" : "Запись метки управления..."
           }
         },
         "th" : {
@@ -66668,7 +66668,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Creating symbolic link..."
+            "value" : "Создание символической ссылки..."
           }
         },
         "th" : {
@@ -66805,7 +66805,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deleting original directory..."
+            "value" : "Удаление исходного каталога..."
           }
         },
         "th" : {
@@ -67079,7 +67079,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cleaning up external storage..."
+            "value" : "Очистка внешнего хранилища..."
           }
         },
         "th" : {
@@ -67627,7 +67627,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie nakhoditsya v direktorii Applications na vneshnem diske, upravlyayemaya nativno macOS (funktsiya macOS 15.1+). App Store mozhet vypolnyat inkrementalnyye obnovleniya neposredstvo v etoy direktorii, bez neobkhodimosti vozvrashcheniya cherez AppPorts."
+            "value" : "Это приложение находится в папке Applications на внешнем диске и управляется macOS нативно (функция macOS 15.1+). App Store может выполнять инкрементальные обновления прямо здесь, без возврата через AppPorts."
           }
         },
         "th" : {
@@ -67764,7 +67764,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie ispol'zuet framework Sparkle dlya avtomaticheskikh obnovleniy. Posle migratsii na vneshneye khranilishche obnovleniya vnutri prilozheniya mogut privesti k potere vneshnego prilozheniya. Rekomenduyetsya zablokirovannaya migratsiya dlya zashchity dannykh."
+            "value" : "Это приложение обновляется автоматически через фреймворк Sparkle. После переноса на внешнее хранилище обновление внутри приложения может привести к потере внешней копии. Для защиты данных рекомендуется заблокированная миграция."
           }
         },
         "th" : {
@@ -67901,7 +67901,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie osnovano na framework Electron i podderzhivayet avtomaticheskiye obnovleniya. Posle migratsii na vneshneye khranilishche obnovleniya vnutri prilozheniya mogut privesti k potere vneshnego prilozheniya."
+            "value" : "Это приложение построено на фреймворке Electron и поддерживает автообновление. После переноса на внешнее хранилище обновление внутри приложения может привести к потере внешней копии. Для защиты данных рекомендуется заблокированная миграция."
           }
         },
         "th" : {
@@ -68175,7 +68175,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie bylo peremeshcheno na vneshneye khranilishche i zablokirovano. Blokirovka predotvrashchayet povrezhdeniye vneshnego prilozheniya obnovleniyami. Dlya obnovleniya vernite prilozheniye cherez AppPorts na lokal'nyy disk."
+            "value" : "Это приложение перенесено на внешнее хранилище и заблокировано. Блокировка не даёт обновлению внутри приложения повредить внешнюю копию. Чтобы обновить, сначала верните его локально через AppPorts."
           }
         },
         "th" : {
@@ -68312,7 +68312,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie peremeshcheno na vneshneye khranilishche, no ne zablokirovano. Obnovleniya vnutri prilozheniya mogut udalit vneshneye prilozheniye. Rekomenduyetsya vernut na lokalnyy disk i povtorit migratsiyu v zablokirovannom rezhime."
+            "value" : "Это приложение перенесено на внешнее хранилище, но не заблокировано. Обновление внутри приложения может удалить внешнюю копию. Рекомендуется вернуть его локально и перенести заново с блокировкой."
           }
         },
         "th" : {
@@ -70641,7 +70641,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No write permission: %@"
+            "value" : "Нет прав на запись: %@"
           }
         },
         "th" : {
@@ -74203,7 +74203,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Target path already has a real directory, cannot overwrite: %@"
+            "value" : "По целевому пути уже есть настоящий каталог, перезапись невозможна: %@"
           }
         },
         "th" : {
@@ -76258,7 +76258,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "System Settings > Privacy & Security > Full Disk Access"
+            "value" : "Системные настройки > Конфиденциальность и безопасность > Полный доступ к диску"
           }
         },
         "th" : {
@@ -78039,7 +78039,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Custom"
+            "value" : "Пользовательский"
           }
         },
         "th" : {
@@ -80231,7 +80231,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This directory is not a symlink, cannot restore: %@"
+            "value" : "Этот каталог не является символической ссылкой, восстановление невозможно: %@"
           }
         },
         "th" : {
@@ -80779,7 +80779,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This directory is protected by macOS and cannot be migrated: %@. Please migrate subdirectories within the container instead."
+            "value" : "Этот каталог защищён системой macOS, перенос невозможен: %@. Перенесите вместо этого подкаталоги внутри контейнера."
           }
         },
         "th" : {
@@ -82012,7 +82012,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
+            "value" : "Подтвердите, продолжать ли нормализацию управления «%1$@».\n\nТекущий путь: %2$@\nКанонический путь: %3$@\n\n%4$@"
           }
         },
         "th" : {
@@ -82834,7 +82834,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate"
+            "value" : "Перенести"
           }
         },
         "th" : {
@@ -85711,7 +85711,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migration Risk Warning"
+            "value" : "Предупреждение о рисках переноса"
           }
         },
         "th" : {
@@ -89279,7 +89279,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Critical"
+            "value" : "Важно"
           }
         },
         "th" : {
@@ -92293,7 +92293,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Default"
+            "value" : "По умолчанию"
           }
         },
         "th" : {
