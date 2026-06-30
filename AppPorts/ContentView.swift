@@ -1187,8 +1187,11 @@ struct ContentView: View {
                 let externalApps = await scanner.scanExternalApps(at: externalDir, localAppsDir: URL(fileURLWithPath: "/Applications"))
                 let service = AppMigrationService()
                 for localApp in finalApps where localApp.status == AppStatus.linked {
-                    if let externalApp = externalApps.first(where: { $0.name == localApp.name }),
-                       localApp.version != externalApp.version {
+                    guard let externalApp = externalApps.first(where: { $0.name == localApp.name }) else { continue }
+                    if localApp.usesFolderOperation {
+                        // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
+                        service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
+                    } else if localApp.version != externalApp.version {
                         service.refreshStubPortal(at: localApp.path, from: externalApp.path)
                     }
                 }
@@ -2192,6 +2195,11 @@ struct ContentView: View {
             return app.displayURL
         }
 
+        // Folder Mirror：从标记文件解析外部真实文件夹
+        if let externalURL = AppMigrationService.folderMirrorExternalURL(at: app.path) {
+            return externalURL
+        }
+
         // Whole-app symlink：解析符号链接目标
         if let rawPath = try? FileManager.default.destinationOfSymbolicLink(atPath: app.path.path) {
             return URL(fileURLWithPath: rawPath, relativeTo: app.path.deletingLastPathComponent()).standardizedFileURL
@@ -2378,8 +2386,11 @@ struct ContentView: View {
             // 检测外置 app 版本变化，刷新本地 Stub Portal
             let service = AppMigrationService()
             for localApp in newLocalApps where localApp.status == AppStatus.linked {
-                if let externalApp = newExternalApps.first(where: { $0.name == localApp.name }),
-                   localApp.version != externalApp.version {
+                guard let externalApp = newExternalApps.first(where: { $0.name == localApp.name }) else { continue }
+                if localApp.usesFolderOperation {
+                    // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
+                    service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
+                } else if localApp.version != externalApp.version {
                     service.refreshStubPortal(at: localApp.path, from: externalApp.path)
                 }
             }
