@@ -92470,6 +92470,98 @@
           }
         }
       }
+    },
+    "受保护的应用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受保护的应用"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protected Apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Защищённые приложения"
+          }
+        }
+      }
+    },
+    "仍然迁移" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍然迁移"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate Anyway"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всё равно перенести"
+          }
+        }
+      }
+    },
+    "以下应用来自 App Store 或归属系统（root），受系统保护：\n\n%@\n\n它们的本地副本通常无法被直接删除或替换，自动迁移可能以「权限不足」失败。\n\n建议：先在访达中手动把应用拖到外部存储（系统会要求输入管理员密码），再回到 AppPorts 为它创建链接。\n\n仍要尝试自动迁移吗？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下应用来自 App Store 或归属系统（root），受系统保护：\n\n%@\n\n它们的本地副本通常无法被直接删除或替换，自动迁移可能以「权限不足」失败。\n\n建议：先在访达中手动把应用拖到外部存储（系统会要求输入管理员密码），再回到 AppPorts 为它创建链接。\n\n仍要尝试自动迁移吗？"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The following apps come from the App Store or are owned by the system (root) and are protected by macOS:\n\n%@\n\nTheir local copies usually cannot be deleted or replaced directly, so automatic migration may fail with \"permission denied\".\n\nRecommended: first drag the app to external storage manually in Finder (you'll be asked for an administrator password), then come back to AppPorts to create a link for it.\n\nStill try automatic migration?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Следующие приложения получены из App Store или принадлежат системе (root) и защищены macOS:\n\n%@\n\nИх локальные копии обычно нельзя удалить или заменить напрямую, поэтому автоматический перенос может завершиться ошибкой «недостаточно прав».\n\nРекомендуется: сначала вручную перетащите приложение на внешнее хранилище в Finder (система запросит пароль администратора), затем вернитесь в AppPorts и создайте для него ссылку.\n\nВсё равно попробовать автоматический перенос?"
+          }
+        }
+      }
+    },
+    "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: Permission denied — the local copy cannot be deleted or replaced. This app may come from the App Store or be owned by the system (root). Migrate it manually in Finder, then use AppPorts to create a link."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: недостаточно прав — локальную копию нельзя удалить или заменить. Это приложение может быть из App Store или принадлежать системе (root). Перенесите его вручную в Finder, затем создайте ссылку через AppPorts."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
