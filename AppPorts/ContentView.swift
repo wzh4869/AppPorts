@@ -223,6 +223,11 @@ struct ContentView: View {
     @State private var showAppStoreConfirm = false
     @State private var pendingAppStoreApps: [AppItem] = []
 
+    // 受保护应用迁移预警（App Store / root 拥有，自动迁移可能因权限失败）
+    @State private var showProtectedAppWarning = false
+    @State private var pendingProtectedApps: [AppItem] = []
+    @State private var pendingMigrationAfterWarning: [AppItem] = []
+
     // 自更新应用迁移确认（Sparkle/Electron，锁定模式保护）
     @State private var showSelfUpdaterConfirm = false
     @State private var pendingSelfUpdaterApps: [AppItem] = []
@@ -709,6 +714,24 @@ struct ContentView: View {
             } else {
                 Text(String(format: "选中的 %lld 个应用包含 %lld 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。".localized, totalCount, count))
             }
+        }
+        // 受保护应用（App Store / root）迁移预警
+        .alert("受保护的应用".localized, isPresented: $showProtectedAppWarning) {
+            Button("仍然迁移".localized, role: .destructive) {
+                let apps = pendingMigrationAfterWarning
+                pendingProtectedApps = []
+                pendingMigrationAfterWarning = []
+                if let dest = externalDriveURL {
+                    proceedWithMigration(validApps: apps, dest: dest)
+                }
+            }
+            Button("取消".localized, role: .cancel) {
+                pendingProtectedApps = []
+                pendingMigrationAfterWarning = []
+            }
+        } message: {
+            let names = pendingProtectedApps.map { $0.displayName }.joined(separator: "、")
+            Text(String(format: "以下应用来自 App Store 或归属系统（root），受系统保护：\n\n%@\n\n它们的本地副本通常无法被直接删除或替换，自动迁移可能以「权限不足」失败。\n\n建议：先在访达中手动把应用拖到外部存储（系统会要求输入管理员密码），再回到 AppPorts 为它创建链接。\n\n仍要尝试自动迁移吗？".localized, names))
         }
         // 自更新应用迁移确认弹窗
         .alert("自更新应用迁移".localized, isPresented: $showSelfUpdaterConfirm) {
@@ -1616,6 +1639,20 @@ struct ContentView: View {
         
         guard !validApps.isEmpty else { return }
 
+        // 受保护应用（App Store / root 拥有）预警：自动迁移可能因权限被拒，先提示用户
+        let protectedApps = validApps.filter { protectedMigrationReason(for: $0) != nil }
+        if !protectedApps.isEmpty {
+            pendingProtectedApps = protectedApps
+            pendingMigrationAfterWarning = validApps
+            showProtectedAppWarning = true
+            return
+        }
+
+        proceedWithMigration(validApps: validApps, dest: dest)
+    }
+
+    /// 校验通过后的迁移收尾：先处理自更新应用确认，否则直接批量迁移。
+    func proceedWithMigration(validApps: [AppItem], dest: URL) {
         // 检查是否包含自更新应用（Sparkle/Electron）
         let selfUpdaterApps = validApps.filter { $0.hasSelfUpdater }
         if !selfUpdaterApps.isEmpty {
@@ -1628,6 +1665,41 @@ struct ContentView: View {
 
         // 直接迁移符合条件的应用
         executeBatchMove(apps: validApps, destination: dest)
+    }
+
+    /// 应用是否“受保护、难以自动迁移”：App Store 应用或归属 root 的包。
+    /// 这类应用从 /Applications 删除/替换通常会因权限被拒（NSFileWriteNoPermissionError 513）。
+    func protectedMigrationReason(for app: AppItem) -> String? {
+        if app.isAppStoreApp { return "App Store" }
+        if isRootOwnedBundle(at: app.path) { return "root" }
+        return nil
+    }
+
+    /// 判断包是否归属 root（且当前用户不是 root）——普通删除会因权限失败。
+    func isRootOwnedBundle(at url: URL) -> Bool {
+        guard getuid() != 0,
+              let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let ownerID = (attrs[.ownerAccountID] as? NSNumber)?.uintValue else {
+            return false
+        }
+        return ownerID == 0
+    }
+
+    /// 将迁移失败的底层错误转成更友好的说明：权限类错误指向“受保护应用”原因，避免直接抛出晦涩的系统错误。
+    func friendlyMigrationFailure(appName: String, error: Error) -> String {
+        let nsError = error as NSError
+        let isPermissionDenied =
+            (nsError.domain == NSCocoaErrorDomain &&
+                (nsError.code == NSFileWriteNoPermissionError || nsError.code == NSFileReadNoPermissionError)) ||
+            (nsError.domain == NSPOSIXErrorDomain &&
+                (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
+        if isPermissionDenied {
+            return String(
+                format: "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。".localized,
+                appName
+            )
+        }
+        return "\(appName): \(error.localizedDescription)"
     }
     
     /// 批量迁移应用
@@ -1687,7 +1759,7 @@ struct ContentView: View {
                         details: [("batch_id", batchID), ("app_name", app.displayName)]
                     )
                 } catch {
-                    errors.append("\(app.name): \(error.localizedDescription)")
+                    errors.append(friendlyMigrationFailure(appName: app.name, error: error))
                     AppLogger.shared.logError(
                         "批量迁移单项失败",
                         error: error,
