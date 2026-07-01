@@ -271,7 +271,7 @@ struct ContentView: View {
     @State private var sortOption: SortOption = .name
 
     // MARK: - Tab
-    enum MainTab { case apps, dataDirs }
+    enum MainTab { case apps, dataDirs, customDirs }
     @State private var mainTab: MainTab = .apps
     @State private var selectedDataDirsTab: DataDirsView.DataTab = .toolDirs
     @State private var selectedDataDirsApp: AppItem? = nil
@@ -290,6 +290,9 @@ struct ContentView: View {
                     }
                     TabButton(title: "数据目录", systemImage: "cylinder", isSelected: mainTab == .dataDirs) {
                         withAnimation { mainTab = .dataDirs }
+                    }
+                    TabButton(title: "目录迁移", systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
+                        withAnimation { mainTab = .customDirs }
                     }
                 }
                 .padding(3)
@@ -405,6 +408,8 @@ struct ContentView: View {
                         performBackupSignature(at: url, bundleID: getBundleIdentifier(from: url))
                     }
                 )
+            } else if mainTab == .customDirs {
+                CustomDirsView()
             } else {
 
             HSplitView {
@@ -856,7 +861,7 @@ struct ContentView: View {
         let icon: String
         var actionButtonText: String? = nil
         var onAction: (() -> Void)? = nil
-        let onRefresh: () -> Void
+        var onRefresh: (() -> Void)? = nil
         
         var body: some View {
             VStack(spacing: 0) {
@@ -887,12 +892,14 @@ struct ContentView: View {
                             .buttonStyle(.bordered)
                     }
                     
-                    Button(action: onRefresh) {
-                        Image(systemName: "arrow.clockwise")
+                    if let onRefresh {
+                        Button(action: onRefresh) {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                        .buttonStyle(.borderless)
+                        .padding(.leading, 8)
+                        .help("刷新列表".localized)
                     }
-                    .buttonStyle(.borderless)
-                    .padding(.leading, 8)
-                    .help("刷新列表".localized)
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
