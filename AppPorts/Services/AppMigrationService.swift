@@ -15,7 +15,23 @@ struct AppMigrationService {
         case wholeAppSymlink
         case deepContentsWrapper
         case stubPortal
+        /// 文件夹套件（appSuiteFolder / singleAppContainer）：本地为真实文件夹，
+        /// 内部每个 .app 是 Stub Portal（可被 Launch Services 索引），其余文件/子目录为符号链接。
+        case folderMirror
+        /// 透明混合入口（原型，feature flag `transparentHybridEnabled`）：本地为真实 .app 壳，
+        /// 保留 Stub 启动器（可被 Launch Services / Spotlight 索引、安全启动），
+        /// 同时把 `Contents` 下我们未注入的文件/子目录以符号链接镜像到外部真实 app，
+        /// 使硬编码到 `/Applications/X.app/Contents/...` 的内部路径仍可解析（需外置磁盘在线）。
+        case transparentHybrid
     }
+
+    /// Folder Mirror 标记文件名：放在本地镜像文件夹内，记录外部真实文件夹路径。
+    /// 用于扫描器识别镜像文件夹状态、解析体积与还原/解链。
+    static let folderPortalMarkerName = ".appports-folder-portal.plist"
+
+    /// Transparent Hybrid 标记文件名：放在本地 .app 的 `Contents` 内，记录外部真实 app 路径。
+    /// 是 restore/解链识别本类型的权威依据（须早于 legacyHybrid 等符号链接启发式判断）。
+    static let hybridPortalMarkerName = ".appports-hybrid-portal.plist"
 
     private struct LocalPortalSnapshot {
         let localURL: URL
@@ -459,7 +475,7 @@ struct AppMigrationService {
             }
         }
 
-        let portalKind: LocalPortalKind = appToLink.usesFolderOperation ? .wholeAppSymlink : preferredPortalKind(for: appToLink.path)
+        let portalKind: LocalPortalKind = appToLink.usesFolderOperation ? .folderMirror : preferredPortalKind(for: appToLink.path)
         AppLogger.shared.logContext(
             "本地入口策略",
             details: [("operation_id", operationID), ("portal_kind", portalKindDescription(portalKind))]
@@ -472,6 +488,10 @@ struct AppMigrationService {
             AppLogger.shared.log("链接策略: Mac 原生应用 (Contents 深度链接)", level: "STRATEGY")
         case .stubPortal:
             AppLogger.shared.log("链接策略: Stub 启动器 (极小壳 + 外部真实 app，无箭头)", level: "STRATEGY")
+        case .folderMirror:
+            AppLogger.shared.log("链接策略: 文件夹镜像 (内部 app 为 Stub，其余符号链接)", level: "STRATEGY")
+        case .transparentHybrid:
+            AppLogger.shared.log("链接策略: 透明混合入口 (真实 .app 壳 + 内部符号链接镜像)", level: "STRATEGY")
         }
 
         do {
@@ -859,9 +879,27 @@ struct AppMigrationService {
             return .wholeAppSymlink
         }
 
+        // 原型：透明混合入口（feature flag）。让 .app/Contents/... 的硬编码内部路径可解析。
+        // iOS 应用（Wrapper/WrappedBundle）不支持，回退到 Stub。
+        if transparentHybridEnabled, !isIOSWrappedApp(at: appURL) {
+            return .transparentHybrid
+        }
+
         // 所有 .app 应用统一使用 stubPortal（无角标，安全）
         // iOS 应用使用专用的 iOS stub（从 iTunesMetadata.plist 生成 Info.plist，提取 AppIcon）
         return .stubPortal
+    }
+
+    /// 原型开关：透明混合入口。默认关闭，可用
+    /// `defaults write com.shimoko.AppPorts transparentHybridEnabled -bool YES` 开启。
+    private var transparentHybridEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "transparentHybridEnabled")
+    }
+
+    /// 是否为 iOS-on-Mac 应用（含 `Wrapper/` 或 `WrappedBundle/`）。
+    private func isIOSWrappedApp(at appURL: URL) -> Bool {
+        fileManager.fileExists(atPath: appURL.appendingPathComponent("Wrapper").path)
+            || fileManager.fileExists(atPath: appURL.appendingPathComponent("WrappedBundle").path)
     }
 
     /// 检测应用是否有自更新能力
@@ -1014,6 +1052,10 @@ struct AppMigrationService {
             return "appports_legacy_portal"
         case .wholeAppSymlink:
             return "appports_whole_app_symlink"
+        case .folderMirror:
+            return "appports_folder_mirror"
+        case .transparentHybrid:
+            return "appports_transparent_hybrid"
         }
     }
 
@@ -1025,6 +1067,12 @@ struct AppMigrationService {
         let localContentsURL = localURL.appendingPathComponent("Contents")
         if let contentsDestination = resolveSymlinkDestination(at: localContentsURL) {
             return localPortalKind(at: localURL, linkedTo: contentsDestination.deletingLastPathComponent())
+        }
+
+        // Transparent Hybrid：Contents 内标记文件（须早于 legacyHybrid 检测——本类型
+        // 的 Contents 内含 Frameworks 等符号链接，否则会被 legacyHybrid 误判为 wholeAppSymlink）
+        if fileManager.fileExists(atPath: localContentsURL.appendingPathComponent(Self.hybridPortalMarkerName).path) {
+            return .transparentHybrid
         }
 
         // 旧 sparkleHybrid/electronHybrid portal 检测（向后兼容，映射为 wholeAppSymlink）
@@ -1046,11 +1094,21 @@ struct AppMigrationService {
             }
         }
 
+        // Folder Mirror：真实文件夹 + 标记文件
+        if fileManager.fileExists(atPath: localURL.appendingPathComponent(Self.folderPortalMarkerName).path) {
+            return .folderMirror
+        }
+
         return nil
     }
 
     private func localPortalKind(at localURL: URL, linkedTo externalURL: URL) -> LocalPortalKind? {
         let standardizedExternalURL = externalURL.standardizedFileURL
+
+        // Folder Mirror：真实文件夹 + 标记文件（标记是套件入口的权威标识，优先识别）
+        if fileManager.fileExists(atPath: localURL.appendingPathComponent(Self.folderPortalMarkerName).path) {
+            return .folderMirror
+        }
 
         if let linkDestination = resolveSymlinkDestination(at: localURL),
            linkDestination == standardizedExternalURL {
@@ -1061,6 +1119,14 @@ struct AppMigrationService {
         if let contentsDestination = resolveSymlinkDestination(at: localContentsURL),
            contentsDestination == standardizedExternalURL.appendingPathComponent("Contents").standardizedFileURL {
             return .deepContentsWrapper
+        }
+
+        // Transparent Hybrid：Contents 内标记文件，记录的外部路径匹配即视为本类型
+        // （须早于 legacyHybrid 检测，避免内部 Frameworks 符号链接被误判为 wholeAppSymlink）
+        if fileManager.fileExists(atPath: localContentsURL.appendingPathComponent(Self.hybridPortalMarkerName).path),
+           let recorded = Self.hybridPortalExternalURL(at: localURL, fileManager: fileManager),
+           recorded == standardizedExternalURL {
+            return .transparentHybrid
         }
 
         // 旧 sparkleHybrid/electronHybrid 入口检测（向后兼容）
@@ -1148,9 +1214,207 @@ struct AppMigrationService {
 
         case .stubPortal:
             try createStubPortal(at: localURL, pointingTo: externalURL)
+
+        case .folderMirror:
+            try createFolderMirrorPortal(at: localURL, pointingTo: externalURL)
+
+        case .transparentHybrid:
+            try createTransparentHybridPortal(at: localURL, pointingTo: externalURL)
         }
 
         AppLogger.shared.logPathState("本地入口结果[\(operationID ?? "n/a")]", url: localURL, level: "TRACE")
+    }
+
+    /// 创建 Folder Mirror：本地真实文件夹，逐项镜像外部套件文件夹。
+    ///
+    /// - 内部每个 `.app` → Stub Portal（真实 .app 壳，可被 Launch Services / Spotlight 索引）
+    /// - 其余文件/子目录（PDF、文档目录等）→ 指向外部的符号链接（不占空间，无需索引）
+    /// - 写入隐藏标记 `.appports-folder-portal.plist` 记录外部路径，供扫描/还原/解链识别
+    ///
+    /// 单个 `.app` 的 stub 创建失败时回退为整体符号链接，保证整套迁移不因个别项失败而中断。
+    private func createFolderMirrorPortal(at localFolderURL: URL, pointingTo externalFolderURL: URL) throws {
+        let fm = fileManager
+
+        // 确保是一个全新的真实目录（覆盖残留的旧入口）
+        if fm.fileExists(atPath: localFolderURL.path) {
+            unlockImmutableRecursive(at: localFolderURL)
+            try fm.removeItem(at: localFolderURL)
+        }
+        try fm.createDirectory(at: localFolderURL, withIntermediateDirectories: true, attributes: nil)
+
+        let entries = (try? fm.contentsOfDirectory(
+            at: externalFolderURL,
+            includingPropertiesForKeys: nil,
+            options: .skipsHiddenFiles
+        )) ?? []
+
+        var stubCount = 0
+        var linkCount = 0
+        for entry in entries {
+            let localEntry = localFolderURL.appendingPathComponent(entry.lastPathComponent)
+            if entry.pathExtension == "app" {
+                do {
+                    try createStubPortal(at: localEntry, pointingTo: entry)
+                    stubCount += 1
+                } catch {
+                    AppLogger.shared.logError(
+                        "Folder Mirror：创建内部 Stub 失败，回退为符号链接",
+                        error: error,
+                        errorCode: "FOLDER-MIRROR-STUB-FAILED",
+                        relatedURLs: [("local", localEntry), ("external", entry)]
+                    )
+                    try? fm.removeItem(at: localEntry)
+                    try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+                    linkCount += 1
+                }
+            } else {
+                try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+                linkCount += 1
+            }
+        }
+
+        try writeFolderPortalMarker(in: localFolderURL, externalFolderURL: externalFolderURL)
+        try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: localFolderURL.path)
+
+        AppLogger.shared.log(
+            "已创建 Folder Mirror: \(localFolderURL.lastPathComponent) (stubs=\(stubCount), links=\(linkCount)) -> \(externalFolderURL.path)"
+        )
+        refreshLaunchServicesRecursive(for: localFolderURL)
+    }
+
+    /// 写入 Folder Mirror 标记文件。
+    private func writeFolderPortalMarker(in localFolderURL: URL, externalFolderURL: URL) throws {
+        let marker: [String: Any] = [
+            "externalPath": externalFolderURL.standardizedFileURL.path,
+            "createdBy": "AppPorts",
+            "kind": "folderMirror",
+            "version": 1
+        ]
+        let data = try PropertyListSerialization.data(fromPropertyList: marker, format: .xml, options: 0)
+        try data.write(to: localFolderURL.appendingPathComponent(Self.folderPortalMarkerName))
+    }
+
+    /// 若本地文件夹是 Folder Mirror（含标记文件），返回其记录的外部真实文件夹路径。
+    func folderMirrorExternalURL(at localFolderURL: URL) -> URL? {
+        Self.folderMirrorExternalURL(at: localFolderURL, fileManager: fileManager)
+    }
+
+    /// 读取 Folder Mirror 标记中的外部路径（静态版，供扫描器等无实例场景复用）。
+    static func folderMirrorExternalURL(at localFolderURL: URL, fileManager: FileManager = .default) -> URL? {
+        let markerURL = localFolderURL.appendingPathComponent(folderPortalMarkerName)
+        guard fileManager.fileExists(atPath: markerURL.path),
+              let data = try? Data(contentsOf: markerURL),
+              let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let path = dict["externalPath"] as? String,
+              !path.isEmpty else {
+            return nil
+        }
+        return URL(fileURLWithPath: path).standardizedFileURL
+    }
+
+    /// 写入 Transparent Hybrid 标记文件（位于本地 .app 的 `Contents` 内）。
+    private func writeHybridPortalMarker(in localContentsURL: URL, externalURL: URL) throws {
+        let marker: [String: Any] = [
+            "externalPath": externalURL.standardizedFileURL.path,
+            "createdBy": "AppPorts",
+            "kind": "transparentHybrid",
+            "version": 1
+        ]
+        let data = try PropertyListSerialization.data(fromPropertyList: marker, format: .xml, options: 0)
+        try data.write(to: localContentsURL.appendingPathComponent(Self.hybridPortalMarkerName))
+    }
+
+    /// 读取 Transparent Hybrid 标记中的外部路径（静态版，供扫描器等无实例场景复用）。
+    static func hybridPortalExternalURL(at localAppURL: URL, fileManager: FileManager = .default) -> URL? {
+        let markerURL = localAppURL
+            .appendingPathComponent("Contents")
+            .appendingPathComponent(hybridPortalMarkerName)
+        guard fileManager.fileExists(atPath: markerURL.path),
+              let data = try? Data(contentsOf: markerURL),
+              let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let path = dict["externalPath"] as? String,
+              !path.isEmpty else {
+            return nil
+        }
+        return URL(fileURLWithPath: path).standardizedFileURL
+    }
+
+    /// 重新同步 Folder Mirror，使本地镜像与外部套件文件夹保持一致。
+    ///
+    /// 在 rescan 时调用（外部套件被 App Store / 自更新器更新后内容可能变化）：
+    /// - 现有内部 Stub → 调用 `refreshStubPortal` 同步版本/图标
+    /// - 外部新增的 `.app` → 新建 Stub；新增的其他文件/目录 → 新建符号链接
+    /// - 本地多余的项（外部已删除）→ 移除
+    /// 仅对带标记文件的真实镜像文件夹生效，旧版整体符号链接文件夹会被安全跳过。
+    func refreshFolderMirror(at localFolderURL: URL, from externalFolderURL: URL) {
+        let fm = fileManager
+
+        // 仅处理 AppPorts 镜像文件夹（标记存在），其余（旧 symlink 文件夹、用户真实文件夹）跳过
+        let markerURL = localFolderURL.appendingPathComponent(Self.folderPortalMarkerName)
+        guard fm.fileExists(atPath: markerURL.path),
+              let externalEntries = try? fm.contentsOfDirectory(
+                  at: externalFolderURL,
+                  includingPropertiesForKeys: nil,
+                  options: .skipsHiddenFiles
+              ) else {
+            return
+        }
+
+        let externalNames = Set(externalEntries.map { $0.lastPathComponent })
+        var didChange = false
+
+        // 1. 新增 / 刷新外部存在的条目
+        for entry in externalEntries {
+            let localEntry = localFolderURL.appendingPathComponent(entry.lastPathComponent)
+            if entry.pathExtension == "app" {
+                if fm.fileExists(atPath: localEntry.path),
+                   localPortalKind(at: localEntry, linkedTo: entry) == .stubPortal {
+                    // 现有内部 Stub：同步版本/图标
+                    refreshStubPortal(at: localEntry, from: entry)
+                } else {
+                    // 外部新增 app（或本地缺失/损坏）：重建 Stub
+                    try? fm.removeItem(at: localEntry)
+                    do {
+                        try createStubPortal(at: localEntry, pointingTo: entry)
+                        didChange = true
+                    } catch {
+                        try? fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+                        didChange = true
+                    }
+                }
+            } else {
+                // 非 app：确保符号链接存在且指向当前外部条目
+                let needsLink: Bool
+                if let dest = resolveSymlinkDestination(at: localEntry) {
+                    needsLink = dest != entry.standardizedFileURL
+                } else {
+                    needsLink = !fm.fileExists(atPath: localEntry.path)
+                }
+                if needsLink {
+                    try? fm.removeItem(at: localEntry)
+                    try? fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+                    didChange = true
+                }
+            }
+        }
+
+        // 2. 移除外部已不存在的本地条目（标记与隐藏文件因 skipsHiddenFiles 不被遍历，自动保留）
+        if let localEntries = try? fm.contentsOfDirectory(
+            at: localFolderURL,
+            includingPropertiesForKeys: nil,
+            options: .skipsHiddenFiles
+        ) {
+            for localEntry in localEntries where !externalNames.contains(localEntry.lastPathComponent) {
+                try? fm.removeItem(at: localEntry)
+                didChange = true
+            }
+        }
+
+        if didChange {
+            try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: localFolderURL.path)
+            refreshLaunchServicesRecursive(for: localFolderURL)
+            AppLogger.shared.log("已同步 Folder Mirror: \(localFolderURL.lastPathComponent) -> \(externalFolderURL.path)")
+        }
     }
 
     /// 创建 Stub Portal：极小的假 .app，含 launcher 脚本启动外部真实 app
@@ -1291,6 +1555,81 @@ struct AppMigrationService {
         AppLogger.shared.log("已创建 macOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
 
+    /// 创建透明混合入口（Transparent Hybrid，原型）。
+    ///
+    /// 本地为真实 .app 壳：保留 Stub 启动器（`Contents/MacOS/launcher` + `Resources/real_app_path.txt`），
+    /// 因此可被 Launch Services / Spotlight 索引、双击经启动器打开外部真实 app、外置磁盘缺失时弹提示；
+    /// 同时把 `Contents` 下未被我们注入的文件/子目录以符号链接镜像到外部真实 app，
+    /// 使硬编码到 `/Applications/X.app/Contents/...` 的内部路径仍可解析（需外置磁盘在线）。
+    ///
+    /// 镜像遵循"只在含我们文件的分支下建真实目录，其余整棵子树用符号链接"：
+    /// - `Contents` 顶层：除注入项（Info.plist/PkgInfo/MacOS/Resources/_CodeSignature/标记）外，逐项符号链接
+    /// - `Contents/MacOS`、`Contents/Resources`：保留我们的真实文件，其余子项逐项符号链接（不再深入）
+    private func createTransparentHybridPortal(at localURL: URL, pointingTo externalURL: URL) throws {
+        let fm = fileManager
+
+        // iOS 应用（Wrapper/WrappedBundle）不支持透明混合，回退为常规 Stub
+        if isIOSWrappedApp(at: externalURL) {
+            AppLogger.shared.log("透明混合入口不支持 iOS 应用，回退为 Stub Portal", level: "WARN")
+            try createStubPortal(at: localURL, pointingTo: externalURL)
+            return
+        }
+
+        // 1. 先建立 Stub "脊柱"（Info.plist / PkgInfo / MacOS/launcher / Resources/real_app_path.txt + 图标 + 签名）
+        try createMacOSStubPortal(at: localURL, pointingTo: externalURL)
+
+        let localContents = localURL.appendingPathComponent("Contents")
+        let externalContents = externalURL.appendingPathComponent("Contents")
+
+        // 2. Contents 顶层：镜像我们未注入的条目为符号链接（整棵子树，不深入）。
+        //    _CodeSignature 由本地重新签名生成，绝不可符号链接到外部（否则签名会写穿到外部 app）。
+        let injectedTopLevel: Set<String> = [
+            "Info.plist", "PkgInfo", "MacOS", "Resources", "_CodeSignature", Self.hybridPortalMarkerName
+        ]
+        if let externalTop = try? fm.contentsOfDirectory(at: externalContents, includingPropertiesForKeys: nil, options: []) {
+            for entry in externalTop {
+                let name = entry.lastPathComponent
+                if injectedTopLevel.contains(name) { continue }
+                let localEntry = localContents.appendingPathComponent(name)
+                if fm.fileExists(atPath: localEntry.path) { continue }  // 不覆盖既有真实项，避免与我们的数据相交
+                try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+            }
+        }
+
+        // 3. MacOS / Resources：保留我们的真实文件，其余子项逐项符号链接（只深入这一层）
+        mirrorChildrenAsSymlinks(
+            localDir: localContents.appendingPathComponent("MacOS"),
+            externalDir: externalContents.appendingPathComponent("MacOS")
+        )
+        mirrorChildrenAsSymlinks(
+            localDir: localContents.appendingPathComponent("Resources"),
+            externalDir: externalContents.appendingPathComponent("Resources")
+        )
+
+        // 4. 写入标记文件（restore/scan 识别本类型的权威依据，须在重新签名前写入）
+        try writeHybridPortalMarker(in: localContents, externalURL: externalURL)
+
+        // 5. 重新 ad-hoc shallow 签名（覆盖脊柱签名，纳入新增符号链接与标记；shallow 不穿透 Frameworks 符号链接）
+        resignAppBundle(at: localURL)
+
+        refreshLaunchServices(for: localURL)
+        AppLogger.shared.log("已创建 Transparent Hybrid Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
+    }
+
+    /// 将 `externalDir` 下我们尚未注入的子项，逐个在 `localDir` 内创建符号链接（不递归深入）。
+    /// `localDir` 内已存在的真实文件（如 launcher / real_app_path.txt / 图标）优先保留，避免与我们的数据相交。
+    private func mirrorChildrenAsSymlinks(localDir: URL, externalDir: URL) {
+        let fm = fileManager
+        guard let children = try? fm.contentsOfDirectory(at: externalDir, includingPropertiesForKeys: nil, options: []) else {
+            return
+        }
+        for child in children {
+            let localChild = localDir.appendingPathComponent(child.lastPathComponent)
+            if fm.fileExists(atPath: localChild.path) { continue }
+            try? fm.createSymbolicLink(at: localChild, withDestinationURL: child)
+        }
+    }
+
     /// 刷新 Stub Portal 的 Info.plist 和图标（同步外置 app 的版本等元数据）
     ///
     /// 当外置 app 更新后，FolderMonitor 触发 rescan 时调用。
@@ -1386,6 +1725,20 @@ struct AppMigrationService {
         }
     }
 
+    /// 递归刷新 Launch Services（Folder Mirror：需注册文件夹内部的所有 Stub）
+    private func refreshLaunchServicesRecursive(for folderURL: URL) {
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: lsregister)
+        process.arguments = ["-f", "-R", folderURL.path]
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            AppLogger.shared.log("lsregister 递归刷新失败: \(folderURL.lastPathComponent)", level: "WARN")
+        }
+    }
+
     /// 复制原生 launcher 二进制，并写入 real_app_path.txt
     private func copyNativeLauncher(to macosDir: URL, resourcesDir: URL, externalURL: URL) throws {
         // 从 AppPorts bundle 中复制预编译的原生 launcher 二进制
@@ -1413,7 +1766,7 @@ struct AppMigrationService {
             if [ -d "$REAL_APP" ]; then
                 open "$REAL_APP"
             else
-                osascript -e 'display dialog "外部存储未连接，请连接后重试。" buttons {"好"} default button 1 with icon caution'
+                osascript -e 'display dialog "External storage is not connected. Connect it and try again." buttons {"OK"} default button 1 with icon caution'
             fi
             """
         try script.write(to: launcherPath, atomically: true, encoding: .utf8)
@@ -1478,11 +1831,11 @@ struct AppMigrationService {
         }
 
         if appToMove.usesFolderOperation {
-            AppLogger.shared.log("迁移策略: 应用文件夹 (整体符号链接)", level: "STRATEGY")
+            AppLogger.shared.log("迁移策略: 应用文件夹 (文件夹镜像，内部 app 为 Stub)", level: "STRATEGY")
             try createLocalPortal(
                 at: appToMove.path,
                 pointingTo: destinationURL,
-                portalKind: .wholeAppSymlink,
+                portalKind: .folderMirror,
                 operationID: operationID
             )
             return
@@ -1497,6 +1850,12 @@ struct AppMigrationService {
 
         case .stubPortal:
             AppLogger.shared.log("迁移策略: 自更新应用 (Stub 启动器，无箭头)", level: "STRATEGY")
+
+        case .folderMirror:
+            // preferredPortalKind 不会对单 app 返回此类型；文件夹路径已在上方分支处理
+            AppLogger.shared.log("迁移策略: 文件夹镜像", level: "STRATEGY")
+        case .transparentHybrid:
+            AppLogger.shared.log("迁移策略: 透明混合入口 (真实 .app 壳 + 内部符号链接镜像)", level: "STRATEGY")
         }
 
         try createLocalPortal(at: appToMove.path, pointingTo: destinationURL, operationID: operationID)
@@ -1566,6 +1925,10 @@ struct AppMigrationService {
             return "deep_contents_wrapper"
         case .stubPortal:
             return "stub_portal"
+        case .folderMirror:
+            return "folder_mirror"
+        case .transparentHybrid:
+            return "transparent_hybrid"
         }
     }
 }

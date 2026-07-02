@@ -87,7 +87,7 @@ final class AppMigrationServiceTests: XCTestCase {
         }
     }
 
-    func testFolderMoveAndRestoreUsesSingleFolderSymlink() async throws {
+    func testFolderMoveAndRestoreUsesFolderMirror() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -96,6 +96,10 @@ final class AppMigrationServiceTests: XCTestCase {
         try fileManager.createDirectory(at: localSuiteURL, withIntermediateDirectories: true)
         try createAppBundle(at: localSuiteURL.appendingPathComponent("Word.app"))
         try createAppBundle(at: localSuiteURL.appendingPathComponent("Excel.app"))
+        // 非 app 条目：单文件 + 子目录
+        try "manual".write(to: localSuiteURL.appendingPathComponent("Manual.pdf"), atomically: true, encoding: .utf8)
+        try fileManager.createDirectory(at: localSuiteURL.appendingPathComponent("Documents"), withIntermediateDirectories: true)
+        try "license".write(to: localSuiteURL.appendingPathComponent("Documents/License.txt"), atomically: true, encoding: .utf8)
 
         let service = AppMigrationService()
         let suiteItem = AppItem(
@@ -113,9 +117,16 @@ final class AppMigrationServiceTests: XCTestCase {
             progressHandler: nil
         )
 
-        try assertWholeAppSymlink(localSuiteURL, pointsTo: externalSuiteURL)
+        // 本地是真实文件夹（非 symlink），内部 app 为 Stub，非 app 为符号链接，含标记文件
+        try assertFolderMirror(localSuiteURL, stubAppNames: ["Word.app", "Excel.app"], externalURL: externalSuiteURL)
+        try assertSymlink(localSuiteURL.appendingPathComponent("Manual.pdf"), pointsTo: externalSuiteURL.appendingPathComponent("Manual.pdf"))
+        try assertSymlink(localSuiteURL.appendingPathComponent("Documents"), pointsTo: externalSuiteURL.appendingPathComponent("Documents"))
+        // 内部 app 未被展开到 /Applications 顶层
         XCTAssertFalse(fileManager.fileExists(atPath: workspace.localAppsURL.appendingPathComponent("Word.app").path))
         XCTAssertFalse(fileManager.fileExists(atPath: workspace.localAppsURL.appendingPathComponent("Excel.app").path))
+        // 外部为真实套件副本，且不含本地标记文件
+        try assertRealAppBundle(externalSuiteURL.appendingPathComponent("Word.app"))
+        XCTAssertFalse(fileManager.fileExists(atPath: externalSuiteURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName).path))
 
         try await service.moveBack(
             app: AppItem(
@@ -129,11 +140,88 @@ final class AppMigrationServiceTests: XCTestCase {
             progressHandler: nil
         )
 
-        XCTAssertFalse(fileManager.fileExists(atPath: workspace.localAppsURL.appendingPathComponent("Word.app").path))
-        XCTAssertFalse(fileManager.fileExists(atPath: workspace.localAppsURL.appendingPathComponent("Excel.app").path))
+        // 还原后本地为真实套件，标记消失，外部已删除
         try assertRealAppBundle(localSuiteURL.appendingPathComponent("Word.app"))
         try assertRealAppBundle(localSuiteURL.appendingPathComponent("Excel.app"))
+        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName).path))
+        XCTAssertEqual(try String(contentsOf: localSuiteURL.appendingPathComponent("Manual.pdf"), encoding: .utf8), "manual")
         XCTAssertFalse(fileManager.fileExists(atPath: externalSuiteURL.path))
+    }
+
+    func testFolderMirrorDeleteLinkRemovesMirrorKeepsExternal() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localSuiteURL = workspace.localAppsURL.appendingPathComponent("Office")
+        let externalSuiteURL = workspace.externalRootURL.appendingPathComponent("Office")
+        try fileManager.createDirectory(at: localSuiteURL, withIntermediateDirectories: true)
+        try createAppBundle(at: localSuiteURL.appendingPathComponent("Word.app"))
+        try createAppBundle(at: localSuiteURL.appendingPathComponent("Excel.app"))
+
+        let service = AppMigrationService()
+        try await service.moveAndLink(
+            appToMove: AppItem(name: "Office", path: localSuiteURL, status: "本地", isFolder: true, appCount: 2),
+            destinationURL: externalSuiteURL,
+            isRunning: false,
+            progressHandler: nil
+        )
+        try assertFolderMirror(localSuiteURL, stubAppNames: ["Word.app", "Excel.app"], externalURL: externalSuiteURL)
+
+        // 解链：删除本地镜像，外部真实套件保持完好
+        try service.deleteLink(app: AppItem(name: "Office", path: localSuiteURL, status: "已链接", isFolder: true, appCount: 2))
+        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.path))
+        try assertRealAppBundle(externalSuiteURL.appendingPathComponent("Word.app"))
+        try assertRealAppBundle(externalSuiteURL.appendingPathComponent("Excel.app"))
+    }
+
+    func testRefreshFolderMirrorSyncsAddedAndRemovedEntries() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localSuiteURL = workspace.localAppsURL.appendingPathComponent("Office")
+        let externalSuiteURL = workspace.externalRootURL.appendingPathComponent("Office")
+        try fileManager.createDirectory(at: localSuiteURL, withIntermediateDirectories: true)
+        try createAppBundle(at: localSuiteURL.appendingPathComponent("Word.app"))
+        try createAppBundle(at: localSuiteURL.appendingPathComponent("Excel.app"))
+
+        let service = AppMigrationService()
+        try await service.moveAndLink(
+            appToMove: AppItem(name: "Office", path: localSuiteURL, status: "本地", isFolder: true, appCount: 2),
+            destinationURL: externalSuiteURL,
+            isRunning: false,
+            progressHandler: nil
+        )
+        try assertFolderMirror(localSuiteURL, stubAppNames: ["Word.app", "Excel.app"], externalURL: externalSuiteURL)
+
+        // 模拟外部套件被更新：新增 PowerPoint.app 与 ReadMe.txt，删除 Excel.app
+        try createAppBundle(at: externalSuiteURL.appendingPathComponent("PowerPoint.app"))
+        try "read me".write(to: externalSuiteURL.appendingPathComponent("ReadMe.txt"), atomically: true, encoding: .utf8)
+        try fileManager.removeItem(at: externalSuiteURL.appendingPathComponent("Excel.app"))
+
+        service.refreshFolderMirror(at: localSuiteURL, from: externalSuiteURL)
+
+        // 新增项被镜像，删除项被清理，保留项不变，标记仍在
+        try assertStubPortal(localSuiteURL.appendingPathComponent("Word.app"), pointsTo: externalSuiteURL.appendingPathComponent("Word.app"))
+        try assertStubPortal(localSuiteURL.appendingPathComponent("PowerPoint.app"), pointsTo: externalSuiteURL.appendingPathComponent("PowerPoint.app"))
+        try assertSymlink(localSuiteURL.appendingPathComponent("ReadMe.txt"), pointsTo: externalSuiteURL.appendingPathComponent("ReadMe.txt"))
+        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("Excel.app").path))
+        XCTAssertTrue(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName).path))
+    }
+
+    func testRefreshFolderMirrorIgnoresLegacySymlinkFolder() throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        // 旧版整体符号链接文件夹（无标记文件）
+        let externalSuiteURL = workspace.externalRootURL.appendingPathComponent("Office")
+        try fileManager.createDirectory(at: externalSuiteURL, withIntermediateDirectories: true)
+        try createAppBundle(at: externalSuiteURL.appendingPathComponent("Word.app"))
+        let localSuiteURL = workspace.localAppsURL.appendingPathComponent("Office")
+        try fileManager.createSymbolicLink(at: localSuiteURL, withDestinationURL: externalSuiteURL)
+
+        // 应安全跳过：不抛错，不改动符号链接
+        AppMigrationService().refreshFolderMirror(at: localSuiteURL, from: externalSuiteURL)
+        try assertWholeAppSymlink(localSuiteURL, pointsTo: externalSuiteURL)
     }
 
     func testIOSRelinkUsesStubPortal() throws {
@@ -425,14 +513,22 @@ final class AppMigrationServiceTests: XCTestCase {
         let launcherURL = localURL.appendingPathComponent("Contents/MacOS/launcher")
         XCTAssertTrue(fileManager.fileExists(atPath: launcherURL.path), "launcher script should exist", file: file, line: line)
 
+        // 解析符号链接后比较，规避测试临时目录位于 /var -> /private/var 软链导致的路径差异
+        let expectedResolved = externalURL.resolvingSymlinksInPath().path
         let pathFileURL = localURL.appendingPathComponent("Contents/Resources/real_app_path.txt")
         if fileManager.fileExists(atPath: pathFileURL.path) {
             let path = try String(contentsOf: pathFileURL, encoding: .utf8)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            XCTAssertEqual(path, externalURL.path, "launcher path file should reference external app", file: file, line: line)
+            let resolved = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+            XCTAssertEqual(resolved, expectedResolved, "launcher path file should reference external app", file: file, line: line)
         } else {
             let script = try String(contentsOf: launcherURL, encoding: .utf8)
-            XCTAssertTrue(script.contains(externalURL.path), "launcher should reference external app", file: file, line: line)
+            XCTAssertTrue(
+                script.contains(externalURL.path) || script.contains(expectedResolved),
+                "launcher should reference external app",
+                file: file,
+                line: line
+            )
         }
     }
 
@@ -440,6 +536,43 @@ final class AppMigrationServiceTests: XCTestCase {
         let destination = try fileManager.destinationOfSymbolicLink(atPath: localURL.path)
         let resolvedDestination = URL(fileURLWithPath: destination, relativeTo: localURL.deletingLastPathComponent()).standardizedFileURL
         XCTAssertEqual(resolvedDestination, externalURL.standardizedFileURL, file: file, line: line)
+    }
+
+    private func assertSymlink(_ localURL: URL, pointsTo target: URL, file: StaticString = #filePath, line: UInt = #line) throws {
+        let destination = try fileManager.destinationOfSymbolicLink(atPath: localURL.path)
+        let resolvedDestination = URL(fileURLWithPath: destination, relativeTo: localURL.deletingLastPathComponent()).standardizedFileURL
+        XCTAssertEqual(resolvedDestination, target.standardizedFileURL, file: file, line: line)
+    }
+
+    private func assertFolderMirror(
+        _ localURL: URL,
+        stubAppNames: [String],
+        externalURL: URL,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        let values = try localURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+        XCTAssertEqual(values.isDirectory, true, "mirror should be a real directory", file: file, line: line)
+        XCTAssertNotEqual(values.isSymbolicLink, true, "mirror should not be a symlink", file: file, line: line)
+
+        let markerURL = localURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName)
+        XCTAssertTrue(fileManager.fileExists(atPath: markerURL.path), "mirror marker should exist", file: file, line: line)
+        XCTAssertEqual(
+            AppMigrationService.folderMirrorExternalURL(at: localURL),
+            externalURL.standardizedFileURL,
+            "marker should record external folder path",
+            file: file,
+            line: line
+        )
+
+        for name in stubAppNames {
+            try assertStubPortal(
+                localURL.appendingPathComponent(name),
+                pointsTo: externalURL.appendingPathComponent(name),
+                file: file,
+                line: line
+            )
+        }
     }
 
     private func assertRealAppBundle(_ appURL: URL, file: StaticString = #filePath, line: UInt = #line) throws {

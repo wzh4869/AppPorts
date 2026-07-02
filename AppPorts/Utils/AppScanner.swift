@@ -380,6 +380,12 @@ actor AppScanner {
     }
 
     private func detectLocalFolderStatus(at folderURL: URL) -> String {
+        // Folder Mirror：真实文件夹 + 标记文件，按外部真实文件夹是否在线判定
+        if let externalURL = AppMigrationService.folderMirrorExternalURL(at: folderURL) {
+            return FileManager.default.fileExists(atPath: externalURL.path) ? AppStatus.linked : AppStatus.orphanedLink
+        }
+
+        // 旧版整体符号链接文件夹
         if let linkDest = resolveSymlinkDestination(of: folderURL) {
             return FileManager.default.fileExists(atPath: linkDest.path) ? AppStatus.linked : AppStatus.orphanedLink
         }
@@ -393,6 +399,11 @@ actor AppScanner {
     /// - `/Applications/Foo.app -> /somewhere/Foo.app`
     /// - 本地空壳 `.app`，其 `Contents`/`MacOS`/`Resources` 指向外部真实 bundle
     private func resolveSizeCalculationURL(for url: URL) -> URL {
+        // Folder Mirror：本地仅存 Stub/符号链接，体积按外部真实套件文件夹计算
+        if let externalURL = AppMigrationService.folderMirrorExternalURL(at: url) {
+            return externalURL
+        }
+
         if let rootTarget = resolveSymlinkDestination(of: url) {
             return enclosingAppBundleURL(for: rootTarget)
         }
@@ -489,6 +500,13 @@ actor AppScanner {
     }
 
     private func isLocalFolder(_ localFolderURL: URL, linkedTo externalFolderURL: URL) -> Bool {
+        // Folder Mirror：真实文件夹 + 标记文件，标记记录的外部路径匹配即视为已链接
+        if let mirrorExternal = AppMigrationService.folderMirrorExternalURL(at: localFolderURL),
+           mirrorExternal == externalFolderURL.standardizedFileURL {
+            return true
+        }
+
+        // 旧版整体符号链接文件夹
         guard let linkDestination = resolveSymlinkDestination(of: localFolderURL) else {
             return false
         }

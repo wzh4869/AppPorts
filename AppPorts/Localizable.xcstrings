@@ -7313,7 +7313,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "(Unknown)"
+            "value" : "(неизвестно)"
           }
         },
         "th" : {
@@ -8955,7 +8955,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld pending relink"
+            "value" : "%lld к возврату"
           }
         },
         "th" : {
@@ -9092,7 +9092,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld to normalize"
+            "value" : "%lld к нормализации"
           }
         },
         "th" : {
@@ -9229,7 +9229,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld existing symlinks"
+            "value" : "%lld существующих симлинков"
           }
         },
         "th" : {
@@ -17342,13 +17342,13 @@
         }
       }
     },
-    "App Store 应用不支持迁移，因为迁移后将无法通过 App Store 更新。\\n\\n如需强制迁移，请在设置中启用相应选项。" : {
+    "App Store 应用不支持迁移，因为迁移后将无法通过 App Store 更新。\n\n如需强制迁移，请在设置中启用相应选项。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تتضمن التطبيقات المحددة تطبيقات App Store وتطبيقات غير أصلية.\\n\\nلنقلها، فعّل الخيارات المناسبة في الإعدادات."
+            "value" : "تتضمن التطبيقات المحددة تطبيقات App Store وتطبيقات غير أصلية.\n\nلنقلها، فعّل الخيارات المناسبة في الإعدادات."
           }
         },
         "br" : {
@@ -17360,121 +17360,121 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die ausgewählten Apps enthalten App-Store-Apps und nicht-native Apps.\\n\\nAktivieren Sie zum Migrieren die entsprechenden Optionen in den Einstellungen."
+            "value" : "Die ausgewählten Apps enthalten App-Store-Apps und nicht-native Apps.\n\nAktivieren Sie zum Migrieren die entsprechenden Optionen in den Einstellungen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store apps cannot be migrated because they will no longer update through the App Store after migration.\\n\\nTo force migration, enable the corresponding option in Settings."
+            "value" : "App Store apps cannot be migrated because they will no longer update through the App Store after migration.\n\nTo force migration, enable the corresponding option in Settings."
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La elektitaj aplikaĵoj inkluzivas App Store-aplikaĵojn kaj nenativajn aplikaĵojn.\\n\\nPor migri ilin, aktivigu la koncernajn opciojn en Agordoj."
+            "value" : "La elektitaj aplikaĵoj inkluzivas App Store-aplikaĵojn kaj nenativajn aplikaĵojn.\n\nPor migri ilin, aktivigu la koncernajn opciojn en Agordoj."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las apps seleccionadas incluyen apps de App Store y apps no nativas.\\n\\nPara migrarlas, activa las opciones correspondientes en Ajustes."
+            "value" : "Las apps seleccionadas incluyen apps de App Store y apps no nativas.\n\nPara migrarlas, activa las opciones correspondientes en Ajustes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les apps sélectionnées incluent des apps de l’App Store et des apps non natives.\\n\\nPour les migrer, activez les options correspondantes dans les réglages."
+            "value" : "Les apps sélectionnées incluent des apps de l’App Store et des apps non natives.\n\nPour les migrer, activez les options correspondantes dans les réglages."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "चुने गए ऐप्स में App Store ऐप्स और नॉन-नेटिव ऐप्स शामिल हैं।\\n\\nइन्हें माइग्रेट करने के लिए Settings में संबंधित विकल्प सक्षम करें."
+            "value" : "चुने गए ऐप्स में App Store ऐप्स और नॉन-नेटिव ऐप्स शामिल हैं।\n\nइन्हें माइग्रेट करने के लिए Settings में संबंधित विकल्प सक्षम करें."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aplikasi yang dipilih mencakup aplikasi App Store dan aplikasi non-native.\\n\\nUntuk memigrasikannya, aktifkan opsi yang sesuai di Pengaturan."
+            "value" : "Aplikasi yang dipilih mencakup aplikasi App Store dan aplikasi non-native.\n\nUntuk memigrasikannya, aktifkan opsi yang sesuai di Pengaturan."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le app selezionate includono app dell’App Store e app non native.\\n\\nPer migrarle, abilita le opzioni corrispondenti nelle Impostazioni."
+            "value" : "Le app selezionate includono app dell’App Store e app non native.\n\nPer migrarle, abilita le opzioni corrispondenti nelle Impostazioni."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store アプリは、移行後に App Store から更新できなくなるため移行できません。\\n\\n強制的に移行するには、設定で対応するオプションを有効にしてください。"
+            "value" : "App Store アプリは、移行後に App Store から更新できなくなるため移行できません。\n\n強制的に移行するには、設定で対応するオプションを有効にしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 앱은 마이그레이션 후 App Store를 통해 업데이트할 수 없으므로 마이그레이션할 수 없습니다.\\n\\n강제로 마이그레이션하려면 설정에서 해당 옵션을 활성화하세요."
+            "value" : "App Store 앱은 마이그레이션 후 App Store를 통해 업데이트할 수 없으므로 마이그레이션할 수 없습니다.\n\n강제로 마이그레이션하려면 설정에서 해당 옵션을 활성화하세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De geselecteerde apps bevatten App Store-apps en niet-native apps.\\n\\nSchakel de bijbehorende opties in Instellingen in om ze te migreren."
+            "value" : "De geselecteerde apps bevatten App Store-apps en niet-native apps.\n\nSchakel de bijbehorende opties in Instellingen in om ze te migreren."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wybrane aplikacje obejmują aplikacje z App Store i aplikacje nienatywne.\\n\\nAby je przenieść, włącz odpowiednie opcje w Ustawieniach."
+            "value" : "Wybrane aplikacje obejmują aplikacje z App Store i aplikacje nienatywne.\n\nAby je przenieść, włącz odpowiednie opcje w Ustawieniach."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os apps selecionados incluem apps da App Store e apps não nativos.\\n\\nPara migrá-los, ative as opções correspondentes em Ajustes."
+            "value" : "Os apps selecionados incluem apps da App Store e apps não nativos.\n\nPara migrá-los, ative as opções correspondentes em Ajustes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выбранные приложения включают приложения из App Store и ненативные приложения.\\n\\nЧтобы перенести их, включите соответствующие параметры в настройках."
+            "value" : "Выбранные приложения включают приложения из App Store и ненативные приложения.\n\nЧтобы перенести их, включите соответствующие параметры в настройках."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แอปที่เลือกมีทั้งแอป App Store และแอปที่ไม่ใช่แบบเนทีฟ\\n\\nหากต้องการย้าย ให้เปิดตัวเลือกที่เกี่ยวข้องในการตั้งค่า"
+            "value" : "แอปที่เลือกมีทั้งแอป App Store และแอปที่ไม่ใช่แบบเนทีฟ\n\nหากต้องการย้าย ให้เปิดตัวเลือกที่เกี่ยวข้องในการตั้งค่า"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seçilen uygulamalar App Store uygulamalarını ve yerel olmayan uygulamaları içeriyor.\\n\\nTaşımak için Ayarlar’da ilgili seçenekleri etkinleştirin."
+            "value" : "Seçilen uygulamalar App Store uygulamalarını ve yerel olmayan uygulamaları içeriyor.\n\nTaşımak için Ayarlar’da ilgili seçenekleri etkinleştirin."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Các ứng dụng đã chọn bao gồm ứng dụng App Store và ứng dụng không gốc.\\n\\nĐể di chuyển, hãy bật các tùy chọn tương ứng trong Cài đặt."
+            "value" : "Các ứng dụng đã chọn bao gồm ứng dụng App Store và ứng dụng không gốc.\n\nĐể di chuyển, hãy bật các tùy chọn tương ứng trong Cài đặt."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 应用不支持迁移，因为迁移后将无法通过 App Store 更新。\\n\\n如需强制迁移，请在设置中启用相应选项。"
+            "value" : "App Store 应用不支持迁移，因为迁移后将无法通过 App Store 更新。\n\n如需强制迁移，请在设置中启用相应选项。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 應用程式不支援遷移，因為遷移後將無法透過 App Store 更新。\\n\\n如需強制遷移，請在設定中啟用相應選項。"
+            "value" : "App Store 應用程式不支援遷移，因為遷移後將無法透過 App Store 更新。\n\n如需強制遷移，請在設定中啟用相應選項。"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 應詠⑧支持遷迻，因爲遷迻後将嘸法通過 App Store 哽噺。\\n\\n洳需强製遷迻，請╪設寘㊥啟詠相應選項。"
+            "value" : "App Store 應詠⑧支持遷迻，因爲遷迻後将嘸法通過 App Store 哽噺。\n\n洳需强製遷迻，請╪設寘㊥啟詠相應選項。"
           }
         }
       }
@@ -17575,7 +17575,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store apps and non-native apps can be migrated directly without manual enabling. App Store will automatically manage app updates on external disks."
+            "value" : "Приложения из App Store и неродные приложения можно переносить напрямую, без ручного включения. App Store автоматически управляет обновлениями приложений на внешнем диске."
           }
         },
         "th" : {
@@ -18534,7 +18534,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts requires \"App Management\" permission to migrate app data. Please enable AppPorts in System Settings and restart the app."
+            "value" : "AppPorts требуется разрешение «Управление приложениями», чтобы переносить данные приложений. Включите AppPorts в Системных настройках и перезапустите приложение."
           }
         },
         "th" : {
@@ -27165,7 +27165,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ natively supports external installation of App Store apps"
+            "value" : "macOS 15.1+ нативно поддерживает установку приложений из App Store на внешний диск"
           }
         },
         "th" : {
@@ -27206,13 +27206,13 @@
         }
       }
     },
-    "macOS 15.1+ 支持将 App Store 应用安装到外部磁盘。\\n\\n请在 App Store → 设置中勾选「将大型 App 下载并安装到独立磁盘」，并选择当前外部驱动器。\\n\\n设置完成后点击「我已设置」，AppPorts 会自动创建 Applications 目录并检测管理这些应用。" : {
+    "macOS 15.1+ 支持将 App Store 应用安装到外部磁盘。\n\n请在 App Store → 设置中勾选「将大型 App 下载并安装到独立磁盘」，并选择当前外部驱动器。\n\n设置完成后点击「我已设置」，AppPorts 会自动创建 Applications 目录并检测管理这些应用。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "br" : {
@@ -27224,7 +27224,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "en" : {
@@ -27236,97 +27236,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ поддерживает установку приложений из App Store на внешний диск.\n\nОткройте App Store → Настройки и включите «Загружать и устанавливать большие приложения на отдельный диск», затем выберите текущий внешний диск.\n\nПосле настройки нажмите «Я настроил», и AppPorts автоматически создаст папку Applications и обнаружит эти приложения."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\\n\\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\\n\\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
+            "value" : "macOS 15.1+ supports installing App Store apps to external disks.\n\nPlease go to App Store → Settings and check \"Download and install large apps to a separate disk\", then select your current external drive.\n\nAfter setup, click \"I've Set It Up\" and AppPorts will automatically create the Applications directory and detect these apps."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 15.1+ 支持将 App Store 应用安装到外部磁盘。\\n\\n请在 App Store → 设置中勾选「将大型 App 下载并安装到独立磁盘」，并选择当前外部驱动器。\\n\\n设置完成后点击「我已设置」，AppPorts 会自动创建 Applications 目录并检测管理这些应用。"
+            "value" : "macOS 15.1+ 支持将 App Store 应用安装到外部磁盘。\n\n请在 App Store → 设置中勾选「将大型 App 下载并安装到独立磁盘」，并选择当前外部驱动器。\n\n设置完成后点击「我已设置」，AppPorts 会自动创建 Applications 目录并检测管理这些应用。"
           }
         },
         "zh-Hant" : {
@@ -33103,13 +33103,13 @@
         }
       }
     },
-    "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\\n\\n%@\\n\\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\\n\\n建议选择锁定迁移以保护数据安全。" : {
+    "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\n\n%@\n\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\n\n建议选择锁定迁移以保护数据安全。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "br" : {
@@ -33121,7 +33121,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "en" : {
@@ -33133,97 +33133,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "Следующие приложения поддерживают автообновление; после переноса обновление внутри приложения может привести к потере внешней копии:\n\n%@\n\n• Заблокированная миграция: внешнее приложение блокируется, что предотвращает повреждение при обновлении; для обновления нужно вернуть его через AppPorts\n• Незаблокированная миграция: внешнее приложение не блокируется, обновление внутри приложения может удалить внешнюю копию\n\nДля защиты данных рекомендуется выбрать заблокированную миграцию."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\\n\\n%@\\n\\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\\n\\nLocked migration is recommended to protect data safety."
+            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\\n\\n%@\\n\\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\\n\\n建议选择锁定迁移以保护数据安全。"
+            "value" : "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\n\n%@\n\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\n\n建议选择锁定迁移以保护数据安全。"
           }
         },
         "zh-Hant" : {
@@ -33377,7 +33377,7 @@
         }
       }
     },
-    "你正在迁移「%@」的容器内数据。迁移后 macOS 可能认为应用数据或签名状态发生变化，导致应用提示「已损坏」「无法打开」或启动异常。\\n\\n建议在迁移完成后对「%@」执行 Ad-hoc 重签名。是否在本次迁移后自动重签名？" : {
+    "你正在迁移「%@」的容器内数据。迁移后 macOS 可能认为应用数据或签名状态发生变化，导致应用提示「已损坏」「无法打开」或启动异常。\n\n建议在迁移完成后对「%@」执行 Ad-hoc 重签名。是否在本次迁移后自动重签名？" : {
       "extractionState" : "stale",
       "localizations" : {
         "ar" : {
@@ -34569,7 +34569,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to write AppPorts link marker: %@"
+            "value" : "Не удалось записать метку ссылки AppPorts: %@"
           }
         },
         "th" : {
@@ -36076,7 +36076,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Не удалось создать символическую ссылку, данные аварийно восстановлены: %@"
           }
         },
         "th" : {
@@ -36213,7 +36213,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to delete original directory: %@"
+            "value" : "Не удалось удалить исходный каталог: %@"
           }
         },
         "th" : {
@@ -38541,7 +38541,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Double-click to open System Settings"
+            "value" : "Двойной клик — открыть Системные настройки"
           }
         },
         "th" : {
@@ -38719,13 +38719,13 @@
         }
       }
     },
-    "发现新版本 %@。\\n%@" : {
+    "发现新版本 %@。\n%@" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "br" : {
@@ -38737,121 +38737,121 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新しいバージョン %@ が見つかりました。\\n%@"
+            "value" : "新しいバージョン %@ が見つかりました。\n%@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "새 버전 %@을(를) 발견했습니다.\\n%@"
+            "value" : "새 버전 %@을(를) 발견했습니다.\n%@"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New version %@ found.\\n%@"
+            "value" : "New version %@ found.\n%@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "发现新版本 %@。\\n%@"
+            "value" : "发现新版本 %@。\n%@"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "發現新版本 %@。\\n%@"
+            "value" : "發現新版本 %@。\n%@"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "發现噺癍夲 %@。\\n%@"
+            "value" : "發现噺癍夲 %@。\n%@"
           }
         }
       }
@@ -39500,7 +39500,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Optional"
+            "value" : "Необязательно"
           }
         },
         "th" : {
@@ -40459,7 +40459,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable/Disable logging"
+            "value" : "Включить/выключить журналирование"
           }
         },
         "th" : {
@@ -40596,7 +40596,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enables migration of non-native Mac apps from iPhone/iPad"
+            "value" : "После включения можно переносить неродные Mac-приложения с iPhone/iPad"
           }
         },
         "th" : {
@@ -42514,7 +42514,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copy failed: %@"
+            "value" : "Ошибка копирования: %@"
           }
         },
         "th" : {
@@ -42925,7 +42925,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "External storage directory does not exist: %@"
+            "value" : "Каталог на внешнем хранилище не существует: %@"
           }
         },
         "th" : {
@@ -46117,13 +46117,13 @@
         }
       }
     },
-    "将「%@」从外部存储还原到本地。\\n\\n外部路径：%@\\n还原到：%@\\n\\n还原完成后，外部存储中的副本将被删除。" : {
+    "将「%@」从外部存储还原到本地。\n\n外部路径：%@\n还原到：%@\n\n还原完成后，外部存储中的副本将被删除。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "br" : {
@@ -46135,7 +46135,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "en" : {
@@ -46147,97 +46147,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Восстановить «%1$@» с внешнего хранилища локально.\n\nВнешний путь: %2$@\nВосстановить в: %3$@\n\nПосле восстановления копия на внешнем хранилище будет удалена."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore \"%1$@\" from external storage to local.\\n\\nExternal path: %2$@\\nRestore to: %3$@\\n\\nAfter restoration, the copy on external storage will be deleted."
+            "value" : "Restore \"%1$@\" from external storage to local.\n\nExternal path: %2$@\nRestore to: %3$@\n\nAfter restoration, the copy on external storage will be deleted."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将「%@」从外部存储还原到本地。\\n\\n外部路径：%@\\n还原到：%@\\n\\n还原完成后，外部存储中的副本将被删除。"
+            "value" : "将「%@」从外部存储还原到本地。\n\n外部路径：%@\n还原到：%@\n\n还原完成后，外部存储中的副本将被删除。"
           }
         },
         "zh-Hant" : {
@@ -46391,13 +46391,13 @@
         }
       }
     },
-    "将「%@」迁移到外部存储%@。\\n\\n源路径：%@\\n目标路径：%@\\n\\n迁移完成后，原路径将自动变成符号链接，相关工具无需任何修改即可继续使用。" : {
+    "将「%@」迁移到外部存储%@。\n\n源路径：%@\n目标路径：%@\n\n迁移完成后，原路径将自动变成符号链接，相关工具无需任何修改即可继续使用。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "br" : {
@@ -46409,7 +46409,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "en" : {
@@ -46421,97 +46421,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Перенести «%1$@» на внешнее хранилище%2$@.\n\nИсходный путь: %3$@\nЦелевой путь: %4$@\n\nПосле переноса исходный путь автоматически станет символической ссылкой, и связанные инструменты продолжат работать без каких-либо изменений."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate \"%1$@\" to external storage%2$@.\\n\\nSource path: %3$@\\nTarget path: %4$@\\n\\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
+            "value" : "Migrate \"%1$@\" to external storage%2$@.\n\nSource path: %3$@\nTarget path: %4$@\n\nAfter migration, the original path will automatically become a symbolic link, and related tools can continue to use it without any changes."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将「%@」迁移到外部存储%@。\\n\\n源路径：%@\\n目标路径：%@\\n\\n迁移完成后，原路径将自动变成符号链接，相关工具无需任何修改即可继续使用。"
+            "value" : "将「%@」迁移到外部存储%@。\n\n源路径：%@\n目标路径：%@\n\n迁移完成后，原路径将自动变成符号链接，相关工具无需任何修改即可继续使用。"
           }
         },
         "zh-Hant" : {
@@ -46624,7 +46624,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Move managed links to the AppPorts canonical path"
+            "value" : "Привести управляемые ссылки к каноническому пути AppPorts"
           }
         },
         "th" : {
@@ -47035,7 +47035,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate data directory to external storage"
+            "value" : "Перенести каталог данных на внешнее хранилище"
           }
         },
         "th" : {
@@ -47172,7 +47172,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restore data directory to local"
+            "value" : "Восстановить каталог данных локально"
           }
         },
         "th" : {
@@ -49227,7 +49227,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Data"
+            "value" : "Данные приложений"
           }
         },
         "th" : {
@@ -53063,7 +53063,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The current path differs from the AppPorts canonical path. This operation will move the external data to the canonical path and recreate the local symlink."
+            "value" : "Текущий путь отличается от канонического. Эта операция переместит внешние данные по каноническому пути и пересоздаст локальную символическую ссылку."
           }
         },
         "th" : {
@@ -53200,7 +53200,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The current path already matches the AppPorts canonical path."
+            "value" : "Текущий путь уже соответствует каноническому пути AppPorts."
           }
         },
         "th" : {
@@ -59365,7 +59365,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alphabetical"
+            "value" : "По алфавиту"
           }
         },
         "th" : {
@@ -60872,7 +60872,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recommended"
+            "value" : "Рекомендуется"
           }
         },
         "th" : {
@@ -63749,7 +63749,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Automatically perform Ad-hoc re-signing on associated apps after data migration to avoid Finder \"damaged\" warnings"
+            "value" : "После переноса данных автоматически выполнять ad-hoc переподпись связанных приложений, чтобы Finder не сообщал «повреждено»"
           }
         },
         "th" : {
@@ -64845,7 +64845,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No local apps found"
+            "value" : "Нет локальных приложений"
           }
         },
         "th" : {
@@ -65667,7 +65667,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cannot read symlink target: %@"
+            "value" : "Не удалось прочитать цель символической ссылки: %@"
           }
         },
         "th" : {
@@ -68133,7 +68133,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not Found"
+            "value" : "Не найдено"
           }
         },
         "th" : {
@@ -70873,7 +70873,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View the existing symlink target and optionally bring it under AppPorts management"
+            "value" : "Посмотреть путь существующей символической ссылки и при желании передать её под управление AppPorts"
           }
         },
         "th" : {
@@ -71325,13 +71325,13 @@
         }
       }
     },
-    "检测到「%@」已经是一个现有软链。\\n\\n软链路径：%@\\n目标路径：%@\\n\\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。" : {
+    "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "br" : {
@@ -71343,7 +71343,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "en" : {
@@ -71355,97 +71355,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Обнаружено, что «%1$@» уже является существующей символической ссылкой.\n\nПуть ссылки: %2$@\nЦелевой путь: %3$@\n\nПосле выбора «Нормализовать управление» AppPorts возьмёт эту ссылку под управление, и в дальнейшем её можно будет восстановить напрямую."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already an existing symlink.\\n\\nSymlink path: %2$@\\nTarget path: %3$@\\n\\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
+            "value" : "Detected that \"%1$@\" is already an existing symlink.\n\nSymlink path: %2$@\nTarget path: %3$@\n\nAfter selecting \"Normalize management\", AppPorts will manage this symlink, allowing direct restoration later."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "检测到「%@」已经是一个现有软链。\\n\\n软链路径：%@\\n目标路径：%@\\n\\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。"
+            "value" : "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。"
           }
         },
         "zh-Hant" : {
@@ -71462,13 +71462,13 @@
         }
       }
     },
-    "检测到「%@」已经由 AppPorts 接管，但外部目标仍位于旧路径。\\n\\n当前外部路径：%@\\n规范后路径：%@\\n\\n继续后将进入二次确认，并执行真实迁移。" : {
+    "检测到「%@」已经由 AppPorts 接管，但外部目标仍位于旧路径。\n\n当前外部路径：%@\n规范后路径：%@\n\n继续后将进入二次确认，并执行真实迁移。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "br" : {
@@ -71480,7 +71480,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "en" : {
@@ -71492,97 +71492,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Обнаружено, что «%1$@» уже под управлением AppPorts, но внешняя цель всё ещё находится по старому пути.\n\nТекущий внешний путь: %2$@\nКанонический путь: %3$@\n\nПосле продолжения появится повторное подтверждение и будет выполнен реальный перенос."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\\n\\nCurrent external path: %2$@\\nNormalized path: %3$@\\n\\nContinuing will proceed to a second confirmation and perform the actual migration."
+            "value" : "Detected that \"%1$@\" is already managed by AppPorts, but the external target is still at the old path.\n\nCurrent external path: %2$@\nNormalized path: %3$@\n\nContinuing will proceed to a second confirmation and perform the actual migration."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "检测到「%@」已经由 AppPorts 接管，但外部目标仍位于旧路径。\\n\\n当前外部路径：%@\\n规范后路径：%@\\n\\n继续后将进入二次确认，并执行真实迁移。"
+            "value" : "检测到「%@」已经由 AppPorts 接管，但外部目标仍位于旧路径。\n\n当前外部路径：%@\n规范后路径：%@\n\n继续后将进入二次确认，并执行真实迁移。"
           }
         },
         "zh-Hant" : {
@@ -71599,13 +71599,13 @@
         }
       }
     },
-    "检测到「%@」的数据目录已存在于外部存储，但本地原路径尚未建立链接。\\n\\n本地原路径：%@\\n外部目录：%@\\n\\n选择「接回」后，AppPorts 会在原路径补建符号链接，并将其纳入受管状态。" : {
+    "检测到「%@」的数据目录已存在于外部存储，但本地原路径尚未建立链接。\n\n本地原路径：%@\n外部目录：%@\n\n选择「接回」后，AppPorts 会在原路径补建符号链接，并将其纳入受管状态。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "br" : {
@@ -71617,7 +71617,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "en" : {
@@ -71629,97 +71629,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Обнаружено, что каталог данных «%1$@» уже существует на внешнем хранилище, но по локальному исходному пути ещё нет ссылки.\n\nЛокальный исходный путь: %2$@\nВнешний каталог: %3$@\n\nПосле выбора «Связать снова» AppPorts создаст символическую ссылку по исходному пути и возьмёт её под управление."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\\n\\nLocal original path: %2$@\\nExternal directory: %3$@\\n\\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
+            "value" : "Detected that the data directory of \"%1$@\" already exists on external storage, but the local original path has no symlink yet.\n\nLocal original path: %2$@\nExternal directory: %3$@\n\nAfter selecting \"Relink\", AppPorts will create a symlink at the original path and manage it."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "检测到「%@」的数据目录已存在于外部存储，但本地原路径尚未建立链接。\\n\\n本地原路径：%@\\n外部目录：%@\\n\\n选择「接回」后，AppPorts 会在原路径补建符号链接，并将其纳入受管状态。"
+            "value" : "检测到「%@」的数据目录已存在于外部存储，但本地原路径尚未建立链接。\n\n本地原路径：%@\n外部目录：%@\n\n选择「接回」后，AppPorts 会在原路径补建符号链接，并将其纳入受管状态。"
           }
         },
         "zh-Hant" : {
@@ -71832,7 +71832,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An existing symbolic link was detected. It was not created by AppPorts"
+            "value" : "Обнаружена существующая символическая ссылка, созданная не AppPorts"
           }
         },
         "th" : {
@@ -72243,7 +72243,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Writing management marker..."
+            "value" : "Запись метки управления..."
           }
         },
         "th" : {
@@ -72380,7 +72380,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Creating symbolic link..."
+            "value" : "Создание символической ссылки..."
           }
         },
         "th" : {
@@ -72517,7 +72517,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Switching local entry..."
+            "value" : "Удаление исходного каталога..."
           }
         },
         "th" : {
@@ -72791,7 +72791,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cleaning up external storage..."
+            "value" : "Очистка внешнего хранилища..."
           }
         },
         "th" : {
@@ -73339,7 +73339,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie nakhoditsya v direktorii Applications na vneshnem diske, upravlyayemaya nativno macOS (funktsiya macOS 15.1+). App Store mozhet vypolnyat inkrementalnyye obnovleniya neposredstvo v etoy direktorii, bez neobkhodimosti vozvrashcheniya cherez AppPorts."
+            "value" : "Это приложение находится в папке Applications на внешнем диске и управляется macOS нативно (функция macOS 15.1+). App Store может выполнять инкрементальные обновления прямо здесь, без возврата через AppPorts."
           }
         },
         "th" : {
@@ -73476,7 +73476,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie ispol'zuet framework Sparkle dlya avtomaticheskikh obnovleniy. Posle migratsii na vneshneye khranilishche obnovleniya vnutri prilozheniya mogut privesti k potere vneshnego prilozheniya. Rekomenduyetsya zablokirovannaya migratsiya dlya zashchity dannykh."
+            "value" : "Это приложение обновляется автоматически через фреймворк Sparkle. После переноса на внешнее хранилище обновление внутри приложения может привести к потере внешней копии. Для защиты данных рекомендуется заблокированная миграция."
           }
         },
         "th" : {
@@ -73613,7 +73613,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie osnovano na framework Electron i podderzhivayet avtomaticheskiye obnovleniya. Posle migratsii na vneshneye khranilishche obnovleniya vnutri prilozheniya mogut privesti k potere vneshnego prilozheniya."
+            "value" : "Это приложение построено на фреймворке Electron и поддерживает автообновление. После переноса на внешнее хранилище обновление внутри приложения может привести к потере внешней копии. Для защиты данных рекомендуется заблокированная миграция."
           }
         },
         "th" : {
@@ -73887,7 +73887,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie bylo peremeshcheno na vneshneye khranilishche i zablokirovano. Blokirovka predotvrashchayet povrezhdeniye vneshnego prilozheniya obnovleniyami. Dlya obnovleniya vernite prilozheniye cherez AppPorts na lokal'nyy disk."
+            "value" : "Это приложение перенесено на внешнее хранилище и заблокировано. Блокировка не даёт обновлению внутри приложения повредить внешнюю копию. Чтобы обновить, сначала верните его локально через AppPorts."
           }
         },
         "th" : {
@@ -74024,7 +74024,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eto prilozhenie peremeshcheno na vneshneye khranilishche, no ne zablokirovano. Obnovleniya vnutri prilozheniya mogut udalit vneshneye prilozheniye. Rekomenduyetsya vernut na lokalnyy disk i povtorit migratsiyu v zablokirovannom rezhime."
+            "value" : "Это приложение перенесено на внешнее хранилище, но не заблокировано. Обновление внутри приложения может удалить внешнюю копию. Рекомендуется вернуть его локально и перенести заново с блокировкой."
           }
         },
         "th" : {
@@ -76353,7 +76353,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No write permission: %@"
+            "value" : "Нет прав на запись: %@"
           }
         },
         "th" : {
@@ -79915,7 +79915,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Target path already has a real directory, cannot overwrite: %@"
+            "value" : "По целевому пути уже есть настоящий каталог, перезапись невозможна: %@"
           }
         },
         "th" : {
@@ -81970,7 +81970,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "System Settings > Privacy & Security > Full Disk Access"
+            "value" : "Системные настройки > Конфиденциальность и безопасность > Полный доступ к диску"
           }
         },
         "th" : {
@@ -83751,7 +83751,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Custom"
+            "value" : "Пользовательский"
           }
         },
         "th" : {
@@ -85943,7 +85943,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This directory is not a symlink, cannot restore: %@"
+            "value" : "Этот каталог не является символической ссылкой, восстановление невозможно: %@"
           }
         },
         "th" : {
@@ -86491,7 +86491,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This directory is protected by macOS and cannot be migrated: %@. Please migrate subdirectories within the container instead."
+            "value" : "Этот каталог защищён системой macOS, перенос невозможен: %@. Перенесите вместо этого подкаталоги внутри контейнера."
           }
         },
         "th" : {
@@ -87628,13 +87628,13 @@
         }
       }
     },
-    "请确认是否继续规范化管理「%@」。\\n\\n现在的路径：%@\\n规范后路径：%@\\n\\n%@" : {
+    "请确认是否继续规范化管理「%@」。\n\n现在的路径：%@\n规范后路径：%@\n\n%@" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "br" : {
@@ -87646,7 +87646,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "en" : {
@@ -87658,97 +87658,97 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Подтвердите, продолжать ли нормализацию управления «%1$@».\n\nТекущий путь: %2$@\nКанонический путь: %3$@\n\n%4$@"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\\n\\nCurrent path: %2$@\\nNormalized path: %3$@\\n\\n%4$@"
+            "value" : "Please confirm whether to continue normalizing management of \"%1$@\".\n\nCurrent path: %2$@\nNormalized path: %3$@\n\n%4$@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请确认是否继续规范化管理「%@」。\\n\\n现在的路径：%@\\n规范后路径：%@\\n\\n%@"
+            "value" : "请确认是否继续规范化管理「%@」。\n\n现在的路径：%@\n规范后路径：%@\n\n%@"
           }
         },
         "zh-Hant" : {
@@ -88546,7 +88546,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrate"
+            "value" : "Перенести"
           }
         },
         "th" : {
@@ -90368,7 +90368,7 @@
         }
       }
     },
-    "迁移完成。是否对已迁移的 %lld 个应用进行 Ad-hoc 重签名？\\n\\n重签名后应用可在本地正常启动，Finder「已损坏」提示将消失。" : {
+    "迁移完成。是否对已迁移的 %lld 个应用进行 Ad-hoc 重签名？\n\n重签名后应用可在本地正常启动，Finder「已损坏」提示将消失。" : {
       "extractionState" : "stale",
       "localizations" : {
         "ar" : {
@@ -90488,7 +90488,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "迁移完成。是否对已迁移的 %lld 个应用进行 Ad-hoc 重签名？\\n\\n重签名后应用可在本地正常启动，Finder「已损坏」提示将消失。"
+            "value" : "迁移完成。是否对已迁移的 %lld 个应用进行 Ad-hoc 重签名？\n\n重签名后应用可在本地正常启动，Finder「已损坏」提示将消失。"
           }
         },
         "zh-Hant" : {
@@ -91423,7 +91423,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migration Risk Warning"
+            "value" : "Предупреждение о рисках переноса"
           }
         },
         "th" : {
@@ -92697,143 +92697,6 @@
         }
       }
     },
-    "选中的 %lld 个应用包含 %lld 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\\n\\n这是正常的，应用会被安全地移动到外部存储。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تتضمن التطبيقات المحددة وعددها %lld عدد %lld من تطبيقات App Store. سيحذفها Finder أثناء النقل، لذلك قد تسمع صوت سلة المهملات.\\n\\nهذا طبيعي. سيتم نقل التطبيقات بأمان إلى التخزين الخارجي."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选中的 %lld 个应用包含 %lld 个 ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ 应用，迁移时会使用 ⠠⠋⠊⠝⠙⠑⠗ 删除，您会听到垃圾桶的声音。\\⠝\\⠝这是正常的，应用会被安全地移动到外部存储。"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die %lld ausgewählten Apps enthalten %lld App-Store-Apps. Finder löscht sie während der Migration, daher hören Sie möglicherweise den Papierkorbton.\\n\\nDas ist normal. Die Apps werden sicher auf den externen Speicher verschoben."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The %lld selected apps include %lld App Store apps. Finder will delete them during migration, so you may hear the Trash sound.\\n\\nThis is normal. The apps will be moved safely to external storage."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La %lld elektitaj aplikaĵoj inkluzivas %lld aplikaĵojn de App Store. Finder forigos ilin dum migrado, do vi eble aŭdos la Rubujan sonon.\\n\\nTio estas normala. La aplikaĵoj estos sekure movitaj al ekstera stokado."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las %lld apps seleccionadas incluyen %lld apps de App Store. Finder las eliminará durante la migración, por lo que podrías oír el sonido de la Papelera.\\n\\nEs normal. Las apps se moverán de forma segura al almacenamiento externo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les %lld apps sélectionnées incluent %lld apps de l’App Store. Finder les supprimera pendant la migration, vous pourriez donc entendre le son de la corbeille.\\n\\nC’est normal. Les apps seront déplacées en toute sécurité vers le stockage externe."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "चुने गए %lld ऐप्स में %lld App Store ऐप्स शामिल हैं। माइग्रेशन के दौरान Finder इन्हें हटाएगा, इसलिए आपको Trash की आवाज़ सुनाई दे सकती है।\\n\\nयह सामान्य है। ऐप्स सुरक्षित रूप से बाहरी संग्रहण में ले जाए जाएँगे।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld aplikasi yang dipilih mencakup %lld aplikasi App Store. Finder akan menghapusnya selama migrasi, jadi Anda mungkin mendengar suara Tong Sampah.\\n\\nIni normal. Aplikasi akan dipindahkan dengan aman ke penyimpanan eksternal."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le %lld app selezionate includono %lld app dell’App Store. Finder le eliminerà durante la migrazione, quindi potresti sentire il suono del Cestino.\\n\\nÈ normale. Le app verranno spostate in modo sicuro nell’archiviazione esterna."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選択した %lld 個のアプリには %lld 個の App Store アプリが含まれています。移行中に Finder で削除されるため、ゴミ箱の音が聞こえる場合があります。\\n\\nこれは正常です。アプリは安全に外部ストレージへ移動されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택한 %lld개 앱에는 %lld개의 App Store 앱이 포함되어 있습니다. 마이그레이션 중 Finder가 해당 앱을 삭제하므로 휴지통 소리가 들릴 수 있습니다.\\n\\n정상 동작이며 앱은 외부 저장소로 안전하게 이동됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De %lld geselecteerde apps bevatten %lld App Store-apps. Finder verwijdert ze tijdens de migratie, waardoor u mogelijk het prullenmandgeluid hoort.\\n\\nDit is normaal. De apps worden veilig naar externe opslag verplaatst."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wśród %lld wybranych aplikacji jest %lld aplikacji z App Store. Finder usunie je podczas migracji, więc możesz usłyszeć dźwięk Kosza.\\n\\nTo normalne. Aplikacje zostaną bezpiecznie przeniesione do pamięci zewnętrznej."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Os %lld apps selecionados incluem %lld apps da App Store. O Finder irá apagá-los durante a migração, então você pode ouvir o som da Lixeira.\\n\\nIsso é normal. Os apps serão movidos com segurança para o armazenamento externo."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Среди %lld выбранных приложений есть %lld приложений из App Store. Finder удалит их во время переноса, поэтому вы можете услышать звук Корзины.\\n\\nЭто нормально. Приложения будут безопасно перемещены во внешнее хранилище."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "แอปที่เลือก %lld รายการมีแอปจาก App Store อยู่ %lld รายการ Finder จะลบแอปเหล่านี้ระหว่างการย้าย คุณจึงอาจได้ยินเสียงถังขยะ\\n\\nนี่เป็นเรื่องปกติ แอปจะถูกย้ายไปยังพื้นที่จัดเก็บภายนอกอย่างปลอดภัย"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seçilen %lld uygulama içinde %lld App Store uygulaması var. Finder taşıma sırasında bunları sileceği için Çöp Sepeti sesini duyabilirsiniz.\\n\\nBu normaldir. Uygulamalar harici depolamaya güvenli şekilde taşınır."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld ứng dụng đã chọn có %lld ứng dụng từ App Store. Finder sẽ xóa chúng trong khi di chuyển, nên bạn có thể nghe thấy âm thanh Thùng rác.\\n\\nĐiều này là bình thường. Ứng dụng sẽ được chuyển an toàn sang bộ nhớ ngoài."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选中的 %lld 个应用包含 %lld 个 App Store 应用，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\\n\\n这是正常的，应用会被安全地移动到外部存储。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選取的 %lld 個應用程式中包含 %lld 個 App Store 應用程式。遷移時會透過 Finder 刪除，因此您可能會聽到垃圾桶聲音。\\n\\n這是正常現象，應用程式會被安全移動到外部儲存。"
-          }
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選㊥の %lld 個應詠包含 %lld 個 App Store 應詠，遷迻時會駛詠 Finder 刪蒢，您會听↘垃圾桶の聲音。\\n\\n這⑤眐常の，應詠會被安洤哋迻動↘外荹邨储。"
-          }
-        }
-      }
-    },
     "选中的 %lld 个应用均来自 App Store，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\n\n这是正常的，应用会被安全地移动到外部存储。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -92971,150 +92834,13 @@
         }
       }
     },
-    "选中的 %lld 个应用均来自 App Store，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\\n\\n这是正常的，应用会被安全地移动到外部存储。" : {
+    "选中的应用包含 App Store 应用和非原生应用。\n\n如需迁移，请在设置中启用相应选项。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "كل التطبيقات المحددة وعددها %lld من App Store. سيحذفها Finder أثناء النقل، لذلك قد تسمع صوت سلة المهملات.\\n\\nهذا طبيعي. سيتم نقل التطبيقات بأمان إلى التخزين الخارجي."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠇⠇ %lld ⠎⠑⠇⠑⠉⠞⠑⠙ ⠁⠏⠏⠎ ⠁⠗⠑ ⠋⠗⠕⠍ ⠞⠓⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑⠲ ⠠⠞⠓⠑⠽ ⠺⠊⠇⠇ ⠃⠑ ⠙⠑⠇⠑⠞⠑⠙ ⠧⠊⠁ ⠠⠋⠊⠝⠙⠑⠗ ⠙⠥⠗⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠐⠣⠽⠕⠥⠄⠇⠇ ⠓⠑⠁⠗ ⠞⠓⠑ ⠞⠗⠁⠎⠓ ⠎⠕⠥⠝⠙⠐⠜⠲\\⠝\\⠝⠠⠞⠓⠊⠎ ⠊⠎ ⠝⠕⠗⠍⠁⠇⠂ ⠁⠏⠏⠎ ⠁⠗⠑ ⠎⠁⠋⠑⠇⠽ ⠍⠕⠧⠑⠙ ⠞⠕ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠎⠞⠕⠗⠁⠛⠑⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle %lld ausgewählten Apps stammen aus dem App Store. Finder löscht sie während der Migration, daher hören Sie möglicherweise den Papierkorbton.\\n\\nDas ist normal. Die Apps werden sicher auf den externen Speicher verschoben."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All %lld selected apps are from the App Store. Finder will delete them during migration, so you may hear the Trash sound.\\n\\nThis is normal. The apps will be moved safely to external storage."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ĉiuj %lld elektitaj aplikaĵoj venas de App Store. Finder forigos ilin dum migrado, do vi eble aŭdos la Rubujan sonon.\\n\\nTio estas normala. La aplikaĵoj estos sekure movitaj al ekstera stokado."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las %lld apps seleccionadas son todas de App Store. Finder las eliminará durante la migración, por lo que podrías oír el sonido de la Papelera.\\n\\nEs normal. Las apps se moverán de forma segura al almacenamiento externo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les %lld apps sélectionnées proviennent toutes de l’App Store. Finder les supprimera pendant la migration, vous pourriez donc entendre le son de la corbeille.\\n\\nC’est normal. Les apps seront déplacées en toute sécurité vers le stockage externe."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "चुने गए सभी %lld ऐप्स App Store से हैं। माइग्रेशन के दौरान Finder इन्हें हटाएगा, इसलिए आपको Trash की आवाज़ सुनाई दे सकती है।\\n\\nयह सामान्य है। ऐप्स सुरक्षित रूप से बाहरी संग्रहण में ले जाए जाएँगे।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semua %lld aplikasi yang dipilih berasal dari App Store. Finder akan menghapusnya selama migrasi, jadi Anda mungkin mendengar suara Tong Sampah.\\n\\nIni normal. Aplikasi akan dipindahkan dengan aman ke penyimpanan eksternal."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tutte le %lld app selezionate provengono dall’App Store. Finder le eliminerà durante la migrazione, quindi potresti sentire il suono del Cestino.\\n\\nÈ normale. Le app verranno spostate in modo sicuro nell’archiviazione esterna."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選択した %lld 個のアプリはすべて App Store アプリです。移行中に Finder で削除されるため、ゴミ箱の音が聞こえる場合があります。\\n\\nこれは正常です。アプリは安全に外部ストレージへ移動されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택한 %lld개 앱은 모두 App Store 앱입니다. 마이그레이션 중 Finder가 해당 앱을 삭제하므로 휴지통 소리가 들릴 수 있습니다.\\n\\n정상 동작이며 앱은 외부 저장소로 안전하게 이동됩니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle %lld geselecteerde apps komen uit de App Store. Finder verwijdert ze tijdens de migratie, waardoor u mogelijk het prullenmandgeluid hoort.\\n\\nDit is normaal. De apps worden veilig naar externe opslag verplaatst."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wszystkie %lld wybranych aplikacji pochodzi z App Store. Finder usunie je podczas migracji, więc możesz usłyszeć dźwięk Kosza.\\n\\nTo normalne. Aplikacje zostaną bezpiecznie przeniesione do pamięci zewnętrznej."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Todos os %lld apps selecionados são da App Store. O Finder irá apagá-los durante a migração, então você pode ouvir o som da Lixeira.\\n\\nIsso é normal. Os apps serão movidos com segurança para o armazenamento externo."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Все %lld выбранных приложений взяты из App Store. Finder удалит их во время переноса, поэтому вы можете услышать звук Корзины.\\n\\nЭто нормально. Приложения будут безопасно перемещены во внешнее хранилище."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "แอปที่เลือกทั้งหมด %lld รายการมาจาก App Store Finder จะลบแอปเหล่านี้ระหว่างการย้าย คุณจึงอาจได้ยินเสียงถังขยะ\\n\\nนี่เป็นเรื่องปกติ แอปจะถูกย้ายไปยังพื้นที่จัดเก็บภายนอกอย่างปลอดภัย"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seçilen %lld uygulamanın tümü App Store’dan. Finder taşıma sırasında bunları sileceği için Çöp Sepeti sesini duyabilirsiniz.\\n\\nBu normaldir. Uygulamalar harici depolamaya güvenli şekilde taşınır."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tất cả %lld ứng dụng đã chọn đều từ App Store. Finder sẽ xóa chúng trong khi di chuyển, nên bạn có thể nghe thấy âm thanh Thùng rác.\\n\\nĐiều này là bình thường. Ứng dụng sẽ được chuyển an toàn sang bộ nhớ ngoài."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选中的 %lld 个应用均来自 App Store，迁移时会使用 Finder 删除，您会听到垃圾桶的声音。\\n\\n这是正常的，应用会被安全地移动到外部存储。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選取的 %lld 個應用程式都來自 App Store。遷移時會透過 Finder 刪除，因此您可能會聽到垃圾桶聲音。\\n\\n這是正常現象，應用程式會被安全移動到外部儲存。"
-          }
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "選㊥の %lld 個應詠均來自 App Store，遷迻時會駛詠 Finder 刪蒢，您會听↘垃圾桶の聲音。\\n\\n這⑤眐常の，應詠會被安洤哋迻動↘外荹邨储。"
-          }
-        }
-      }
-    },
-    "选中的应用包含 App Store 应用和非原生应用。\\n\\n如需迁移，请在设置中启用相应选项。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تتضمن التطبيقات المحددة تطبيقات App Store وتطبيقات غير أصلية.\\n\\nلنقلها، فعّل الخيارات المناسبة في الإعدادات."
+            "value" : "تتضمن التطبيقات المحددة تطبيقات App Store وتطبيقات غير أصلية.\n\nلنقلها، فعّل الخيارات المناسبة في الإعدادات."
           }
         },
         "br" : {
@@ -93126,121 +92852,121 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die ausgewählten Apps enthalten App-Store-Apps und nicht-native Apps.\\n\\nAktivieren Sie zum Migrieren die entsprechenden Optionen in den Einstellungen."
+            "value" : "Die ausgewählten Apps enthalten App-Store-Apps und nicht-native Apps.\n\nAktivieren Sie zum Migrieren die entsprechenden Optionen in den Einstellungen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selected apps include App Store apps and non-native apps.\\n\\nTo migrate them, enable the corresponding options in Settings."
+            "value" : "Selected apps include App Store apps and non-native apps.\n\nTo migrate them, enable the corresponding options in Settings."
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La elektitaj aplikaĵoj inkluzivas App Store-aplikaĵojn kaj nenativajn aplikaĵojn.\\n\\nPor migri ilin, aktivigu la koncernajn opciojn en Agordoj."
+            "value" : "La elektitaj aplikaĵoj inkluzivas App Store-aplikaĵojn kaj nenativajn aplikaĵojn.\n\nPor migri ilin, aktivigu la koncernajn opciojn en Agordoj."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las apps seleccionadas incluyen apps de App Store y apps no nativas.\\n\\nPara migrarlas, activa las opciones correspondientes en Ajustes."
+            "value" : "Las apps seleccionadas incluyen apps de App Store y apps no nativas.\n\nPara migrarlas, activa las opciones correspondientes en Ajustes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les apps sélectionnées incluent des apps de l’App Store et des apps non natives.\\n\\nPour les migrer, activez les options correspondantes dans les réglages."
+            "value" : "Les apps sélectionnées incluent des apps de l’App Store et des apps non natives.\n\nPour les migrer, activez les options correspondantes dans les réglages."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "चुने गए ऐप्स में App Store ऐप्स और नॉन-नेटिव ऐप्स शामिल हैं।\\n\\nइन्हें माइग्रेट करने के लिए Settings में संबंधित विकल्प सक्षम करें."
+            "value" : "चुने गए ऐप्स में App Store ऐप्स और नॉन-नेटिव ऐप्स शामिल हैं।\n\nइन्हें माइग्रेट करने के लिए Settings में संबंधित विकल्प सक्षम करें."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aplikasi yang dipilih mencakup aplikasi App Store dan aplikasi non-native.\\n\\nUntuk memigrasikannya, aktifkan opsi yang sesuai di Pengaturan."
+            "value" : "Aplikasi yang dipilih mencakup aplikasi App Store dan aplikasi non-native.\n\nUntuk memigrasikannya, aktifkan opsi yang sesuai di Pengaturan."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le app selezionate includono app dell’App Store e app non native.\\n\\nPer migrarle, abilita le opzioni corrispondenti nelle Impostazioni."
+            "value" : "Le app selezionate includono app dell’App Store e app non native.\n\nPer migrarle, abilita le opzioni corrispondenti nelle Impostazioni."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選択したアプリには App Store アプリと非ネイティブアプリが含まれています。\\n\\n移行するには、設定で対応するオプションを有効にしてください。"
+            "value" : "選択したアプリには App Store アプリと非ネイティブアプリが含まれています。\n\n移行するには、設定で対応するオプションを有効にしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "선택한 앱에는 App Store 앱과 비네이티브 앱이 포함되어 있습니다.\\n\\n마이그레이션하려면 설정에서 해당 옵션을 활성화하세요."
+            "value" : "선택한 앱에는 App Store 앱과 비네이티브 앱이 포함되어 있습니다.\n\n마이그레이션하려면 설정에서 해당 옵션을 활성화하세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De geselecteerde apps bevatten App Store-apps en niet-native apps.\\n\\nSchakel de bijbehorende opties in Instellingen in om ze te migreren."
+            "value" : "De geselecteerde apps bevatten App Store-apps en niet-native apps.\n\nSchakel de bijbehorende opties in Instellingen in om ze te migreren."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wybrane aplikacje obejmują aplikacje z App Store i aplikacje nienatywne.\\n\\nAby je przenieść, włącz odpowiednie opcje w Ustawieniach."
+            "value" : "Wybrane aplikacje obejmują aplikacje z App Store i aplikacje nienatywne.\n\nAby je przenieść, włącz odpowiednie opcje w Ustawieniach."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os apps selecionados incluem apps da App Store e apps não nativos.\\n\\nPara migrá-los, ative as opções correspondentes em Ajustes."
+            "value" : "Os apps selecionados incluem apps da App Store e apps não nativos.\n\nPara migrá-los, ative as opções correspondentes em Ajustes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выбранные приложения включают приложения из App Store и ненативные приложения.\\n\\nЧтобы перенести их, включите соответствующие параметры в настройках."
+            "value" : "Выбранные приложения включают приложения из App Store и ненативные приложения.\n\nЧтобы перенести их, включите соответствующие параметры в настройках."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แอปที่เลือกมีทั้งแอป App Store และแอปที่ไม่ใช่แบบเนทีฟ\\n\\nหากต้องการย้าย ให้เปิดตัวเลือกที่เกี่ยวข้องในการตั้งค่า"
+            "value" : "แอปที่เลือกมีทั้งแอป App Store และแอปที่ไม่ใช่แบบเนทีฟ\n\nหากต้องการย้าย ให้เปิดตัวเลือกที่เกี่ยวข้องในการตั้งค่า"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seçilen uygulamalar App Store uygulamalarını ve yerel olmayan uygulamaları içeriyor.\\n\\nTaşımak için Ayarlar’da ilgili seçenekleri etkinleştirin."
+            "value" : "Seçilen uygulamalar App Store uygulamalarını ve yerel olmayan uygulamaları içeriyor.\n\nTaşımak için Ayarlar’da ilgili seçenekleri etkinleştirin."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Các ứng dụng đã chọn bao gồm ứng dụng App Store và ứng dụng không gốc.\\n\\nĐể di chuyển, hãy bật các tùy chọn tương ứng trong Cài đặt."
+            "value" : "Các ứng dụng đã chọn bao gồm ứng dụng App Store và ứng dụng không gốc.\n\nĐể di chuyển, hãy bật các tùy chọn tương ứng trong Cài đặt."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "选中的应用包含 App Store 应用和非原生应用。\\n\\n如需迁移，请在设置中启用相应选项。"
+            "value" : "选中的应用包含 App Store 应用和非原生应用。\n\n如需迁移，请在设置中启用相应选项。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選取的應用程式包含 App Store 應用程式和非原生應用程式。\\n\\n如需遷移，請在設定中啟用相應選項。"
+            "value" : "選取的應用程式包含 App Store 應用程式和非原生應用程式。\n\n如需遷移，請在設定中啟用相應選項。"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選㊥の應詠包含 App Store 應詠＆非原甡應詠。\\n\\n洳需遷迻，請╪設寘㊥啟詠相應選項。"
+            "value" : "選㊥の應詠包含 App Store 應詠＆非原甡應詠。\n\n洳需遷迻，請╪設寘㊥啟詠相應選項。"
           }
         }
       }
@@ -95265,7 +94991,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Critical"
+            "value" : "Важно"
           }
         },
         "th" : {
@@ -97635,13 +97361,13 @@
         }
       }
     },
-    "非原生 (iPhone/iPad) 应用不支持迁移。\\n\\n如需迁移，请在设置中启用「允许迁移非原生应用」选项。" : {
+    "非原生 (iPhone/iPad) 应用不支持迁移。\n\n如需迁移，请在设置中启用「允许迁移非原生应用」选项。" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تتضمن التطبيقات المحددة تطبيقات App Store وتطبيقات غير أصلية.\\n\\nلنقلها، فعّل الخيارات المناسبة في الإعدادات."
+            "value" : "تتضمن التطبيقات المحددة تطبيقات App Store وتطبيقات غير أصلية.\n\nلنقلها، فعّل الخيارات المناسبة في الإعدادات."
           }
         },
         "br" : {
@@ -97653,121 +97379,121 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die ausgewählten Apps enthalten App-Store-Apps und nicht-native Apps.\\n\\nAktivieren Sie zum Migrieren die entsprechenden Optionen in den Einstellungen."
+            "value" : "Die ausgewählten Apps enthalten App-Store-Apps und nicht-native Apps.\n\nAktivieren Sie zum Migrieren die entsprechenden Optionen in den Einstellungen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non-native (iPhone/iPad) apps cannot be migrated.\\n\\nTo migrate them, enable “Allow Non-Native App Migration” in Settings."
+            "value" : "Non-native (iPhone/iPad) apps cannot be migrated.\n\nTo migrate them, enable “Allow Non-Native App Migration” in Settings."
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La elektitaj aplikaĵoj inkluzivas App Store-aplikaĵojn kaj nenativajn aplikaĵojn.\\n\\nPor migri ilin, aktivigu la koncernajn opciojn en Agordoj."
+            "value" : "La elektitaj aplikaĵoj inkluzivas App Store-aplikaĵojn kaj nenativajn aplikaĵojn.\n\nPor migri ilin, aktivigu la koncernajn opciojn en Agordoj."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las apps seleccionadas incluyen apps de App Store y apps no nativas.\\n\\nPara migrarlas, activa las opciones correspondientes en Ajustes."
+            "value" : "Las apps seleccionadas incluyen apps de App Store y apps no nativas.\n\nPara migrarlas, activa las opciones correspondientes en Ajustes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les apps sélectionnées incluent des apps de l’App Store et des apps non natives.\\n\\nPour les migrer, activez les options correspondantes dans les réglages."
+            "value" : "Les apps sélectionnées incluent des apps de l’App Store et des apps non natives.\n\nPour les migrer, activez les options correspondantes dans les réglages."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "चुने गए ऐप्स में App Store ऐप्स और नॉन-नेटिव ऐप्स शामिल हैं।\\n\\nइन्हें माइग्रेट करने के लिए Settings में संबंधित विकल्प सक्षम करें."
+            "value" : "चुने गए ऐप्स में App Store ऐप्स और नॉन-नेटिव ऐप्स शामिल हैं।\n\nइन्हें माइग्रेट करने के लिए Settings में संबंधित विकल्प सक्षम करें."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aplikasi yang dipilih mencakup aplikasi App Store dan aplikasi non-native.\\n\\nUntuk memigrasikannya, aktifkan opsi yang sesuai di Pengaturan."
+            "value" : "Aplikasi yang dipilih mencakup aplikasi App Store dan aplikasi non-native.\n\nUntuk memigrasikannya, aktifkan opsi yang sesuai di Pengaturan."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le app selezionate includono app dell’App Store e app non native.\\n\\nPer migrarle, abilita le opzioni corrispondenti nelle Impostazioni."
+            "value" : "Le app selezionate includono app dell’App Store e app non native.\n\nPer migrarle, abilita le opzioni corrispondenti nelle Impostazioni."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "非ネイティブ (iPhone/iPad) アプリは移行できません。\\n\\n移行するには、設定で「非ネイティブアプリの移行を許可」を有効にしてください。"
+            "value" : "非ネイティブ (iPhone/iPad) アプリは移行できません。\n\n移行するには、設定で「非ネイティブアプリの移行を許可」を有効にしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "비네이티브(iPhone/iPad) 앱은 마이그레이션할 수 없습니다.\\n\\n마이그레이션하려면 설정에서 “비네이티브 앱 마이그레이션 허용”을 활성화하세요."
+            "value" : "비네이티브(iPhone/iPad) 앱은 마이그레이션할 수 없습니다.\n\n마이그레이션하려면 설정에서 “비네이티브 앱 마이그레이션 허용”을 활성화하세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De geselecteerde apps bevatten App Store-apps en niet-native apps.\\n\\nSchakel de bijbehorende opties in Instellingen in om ze te migreren."
+            "value" : "De geselecteerde apps bevatten App Store-apps en niet-native apps.\n\nSchakel de bijbehorende opties in Instellingen in om ze te migreren."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wybrane aplikacje obejmują aplikacje z App Store i aplikacje nienatywne.\\n\\nAby je przenieść, włącz odpowiednie opcje w Ustawieniach."
+            "value" : "Wybrane aplikacje obejmują aplikacje z App Store i aplikacje nienatywne.\n\nAby je przenieść, włącz odpowiednie opcje w Ustawieniach."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os apps selecionados incluem apps da App Store e apps não nativos.\\n\\nPara migrá-los, ative as opções correspondentes em Ajustes."
+            "value" : "Os apps selecionados incluem apps da App Store e apps não nativos.\n\nPara migrá-los, ative as opções correspondentes em Ajustes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выбранные приложения включают приложения из App Store и ненативные приложения.\\n\\nЧтобы перенести их, включите соответствующие параметры в настройках."
+            "value" : "Выбранные приложения включают приложения из App Store и ненативные приложения.\n\nЧтобы перенести их, включите соответствующие параметры в настройках."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แอปที่เลือกมีทั้งแอป App Store และแอปที่ไม่ใช่แบบเนทีฟ\\n\\nหากต้องการย้าย ให้เปิดตัวเลือกที่เกี่ยวข้องในการตั้งค่า"
+            "value" : "แอปที่เลือกมีทั้งแอป App Store และแอปที่ไม่ใช่แบบเนทีฟ\n\nหากต้องการย้าย ให้เปิดตัวเลือกที่เกี่ยวข้องในการตั้งค่า"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seçilen uygulamalar App Store uygulamalarını ve yerel olmayan uygulamaları içeriyor.\\n\\nTaşımak için Ayarlar’da ilgili seçenekleri etkinleştirin."
+            "value" : "Seçilen uygulamalar App Store uygulamalarını ve yerel olmayan uygulamaları içeriyor.\n\nTaşımak için Ayarlar’da ilgili seçenekleri etkinleştirin."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Các ứng dụng đã chọn bao gồm ứng dụng App Store và ứng dụng không gốc.\\n\\nĐể di chuyển, hãy bật các tùy chọn tương ứng trong Cài đặt."
+            "value" : "Các ứng dụng đã chọn bao gồm ứng dụng App Store và ứng dụng không gốc.\n\nĐể di chuyển, hãy bật các tùy chọn tương ứng trong Cài đặt."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "非原生 (iPhone/iPad) 应用不支持迁移。\\n\\n如需迁移，请在设置中启用「允许迁移非原生应用」选项。"
+            "value" : "非原生 (iPhone/iPad) 应用不支持迁移。\n\n如需迁移，请在设置中启用「允许迁移非原生应用」选项。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "非原生 (iPhone/iPad) 應用程式不支援遷移。\\n\\n如需遷移，請在設定中啟用「允許遷移非原生應用程式」選項。"
+            "value" : "非原生 (iPhone/iPad) 應用程式不支援遷移。\n\n如需遷移，請在設定中啟用「允許遷移非原生應用程式」選項。"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "非原甡 (iPhone/iPad) 應詠⑧支持遷迻。\\n\\n洳需遷迻，請╪設寘㊥啟詠「允許遷迻非原甡應詠」選項。"
+            "value" : "非原甡 (iPhone/iPad) 應詠⑧支持遷迻。\n\n洳需遷迻，請╪設寘㊥啟詠「允許遷迻非原甡應詠」選項。"
           }
         }
       }
@@ -98279,7 +98005,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Default"
+            "value" : "По умолчанию"
           }
         },
         "th" : {
@@ -98453,6 +98179,98 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "默認情况㊦，來自 App Store の應詠⑧允許遷迻，因爲遷迻後将嘸法通過 App Store 哽噺。"
+          }
+        }
+      }
+    },
+    "受保护的应用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受保护的应用"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protected Apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Защищённые приложения"
+          }
+        }
+      }
+    },
+    "仍然迁移" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍然迁移"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate Anyway"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всё равно перенести"
+          }
+        }
+      }
+    },
+    "以下应用来自 App Store 或归属系统（root），受系统保护：\n\n%@\n\n它们的本地副本通常无法被直接删除或替换，自动迁移可能以「权限不足」失败。\n\n建议：先在访达中手动把应用拖到外部存储（系统会要求输入管理员密码），再回到 AppPorts 为它创建链接。\n\n仍要尝试自动迁移吗？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下应用来自 App Store 或归属系统（root），受系统保护：\n\n%@\n\n它们的本地副本通常无法被直接删除或替换，自动迁移可能以「权限不足」失败。\n\n建议：先在访达中手动把应用拖到外部存储（系统会要求输入管理员密码），再回到 AppPorts 为它创建链接。\n\n仍要尝试自动迁移吗？"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The following apps come from the App Store or are owned by the system (root) and are protected by macOS:\n\n%@\n\nTheir local copies usually cannot be deleted or replaced directly, so automatic migration may fail with \"permission denied\".\n\nRecommended: first drag the app to external storage manually in Finder (you'll be asked for an administrator password), then come back to AppPorts to create a link for it.\n\nStill try automatic migration?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Следующие приложения получены из App Store или принадлежат системе (root) и защищены macOS:\n\n%@\n\nИх локальные копии обычно нельзя удалить или заменить напрямую, поэтому автоматический перенос может завершиться ошибкой «недостаточно прав».\n\nРекомендуется: сначала вручную перетащите приложение на внешнее хранилище в Finder (система запросит пароль администратора), затем вернитесь в AppPorts и создайте для него ссылку.\n\nВсё равно попробовать автоматический перенос?"
+          }
+        }
+      }
+    },
+    "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: Permission denied — the local copy cannot be deleted or replaced. This app may come from the App Store or be owned by the system (root). Migrate it manually in Finder, then use AppPorts to create a link."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: недостаточно прав — локальную копию нельзя удалить или заменить. Это приложение может быть из App Store или принадлежать системе (root). Перенесите его вручную в Finder, затем создайте ссылку через AppPorts."
           }
         }
       }
