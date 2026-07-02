@@ -242,11 +242,13 @@ struct CustomDirsView: View {
             return errorMessage
         }
 
-        runBatch(
-            title: "正在迁移目录".localized,
-            pairs: [CustomDirPair.pendingMigration(for: config)],
-            operation: migratePair
-        )
+        Task {
+            await runBatch(
+                title: "正在迁移目录".localized,
+                pairs: [CustomDirPair.pendingMigration(for: config)],
+                operation: migratePair
+            )
+        }
         return nil
     }
 
@@ -277,11 +279,13 @@ struct CustomDirsView: View {
     }
 
     private func migrateSelected() {
-        runBatch(
-            title: "正在迁移目录".localized,
-            pairs: migratablePairs,
-            operation: migratePair
-        )
+        Task {
+            await runBatch(
+                title: "正在迁移目录".localized,
+                pairs: migratablePairs,
+                operation: migratePair
+            )
+        }
     }
 
     private func migratePair(_ pair: CustomDirPair, progressHandler: FileCopier.ProgressHandler?) async throws {
@@ -294,27 +298,31 @@ struct CustomDirsView: View {
     }
 
     private func relinkSelected() {
-        runBatch(
-            title: "正在接回目录".localized,
-            pairs: relinkablePairs,
-            operation: { pair, _ in
-                try await DataDirMover().createLink(
-                    localPath: pair.config.localURL,
-                    externalPath: pair.config.externalDestinationURL
-                )
-            }
-        )
+        Task {
+            await runBatch(
+                title: "正在接回目录".localized,
+                pairs: relinkablePairs,
+                operation: { pair, _ in
+                    try await DataDirMover().createLink(
+                        localPath: pair.config.localURL,
+                        externalPath: pair.config.externalDestinationURL
+                    )
+                }
+            )
+        }
     }
 
     private func restoreSelected() {
-        runBatch(
-            title: "正在还原目录".localized,
-            pairs: restorablePairs,
-            operation: { pair, progressHandler in
-                let item = pair.local.dataDirItem
-                try await DataDirMover().restore(item: item, progressHandler: progressHandler)
-            }
-        )
+        Task {
+            await runBatch(
+                title: "正在还原目录".localized,
+                pairs: restorablePairs,
+                operation: { pair, progressHandler in
+                    let item = pair.local.dataDirItem
+                    try await DataDirMover().restore(item: item, progressHandler: progressHandler)
+                }
+            )
+        }
     }
 
     private func deleteLocalLink(_ entry: CustomDirEntry) {
@@ -351,7 +359,7 @@ struct CustomDirsView: View {
         title: String,
         pairs selectedPairs: [CustomDirPair],
         operation: @escaping (CustomDirPair, FileCopier.ProgressHandler?) async throws -> Void
-    ) {
+    ) async {
         guard !selectedPairs.isEmpty else { return }
 
         progressTitle = title
@@ -360,35 +368,33 @@ struct CustomDirsView: View {
         progressFileName = ""
         showProgress = true
 
-        Task {
-            do {
-                for pair in selectedPairs {
+        do {
+            for pair in selectedPairs {
+                await MainActor.run {
+                    progressFileName = pair.config.displayName
+                }
+
+                try await operation(pair) { progress in
                     await MainActor.run {
-                        progressFileName = pair.config.displayName
-                    }
-
-                    try await operation(pair) { progress in
-                        await MainActor.run {
-                            progressBytes = progress.copiedBytes
-                            progressTotalBytes = progress.totalBytes
-                            progressFileName = progress.currentFile.isEmpty ? pair.config.displayName : progress.currentFile
-                        }
+                        progressBytes = progress.copiedBytes
+                        progressTotalBytes = progress.totalBytes
+                        progressFileName = progress.currentFile.isEmpty ? pair.config.displayName : progress.currentFile
                     }
                 }
+            }
 
-                await MainActor.run {
-                    showProgress = false
-                    selectedLocalIDs.removeAll()
-                    selectedExternalIDs.removeAll()
-                    refresh()
-                }
-            } catch {
-                await MainActor.run {
-                    showProgress = false
-                    errorMessage = error.localizedDescription
-                    showError = true
-                    refresh()
-                }
+            await MainActor.run {
+                showProgress = false
+                selectedLocalIDs.removeAll()
+                selectedExternalIDs.removeAll()
+                refresh()
+            }
+        } catch {
+            await MainActor.run {
+                showProgress = false
+                errorMessage = error.localizedDescription
+                showError = true
+                refresh()
             }
         }
     }

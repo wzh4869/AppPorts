@@ -1243,10 +1243,16 @@ struct ContentView: View {
         
         Task.detached(priority: .userInitiated) {
             let scanDir = dir
-            let localDir = URL(fileURLWithPath: "/Applications")
+            let customPaths = await MainActor.run { self.customLocalScanPaths }
+            let localDirs = [URL(fileURLWithPath: "/Applications")]
+                + customPaths.map { URL(fileURLWithPath: $0) }
             
             let scanner = AppScanner()
-            let newApps = await scanner.scanExternalApps(at: scanDir, localAppsDir: localDir)
+            var newApps: [AppItem] = []
+            for localDir in localDirs {
+                let scannedApps = await scanner.scanExternalApps(at: scanDir, localAppsDir: localDir)
+                newApps = self.mergeExternalApps(newApps, with: scannedApps)
+            }
             
             AppLogger.shared.logContext(
                 "外部应用扫描完成",
@@ -1258,6 +1264,37 @@ struct ContentView: View {
             )
             // 会话缓存填充 + 后台计算缺失项（命中项瞬时显示，无“计算中”闪烁）
             await self.applySizes(for: newApps, isLocal: false, scanner: scanner)
+        }
+    }
+
+    nonisolated func mergeExternalApps(_ existingApps: [AppItem], with scannedApps: [AppItem]) -> [AppItem] {
+        var mergedApps = existingApps
+        for app in scannedApps {
+            if let index = mergedApps.firstIndex(where: { $0.path.standardizedFileURL == app.path.standardizedFileURL }) {
+                if shouldPreferExternalApp(app, over: mergedApps[index]) {
+                    mergedApps[index] = app
+                }
+            } else {
+                mergedApps.append(app)
+            }
+        }
+        return mergedApps
+    }
+
+    nonisolated private func shouldPreferExternalApp(_ candidate: AppItem, over existing: AppItem) -> Bool {
+        externalAppStatusRank(candidate.status) > externalAppStatusRank(existing.status)
+    }
+
+    nonisolated private func externalAppStatusRank(_ status: String) -> Int {
+        switch status {
+        case AppStatus.linked:
+            return 3
+        case AppStatus.partialLinked:
+            return 2
+        case AppStatus.unlinked, AppStatus.external:
+            return 1
+        default:
+            return 0
         }
     }
     
@@ -1680,7 +1717,7 @@ struct ContentView: View {
     /// 应用是否“受保护、难以自动迁移”：App Store 应用或归属 root 的包。
     /// 这类应用从 /Applications 删除/替换通常会因权限被拒（NSFileWriteNoPermissionError 513）。
     func protectedMigrationReason(for app: AppItem) -> String? {
-        if app.isAppStoreApp { return "App Store" }
+        if app.isAppStoreApp { return "App Store".localized }
         if isRootOwnedBundle(at: app.path) { return "root" }
         return nil
     }
@@ -1933,17 +1970,92 @@ struct ContentView: View {
             showError(title: "错误".localized, message: error.localizedDescription)
         }
     }
+
+    private func localDestinationForMoveBack(app: AppItem) -> URL {
+        let localDirs = [localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) }
+        for dir in localDirs {
+            let candidate = dir.appendingPathComponent(app.name)
+            if isLocalPortal(candidate, linkedTo: app.path) {
+                return candidate
+            }
+
+            if let bundleURL = app.bundleURL, bundleURL.lastPathComponent != app.name {
+                let bundleCandidate = dir.appendingPathComponent(bundleURL.lastPathComponent)
+                if isLocalPortal(bundleCandidate, linkedTo: bundleURL) {
+                    return bundleCandidate
+                }
+            }
+        }
+
+        return localAppsURL.appendingPathComponent(app.name)
+    }
+
+    private func isLocalPortal(_ localURL: URL, linkedTo externalURL: URL) -> Bool {
+        guard fileManager.fileExists(atPath: localURL.path) else { return false }
+
+        if let destination = symlinkDestination(at: localURL),
+           sameFilePath(destination, externalURL) {
+            return true
+        }
+
+        let contentsURL = localURL.appendingPathComponent("Contents")
+        for relativePath in ["Contents", "Contents/MacOS", "Contents/Resources", "Contents/Frameworks"] {
+            let candidate = localURL.appendingPathComponent(relativePath)
+            if let destination = symlinkDestination(at: candidate),
+               sameFilePath(destination, externalURL) || sameFilePath(destination, externalURL.appendingPathComponent(relativePath)) {
+                return true
+            }
+        }
+
+        let realAppPathFile = contentsURL.appendingPathComponent("Resources/real_app_path.txt")
+        if let rawPath = try? String(contentsOf: realAppPathFile, encoding: .utf8),
+           sameFilePath(URL(fileURLWithPath: rawPath.trimmingCharacters(in: .whitespacesAndNewlines)), externalURL) {
+            return true
+        }
+
+        let folderMarkerURL = localURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName)
+        if marker(at: folderMarkerURL, pointsTo: externalURL) {
+            return true
+        }
+
+        let hybridMarkerURL = contentsURL.appendingPathComponent(AppMigrationService.hybridPortalMarkerName)
+        return marker(at: hybridMarkerURL, pointsTo: externalURL)
+    }
+
+    private func symlinkDestination(at url: URL) -> URL? {
+        guard let rawPath = try? fileManager.destinationOfSymbolicLink(atPath: url.path) else {
+            return nil
+        }
+        if rawPath.hasPrefix("/") {
+            return URL(fileURLWithPath: rawPath).standardizedFileURL
+        }
+        return url.deletingLastPathComponent().appendingPathComponent(rawPath).standardizedFileURL
+    }
+
+    private func marker(at markerURL: URL, pointsTo externalURL: URL) -> Bool {
+        guard let data = try? Data(contentsOf: markerURL),
+              let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
+              let externalPath = plist["externalPath"] as? String else {
+            return false
+        }
+        return sameFilePath(URL(fileURLWithPath: externalPath), externalURL)
+    }
+
+    private func sameFilePath(_ lhs: URL, _ rhs: URL) -> Bool {
+        lhs.standardizedFileURL.path == rhs.standardizedFileURL.path
+    }
     
     
     func performMoveBack(app: AppItem) {
         let operationID = AppLogger.shared.makeOperationID(prefix: "single-move-back")
+        let destination = localDestinationForMoveBack(app: app)
         AppLogger.shared.logContext(
             "用户请求还原单个应用",
             details: [
                 ("operation_id", operationID),
                 ("app_name", app.displayName),
                 ("source", app.path.path),
-                ("destination", localAppsURL.appendingPathComponent(app.name).path)
+                ("destination", destination.path)
             ]
         )
         isMigrating = true
@@ -1955,7 +2067,6 @@ struct ContentView: View {
         showProgress = true
         
         Task {
-            let destination = localAppsURL.appendingPathComponent(app.name)
             do {
                 try await moveBack(app: app, localDestinationURL: destination) { progress in
                     await MainActor.run {
@@ -2022,7 +2133,7 @@ struct ContentView: View {
                     progressTotalBytes = 0
                 }
                 
-                let destination = localAppsURL.appendingPathComponent(app.name)
+                let destination = localDestinationForMoveBack(app: app)
                 AppLogger.shared.logContext(
                     "批量还原单项开始",
                     details: [("batch_id", batchID), ("app_name", app.displayName), ("destination", destination.path)],

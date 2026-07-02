@@ -1626,7 +1626,16 @@ struct AppMigrationService {
         for child in children {
             let localChild = localDir.appendingPathComponent(child.lastPathComponent)
             if fm.fileExists(atPath: localChild.path) { continue }
-            try? fm.createSymbolicLink(at: localChild, withDestinationURL: child)
+            do {
+                try fm.createSymbolicLink(at: localChild, withDestinationURL: child)
+            } catch {
+                AppLogger.shared.logError(
+                    "Transparent Hybrid: 符号链接创建失败",
+                    error: error,
+                    errorCode: "HYBRID-SYMLINK-FAILED",
+                    relatedURLs: [("local", localChild), ("external", child)]
+                )
+            }
         }
     }
 

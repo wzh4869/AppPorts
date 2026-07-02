@@ -55,9 +55,9 @@ enum DiskMissingStrings {
                 count -= 1
             }
             // Generic Chinese with no script subtag → Simplified.
-            if components.first == "zh" { return table["zh-Hans"]! }
+            if components.first == "zh" { return table["zh-Hans"] ?? ("外部存储未连接，请连接后重试。", "好") }
         }
-        return table["en"]!
+        return table["en"] ?? ("External storage is not connected. Connect it and try again.", "OK")
     }
 }
 
