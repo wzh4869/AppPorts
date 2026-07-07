@@ -23,6 +23,27 @@ enum AppStatus {
     static let orphanedLink = "孤立链接"
     static let external = "外部"
     static let pendingMoveOut = "待迁出"
+
+    static func localized(_ status: String) -> String {
+        switch status {
+        case local:
+            return "本地".localized
+        case linked:
+            return "已链接".localized
+        case unlinked:
+            return "未链接".localized
+        case partialLinked:
+            return "部分链接".localized
+        case orphanedLink:
+            return "孤立链接".localized
+        case external:
+            return "外部".localized
+        case pendingMoveOut:
+            return "待迁出".localized
+        default:
+            return status
+        }
+    }
 }
 
 /// 应用程序项目数据模型

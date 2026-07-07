@@ -92,7 +92,7 @@ struct CustomDirsView: View {
     private var localPane: some View {
         VStack(spacing: 0) {
             ContentView.HeaderView(
-                title: "本地文件夹",
+                title: "本地文件夹".localized,
                 subtitle: String(format: "%lld 个目录".localized, Int64(configs.count)),
                 icon: "folder.fill",
                 actionButtonText: "＋",
@@ -133,7 +133,7 @@ struct CustomDirsView: View {
     private var externalPane: some View {
         VStack(spacing: 0) {
             ContentView.HeaderView(
-                title: "外部文件夹",
+                title: "外部文件夹".localized,
                 subtitle: String(format: "%lld 个目录".localized, Int64(configs.count)),
                 icon: "externaldrive.fill"
             )
@@ -209,7 +209,7 @@ struct CustomDirsView: View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .medium))
-            Text(title.localized)
+            Text(title)
                 .fontWeight(.medium)
                 .font(.system(size: 13))
         }

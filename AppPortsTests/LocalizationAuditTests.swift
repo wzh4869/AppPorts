@@ -59,6 +59,80 @@ final class LocalizationAuditTests: XCTestCase {
         )
     }
 
+    func testStringCatalogKeysAndLocalesAreClean() throws {
+        let supportedLocales = Set(AppLanguageCatalog.selectableLanguages.map(\.code))
+        let strings = try stringCatalog()
+
+        var findings: [String] = []
+        if strings.keys.contains("") {
+            findings.append("字符串目录包含空 key")
+        }
+
+        for key in strings.keys.sorted() {
+            guard let entry = strings[key] as? [String: Any],
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+
+            let unsupportedLocales = Set(localizations.keys).subtracting(supportedLocales)
+            for locale in unsupportedLocales.sorted() {
+                findings.append("不支持的 locale: [\(locale)] \(key)")
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "字符串目录存在不干净的 key 或 locale:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testStringCatalogDoesNotContainStaleEntries() throws {
+        let strings = try stringCatalog()
+
+        let staleKeys = strings.keys.sorted().filter { key in
+            guard let entry = strings[key] as? [String: Any] else { return false }
+            return entry["extractionState"] as? String == "stale"
+        }
+
+        XCTAssertTrue(
+            staleKeys.isEmpty,
+            "字符串目录仍包含 stale key:\n" + staleKeys.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testStringCatalogPlaceholdersStayConsistentAcrossLocales() throws {
+        let supportedLocales = AppLanguageCatalog.selectableLanguages.map(\.code)
+        let strings = try stringCatalog()
+
+        var findings: [String] = []
+
+        for key in strings.keys.sorted() {
+            guard !key.isEmpty,
+                  let entry = strings[key] as? [String: Any],
+                  entry["shouldTranslate"] as? Bool != false,
+                  let localizations = entry["localizations"] as? [String: Any],
+                  let sourceValue = localizedStringValue(localizations["zh-Hans"]) ?? localizedStringValue(localizations["en"]) else {
+                continue
+            }
+
+            let expectedPlaceholders = placeholderSignature(in: sourceValue)
+            for locale in supportedLocales {
+                guard let value = localizedStringValue(localizations[locale]) else { continue }
+                let actualPlaceholders = placeholderSignature(in: value)
+                if actualPlaceholders != expectedPlaceholders {
+                    findings.append(
+                        "占位符不一致: [\(locale)] \(key) expected \(expectedPlaceholders), got \(actualPlaceholders)"
+                    )
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "字符串目录存在占位符不一致:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
     func testImperativeUserFacingStringsAreLocalized() throws {
         let sourceRootURL = try repositoryRootURL().appendingPathComponent("AppPorts")
         let sourceFiles = try swiftSourceFiles(in: sourceRootURL)
@@ -132,10 +206,6 @@ final class LocalizationAuditTests: XCTestCase {
 
         for fileURL in sourceFiles.sorted(by: { $0.path < $1.path }) {
             let relativePath = try relativeSourcePath(for: fileURL)
-            if intentionallyNonLocalizedFiles.contains(relativePath) {
-                continue
-            }
-
             let content = try String(contentsOf: fileURL, encoding: .utf8)
             let lines = content.components(separatedBy: .newlines)
 
@@ -160,13 +230,7 @@ final class LocalizationAuditTests: XCTestCase {
                             findings.append("\(relativePath):\(lineIndex + 1) 禁止对插值后的字符串直接做本地化 -> \(rawKey)")
                             return
                         }
-                        // Convert Swift escape sequences in the captured literal
-                        // to actual characters, matching how they are stored in the xcstrings JSON.
-                        let key = rawKey
-                            .replacingOccurrences(of: "\\n", with: "\n")
-                            .replacingOccurrences(of: "\\t", with: "\t")
-                            .replacingOccurrences(of: "\\\"", with: "\"")
-                            .replacingOccurrences(of: "\\\\", with: "\\")
+                        let key = decodeSwiftStringLiteralContent(rawKey)
                         guard strings[key] == nil else { return }
                         findings.append("\(relativePath):\(lineIndex + 1) 缺少 string catalog key -> \(key)")
                     }
@@ -298,10 +362,6 @@ final class LocalizationAuditTests: XCTestCase {
 
         for fileURL in sourceFiles.sorted(by: { $0.path < $1.path }) {
             let relativePath = try relativeSourcePath(for: fileURL)
-            if intentionallyNonLocalizedFiles.contains(relativePath) {
-                continue
-            }
-
             let content = try String(contentsOf: fileURL, encoding: .utf8)
             let lines = content.components(separatedBy: .newlines)
 
@@ -393,6 +453,32 @@ final class LocalizationAuditTests: XCTestCase {
             .replacingOccurrences(of: "\\t", with: "\t")
             .replacingOccurrences(of: "\\\"", with: "\"")
             .replacingOccurrences(of: "\\\\", with: "\\")
+    }
+
+    private func placeholderSignature(in value: String) -> [String] {
+        let pattern = #"%(?:\d+\$)?[-+#0 ]*(?:\*|\d+)?(?:\.(?:\*|\d+))?(?:hh|h|ll|l|L|z|t|j)?[@diuoxXfFeEgGaAcCsSp]"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let escapedPercentPattern = #"%%"#
+        let valueWithoutEscapedPercents = value.replacingOccurrences(
+            of: escapedPercentPattern,
+            with: "",
+            options: .regularExpression
+        )
+        let range = NSRange(valueWithoutEscapedPercents.startIndex..<valueWithoutEscapedPercents.endIndex, in: valueWithoutEscapedPercents)
+
+        return regex.matches(in: valueWithoutEscapedPercents, range: range)
+            .compactMap { match -> String? in
+                guard let matchRange = Range(match.range, in: valueWithoutEscapedPercents) else {
+                    return nil
+                }
+                let placeholder = String(valueWithoutEscapedPercents[matchRange])
+                return placeholder.replacingOccurrences(
+                    of: #"^%\d+\$"#,
+                    with: "%",
+                    options: .regularExpression
+                )
+            }
+            .sorted()
     }
 
     private func firstMatch(in line: String, using regex: NSRegularExpression, captureGroup: Int) -> String? {

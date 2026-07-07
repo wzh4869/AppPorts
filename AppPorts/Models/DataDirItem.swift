@@ -53,6 +53,35 @@ enum DataDirType: String, CaseIterable, Sendable {
         case .custom:             return "folder.badge.plus"
         }
     }
+
+    var localizedTitle: String {
+        switch self {
+        case .applicationSupport:
+            return "Application Support".localized
+        case .preferences:
+            return "Preferences".localized
+        case .containers:
+            return "Containers".localized
+        case .groupContainers:
+            return "Group Containers".localized
+        case .caches:
+            return "Caches".localized
+        case .webKit:
+            return "WebKit".localized
+        case .httpStorages:
+            return "HTTPStorages".localized
+        case .applicationScripts:
+            return "Application Scripts".localized
+        case .logs:
+            return "Logs".localized
+        case .savedState:
+            return "Saved State".localized
+        case .dotFolder:
+            return "工具目录".localized
+        case .custom:
+            return "自定义".localized
+        }
+    }
 }
 
 // MARK: - 迁移优先级
@@ -76,6 +105,45 @@ enum DataDirPriority: String, CaseIterable, Sendable, Comparable {
         case .critical:    return "red"
         case .recommended: return "orange"
         case .optional:    return "blue"
+        }
+    }
+
+    var localizedTitle: String {
+        switch self {
+        case .critical:
+            return "重要".localized
+        case .recommended:
+            return "推荐".localized
+        case .optional:
+            return "可选".localized
+        }
+    }
+}
+
+enum DataDirStatus {
+    static let local = "本地"
+    static let linked = "已链接"
+    static let needsNormalization = "待规范"
+    static let existingSymlink = "现有软链"
+    static let pendingRelink = "待接回"
+    static let missing = "未找到"
+
+    static func localized(_ status: String) -> String {
+        switch status {
+        case local:
+            return "本地".localized
+        case linked:
+            return "已链接".localized
+        case needsNormalization:
+            return "待规范".localized
+        case existingSymlink:
+            return "现有软链".localized
+        case pendingRelink:
+            return "待接回".localized
+        case missing:
+            return "未找到".localized
+        default:
+            return status
         }
     }
 }

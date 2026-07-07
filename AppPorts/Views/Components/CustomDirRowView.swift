@@ -84,7 +84,7 @@ struct CustomDirRowView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(entry.name) + Text(", ") + Text(entry.status.localized))
+        .accessibilityLabel(Text(entry.name) + Text(", ") + Text(CustomDirStatus.localized(entry.status)))
         .contextMenu {
             Button("在 Finder 中显示".localized) {
                 NSWorkspace.shared.activateFileViewerSelecting([entry.url])
@@ -125,7 +125,7 @@ private struct CustomDirStatusBadge: View {
     }
 
     var body: some View {
-        Text(status.localized)
+        Text(CustomDirStatus.localized(status))
             .font(.system(size: 10, weight: .semibold))
             .foregroundColor(color)
             .padding(.horizontal, 6)

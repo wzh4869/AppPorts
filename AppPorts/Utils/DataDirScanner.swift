@@ -166,6 +166,24 @@ actor DataDirScanner {
             description: "Java Maven 依赖仓库"
         ),
         KnownDotFolder(
+            name: "Gradle 缓存",
+            relativePath: ".gradle",
+            priority: .recommended,
+            description: "Gradle 构建缓存、Wrapper 和依赖数据"
+        ),
+        KnownDotFolder(
+            name: "Android 开发数据",
+            relativePath: ".android",
+            priority: .recommended,
+            description: "Android、ADB 和模拟器配置与缓存数据"
+        ),
+        KnownDotFolder(
+            name: "Flutter/Dart 缓存",
+            relativePath: ".pub-cache",
+            priority: .recommended,
+            description: "Dart 和 Flutter Pub 包缓存"
+        ),
+        KnownDotFolder(
             name: "Bun 运行时",
             relativePath: ".bun",
             priority: .recommended,
@@ -358,22 +376,21 @@ actor DataDirScanner {
     /// 过滤掉不存在的目录，检测每个目录的链接状态。
     ///
     /// - Returns: 存在于磁盘上的已知 dotFolder 列表（未计算大小）
-    func scanKnownDotFolders() -> [DataDirItem] {
+    func scanKnownDotFolders(externalRootURL: URL? = nil) -> [DataDirItem] {
         let scanID = AppLogger.shared.makeOperationID(prefix: "scanner-dot-folders")
         AppLogger.shared.logContext(
             "DataDirScanner 开始扫描工具目录",
-            details: [("scan_id", scanID), ("known_count", String(knownDotFolders.count))],
+            details: [
+                ("scan_id", scanID),
+                ("known_count", String(knownDotFolders.count)),
+                ("external_root", externalRootURL?.path)
+            ],
             level: "TRACE"
         )
         var results: [DataDirItem] = []
 
         for known in knownDotFolders {
             let fullPath = homeDir.appendingPathComponent(known.relativePath)
-
-            // 跳过不存在的目录
-            guard fileManager.fileExists(atPath: fullPath.path) else { continue }
-
-            let inspection = inspectItem(at: fullPath, type: .dotFolder)
 
             var item = DataDirItem(
                 name: known.name.localized,
@@ -384,9 +401,26 @@ actor DataDirScanner {
                 isMigratable: known.isMigratable,
                 nonMigratableReason: known.nonMigratableReason?.localized
             )
-            applyInspectionResult(to: &item, inspection: inspection, externalRootURL: nil)
 
-            results.append(item)
+            if directoryExistsOrIsSymlink(at: fullPath) {
+                let inspection = inspectItem(at: fullPath, type: .dotFolder)
+                applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
+                results.append(item)
+                continue
+            }
+
+            if fileManager.fileExists(atPath: fullPath.path) {
+                continue
+            }
+
+            if let externalRootURL {
+                let externalPath = suggestedDestinationPath(for: item, under: externalRootURL)
+                if existingDirectory(at: externalPath) {
+                    item.status = "待接回"
+                    item.linkedDestination = externalPath.standardizedFileURL
+                    results.append(item)
+                }
+            }
         }
 
         let sortedResults = results.sorted { $0.priority < $1.priority }
@@ -1220,7 +1254,7 @@ actor DataDirScanner {
         appName: String
     ) -> DataDirItem {
         var item = DataDirItem(
-            name: "\(type.rawValue.localized): \(name)",
+            name: "\(type.localizedTitle): \(name)",
             path: path,
             type: type,
             priority: priority,
@@ -1705,11 +1739,7 @@ actor DataDirScanner {
 
     /// 检测目录当前状态，并区分 AppPorts 受管链接和已有软链接。
     private func inspectItem(at url: URL, type: DataDirType) -> (status: String, linkedDestination: URL?) {
-        guard let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey]) else {
-            return (fileManager.fileExists(atPath: url.path) ? "本地" : "未找到", nil)
-        }
-
-        if values.isSymbolicLink == true {
+        if isSymbolicLinkPath(at: url) {
             let linkedDestination = resolveSymlinkDestination(at: url)
             guard let linkedDestination else {
                 AppLogger.shared.logError(
@@ -1737,11 +1767,28 @@ actor DataDirScanner {
             return ("现有软链", linkedDestination)
         }
 
+        guard let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey]) else {
+            return (fileManager.fileExists(atPath: url.path) ? "本地" : "未找到", nil)
+        }
+
         if values.isDirectory == true {
             return ("本地", nil)
         }
 
         return ("未找到", nil)
+    }
+
+    private func directoryExistsOrIsSymlink(at url: URL) -> Bool {
+        existingDirectory(at: url) || isSymbolicLinkPath(at: url)
+    }
+
+    private func existingDirectory(at url: URL) -> Bool {
+        var isDirectory = ObjCBool(false)
+        return fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory) && isDirectory.boolValue
+    }
+
+    private func isSymbolicLinkPath(at url: URL) -> Bool {
+        (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
     }
 
     private func resolveSymlinkDestination(at url: URL) -> URL? {

@@ -285,13 +285,13 @@ struct ContentView: View {
             HStack(spacing: 14) {
                 // Tab 切换器
                 HStack(spacing: 4) {
-                    TabButton(title: "应用", systemImage: "cube", isSelected: mainTab == .apps) {
+                    TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps) {
                         withAnimation { mainTab = .apps }
                     }
-                    TabButton(title: "数据目录", systemImage: "cylinder", isSelected: mainTab == .dataDirs) {
+                    TabButton(title: "数据目录".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs) {
                         withAnimation { mainTab = .dataDirs }
                     }
-                    TabButton(title: "目录迁移", systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
+                    TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
                         withAnimation { mainTab = .customDirs }
                     }
                 }
@@ -307,10 +307,10 @@ struct ContentView: View {
 
                 if mainTab == .dataDirs {
                     HStack(spacing: 4) {
-                        TabButton(title: DataDirsView.DataTab.toolDirs.rawValue, isSelected: selectedDataDirsTab == .toolDirs) {
+                        TabButton(title: "工具目录".localized, isSelected: selectedDataDirsTab == .toolDirs) {
                             withAnimation { selectedDataDirsTab = .toolDirs }
                         }
-                        TabButton(title: DataDirsView.DataTab.appDirs.rawValue, isSelected: selectedDataDirsTab == .appDirs) {
+                        TabButton(title: "应用数据".localized, isSelected: selectedDataDirsTab == .appDirs) {
                             withAnimation { selectedDataDirsTab = .appDirs }
                         }
                     }
@@ -422,36 +422,9 @@ struct ContentView: View {
                         icon: "macmini",
                         actionButtonText: "＋",
                         onAction: addCustomLocalScanPath,
-                        onRefresh: { scanLocalApps() }
+                        onRefresh: { scanLocalApps() },
+                        accessory: customLocalScanPaths.isEmpty ? nil : AnyView(localScanSourcesMenu)
                     )
-
-                    // 自定义扫描目录标签
-                    if !customLocalScanPaths.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 6) {
-                                ForEach(customLocalScanPaths, id: \.self) { path in
-                                    HStack(spacing: 4) {
-                                        Text((path as NSString).lastPathComponent)
-                                            .font(.caption)
-                                            .lineLimit(1)
-                                        Button(action: { removeCustomLocalScanPath(path) }) {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .font(.caption2)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.accentColor.opacity(0.1))
-                                    .cornerRadius(6)
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 6)
-                        }
-                        .background(.ultraThinMaterial)
-                    }
 
                     ZStack {
                         Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
@@ -862,6 +835,7 @@ struct ContentView: View {
         var actionButtonText: String? = nil
         var onAction: (() -> Void)? = nil
         var onRefresh: (() -> Void)? = nil
+        var accessory: AnyView? = nil
         
         var body: some View {
             VStack(spacing: 0) {
@@ -873,7 +847,7 @@ struct ContentView: View {
                         
                     VStack(alignment: .leading, spacing: 4) {
                         // 将传入的 title 字符串转换为 Key，触发翻译
-                        Text(title.localized)
+                        Text(title)
                             .font(.headline)
                         
                         Text(subtitle)
@@ -887,11 +861,15 @@ struct ContentView: View {
                     
                     if let btnText = actionButtonText, let action = onAction {
 
-                        Button(btnText.localized, action: action)
+                        Button(btnText, action: action)
                             .controlSize(.small)
                             .buttonStyle(.bordered)
                     }
-                    
+
+                    if let accessory {
+                        accessory
+                    }
+
                     if let onRefresh {
                         Button(action: onRefresh) {
                             Image(systemName: "arrow.clockwise")
@@ -925,7 +903,7 @@ struct ContentView: View {
 
                 Button(action: action) {
                     HStack(spacing: 6) {
-                        Text(title.localized)
+                        Text(title)
                             .fontWeight(.medium)
                             .font(.system(size: 13))
                         Image(systemName: icon)
@@ -953,7 +931,7 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .foregroundColor(.secondary.opacity(0.3))
 
-                Text(text.localized)
+                Text(text)
                 .foregroundColor(.secondary.opacity(0.7))
             }
             .accessibilityElement(children: .combine)
@@ -971,7 +949,7 @@ struct ContentView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.secondary)
 
-                Toggle("", isOn: $autoResignEnabled)
+                Toggle("迁移后重签名".localized, isOn: $autoResignEnabled)
                     .toggleStyle(.switch)
                     .controlSize(.small)
                     .labelsHidden()
@@ -1030,7 +1008,7 @@ struct ContentView: View {
                         Image(systemName: systemImage)
                             .font(.system(size: 15, weight: .medium))
                     }
-                    Text(title.localized)
+                    Text(title)
                         .font(.system(size: 13, weight: .semibold))
                 }
                 .foregroundColor(isSelected ? .accentColor : .secondary)
@@ -1431,6 +1409,40 @@ struct ContentView: View {
             return base
         }
         return "\(base) + \(customLocalScanPaths.count) \("个目录".localized)"
+    }
+
+    private var localScanSourcesMenu: some View {
+        Menu {
+            Text(verbatim: "/Applications")
+                .foregroundColor(.secondary)
+
+            Divider()
+
+            ForEach(customLocalScanPaths, id: \.self) { path in
+                Button(role: .destructive) {
+                    removeCustomLocalScanPath(path)
+                } label: {
+                    Label((path as NSString).lastPathComponent, systemImage: "xmark.circle")
+                }
+                .help(path)
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "folder.badge.plus")
+                    .font(.system(size: 12, weight: .medium))
+                Text("\(customLocalScanPaths.count)")
+                    .font(.system(size: 11, weight: .semibold))
+                    .monospacedDigit()
+            }
+            .foregroundColor(.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.primary.opacity(0.06))
+            .clipShape(Capsule())
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help(localAppsSubtitle)
     }
 
     func addCustomLocalScanPath() {

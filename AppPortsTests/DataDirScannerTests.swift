@@ -5,6 +5,21 @@ final class DataDirScannerTests: XCTestCase {
     private let fileManager = FileManager.default
     private var originalLogEnabledValue: Any?
     private var originalLogPath: String?
+    private let issue49RelativePaths = [".gradle", ".android", ".pub-cache"]
+
+    private enum Issue49LocalState: CaseIterable {
+        case missing
+        case directory
+        case regularFile
+        case unmanagedSymlink
+        case danglingSymlink
+    }
+
+    private enum Issue49ExternalState: CaseIterable {
+        case missing
+        case directory
+        case regularFile
+    }
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -27,6 +42,196 @@ final class DataDirScannerTests: XCTestCase {
         }
 
         try super.tearDownWithError()
+    }
+
+    func testIssue49KnownToolDirectoriesAreReportedAsLocalAndMigratable() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let expectedRelativePaths = [".gradle", ".android", ".pub-cache"]
+        for relativePath in expectedRelativePaths {
+            try createDirectoryWithPayload(at: workspace.homeURL.appendingPathComponent(relativePath))
+        }
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders()
+        let itemsByRelativePath = Dictionary(
+            uniqueKeysWithValues: items.map {
+                ($0.path.path.replacingOccurrences(of: workspace.homeURL.path + "/", with: ""), $0)
+            }
+        )
+
+        for relativePath in expectedRelativePaths {
+            let item = try XCTUnwrap(itemsByRelativePath[relativePath])
+            XCTAssertEqual(item.status, "本地")
+            XCTAssertTrue(item.isMigratable)
+            XCTAssertEqual(item.type, .dotFolder)
+            XCTAssertNil(item.linkedDestination)
+        }
+    }
+
+    func testIssue49ExternalToolDirectoriesWithoutLocalPathsAreReportedAsPendingRelink() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let expectedRelativePaths = [".gradle", ".android", ".pub-cache"]
+        for relativePath in expectedRelativePaths {
+            let externalURL = workspace.externalRootURL
+                .appendingPathComponent(DataDirType.dotFolder.rawValue)
+                .appendingPathComponent(relativePath)
+            try createDirectoryWithPayload(at: externalURL)
+        }
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+        let itemsByRelativePath = Dictionary(
+            uniqueKeysWithValues: items.map {
+                ($0.path.path.replacingOccurrences(of: workspace.homeURL.path + "/", with: ""), $0)
+            }
+        )
+
+        for relativePath in expectedRelativePaths {
+            let item = try XCTUnwrap(itemsByRelativePath[relativePath])
+            let externalURL = workspace.externalRootURL
+                .appendingPathComponent(DataDirType.dotFolder.rawValue)
+                .appendingPathComponent(relativePath)
+            XCTAssertEqual(item.status, "待接回")
+            XCTAssertEqual(item.linkedDestination?.standardizedFileURL, externalURL.standardizedFileURL)
+            XCTAssertTrue(item.isMigratable)
+        }
+    }
+
+    func testIssue49KnownToolDirectoriesRemainHiddenWhenMissingLocallyAndExternally() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+        let issue49Paths = Set([".gradle", ".android", ".pub-cache"])
+        let returnedIssue49Paths = Set(
+            items.map { $0.path.path.replacingOccurrences(of: workspace.homeURL.path + "/", with: "") }
+                .filter { issue49Paths.contains($0) }
+        )
+
+        XCTAssertTrue(returnedIssue49Paths.isEmpty)
+    }
+
+    func testIssue49LocalDirectoryTakesPrecedenceWhenExternalMirrorAlsoExists() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localPubCacheURL = workspace.homeURL.appendingPathComponent(".pub-cache")
+        let externalPubCacheURL = workspace.externalRootURL
+            .appendingPathComponent(DataDirType.dotFolder.rawValue)
+            .appendingPathComponent(".pub-cache")
+        try createDirectoryWithPayload(at: localPubCacheURL)
+        try createDirectoryWithPayload(at: externalPubCacheURL)
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+
+        let item = try XCTUnwrap(items.first(where: { $0.path.standardizedFileURL == localPubCacheURL.standardizedFileURL }))
+        XCTAssertEqual(item.status, "本地")
+        XCTAssertNil(item.linkedDestination)
+    }
+
+    func testIssue49ExternalRegularFileDoesNotCreatePendingRelinkItem() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localPubCacheURL = workspace.homeURL.appendingPathComponent(".pub-cache")
+        let externalToolRootURL = workspace.externalRootURL.appendingPathComponent(DataDirType.dotFolder.rawValue)
+        let externalPubCacheURL = externalToolRootURL.appendingPathComponent(".pub-cache")
+        try fileManager.createDirectory(at: externalToolRootURL, withIntermediateDirectories: true)
+        try "not a directory".write(to: externalPubCacheURL, atomically: true, encoding: .utf8)
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+
+        XCTAssertNil(items.first(where: { $0.path.standardizedFileURL == localPubCacheURL.standardizedFileURL }))
+    }
+
+    func testIssue49KnownToolDirectoryStateMatrix() async throws {
+        for relativePath in issue49RelativePaths {
+            for localState in Issue49LocalState.allCases {
+                for externalState in Issue49ExternalState.allCases {
+                    try await assertIssue49KnownToolDirectoryState(
+                        relativePath: relativePath,
+                        localState: localState,
+                        externalState: externalState
+                    )
+                }
+            }
+        }
+    }
+
+    func testIssue49ManagedDotFolderLinkIsReportedAsLinked() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localPubCacheURL = workspace.homeURL.appendingPathComponent(".pub-cache")
+        let externalPubCacheURL = workspace.externalRootURL
+            .appendingPathComponent(DataDirType.dotFolder.rawValue)
+            .appendingPathComponent(".pub-cache")
+        try createDirectoryWithPayload(at: externalPubCacheURL)
+        try writeManagedLinkMetadata(
+            sourcePath: localPubCacheURL,
+            destinationPath: externalPubCacheURL,
+            dataDirType: DataDirType.dotFolder.rawValue
+        )
+        try fileManager.createSymbolicLink(at: localPubCacheURL, withDestinationURL: externalPubCacheURL)
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+
+        let item = try XCTUnwrap(items.first(where: { $0.path.standardizedFileURL == localPubCacheURL.standardizedFileURL }))
+        XCTAssertEqual(item.status, "已链接")
+        XCTAssertEqual(item.linkedDestination?.standardizedFileURL, externalPubCacheURL.standardizedFileURL)
+    }
+
+    func testIssue49UnmanagedDotFolderSymlinkIsReportedAsExistingLink() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localPubCacheURL = workspace.homeURL.appendingPathComponent(".pub-cache")
+        let externalPubCacheURL = workspace.externalRootURL
+            .appendingPathComponent(DataDirType.dotFolder.rawValue)
+            .appendingPathComponent(".pub-cache")
+        try createDirectoryWithPayload(at: externalPubCacheURL)
+        try fileManager.createSymbolicLink(at: localPubCacheURL, withDestinationURL: externalPubCacheURL)
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+
+        let item = try XCTUnwrap(items.first(where: { $0.path.standardizedFileURL == localPubCacheURL.standardizedFileURL }))
+        XCTAssertEqual(item.status, "现有软链")
+        XCTAssertEqual(item.linkedDestination?.standardizedFileURL, externalPubCacheURL.standardizedFileURL)
+    }
+
+    func testIssue49DanglingLocalSymlinkIsNotReportedAsPendingRelink() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localPubCacheURL = workspace.homeURL.appendingPathComponent(".pub-cache")
+        let danglingTargetURL = workspace.rootURL.appendingPathComponent("MissingPubCacheTarget")
+        let externalPubCacheURL = workspace.externalRootURL
+            .appendingPathComponent(DataDirType.dotFolder.rawValue)
+            .appendingPathComponent(".pub-cache")
+        try createDirectoryWithPayload(at: externalPubCacheURL)
+        try fileManager.createSymbolicLink(at: localPubCacheURL, withDestinationURL: danglingTargetURL)
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+
+        let item = try XCTUnwrap(items.first(where: { $0.path.standardizedFileURL == localPubCacheURL.standardizedFileURL }))
+        XCTAssertEqual(item.status, "现有软链")
+        XCTAssertEqual(item.linkedDestination?.standardizedFileURL, danglingTargetURL.standardizedFileURL)
     }
 
     func testManagedLinkAtNormalizedDestinationIsReportedAsLinked() async throws {
@@ -256,6 +461,102 @@ final class DataDirScannerTests: XCTestCase {
             atomically: true,
             encoding: .utf8
         )
+    }
+
+    private func assertIssue49KnownToolDirectoryState(
+        relativePath: String,
+        localState: Issue49LocalState,
+        externalState: Issue49ExternalState,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localURL = workspace.homeURL.appendingPathComponent(relativePath)
+        let externalURL = workspace.externalRootURL
+            .appendingPathComponent(DataDirType.dotFolder.rawValue)
+            .appendingPathComponent(relativePath)
+        let externalParentURL = externalURL.deletingLastPathComponent()
+        let manualTargetURL = workspace.rootURL
+            .appendingPathComponent("ManualTargets")
+            .appendingPathComponent(relativePath)
+        let danglingTargetURL = workspace.rootURL
+            .appendingPathComponent("MissingTargets")
+            .appendingPathComponent(relativePath)
+
+        switch externalState {
+        case .missing:
+            break
+        case .directory:
+            try createDirectoryWithPayload(at: externalURL)
+        case .regularFile:
+            try fileManager.createDirectory(at: externalParentURL, withIntermediateDirectories: true)
+            try "external file".write(to: externalURL, atomically: true, encoding: .utf8)
+        }
+
+        switch localState {
+        case .missing:
+            break
+        case .directory:
+            try createDirectoryWithPayload(at: localURL)
+        case .regularFile:
+            try "local file".write(to: localURL, atomically: true, encoding: .utf8)
+        case .unmanagedSymlink:
+            try createDirectoryWithPayload(at: manualTargetURL)
+            try fileManager.createSymbolicLink(at: localURL, withDestinationURL: manualTargetURL)
+        case .danglingSymlink:
+            try fileManager.createSymbolicLink(at: localURL, withDestinationURL: danglingTargetURL)
+        }
+
+        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+            externalRootURL: workspace.externalRootURL
+        )
+        let item = items.first { $0.path.standardizedFileURL == localURL.standardizedFileURL }
+        let caseDescription = "\(relativePath), local=\(localState), external=\(externalState)"
+
+        switch localState {
+        case .missing:
+            if externalState == .directory {
+                let item = try XCTUnwrap(item, caseDescription, file: file, line: line)
+                XCTAssertEqual(item.status, "待接回", caseDescription, file: file, line: line)
+                XCTAssertEqual(
+                    item.linkedDestination?.standardizedFileURL,
+                    externalURL.standardizedFileURL,
+                    caseDescription,
+                    file: file,
+                    line: line
+                )
+            } else {
+                XCTAssertNil(item, caseDescription, file: file, line: line)
+            }
+        case .directory:
+            let item = try XCTUnwrap(item, caseDescription, file: file, line: line)
+            XCTAssertEqual(item.status, "本地", caseDescription, file: file, line: line)
+            XCTAssertNil(item.linkedDestination, caseDescription, file: file, line: line)
+        case .regularFile:
+            XCTAssertNil(item, caseDescription, file: file, line: line)
+        case .unmanagedSymlink:
+            let item = try XCTUnwrap(item, caseDescription, file: file, line: line)
+            XCTAssertEqual(item.status, "现有软链", caseDescription, file: file, line: line)
+            XCTAssertEqual(
+                item.linkedDestination?.standardizedFileURL,
+                manualTargetURL.standardizedFileURL,
+                caseDescription,
+                file: file,
+                line: line
+            )
+        case .danglingSymlink:
+            let item = try XCTUnwrap(item, caseDescription, file: file, line: line)
+            XCTAssertEqual(item.status, "现有软链", caseDescription, file: file, line: line)
+            XCTAssertEqual(
+                item.linkedDestination?.standardizedFileURL,
+                danglingTargetURL.standardizedFileURL,
+                caseDescription,
+                file: file,
+                line: line
+            )
+        }
     }
 
     private func writeManagedLinkMetadata(

@@ -567,8 +567,8 @@ actor DataDirMover {
             throw DataDirError.protectedPath(localPath)
         }
 
-        // 确认外部目录存在
-        guard fileManager.fileExists(atPath: externalPath.path) else {
+        // 确认外部目录存在。接回只对目录有效，不能把普通文件接成本地数据目录链接。
+        guard existingDirectory(at: externalPath) else {
             AppLogger.shared.logError(
                 "创建数据目录符号链接失败：外部目录不存在",
                 errorCode: "DATA-LINK-EXTERNAL-NOT-FOUND",
@@ -749,7 +749,7 @@ actor DataDirMover {
             throw DataDirError.protectedPath(localPath)
         }
 
-        guard fileManager.fileExists(atPath: standardizedCurrent.path) else {
+        guard existingDirectory(at: standardizedCurrent) else {
             AppLogger.shared.logError(
                 "规范化受管数据目录链接失败：当前外部路径不存在",
                 errorCode: "DATA-NORMALIZE-EXTERNAL-NOT-FOUND",
@@ -1028,6 +1028,11 @@ actor DataDirMover {
 
     private func isSymbolicLink(at url: URL) -> Bool {
         (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
+    }
+
+    private func existingDirectory(at url: URL) -> Bool {
+        var isDirectory = ObjCBool(false)
+        return fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory) && isDirectory.boolValue
     }
 
     /// 检查路径是否为 macOS 受保护的顶层容器目录（~/Library/Containers/xxx）

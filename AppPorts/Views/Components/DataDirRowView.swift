@@ -243,7 +243,7 @@ struct PriorityBadge: View {
             Circle()
                 .fill(color)
                 .frame(width: 6, height: 6)
-            Text(priority.rawValue.localized)
+            Text(priority.localizedTitle)
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(color)
         }
@@ -271,7 +271,7 @@ struct DataDirStatusBadge: View {
         HStack(spacing: 4) {
             Image(systemName: statusIcon)
                 .font(.system(size: 8))
-            Text(status.localized)
+            Text(DataDirStatus.localized(status))
                 .font(.system(size: 10, weight: .medium))
         }
         .foregroundColor(foregroundColor)

@@ -15,6 +15,27 @@ enum CustomDirStatus {
     static let missing = "未找到"
     static let external = "外部"
     static let destinationConflict = "目标冲突"
+
+    static func localized(_ status: String) -> String {
+        switch status {
+        case local:
+            return "本地".localized
+        case linked:
+            return "已链接".localized
+        case orphanedLink:
+            return "孤立链接".localized
+        case pendingRelink:
+            return "待接回".localized
+        case missing:
+            return "未找到".localized
+        case external:
+            return "外部".localized
+        case destinationConflict:
+            return "目标冲突".localized
+        default:
+            return status
+        }
+    }
 }
 
 struct CustomDirConfig: Identifiable, Codable, Equatable, Sendable {

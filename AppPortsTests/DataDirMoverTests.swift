@@ -413,6 +413,72 @@ final class DataDirMoverTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: externalGroupContainerURL.appendingPathComponent("payload.txt")), "group-state")
     }
 
+    func testCreateLinkRejectsExternalRegularFile() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localDataURL = workspace.homeURL
+            .appendingPathComponent("Library/Caches/com.example.file-link")
+        let externalFileURL = workspace.externalRootURL
+            .appendingPathComponent("Library/Caches/com.example.file-link")
+
+        try fileManager.createDirectory(
+            at: externalFileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try "not a directory".write(to: externalFileURL, atomically: true, encoding: .utf8)
+
+        do {
+            try await DataDirMover(homeDir: workspace.homeURL).createLink(
+                localPath: localDataURL,
+                externalPath: externalFileURL
+            )
+            XCTFail("Expected regular external file to be rejected")
+        } catch let error as DataDirError {
+            guard case .externalNotFound = error else {
+                return XCTFail("Expected externalNotFound, got \(error)")
+            }
+        }
+
+        XCTAssertFalse(fileManager.fileExists(atPath: localDataURL.path))
+        XCTAssertEqual(try String(contentsOf: externalFileURL), "not a directory")
+    }
+
+    func testNormalizeManagedLinkRejectsCurrentExternalRegularFileWithoutMovingIt() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let localDataURL = workspace.homeURL
+            .appendingPathComponent("Library/Caches/com.example.normalize-file")
+        let currentExternalURL = workspace.rootURL
+            .appendingPathComponent("ManualStore/com.example.normalize-file")
+        let normalizedExternalURL = workspace.externalRootURL
+            .appendingPathComponent("Library/Caches/com.example.normalize-file")
+
+        try fileManager.createDirectory(
+            at: currentExternalURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try "not a directory".write(to: currentExternalURL, atomically: true, encoding: .utf8)
+
+        do {
+            try await DataDirMover(homeDir: workspace.homeURL).normalizeManagedLink(
+                localPath: localDataURL,
+                currentExternalPath: currentExternalURL,
+                normalizedExternalPath: normalizedExternalURL
+            )
+            XCTFail("Expected regular current external file to be rejected")
+        } catch let error as DataDirError {
+            guard case .externalNotFound = error else {
+                return XCTFail("Expected externalNotFound, got \(error)")
+            }
+        }
+
+        XCTAssertFalse(fileManager.fileExists(atPath: localDataURL.path))
+        XCTAssertEqual(try String(contentsOf: currentExternalURL), "not a directory")
+        XCTAssertFalse(fileManager.fileExists(atPath: normalizedExternalURL.path))
+    }
+
     private func makeWorkspace() throws -> (rootURL: URL, homeURL: URL, externalRootURL: URL) {
         let rootURL = fileManager.temporaryDirectory.appendingPathComponent("DataDirMoverTests-\(UUID().uuidString)")
         let homeURL = rootURL.appendingPathComponent("Home")

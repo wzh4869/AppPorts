@@ -108,6 +108,7 @@ struct DataDirsView: View {
 
     // 选中项（用于高亮）
     @State private var selectedItemID: String? = nil
+    @State private var dotFolderScanToken = UUID()
     @State private var libraryScanToken = UUID()
 
     // 搜索
@@ -122,11 +123,31 @@ struct DataDirsView: View {
         case defaultOrder = "默认"
         case size = "按大小"
         case alphabetical = "按首字母"
+
+        var localizedTitle: String {
+            switch self {
+            case .defaultOrder:
+                return "默认".localized
+            case .size:
+                return "按大小".localized
+            case .alphabetical:
+                return "按首字母".localized
+            }
+        }
     }
 
     enum AppSortMode: String, CaseIterable {
         case size = "按大小"
         case alphabetical = "按首字母"
+
+        var localizedTitle: String {
+            switch self {
+            case .size:
+                return "按大小".localized
+            case .alphabetical:
+                return "按首字母".localized
+            }
+        }
     }
 
     private let appDataStatusOrder = ["本地", "已链接", "待规范", "现有软链", "待接回", "未找到"]
@@ -149,6 +170,9 @@ struct DataDirsView: View {
             reloadCurrentTab()
         }
         .onChange(of: refreshTrigger) { _ in
+            reloadCurrentTab()
+        }
+        .onChange(of: externalDriveURL) { _ in
             reloadCurrentTab()
         }
         .onChange(of: languageManager.language) { _ in
@@ -353,7 +377,7 @@ struct DataDirsView: View {
                             ForEach(AppSortMode.allCases, id: \.self) { mode in
                                 Button(action: { selectedAppSortMode = mode }) {
                                     HStack {
-                                        Text(mode.rawValue.localized)
+                                        Text(mode.localizedTitle)
                                         Spacer()
                                         if selectedAppSortMode == mode {
                                             Image(systemName: "checkmark")
@@ -365,7 +389,7 @@ struct DataDirsView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.up.arrow.down")
                                     .font(.system(size: 10))
-                                Text(selectedAppSortMode.rawValue.localized)
+                                Text(selectedAppSortMode.localizedTitle)
                                     .font(.system(size: 11))
                             }
                             .foregroundColor(.secondary)
@@ -525,7 +549,7 @@ struct DataDirsView: View {
             ForEach(AppDataSortMode.allCases, id: \.self) { mode in
                 Button(action: { selectedAppDataSortMode = mode }) {
                     HStack {
-                        Text(mode.rawValue.localized)
+                        Text(mode.localizedTitle)
                         Spacer()
                         if selectedAppDataSortMode == mode {
                             Image(systemName: "checkmark")
@@ -536,7 +560,7 @@ struct DataDirsView: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.up.arrow.down.circle")
-                Text(selectedAppDataSortMode.rawValue.localized)
+                Text(selectedAppDataSortMode.localizedTitle)
             }
         }
         .menuStyle(.borderlessButton)
@@ -550,7 +574,7 @@ struct DataDirsView: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
 
-                Text(String(format: "排序：%@".localized, selectedAppDataSortMode.rawValue.localized))
+                Text(String(format: "排序：%@".localized, selectedAppDataSortMode.localizedTitle))
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
 
@@ -601,7 +625,7 @@ struct DataDirsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
                 ForEach(DataDirPriority.allCases, id: \.self) { priority in
-                    Toggle(priority.rawValue.localized, isOn: priorityFilterBinding(priority))
+                    Toggle(priority.localizedTitle, isOn: priorityFilterBinding(priority))
                         .toggleStyle(.checkbox)
                 }
             }
@@ -611,7 +635,7 @@ struct DataDirsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
                 ForEach(appDataStatusOrder, id: \.self) { status in
-                    Toggle(status.localized, isOn: statusFilterBinding(status))
+                    Toggle(DataDirStatus.localized(status), isOn: statusFilterBinding(status))
                         .toggleStyle(.checkbox)
                 }
             }
@@ -621,7 +645,7 @@ struct DataDirsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
                 ForEach(appDataFilterTypes, id: \.self) { type in
-                    Toggle(type.rawValue.localized, isOn: typeFilterBinding(type))
+                    Toggle(type.localizedTitle, isOn: typeFilterBinding(type))
                         .toggleStyle(.checkbox)
                 }
             }
@@ -787,9 +811,9 @@ struct DataDirsView: View {
 
     private var activeAppDataFilterLabels: [String] {
         var labels: [String] = []
-        labels.append(contentsOf: DataDirPriority.allCases.filter(selectedPriorityFilters.contains).map { $0.rawValue.localized })
+        labels.append(contentsOf: DataDirPriority.allCases.filter(selectedPriorityFilters.contains).map(\.localizedTitle))
         labels.append(contentsOf: appDataStatusOrder.filter(selectedStatusFilters.contains).map { $0.localized })
-        labels.append(contentsOf: appDataFilterTypes.filter(selectedTypeFilters.contains).map { $0.rawValue.localized })
+        labels.append(contentsOf: appDataFilterTypes.filter(selectedTypeFilters.contains).map(\.localizedTitle))
         return labels
     }
 
@@ -870,21 +894,34 @@ struct DataDirsView: View {
         )
         if selectedTab == .toolDirs {
             scanDotFolders()
-        } else if let app = selectedApp {
-            scanLibraryDirs(for: app)
+        } else {
+            dotFolderScanToken = UUID()
+            if let app = selectedApp {
+                scanLibraryDirs(for: app)
+            }
         }
     }
 
     private func scanDotFolders() {
+        let scanToken = UUID()
+        dotFolderScanToken = scanToken
         isScanning = true
+        let selectedExternalRoot = externalDriveURL
         let scanID = AppLogger.shared.makeOperationID(prefix: "scan-dot-folders")
-        AppLogger.shared.logContext("开始扫描工具目录", details: [("scan_id", scanID)])
+        AppLogger.shared.logContext(
+            "开始扫描工具目录",
+            details: [
+                ("scan_id", scanID),
+                ("external_root", selectedExternalRoot?.path)
+            ]
+        )
         Task.detached(priority: .userInitiated) {
             let scanner = DataDirScanner()
-            let items = await scanner.scanKnownDotFolders()
+            let items = await scanner.scanKnownDotFolders(externalRootURL: selectedExternalRoot)
             let initialItems = items
 
             await MainActor.run {
+                guard self.dotFolderScanToken == scanToken else { return }
                 self.dotFolderItems = initialItems
                 self.isScanning = false
             }
@@ -926,6 +963,7 @@ struct DataDirsView: View {
             }
 
             await MainActor.run {
+                guard self.dotFolderScanToken == scanToken else { return }
                 for (i, sizeBytes) in sizedItems {
                     guard i < self.dotFolderItems.count else { continue }
                     let sizeStr = LocalizedByteCountFormatter.string(fromByteCount: sizeBytes)
@@ -1697,7 +1735,7 @@ struct DataDirProgressOverlay: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text(title.localized)
+            Text(title)
                 .font(.headline)
                 .multilineTextAlignment(.center)
 
@@ -1813,7 +1851,7 @@ struct DataDirGroupCard: View {
                         .foregroundColor(.accentColor)
                         .frame(width: 18)
 
-                    Text(group.type.rawValue.localized)
+                    Text(group.type.localizedTitle)
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.primary)
 

@@ -35,6 +35,29 @@ private struct BadgeConfig: Identifiable {
     let isTappable: Bool
 }
 
+private func localizedStatusBadgeText(_ text: String) -> String {
+    switch text {
+    case AppStatus.local, AppStatus.linked, AppStatus.unlinked, AppStatus.partialLinked, AppStatus.orphanedLink, AppStatus.external, AppStatus.pendingMoveOut:
+        return AppStatus.localized(text)
+    case "锁定迁移":
+        return "锁定迁移".localized
+    case "非锁定迁移":
+        return "非锁定迁移".localized
+    case "运行中":
+        return "运行中".localized
+    case "系统":
+        return "系统".localized
+    case "非原生":
+        return "非原生".localized
+    case "商店":
+        return "商店".localized
+    case "已重签名":
+        return "已重签名".localized
+    default:
+        return text
+    }
+}
+
 struct StatusBadge: View {
     /// 应用项目数据
     let app: AppItem
@@ -201,7 +224,7 @@ struct StatusBadge: View {
         HStack(spacing: 4) {
             Image(systemName: badge.icon)
                 .font(.system(size: 9, weight: .bold))
-            Text(badge.text.localized)
+            Text(localizedStatusBadgeText(badge.text))
                 .font(.system(size: 10, weight: .medium, design: .rounded))
         }
         .padding(.horizontal, 8)
@@ -230,8 +253,8 @@ struct StatusBadge: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            (app.isResigned ? "已重签名, ".localized : "") +
-            badges.map { $0.text.localized }.joined(separator: ", ")
+            (app.isResigned ? "已重签名".localized + ", " : "") +
+            badges.map { localizedStatusBadgeText($0.text) }.joined(separator: ", ")
         )
         .accessibilityAddTraits(.isStaticText)
     }
@@ -247,7 +270,7 @@ private struct TappableBadge: View {
         HStack(spacing: 4) {
             Image(systemName: badge.icon)
                 .font(.system(size: 9, weight: .bold))
-            Text(badge.text.localized)
+            Text(localizedStatusBadgeText(badge.text))
                 .font(.system(size: 10, weight: .medium, design: .rounded))
         }
         .padding(.horizontal, 8)

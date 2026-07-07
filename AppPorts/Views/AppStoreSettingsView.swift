@@ -127,7 +127,7 @@ struct AppStoreSettingsView: View {
 
                         Spacer()
 
-                        Toggle("", isOn: $allowAppStoreMigration)
+                        Toggle("允许迁移 Mac App Store 应用".localized, isOn: $allowAppStoreMigration)
                             .toggleStyle(.switch)
                             .labelsHidden()
                     }
@@ -162,7 +162,7 @@ struct AppStoreSettingsView: View {
 
                         Spacer()
 
-                        Toggle("", isOn: $allowIOSAppMigration)
+                        Toggle("允许迁移非原生应用".localized, isOn: $allowIOSAppMigration)
                             .toggleStyle(.switch)
                             .labelsHidden()
                     }
@@ -190,7 +190,7 @@ struct AppStoreSettingsView: View {
                     
                     Spacer()
                     
-                    Toggle("", isOn: $isLoggingEnabled)
+                    Toggle("启用日志记录".localized, isOn: $isLoggingEnabled)
                         .toggleStyle(.switch)
                         .labelsHidden()
                         .help("启用/禁用日志记录".localized)
@@ -203,7 +203,7 @@ struct AppStoreSettingsView: View {
                     HStack {
                         Text("最大日志大小".localized + ":")
                         Spacer()
-                        Picker("", selection: $maxLogSize) {
+                        Picker("最大日志大小".localized, selection: $maxLogSize) {
                             Text("1 MB").tag(1 * 1024 * 1024)
                             Text("5 MB").tag(5 * 1024 * 1024)
                             Text("10 MB").tag(10 * 1024 * 1024)
@@ -252,7 +252,7 @@ struct AppStoreSettingsView: View {
 
                     Spacer()
 
-                    Toggle("", isOn: $autoResignAtLogin)
+                    Toggle("开机自动重签名".localized, isOn: $autoResignAtLogin)
                         .toggleStyle(.switch)
                         .labelsHidden()
                         .onChange(of: autoResignAtLogin) { enabled in

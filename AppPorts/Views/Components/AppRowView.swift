@@ -92,7 +92,7 @@ struct AppRowView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             Text(app.displayName) + Text(", ") +
-            Text(app.status.localized) +
+            Text(AppStatus.localized(app.status)) +
             (app.size.map { Text(", \($0)") } ?? Text(""))
         )
         .contextMenu {
