@@ -140,7 +140,7 @@ If you find translation errors or have suggestions for new features, please let 
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=wzh4869/AppPorts&type=date&legend=top-left)](https://www.star-history.com/?repos=wzh4869%2FAppPorts&type=date&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=wzh4869/AppPorts&type=date&legend=top-left)](https://star-history.dera.page/#wzh4869/AppPorts&type=date&legend=top-left)
 
 ## 📄 License
 
