@@ -63,6 +63,7 @@ struct DataDirsView: View {
     // MARK: - 内部状态
     @State private var dotFolderItems: [DataDirItem] = []
     @State private var libraryItems:   [DataDirItem] = []
+    @State private var directoryRevealRequest: DataDirTree.RevealRequest?
     @State private var dotFolderReadIssues: [DataDirReadIssue] = []
     @State private var libraryReadIssues: [DataDirReadIssue] = []
     @State private var libraryIdentityIssue: AppIdentityIssue?
@@ -215,6 +216,7 @@ struct DataDirsView: View {
             reloadCurrentTab()
         }
         .onChange(of: selectedTab) { _ in
+            directoryRevealRequest = nil
             reloadCurrentTab()
         }
         .onChange(of: refreshTrigger) { _ in
@@ -380,6 +382,7 @@ struct DataDirsView: View {
             }
             .frame(minWidth: 200, maxWidth: 280)
             .onChange(of: selectedApp) { newApp in
+                directoryRevealRequest = nil
                 if let app = newApp { scanLibraryDirs(for: app) }
                 else {
                     libraryScanToken = UUID()
@@ -428,7 +431,8 @@ struct DataDirsView: View {
                                     items: filteredLibraryItems,
                                     allItems: libraryItems,
                                     readIssues: libraryReadIssues,
-                                    hasIdentityIssue: libraryIdentityIssue != nil
+                                    hasIdentityIssue: libraryIdentityIssue != nil,
+                                    onReveal: { directoryRevealRequest = $0 }
                                 )
                                 appDataVisibilityToggles
                             }
@@ -475,6 +479,7 @@ struct DataDirsView: View {
                             matchingItemIDs: Set(filteredLibraryItems.map(\.id)),
                             isFiltering: hasActiveAppDataFilters || !directorySearchText.isEmpty,
                             showLockedStructure: showLockedDirectoryStructure,
+                            revealRequest: directoryRevealRequest,
                             actions: directoryOperationButtons
                         )
                     }
@@ -834,7 +839,8 @@ struct DataDirsView: View {
     }
 
     private func statsSummary(
-        items: [DataDirItem], allItems: [DataDirItem], readIssues: [DataDirReadIssue], hasIdentityIssue: Bool = false
+        items: [DataDirItem], allItems: [DataDirItem], readIssues: [DataDirReadIssue], hasIdentityIssue: Bool = false,
+        onReveal: ((DataDirTree.RevealRequest) -> Void)? = nil
     ) -> some View {
         let summary = DataDirSpaceSummary(
             items: items, allItems: allItems, hasReadIssues: !readIssues.isEmpty, hasIdentityIssue: hasIdentityIssue
@@ -862,20 +868,23 @@ struct DataDirsView: View {
                     .help("原件仍保留，清理后才会释放空间。".localized)
             }
             if linked > 0 {
-                Label(String(format: "%lld 个已链接".localized, Int64(linked)), systemImage: "link.circle.fill")
-                    .foregroundColor(.green)
+                summaryNavigationLabel(String(format: "%lld 个已链接".localized, Int64(linked)),
+                    systemImage: "link.circle.fill", color: .green,
+                    itemIDs: Set(items.filter { $0.status == DataDirStatus.linked }.map(\.id)), onReveal: onReveal)
             }
             if mounted > 0 {
-                Label(String(format: "%lld 个挂载迁移".localized, Int64(mounted)), systemImage: "externaldrive.fill.badge.checkmark")
-                    .foregroundColor(.purple)
+                summaryNavigationLabel(String(format: "%lld 个挂载迁移".localized, Int64(mounted)),
+                    systemImage: "externaldrive.fill.badge.checkmark", color: .purple,
+                    itemIDs: Set(items.filter { DataDirStatus.mountStatuses.contains($0.status) }.map(\.id)), onReveal: onReveal)
             }
             if needsNormalization > 0 {
                 Label(String(format: "%lld 个待整理".localized, Int64(needsNormalization)), systemImage: "arrow.triangle.2.circlepath")
                     .foregroundColor(.mint)
             }
             if existingSymlinks > 0 {
-                Label(String(format: "%lld 个现有软链".localized, Int64(existingSymlinks)), systemImage: "questionmark.circle")
-                    .foregroundColor(.teal)
+                summaryNavigationLabel(String(format: "%lld 个现有软链".localized, Int64(existingSymlinks)),
+                    systemImage: "questionmark.circle", color: .teal,
+                    itemIDs: Set(items.filter { $0.status == DataDirStatus.existingSymlink && !$0.isUserDirectoryLink }.map(\.id)), onReveal: onReveal)
             }
             if relinkable > 0 {
                 Label(String(format: "%lld 个待接回".localized, Int64(relinkable)), systemImage: "arrow.triangle.branch")
@@ -884,6 +893,20 @@ struct DataDirsView: View {
             Spacer()
         }
         .font(.system(size: 12))
+    }
+
+    @ViewBuilder
+    private func summaryNavigationLabel(_ title: String, systemImage: String, color: Color,
+                                        itemIDs: Set<String>, onReveal: ((DataDirTree.RevealRequest) -> Void)?) -> some View {
+        if let onReveal {
+            Button { onReveal(.init(itemIDs: itemIDs)) } label: {
+                Label(title, systemImage: systemImage).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(color)
+        } else {
+            Label(title, systemImage: systemImage).foregroundColor(color)
+        }
     }
 
     private func directoryOperationButtons(for item: DataDirItem) -> DataDirOperationButtons {

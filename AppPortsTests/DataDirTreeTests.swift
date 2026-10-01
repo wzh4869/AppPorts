@@ -170,11 +170,90 @@ final class DataDirTreeTests: XCTestCase {
         XCTAssertEqual(DataDirTree.rows(in: tree).map(\.id), items.map(\.id))
     }
 
-    private func item(_ path: String) -> DataDirItem {
+    func testRevealSelectsFirstMatchInDisplayedTreeOrder() throws {
+        let root = item("/Data/z-first")
+        let first = item("/Data/z-first/target")
+        let second = item("/Data/a-second")
+        let tree = DataDirTree.build(from: [root, first, second])
+
+        let plan = try XCTUnwrap(DataDirTree.revealPlan(in: tree, matchingIDs: [second.id, first.id]))
+
+        XCTAssertEqual(plan.selectedID, first.id)
+    }
+
+    func testRevealExpandsEveryTargetBranchAndOnlyItsGroups() throws {
+        let root = item("/Containers/app")
+        let parent = item("/Containers/app/Data")
+        let first = item("/Containers/app/Data/files")
+        let second = item("/Containers/app/Documents")
+        let support = item("/Support/app", type: .applicationSupport)
+        let third = item("/Support/app/files", type: .applicationSupport)
+        let unrelated = item("/Caches/app", type: .caches)
+        let tree = DataDirTree.build(from: [root, parent, first, second])
+            + DataDirTree.build(from: [support, third]) + [unrelated]
+
+        let plan = try XCTUnwrap(DataDirTree.revealPlan(in: tree, matchingIDs: [first.id, second.id, third.id]))
+
+        XCTAssertEqual(plan.expandedDirectoryIDs, [root.id, parent.id, first.id, second.id, support.id, third.id])
+        XCTAssertEqual(plan.expandedGroups, [.containers, .applicationSupport])
+        let collapsed = Set(DataDirTree.rows(in: tree).map(\.id)).subtracting(plan.expandedDirectoryIDs)
+        let revealedIDs = Set(DataDirTree.rows(in: tree, collapsedIDs: collapsed).map(\.id))
+        XCTAssertTrue(revealedIDs.isSuperset(of: [first.id, second.id, third.id]))
+    }
+
+    func testRevealDoesNotExpandSimilarPrefixesOrUnrelatedBranches() throws {
+        let root = item("/Data/files")
+        let target = item("/Data/files/account")
+        let prefixSibling = item("/Data/file")
+        let unrelated = item("/Data/other")
+        let tree = DataDirTree.build(from: [root, target, prefixSibling, unrelated])
+
+        let plan = try XCTUnwrap(DataDirTree.revealPlan(in: tree, matchingIDs: [target.id]))
+
+        XCTAssertEqual(plan.expandedDirectoryIDs, [root.id, target.id])
+    }
+
+    func testRevealIgnoresStaleIDsAndReturnsNoPlanWithoutCurrentMatches() throws {
+        let current = item("/Data/current")
+        let stale = "/Data/removed"
+
+        let plan = try XCTUnwrap(DataDirTree.revealPlan(in: [current], matchingIDs: [current.id, stale]))
+
+        XCTAssertEqual(plan.selectedID, current.id)
+        XCTAssertEqual(plan.expandedDirectoryIDs, [current.id])
+        XCTAssertNil(DataDirTree.revealPlan(in: [current], matchingIDs: [stale]))
+        XCTAssertNil(DataDirTree.revealPlan(in: [current], matchingIDs: []))
+    }
+
+    func testRevealFindsPromotedTargetsWithoutRestoringHiddenAncestors() throws {
+        let root = item("/Data/app")
+        var hidden = item("/Data/app/structure")
+        hidden.isMigratable = false
+        let target = item("/Data/app/structure/files")
+        let tree = DataDirTree.visibleTree(from: [root, hidden, target], showZeroByteDirectories: true,
+                                          showLockedStructure: false, matchingIDs: [target.id])
+
+        let plan = try XCTUnwrap(DataDirTree.revealPlan(in: tree, matchingIDs: [target.id]))
+
+        XCTAssertEqual(plan.selectedID, target.id)
+        XCTAssertEqual(plan.expandedDirectoryIDs, [root.id, target.id])
+        XCTAssertEqual(DataDirTree.rows(in: tree).last?.parentID, root.id)
+    }
+
+    func testRepeatedRevealRequestsWithSameTargetsHaveDistinctTokens() {
+        let first = DataDirTree.RevealRequest(itemIDs: ["/Data/files"])
+        let repeated = DataDirTree.RevealRequest(itemIDs: first.itemIDs)
+
+        XCTAssertEqual(first.itemIDs, repeated.itemIDs)
+        XCTAssertNotEqual(first.id, repeated.id)
+        XCTAssertNotEqual(first, repeated)
+    }
+
+    private func item(_ path: String, type: DataDirType = .containers) -> DataDirItem {
         DataDirItem(
             name: URL(fileURLWithPath: path).lastPathComponent,
             path: URL(fileURLWithPath: path),
-            type: .containers,
+            type: type,
             priority: .critical,
             description: ""
         )

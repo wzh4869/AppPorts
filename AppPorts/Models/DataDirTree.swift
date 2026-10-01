@@ -2,6 +2,28 @@ import Foundation
 
 /// Presentation-only hierarchy. Input order is preserved within each sibling list.
 enum DataDirTree {
+    struct RevealRequest: Equatable {
+        let id = UUID()
+        let itemIDs: Set<String>
+    }
+
+    struct RevealPlan {
+        let selectedID: String
+        let expandedDirectoryIDs: Set<String>
+        let expandedGroups: Set<DataDirType>
+    }
+
+    static func revealPlan(in items: [DataDirItem], matchingIDs: Set<String>) -> RevealPlan? {
+        let allRows = rows(in: items)
+        let targets = allRows.filter { matchingIDs.contains($0.id) }
+        guard let first = targets.first else { return nil }
+        let ancestors = allRows.filter { row in
+            targets.contains { $0.id == row.id || $0.id.hasPrefix(row.id + "/") }
+        }
+        return RevealPlan(selectedID: first.id, expandedDirectoryIDs: Set(ancestors.map(\.id)),
+                          expandedGroups: Set(targets.map { $0.item.type }))
+    }
+
     struct Row: Identifiable {
         let item: DataDirItem
         let level: Int

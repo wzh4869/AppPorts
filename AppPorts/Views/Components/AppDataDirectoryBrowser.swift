@@ -7,6 +7,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
     let matchingItemIDs: Set<String>
     let isFiltering: Bool
     var showLockedStructure: Bool = false
+    var revealRequest: DataDirTree.RevealRequest? = nil
     let actions: (DataDirItem) -> Actions
 
     @State private var selectedItemID: String?
@@ -164,6 +165,20 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
                         proxy.scrollTo(selectedItemID)
                     }
                 })
+                .task(id: revealRequest?.id) {
+                    guard let request = revealRequest,
+                          let plan = DataDirTree.revealPlan(in: groups.flatMap(\.items), matchingIDs: request.itemIDs) else { return }
+                    collapsedGroups.subtract(plan.expandedGroups)
+                    collapsedDirectoryIDs.subtract(plan.expandedDirectoryIDs)
+                    selectedItemID = plan.selectedID
+                    isOutlineFocused = true
+                    // Allow the expanded rows to enter the List before requesting their position.
+                    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                        DispatchQueue.main.async { continuation.resume() }
+                    }
+                    guard !Task.isCancelled else { return }
+                    proxy.scrollTo(plan.selectedID, anchor: .center)
+                }
                 .onCopyCommand {
                     selectedItem.map { [NSItemProvider(object: $0.path.path as NSString)] } ?? []
                 }

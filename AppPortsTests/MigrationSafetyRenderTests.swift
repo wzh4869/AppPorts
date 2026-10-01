@@ -8,7 +8,7 @@ import XCTest
 /// No DataDirsView, scanner, migration service, or persistent setting is instantiated.
 final class MigrationSafetyRenderTests: XCTestCase {
     @MainActor
-    func testRenderMigrationSafetyComponents() throws {
+    func testRenderMigrationSafetyComponents() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to export the synthetic render matrix")
         }
@@ -33,30 +33,62 @@ final class MigrationSafetyRenderTests: XCTestCase {
                     }
                     .padding(.top, 12)
                     .background(Color(nsColor: .windowBackgroundColor))
-                    try render(view, size: NSSize(width: width, height: 940),
+                    try await render(view, size: NSSize(width: width, height: 940),
                                to: output.appendingPathComponent("browser-\(Int(width))-zeros-\(zeros)-locked-\(locked).png"))
                 }
             }
         }
 
         let retained = fixtureTransfer(phase: .awaitingUserVerification)
-        try render(DataTransferReviewView(transfer: retained, onCleanup: {}), size: NSSize(width: 580, height: 570),
+        try await render(DataTransferReviewView(transfer: retained, onCleanup: {}), size: NSSize(width: 580, height: 570),
                    to: output.appendingPathComponent("retained-copy.png"))
         let incomplete = fixtureTransfer(phase: .needsRecovery)
-        try render(DataTransferReviewView(transfer: incomplete, onCleanup: {}), size: NSSize(width: 580, height: 720),
+        try await render(DataTransferReviewView(transfer: incomplete, onCleanup: {}), size: NSSize(width: 580, height: 720),
                    to: output.appendingPathComponent("incomplete-copy.png"))
         let mountRestore = fixtureTransfer(phase: .awaitingUserVerification, mode: .mount, direction: .restore)
-        try render(DataTransferReviewView(transfer: mountRestore, onCleanup: {}), size: NSSize(width: 580, height: 570),
+        try await render(DataTransferReviewView(transfer: mountRestore, onCleanup: {}), size: NSSize(width: 580, height: 570),
                    to: output.appendingPathComponent("retained-restore-volume.png"))
         var longRecovery = incomplete
         longRecovery.recoverableReason = Array(repeating: "Synthetic recovery detail: verify both copies before making changes.", count: 40).joined(separator: "\n")
-        try render(DataTransferReviewView(transfer: longRecovery, onCleanup: {}), size: NSSize(width: 580, height: 720),
+        try await render(DataTransferReviewView(transfer: longRecovery, onCleanup: {}), size: NSSize(width: 580, height: 720),
                    to: output.appendingPathComponent("long-recovery-scroll.png"), requiresScrolling: true)
 
         let normalized = try XCTUnwrap(items.first { $0.status == DataDirStatus.needsNormalization })
-        try render(HStack(spacing: 6) { actions(for: normalized) }.frame(width: 180, height: 80), size: NSSize(width: 180, height: 80),
+        try await render(HStack(spacing: 6) { actions(for: normalized) }.frame(width: 180, height: 80), size: NSSize(width: 180, height: 80),
                    to: output.appendingPathComponent("normalize-and-restore-actions.png"))
         print("Synthetic migration UI renders: \(output.path)")
+    }
+
+    @MainActor
+    func testNavigationRequestScrollsToDistantDirectory() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to verify synthetic navigation")
+        }
+        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        let items = (0..<80).map { index in
+            DataDirItem(name: "Directory \(index)", path: URL(fileURLWithPath: "/Synthetic/Directory-\(index)"),
+                        type: .containers, priority: .optional, description: "", status: DataDirStatus.linked)
+        }
+        let controller = NavigationRenderController()
+        let view = NavigationRenderHarness(controller: controller, items: items)
+        try await render(view, size: NSSize(width: 580, height: 740),
+                   to: URL(fileURLWithPath: path).appendingPathComponent("summary-navigation.png"),
+                   afterLayout: { controller.request = .init(itemIDs: [items[70].id]) }, requiresNavigation: true)
+    }
+
+    @MainActor
+    private final class NavigationRenderController: ObservableObject {
+        @Published var request: DataDirTree.RevealRequest?
+    }
+
+    private struct NavigationRenderHarness: View {
+        @ObservedObject var controller: NavigationRenderController
+        let items: [DataDirItem]
+        var body: some View {
+            AppDataDirectoryBrowser(groups: [DataDirGroup(type: .containers, items: items)],
+                matchingItemIDs: Set(items.map(\.id)), isFiltering: false,
+                revealRequest: controller.request) { _ in EmptyView() }
+        }
     }
 
     @MainActor
@@ -68,18 +100,47 @@ final class MigrationSafetyRenderTests: XCTestCase {
     }
 
     @MainActor
-    private func render<V: View>(_ view: V, size: NSSize, to url: URL, requiresScrolling: Bool = false) throws {
+    private func render<V: View>(_ view: V, size: NSSize, to url: URL, requiresScrolling: Bool = false,
+                                 afterLayout: (() -> Void)? = nil, requiresNavigation: Bool = false) async throws {
         let host = NSHostingView(rootView: view.environment(\.colorScheme, .light).background(Color.white))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless],
                               backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.contentView = host
+        if requiresNavigation {
+            window.setFrameOrigin(NSPoint(x: -10_000, y: 0))
+            window.orderFront(nil)
+        }
         host.frame = NSRect(origin: .zero, size: size)
         host.layoutSubtreeIfNeeded()
         // Lists settle their lazy AppKit layout on the next run-loop turn.
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.15))
+        try await Task.sleep(nanoseconds: 150_000_000)
         host.layoutSubtreeIfNeeded()
         host.displayIfNeeded()
+        if let afterLayout {
+            afterLayout()
+            try await Task.sleep(nanoseconds: 300_000_000)
+            host.layoutSubtreeIfNeeded()
+        }
+        if requiresNavigation {
+            func scrollViews(_ view: NSView) -> [NSScrollView] {
+                (view as? NSScrollView).map { [$0] } ?? view.subviews.flatMap(scrollViews)
+            }
+            let table = try XCTUnwrap(scrollViews(host).compactMap { $0.documentView as? NSTableView }.first)
+            for attempt in 0..<2 {
+                if attempt == 1 {
+                    let scroll = try XCTUnwrap(table.enclosingScrollView)
+                    scroll.contentView.scroll(to: .zero)
+                    scroll.reflectScrolledClipView(scroll.contentView)
+                    afterLayout?() // Same target IDs, new click token.
+                    try await Task.sleep(nanoseconds: 300_000_000)
+                    host.layoutSubtreeIfNeeded()
+                }
+                XCTAssertEqual(table.selectedRow, 71, "One section header precedes synthetic Directory-70")
+                XCTAssertTrue(NSLocationInRange(table.selectedRow, table.rows(in: table.visibleRect)),
+                              "The selected target must actually be visible, including after a repeated click")
+            }
+        }
         defer { window.close() }
         if requiresScrolling {
             func scrollViews(in view: NSView) -> [NSScrollView] {
