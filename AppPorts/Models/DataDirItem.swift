@@ -147,6 +147,8 @@ enum DataDirStatus {
             return "待规范".localized
         case existingSymlink:
             return "现有软链".localized
+        case "用户目录入口":
+            return "用户目录入口".localized
         case pendingRelink:
             return "待接回".localized
         case missing:
@@ -235,9 +237,9 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     }
 
     mutating func applySize(_ result: DirectorySizeResult) {
-        sizeBytes = result.bytes
-        sizeIsIncomplete = !result.isComplete
-        size = result.formattedSize
+        sizeBytes = isUserDirectoryLink ? 0 : result.bytes
+        sizeIsIncomplete = !isUserDirectoryLink && !result.isComplete
+        size = isUserDirectoryLink ? "—" : result.formattedSize
     }
 
     // MARK: - 权限控制
@@ -259,8 +261,40 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
             || status == DataDirStatus.linked || status == DataDirStatus.needsNormalization
     }
 
+    /// Standard container shortcuts are user-folder entry points, not app-owned data.
+    var isUserDirectoryLink: Bool {
+        guard type == .containers, status == DataDirStatus.existingSymlink,
+              !hasManagedLinkRecord, recoveryOperationID == nil,
+              let target = linkedDestination else { return false }
+        let source = path.standardizedFileURL
+        guard ["Desktop", "Downloads", "Movies", "Music", "Pictures"].contains(source.lastPathComponent) else { return false }
+        let data = source.deletingLastPathComponent()
+        let containers = data.deletingLastPathComponent().deletingLastPathComponent()
+        guard data.lastPathComponent == "Data", containers.lastPathComponent == "Containers",
+              containers.deletingLastPathComponent().lastPathComponent == "Library" else { return false }
+        let home = containers.deletingLastPathComponent().deletingLastPathComponent()
+        return target.standardizedFileURL.path == home.appendingPathComponent(source.lastPathComponent).path
+    }
+
+    var sizeMeasurementURL: URL? { isUserDirectoryLink ? nil : linkedDestination ?? path }
+
+    var displayedStatus: String { isUserDirectoryLink ? "用户目录入口" : status }
+
+    var sizeScopeLabel: String {
+        if isUserDirectoryLink { return "不计入应用数据".localized }
+        return (linkedDestination == nil ? "本卷大小" : "目标大小").localized
+    }
+
+    var sizeScopeExplanation: String {
+        if isUserDirectoryLink {
+            return "此链接指向用户个人目录，不是此应用独占的数据；不统计其目标大小，也不提供迁移或还原。".localized
+        }
+        return "各行独立统计目录中的文件大小，不包含子目录挂载卷和软链目标。父目录不等于所有子行相加；文件大小也不等于实际磁盘占用。".localized
+    }
+
     var needsRecoveryOrAttention: Bool {
-        status != DataDirStatus.local || sizeIsIncomplete || hasManagedLinkRecord || recoveryOperationID != nil
+        (status != DataDirStatus.local && !isUserDirectoryLink) || sizeIsIncomplete || hasManagedLinkRecord || recoveryOperationID != nil
+            || pathPolicy?.reason == .runtimeConflict || pathPolicy?.reason == .readFailure
     }
 
     func matchesVisibility(showZeroByteDirectories: Bool, showLockedStructure: Bool) -> Bool {

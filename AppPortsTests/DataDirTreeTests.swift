@@ -82,7 +82,7 @@ final class DataDirTreeTests: XCTestCase {
         XCTAssertNil(rows[2].contextPath)
     }
 
-    func testVisibilityCombinationsKeepContextAndManagedOrUnreadableItems() {
+    func testVisibilityCombinationsRemoveLockedRowsAndKeepManagedOrUnreadableItems() {
         var root = item("/Data")
         root.isMigratable = false
         root.applySize(DirectorySizeResult(bytes: 0))
@@ -104,17 +104,70 @@ final class DataDirTreeTests: XCTestCase {
         for zeros in [false, true] {
             for locks in [false, true] {
                 let matches = Set(items.filter { $0.matchesVisibility(showZeroByteDirectories: zeros, showLockedStructure: locks) }.map(\.id))
-                let tree = DataDirTree.retainingMatches(in: DataDirTree.build(from: items), matchingIDs: matches)
+                let tree = DataDirTree.visibleTree(from: items, showZeroByteDirectories: zeros,
+                                                   showLockedStructure: locks, matchingIDs: matches)
                 let visible = Set(DataDirTree.rows(in: tree).map(\.id))
-                XCTAssertTrue(visible.isSuperset(of: [root.id, business.id, managed.id, unreadable.id]))
+                XCTAssertTrue(visible.isSuperset(of: [business.id, managed.id, unreadable.id]))
+                XCTAssertEqual(visible.contains(root.id), locks)
                 XCTAssertEqual(visible.contains(empty.id), zeros)
                 XCTAssertEqual(visible.contains(locked.id), locks)
-                // Explicit search/status/type predicates still narrow matching IDs before retention.
+                // Search preserves only ancestors that survived visibility filtering.
                 let explicitMatches = matches.intersection([business.id])
-                let explicitTree = DataDirTree.retainingMatches(in: DataDirTree.build(from: items), matchingIDs: explicitMatches)
-                XCTAssertEqual(DataDirTree.rows(in: explicitTree).map(\.id), [root.id, business.id])
+                let explicitTree = DataDirTree.visibleTree(from: items, showZeroByteDirectories: zeros,
+                                                           showLockedStructure: locks, matchingIDs: explicitMatches)
+                XCTAssertEqual(DataDirTree.rows(in: explicitTree).map(\.id), locks ? [root.id, business.id] : [business.id])
             }
         }
+    }
+
+    func testHiddenNestedAncestorsPromoteDescendantsAndPreserveFullContext() {
+        var root = item("/Containers/wechat")
+        root.isMigratable = false
+        var data = item("/Containers/wechat/Data")
+        data.isMigratable = false
+        var documents = item("/Containers/wechat/Data/Documents")
+        documents.isMigratable = false
+        let account = item("/Containers/wechat/Data/Documents/xwechat_files/account")
+        let items = [root, data, documents, account]
+        let tree = DataDirTree.visibleTree(from: items, showZeroByteDirectories: true,
+                                          showLockedStructure: false, matchingIDs: Set(items.map(\.id)))
+        let rows = DataDirTree.rows(in: tree, collapsedIDs: [root.id, data.id, documents.id])
+        XCTAssertEqual(rows.map(\.id), [account.id])
+        XCTAssertEqual(rows.first?.level, 0)
+        XCTAssertNil(rows.first?.parentID)
+        XCTAssertEqual(rows.first?.contextPath, "/Containers/wechat/Data/Documents/xwechat_files")
+    }
+
+    func testHiddenIntermediateNodePromotesToNearestVisibleAncestorDuringSearch() {
+        let root = item("/Data/business")
+        var locked = item("/Data/business/structural")
+        locked.isMigratable = false
+        let child = item("/Data/business/structural/account")
+        let other = item("/Data/unrelated")
+        let rows = DataDirTree.rows(in: DataDirTree.visibleTree(
+            from: [root, locked, child, other], showZeroByteDirectories: true,
+            showLockedStructure: false, matchingIDs: [child.id]))
+        XCTAssertEqual(rows.map(\.id), [root.id, child.id])
+        XCTAssertEqual(rows.map(\.level), [0, 1])
+        XCTAssertEqual(rows.last?.contextPath, "structural")
+    }
+
+    func testLockedManagedRecoveryAndConflictRowsRemainAvailableWithStructureHidden() {
+        var managed = item("/Data/managed")
+        managed.hasManagedLinkRecord = true
+        var recovery = item("/Data/recovery")
+        recovery.recoveryOperationID = UUID()
+        var conflict = item("/Data/conflict")
+        conflict.status = DataDirStatus.needsNormalization
+        let items = [managed, recovery, conflict].map { item in
+            var locked = item
+            locked.isMigratable = false
+            locked.applySize(DirectorySizeResult(bytes: 0))
+            return locked
+        }
+        let tree = DataDirTree.visibleTree(from: items, showZeroByteDirectories: false,
+                                          showLockedStructure: false, matchingIDs: Set(items.map(\.id)))
+        XCTAssertEqual(DataDirTree.rows(in: tree).map(\.id), items.map(\.id))
     }
 
     private func item(_ path: String) -> DataDirItem {

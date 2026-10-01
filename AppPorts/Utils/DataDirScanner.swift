@@ -664,6 +664,12 @@ actor DataDirScanner {
                                               canMigrate: false, mayDiscoverChildren: false))
                 updated.nonMigratableReason = reason
             }
+            if updated.isUserDirectoryLink,
+               updated.pathPolicy?.reason != .runtimeConflict, updated.pathPolicy?.reason != .readFailure {
+                updated.isMigratable = false
+                updated.nonMigratableReason = updated.sizeScopeExplanation
+                updated.applySize(DirectorySizeResult())
+            }
             updated.requiresMountMigration = true
             updated.migrationWarning = nil
             resultsByPath[key] = updated
@@ -701,7 +707,7 @@ actor DataDirScanner {
     /// - Parameter item: 要计算大小的目录项
     /// - Returns: 大小（字节）
     func calculateSize(for item: DataDirItem) -> Int64 {
-        var scanURL = item.linkedDestination ?? item.path
+        guard var scanURL = item.sizeMeasurementURL else { return 0 }
         let resourceKeys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]
 
         if item.linkedDestination == nil,
@@ -910,7 +916,7 @@ actor DataDirScanner {
             item.applyPathPolicy(decision)
             // Ordinary sandbox convenience links point at user folders and are not app data.
             // Protected/managed links are still shown for diagnosis and recovery.
-            if inspection.status == DataDirStatus.existingSymlink, decision.canMigrate,
+            if inspection.status == DataDirStatus.existingSymlink, decision.canMigrate, !item.isUserDirectoryLink,
                let target = inspection.linkedDestination,
                !shouldSurfaceNestedContainerLink(from: url, to: target, externalRootURL: externalRootURL) {
                 return

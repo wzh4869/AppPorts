@@ -56,6 +56,18 @@ enum DataDirTree {
         return roots.map(populate)
     }
 
+    /// Visibility removes rows, while search may keep context only among those visible rows.
+    /// Rebuilding after visibility filtering promotes descendants across hidden ancestors;
+    /// Row.contextPath supplies the intermediate path that indentation no longer represents.
+    static func visibleTree(from items: [DataDirItem], showZeroByteDirectories: Bool,
+                            showLockedStructure: Bool, matchingIDs: Set<String>) -> [DataDirItem] {
+        let visibleItems = items.filter {
+            $0.matchesVisibility(showZeroByteDirectories: showZeroByteDirectories,
+                                 showLockedStructure: showLockedStructure)
+        }
+        return retainingMatches(in: build(from: visibleItems), matchingIDs: matchingIDs)
+    }
+
     /// Keep ancestors of matches so a search never hides the directory's context.
     static func retainingMatches(in items: [DataDirItem], matchingIDs: Set<String>) -> [DataDirItem] {
         items.compactMap { item in

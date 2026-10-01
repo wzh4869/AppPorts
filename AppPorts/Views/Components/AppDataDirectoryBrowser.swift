@@ -313,8 +313,12 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
             VStack(alignment: .leading, spacing: 6) {
                 pathLine(item.path, label: "本地路径".localized)
                 if let destination = item.linkedDestination, destination != item.path {
-                    pathLine(destination, label: "外部路径".localized)
+                    pathLine(destination, label: "链接目标".localized)
                 }
+                Text(item.sizeScopeExplanation)
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(item.description)
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
@@ -498,11 +502,15 @@ private struct AppDataDirectoryRow<Actions: View>: View {
             .help(row.item.path.path)
 
             VStack(alignment: .trailing, spacing: 3) {
+                Text(row.item.sizeScopeLabel)
+                    .font(.system(size: 10))
+                    .foregroundColor(isEmphasized ? .white.opacity(0.85) : .secondary)
+                    .help(row.item.sizeScopeExplanation)
                 Text(row.item.size ?? "计算中...".localized)
                     .font(.system(size: 13, weight: .medium))
                     .monospacedDigit()
                     .foregroundColor(isEmphasized ? .white : (row.item.size == nil ? .secondary : .primary))
-                DataDirStatusBadge(status: row.item.status, isEmphasized: isEmphasized)
+                DataDirStatusBadge(status: row.item.displayedStatus, isEmphasized: isEmphasized)
             }
             .frame(width: DirectoryRowColumns.metadataWidth, alignment: .trailing)
 

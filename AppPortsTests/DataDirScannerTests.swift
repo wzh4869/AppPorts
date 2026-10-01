@@ -1165,6 +1165,38 @@ final class DataDirScannerTests: XCTestCase {
             if item.path.path.contains("SystemData") { XCTAssertFalse(item.isMigratable) }
         }
     }
+    func testPersonalFolderShortcutsAreLockedUnmeasuredAndHiddenWithStructure() async throws {
+        for bundleID in ["com.tencent.xinWeChat", "com.example.test"] {
+            let workspace = try makeWorkspace()
+            defer { cleanupWorkspace(workspace.rootURL) }
+            let appURL = try createAppBundle(named: "Example.app", bundleID: bundleID, in: workspace.appsURL)
+            let data = workspace.homeURL.appendingPathComponent("Library/Containers/\(bundleID)/Data")
+            try fileManager.createDirectory(at: data, withIntermediateDirectories: true)
+            for name in ["Desktop", "Pictures", "Downloads"] {
+                let target = workspace.homeURL.appendingPathComponent(name)
+                try createDirectoryWithPayload(at: target)
+                try fileManager.createSymbolicLink(at: data.appendingPathComponent(name), withDestinationURL: target)
+            }
+            let scanner = DataDirScanner(homeDir: workspace.homeURL,
+                mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist")))
+            let items = await scanner.scanLibraryDirs(for: AppItem(name: "Example.app", path: appURL, status: "本地"), externalRootURL: workspace.externalRootURL)
+            for name in ["Desktop", "Pictures", "Downloads"] {
+                let row = try XCTUnwrap(items.first { $0.path.standardizedFileURL.path == data.appendingPathComponent(name).standardizedFileURL.path })
+                XCTAssertTrue(row.isUserDirectoryLink)
+                XCTAssertFalse(row.isMigratable)
+                XCTAssertFalse(row.canRestore)
+                XCTAssertNil(row.sizeMeasurementURL)
+                XCTAssertEqual(row.size, "—")
+                XCTAssertEqual(row.sizeBytes, 0)
+                let measured = await scanner.calculateSize(for: row)
+                XCTAssertEqual(measured, 0)
+                XCTAssertFalse(row.matchesVisibility(showZeroByteDirectories: true, showLockedStructure: false))
+                XCTAssertTrue(row.matchesVisibility(showZeroByteDirectories: false, showLockedStructure: true))
+                XCTAssertEqual(try String(contentsOf: workspace.homeURL.appendingPathComponent(name + "/payload.txt")), "payload")
+            }
+        }
+    }
+
     func testEveryContainerStructuralDirectoryIsVisibleButCannotMigrate() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

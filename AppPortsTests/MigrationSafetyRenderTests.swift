@@ -22,7 +22,7 @@ final class MigrationSafetyRenderTests: XCTestCase {
                     let matches = Set(items.filter {
                         $0.matchesVisibility(showZeroByteDirectories: zeros, showLockedStructure: locked)
                     }.map(\.id))
-                    let tree = DataDirTree.retainingMatches(in: DataDirTree.build(from: items), matchingIDs: matches)
+                    let tree = DataDirTree.visibleTree(from: items, showZeroByteDirectories: zeros, showLockedStructure: locked, matchingIDs: matches)
                     let view = VStack(alignment: .leading, spacing: 8) {
                         AppDataVisibilityControls(showZeroByteDirectories: .constant(zeros), showLockedStructure: .constant(locked))
                             .padding(.horizontal, 12)
@@ -121,11 +121,15 @@ final class MigrationSafetyRenderTests: XCTestCase {
         var unreadable = item("Library/Caches/Unreadable Account", bytes: 131_072, locked: true)
         unreadable.sizeIsIncomplete = true
         unreadable.applyPathPolicy(.init(role: .businessData, reason: .readFailure, canMigrate: false, mayDiscoverChildren: false))
-        return [item("", locked: true), item("Documents", locked: true),
+        var desktop = item("Desktop", locked: true, status: DataDirStatus.existingSymlink)
+        desktop.linkedDestination = URL(fileURLWithPath: "/AppPortsSyntheticHome/Desktop")
+        desktop.applySize(DirectorySizeResult())
+        return [desktop, item("", bytes: 42_000_131_072, locked: true), item("Documents", bytes: 42_000_000_000, locked: true),
                 item("Documents/Account With A Long Descriptive Name", bytes: 42_000_000_000),
+                item("Documents/Mounted Account", bytes: 10_970_000_000, status: DataDirStatus.mounted),
                 item("Documents/Empty Account"), item("Documents/Offline Archive", status: DataDirStatus.volumeMissing),
-                item("Library", locked: true), item("Library/Application Support", locked: true), legacy,
-                item("Library/Caches", locked: true), unreadable, item("tmp", locked: true)]
+                item("Library", bytes: 131_072, locked: true), item("Library/Application Support", locked: true), legacy,
+                item("Library/Caches", bytes: 131_072, locked: true), unreadable, item("tmp", locked: true)]
     }
 
     private func fixtureTransfer(phase: DataTransferRecord.Phase, mode: DataTransferRecord.Mode = .symlink,

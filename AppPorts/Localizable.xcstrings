@@ -129181,6 +129181,965 @@
           }
         }
       }
+    },
+    "用户目录入口" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User folder shortcut"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用户目录入口"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用者目錄入口"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso a carpeta personal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès au dossier personnel"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atalho para pasta pessoal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collegamento a cartella personale"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verknüpfung zum Benutzerordner"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザーフォルダへのリンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용자 폴더 바로가기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ссылка на личную папку"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختصار لمجلد المستخدم"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपयोगकर्ता फ़ोल्डर का शॉर्टकट"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lối tắt đến thư mục người dùng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ทางลัดไปยังโฟลเดอร์ผู้ใช้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kullanıcı klasörü kısayolu"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snelkoppeling naar gebruikersmap"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skrót do folderu użytkownika"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pintasan folder pengguna"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ŝparvojo al uzanta dosierujo"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "甪戶目錄入口"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠎⠑⠗ ⠋⠕⠇⠙⠑⠗ ⠎⠓⠕⠗⠞⠉⠥⠞"
+          }
+        }
+      }
+    },
+    "不计入应用数据" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded from app data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不计入应用数据"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不計入應用程式資料"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluido de los datos de la app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclu des données de l’app"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluído dos dados do app"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escluso dai dati dell’app"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht in App-Daten enthalten"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリデータの集計対象外"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 데이터에서 제외"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не входит в данные приложения"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير محسوب ضمن بيانات التطبيق"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप डेटा में शामिल नहीं"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tính vào dữ liệu ứng dụng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่นับรวมในข้อมูลแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama verilerine dahil değil"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet meegeteld als appgegevens"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poza danymi aplikacji"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak termasuk data aplikasi"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne kalkulata kiel aplikaĵaj datumoj"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卟計入應甪數據"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠭⠉⠇⠥⠙⠑⠙ ⠋⠗⠕⠍ ⠁⠏⠏ ⠙⠁⠞⠁"
+          }
+        }
+      }
+    },
+    "本卷大小" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size on this volume"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本卷大小"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本卷大小"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño en este volumen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille sur ce volume"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho neste volume"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione su questo volume"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Größe auf diesem Volume"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このボリューム上のサイズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 볼륨의 크기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер на этом томе"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحجم على هذا القسم"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस वॉल्यूम पर आकार"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dung lượng trên ổ đĩa này"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขนาดบนโวลุ่มนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu birimdeki boyut"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grootte op dit volume"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozmiar na tym woluminie"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukuran di volume ini"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grando sur ĉi tiu volumo"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夲卷夶尛"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠊⠵⠑ ⠕⠝ ⠞⠓⠊⠎ ⠧⠕⠇⠥⠍⠑"
+          }
+        }
+      }
+    },
+    "目标大小" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target size"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标大小"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標大小"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño del destino"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille de la cible"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho do destino"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione destinazione"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zielgröße"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンク先のサイズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 크기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер объекта ссылки"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حجم الهدف"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लक्ष्य का आकार"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dung lượng đích"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขนาดปลายทาง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef boyutu"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doelgrootte"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozmiar celu"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukuran tujuan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grando de la celo"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標夶尛"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠁⠗⠛⠑⠞ ⠎⠊⠵⠑"
+          }
+        }
+      }
+    },
+    "此链接指向用户个人目录，不是此应用独占的数据；不统计其目标大小，也不提供迁移或还原。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This link points to a personal user folder, not data exclusive to this app. Its target size is not counted, and migration and restoration are unavailable."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此链接指向用户个人目录，不是此应用独占的数据；不统计其目标大小，也不提供迁移或还原。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此連結指向使用者個人目錄，不是此應用程式獨有的資料；不統計其目標大小，也不提供遷移或還原。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este enlace apunta a una carpeta personal del usuario, no a datos exclusivos de esta app. No se cuenta el tamaño del destino y no se permite migrar ni restaurar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce lien pointe vers un dossier personnel de l’utilisateur, et non vers des données propres à cette app. La taille de la cible n’est pas comptabilisée ; la migration et la restauration ne sont pas proposées."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este link aponta para uma pasta pessoal do usuário, não para dados exclusivos deste app. O tamanho do destino não é contabilizado, e a migração e a restauração não estão disponíveis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo collegamento punta a una cartella personale dell’utente, non a dati esclusivi di questa app. La dimensione della destinazione non viene conteggiata e migrazione e ripristino non sono disponibili."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Verknüpfung verweist auf einen persönlichen Benutzerordner, nicht auf Daten, die ausschließlich zu dieser App gehören. Die Zielgröße wird nicht mitgezählt; Migration und Wiederherstellung stehen nicht zur Verfügung."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このリンクは、このアプリ専用のデータではなく、ユーザー個人のフォルダを指しています。リンク先のサイズは集計せず、移行や復元も提供しません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 링크는 이 앱 전용 데이터가 아닌 사용자의 개인 폴더를 가리킵니다. 대상 크기는 집계하지 않으며 마이그레이션이나 복원을 제공하지 않습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта ссылка ведёт к личной папке пользователя, а не к данным, принадлежащим только этому приложению. Размер объекта ссылки не учитывается; перенос и восстановление недоступны."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يشير هذا الرابط إلى مجلد شخصي للمستخدم، وليس إلى بيانات خاصة بهذا التطبيق وحده. لا يُحتسب حجم الهدف، ولا يتوفر النقل أو الاستعادة."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह लिंक उपयोगकर्ता के निजी फ़ोल्डर की ओर जाता है, न कि केवल इस ऐप के डेटा की ओर। लक्ष्य का आकार नहीं गिना जाता और माइग्रेशन या पुनर्स्थापना उपलब्ध नहीं है।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liên kết này trỏ đến thư mục cá nhân của người dùng, không phải dữ liệu riêng của ứng dụng này. Không tính dung lượng đích và không hỗ trợ di chuyển hay khôi phục."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลิงก์นี้ชี้ไปยังโฟลเดอร์ส่วนตัวของผู้ใช้ ไม่ใช่ข้อมูลเฉพาะของแอปนี้ จึงไม่นับขนาดปลายทางและไม่รองรับการย้ายหรือกู้คืน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu bağlantı, yalnızca bu uygulamaya ait verilere değil, kullanıcının kişisel klasörüne işaret eder. Hedefin boyutu sayılmaz; taşıma ve geri yükleme sunulmaz."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze koppeling verwijst naar een persoonlijke gebruikersmap, niet naar gegevens die uitsluitend bij deze app horen. De doelgrootte wordt niet meegeteld; migratie en herstel zijn niet beschikbaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten link prowadzi do osobistego folderu użytkownika, a nie danych należących wyłącznie do tej aplikacji. Rozmiar celu nie jest liczony; przenoszenie i przywracanie są niedostępne."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tautan ini mengarah ke folder pribadi pengguna, bukan data khusus aplikasi ini. Ukuran tujuan tidak dihitung, dan migrasi serta pemulihan tidak tersedia."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu ligilo celas personan dosierujon de la uzanto, ne datumojn ekskluzivajn al ĉi tiu aplikaĵo. La grando de la celo ne estas kalkulata; migrado kaj restarigo ne estas disponeblaj."
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此鏈接指姠甪戶個亽目錄，卟是此應甪獨占的數據；卟統計其目標夶尛，也卟提供遷移或還原。"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠇⠊⠝⠅ ⠏⠕⠊⠝⠞⠎ ⠞⠕ ⠁ ⠏⠑⠗⠎⠕⠝⠁⠇ ⠥⠎⠑⠗ ⠋⠕⠇⠙⠑⠗⠂ ⠝⠕⠞ ⠙⠁⠞⠁ ⠑⠭⠉⠇⠥⠎⠊⠧⠑ ⠞⠕ ⠞⠓⠊⠎ ⠁⠏⠏⠲ ⠠⠊⠞⠎ ⠞⠁⠗⠛⠑⠞ ⠎⠊⠵⠑ ⠊⠎ ⠝⠕⠞ ⠉⠕⠥⠝⠞⠑⠙⠂ ⠁⠝⠙ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠁⠝⠙ ⠗⠑⠎⠞⠕⠗⠁⠞⠊⠕⠝ ⠁⠗⠑ ⠥⠝⠁⠧⠁⠊⠇⠁⠃⠇⠑⠲"
+          }
+        }
+      }
+    },
+    "各行独立统计目录中的文件大小，不包含子目录挂载卷和软链目标。父目录不等于所有子行相加；文件大小也不等于实际磁盘占用。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each row independently counts file sizes in its directory, excluding volumes mounted in subdirectories and symbolic link targets. A parent is not the sum of its child rows; file sizes also differ from actual disk usage."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各行独立统计目录中的文件大小，不包含子目录挂载卷和软链目标。父目录不等于所有子行相加；文件大小也不等于实际磁盘占用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各列獨立統計目錄中的檔案大小，不包含子目錄掛載卷和符號連結目標。父目錄不等於所有子列相加；檔案大小也不等於實際磁碟用量。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada fila cuenta por separado los tamaños de los archivos de su carpeta, sin incluir los volúmenes montados en subcarpetas ni los destinos de enlaces simbólicos. Una carpeta superior no equivale a la suma de sus filas secundarias; el tamaño de los archivos tampoco equivale al espacio real ocupado en disco."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque ligne comptabilise séparément la taille des fichiers de son dossier, sans les volumes montés dans les sous-dossiers ni les cibles des liens symboliques. Un dossier parent n’est pas la somme de ses lignes enfants ; la taille des fichiers diffère aussi de l’espace réellement occupé sur le disque."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada linha contabiliza separadamente o tamanho dos arquivos da sua pasta, excluindo volumes montados em subpastas e destinos de links simbólicos. Uma pasta superior não equivale à soma das linhas subordinadas; o tamanho dos arquivos também difere do espaço real ocupado em disco."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni riga conta separatamente le dimensioni dei file nella propria cartella, escludendo i volumi montati nelle sottocartelle e le destinazioni dei collegamenti simbolici. Una cartella superiore non equivale alla somma delle righe subordinate; le dimensioni dei file differiscono anche dallo spazio effettivamente occupato sul disco."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jede Zeile zählt die Dateigrößen in ihrem Ordner unabhängig, ohne in Unterordnern eingehängte Volumes und Ziele symbolischer Links. Ein übergeordneter Ordner entspricht nicht der Summe seiner untergeordneten Zeilen; Dateigrößen unterscheiden sich außerdem vom tatsächlich belegten Speicherplatz."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各行は、そのフォルダ内のファイルサイズを個別に集計し、サブフォルダにマウントされたボリュームとシンボリックリンク先を除外します。親フォルダの値は子の行の合計とは一致しません。また、ファイルサイズは実際のディスク使用量とも異なります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "각 행은 해당 폴더의 파일 크기를 독립적으로 집계하며 하위 폴더에 마운트된 볼륨과 심볼릭 링크 대상은 제외합니다. 상위 폴더의 크기는 하위 행의 합계와 다르며, 파일 크기도 실제 디스크 사용량과 다릅니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Каждая строка отдельно подсчитывает размеры файлов в своей папке, исключая тома, подключённые в подпапках, и объекты символических ссылок. Размер родительской папки не равен сумме дочерних строк; размеры файлов также отличаются от фактически занятого места на диске."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحسب كل صف أحجام الملفات في مجلده بشكل مستقل، باستثناء وحدات التخزين المركّبة في المجلدات الفرعية وأهداف الروابط الرمزية. حجم المجلد الأب لا يساوي مجموع الصفوف الفرعية، كما تختلف أحجام الملفات عن المساحة الفعلية المستخدمة على القرص."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर पंक्ति अपने फ़ोल्डर की फ़ाइलों के आकार अलग से गिनती है। इसमें सबफ़ोल्डर में माउंट किए गए वॉल्यूम और सिंबॉलिक लिंक के लक्ष्य शामिल नहीं हैं। मूल फ़ोल्डर का आकार उसकी सभी उप-पंक्तियों के योग के बराबर नहीं होता; फ़ाइलों का आकार भी डिस्क के वास्तविक उपयोग से अलग होता है।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi hàng tính riêng kích thước tệp trong thư mục đó, không gồm các ổ đĩa gắn trong thư mục con và đích của liên kết tượng trưng. Thư mục cha không bằng tổng các hàng con; kích thước tệp cũng khác dung lượng thực tế chiếm trên đĩa."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แต่ละแถวนับขนาดไฟล์ในโฟลเดอร์ของตนแยกกัน โดยไม่รวมโวลุ่มที่เมานต์ในโฟลเดอร์ย่อยและปลายทางของลิงก์สัญลักษณ์ ขนาดโฟลเดอร์หลักจึงไม่เท่ากับผลรวมของแถวลูกทั้งหมด และขนาดไฟล์ก็ไม่เท่ากับพื้นที่ดิสก์ที่ใช้จริง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Her satır, alt klasörlere bağlanan birimleri ve sembolik bağlantı hedeflerini hariç tutarak kendi klasöründeki dosya boyutlarını bağımsız hesaplar. Üst klasör, alt satırlarının toplamına eşit değildir; dosya boyutları da gerçek disk kullanımından farklıdır."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elke rij telt de bestandsgrootten in de eigen map afzonderlijk, zonder volumes die in submappen zijn aangekoppeld en doelen van symbolische koppelingen. Een bovenliggende map is niet gelijk aan de som van de onderliggende rijen; bestandsgrootten verschillen ook van het werkelijke schijfgebruik."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Każdy wiersz oddzielnie liczy rozmiary plików w swoim folderze, bez woluminów zamontowanych w podfolderach i celów dowiązań symbolicznych. Rozmiar folderu nadrzędnego nie jest sumą wierszy podrzędnych; rozmiary plików różnią się też od faktycznie zajętego miejsca na dysku."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap baris menghitung ukuran file dalam foldernya secara terpisah, tidak termasuk volume yang dipasang di subfolder dan tujuan tautan simbolis. Folder induk tidak sama dengan jumlah baris anaknya; ukuran file juga berbeda dari penggunaan disk yang sebenarnya."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉiu vico aparte kalkulas la grandojn de dosieroj en sia dosierujo, ekskludante volumojn muntitajn en subdosierujoj kaj celojn de simbolaj ligiloj. Gepatra dosierujo ne egalas al la sumo de siaj idaj vicoj; dosiergrandoj ankaŭ diferencas de la efektive okupata diskospaco."
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各行獨立統計目錄中的文件夶尛，卟包含孒目錄掛載卷和軟鏈目標。父目錄卟等於所有孒行相加；文件夶尛也卟等於實際磁盤占甪。"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠁⠉⠓ ⠗⠕⠺ ⠊⠝⠙⠑⠏⠑⠝⠙⠑⠝⠞⠇⠽ ⠉⠕⠥⠝⠞⠎ ⠋⠊⠇⠑ ⠎⠊⠵⠑⠎ ⠊⠝ ⠊⠞⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽⠂ ⠑⠭⠉⠇⠥⠙⠊⠝⠛ ⠧⠕⠇⠥⠍⠑⠎ ⠍⠕⠥⠝⠞⠑⠙ ⠊⠝ ⠎⠥⠃⠙⠊⠗⠑⠉⠞⠕⠗⠊⠑⠎ ⠁⠝⠙ ⠎⠽⠍⠃⠕⠇⠊⠉ ⠇⠊⠝⠅ ⠞⠁⠗⠛⠑⠞⠎⠲ ⠠⠁ ⠏⠁⠗⠑⠝⠞ ⠊⠎ ⠝⠕⠞ ⠞⠓⠑ ⠎⠥⠍ ⠕⠋ ⠊⠞⠎ ⠉⠓⠊⠇⠙ ⠗⠕⠺⠎⠆ ⠋⠊⠇⠑ ⠎⠊⠵⠑⠎ ⠁⠇⠎⠕ ⠙⠊⠋⠋⠑⠗ ⠋⠗⠕⠍ ⠁⠉⠞⠥⠁⠇ ⠙⠊⠎⠅ ⠥⠎⠁⠛⠑⠲"
+          }
+        }
+      }
+    },
+    "链接目标" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link target"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "链接目标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連結目標"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destino del enlace"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cible du lien"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destino do link"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinazione collegamento"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verknüpfungsziel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンク先"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "링크 대상"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Объект ссылки"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هدف الرابط"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लिंक का लक्ष्य"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đích liên kết"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปลายทางลิงก์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bağlantı hedefi"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppelingsdoel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cel linku"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tujuan tautan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celo de ligilo"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鏈接目標"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠊⠝⠅ ⠞⠁⠗⠛⠑⠞"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

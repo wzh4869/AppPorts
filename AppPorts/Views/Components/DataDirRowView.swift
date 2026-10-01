@@ -101,7 +101,7 @@ struct DataDirRowView: View {
                 }
 
                 // 状态徽章
-                DataDirStatusBadge(status: item.status)
+                DataDirStatusBadge(status: item.displayedStatus)
             }
 
             // 操作按钮
@@ -444,6 +444,7 @@ struct DataDirStatusBadge: View {
         case "已链接": return "link"
         case "待规范": return "arrow.triangle.2.circlepath"
         case "现有软链": return "questionmark.circle"
+        case "用户目录入口": return "link"
         case "待接回": return "arrow.triangle.branch"
         case "本地":   return "internaldrive"
         case "已挂载": return "externaldrive.fill.badge.checkmark"

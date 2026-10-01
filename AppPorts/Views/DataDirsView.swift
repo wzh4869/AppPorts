@@ -163,7 +163,7 @@ struct DataDirsView: View {
         }
     }
 
-    private let appDataStatusOrder = ["本地", "已链接", "已挂载", "待挂载", "卷丢失", "待规范", "现有软链", "待接回", "未找到"]
+    private let appDataStatusOrder = ["本地", "已链接", "已挂载", "待挂载", "卷丢失", "待规范", "现有软链", "用户目录入口", "待接回", "未找到"]
 
     // MARK: - Body
 
@@ -842,7 +842,7 @@ struct DataDirsView: View {
         let linked = items.filter { $0.status == "已链接" }.count
         let mounted = items.filter { DataDirStatus.mountStatuses.contains($0.status) }.count
         let needsNormalization = items.filter { $0.status == "待规范" }.count
-        let existingSymlinks = items.filter { $0.status == "现有软链" }.count
+        let existingSymlinks = items.filter { $0.status == "现有软链" && !$0.isUserDirectoryLink }.count
         let relinkable = items.filter { $0.status == "待接回" }.count
         return HStack(spacing: 14) {
             Label(String(format: "%lld 个目录".localized, Int64(items.count)), systemImage: "folder.fill")
@@ -912,7 +912,7 @@ struct DataDirsView: View {
     }
 
     /// 链接状态优先级：已链接、挂载迁移、待规范、现有软链优先展示
-    private let statusPriority: [String] = ["已链接", "已挂载", "待挂载", "卷丢失", "待规范", "现有软链", "待接回", "本地", "未找到"]
+    private let statusPriority: [String] = ["已链接", "已挂载", "待挂载", "卷丢失", "待规范", "现有软链", "用户目录入口", "待接回", "本地", "未找到"]
 
     private func statusSortKey(_ status: String) -> Int {
         statusPriority.firstIndex(of: status) ?? statusPriority.count
@@ -927,8 +927,8 @@ struct DataDirsView: View {
         case .defaultOrder:
             // 已迁移路径在前，然后按大小降序
             return libraryItems.sorted { lhs, rhs in
-                let lhsKey = statusSortKey(lhs.status)
-                let rhsKey = statusSortKey(rhs.status)
+                let lhsKey = statusSortKey(lhs.displayedStatus)
+                let rhsKey = statusSortKey(rhs.displayedStatus)
                 if lhsKey != rhsKey { return lhsKey < rhsKey }
                 if lhs.sizeBytes != rhs.sizeBytes { return lhs.sizeBytes > rhs.sizeBytes }
                 return lhs.path.lastPathComponent.localizedStandardCompare(rhs.path.lastPathComponent) == .orderedAscending
@@ -952,7 +952,10 @@ struct DataDirsView: View {
         let groups = Dictionary(grouping: sortedLibraryItems, by: \.type)
         return DataDirType.allCases.compactMap { type in
             guard let items = groups[type] else { return nil }
-            let tree = DataDirTree.retainingMatches(in: DataDirTree.build(from: items), matchingIDs: matchingIDs)
+            let tree = DataDirTree.visibleTree(from: items,
+                                              showZeroByteDirectories: showZeroByteDirectories,
+                                              showLockedStructure: showLockedDirectoryStructure,
+                                              matchingIDs: matchingIDs)
             return tree.isEmpty ? nil : DataDirGroup(type: type, items: tree)
         }
     }
@@ -982,7 +985,7 @@ struct DataDirsView: View {
         let matchesSearch = query.isEmpty || item.path.path.localizedStandardContains(query)
             || item.name.localizedStandardContains(query) || item.description.localizedStandardContains(query)
         return matchesSearch && (selectedPriorityFilters.isEmpty || selectedPriorityFilters.contains(item.priority))
-            && (selectedStatusFilters.isEmpty || selectedStatusFilters.contains(item.status))
+            && (selectedStatusFilters.isEmpty || selectedStatusFilters.contains(item.displayedStatus))
             && (selectedTypeFilters.isEmpty || selectedTypeFilters.contains(item.type))
             && item.matchesVisibility(showZeroByteDirectories: showZeroByteDirectories,
                                       showLockedStructure: showLockedDirectoryStructure)
@@ -1117,8 +1120,8 @@ struct DataDirsView: View {
                 // 启动初始批次
                 for _ in 0..<min(maxConcurrency, items.count) {
                     guard let i = iterator.next() else { break }
-                    let scanURL = items[i].linkedDestination ?? items[i].path
-                    group.addTask { (i, measureDirectorySize(at: scanURL, useCache: false)) }
+                    let scanURL = items[i].sizeMeasurementURL
+                    group.addTask { (i, scanURL.map { measureDirectorySize(at: $0, useCache: false) } ?? DirectorySizeResult()) }
                     active += 1
                 }
 
@@ -1127,8 +1130,8 @@ struct DataDirsView: View {
                     results.append(result)
                     active -= 1
                     if let i = iterator.next() {
-                        let scanURL = items[i].linkedDestination ?? items[i].path
-                        group.addTask { (i, measureDirectorySize(at: scanURL, useCache: false)) }
+                        let scanURL = items[i].sizeMeasurementURL
+                        group.addTask { (i, scanURL.map { measureDirectorySize(at: $0, useCache: false) } ?? DirectorySizeResult()) }
                         active += 1
                     }
                 }
@@ -1205,8 +1208,8 @@ struct DataDirsView: View {
                 // 启动初始批次
                 for _ in 0..<min(maxConcurrency, items.count) {
                     guard let i = iterator.next() else { break }
-                    let scanURL = items[i].linkedDestination ?? items[i].path
-                    group.addTask { (i, measureDirectorySize(at: scanURL, useCache: false)) }
+                    let scanURL = items[i].sizeMeasurementURL
+                    group.addTask { (i, scanURL.map { measureDirectorySize(at: $0, useCache: false) } ?? DirectorySizeResult()) }
                     active += 1
                 }
 
@@ -1215,8 +1218,8 @@ struct DataDirsView: View {
                     results.append(result)
                     active -= 1
                     if let i = iterator.next() {
-                        let scanURL = items[i].linkedDestination ?? items[i].path
-                        group.addTask { (i, measureDirectorySize(at: scanURL, useCache: false)) }
+                        let scanURL = items[i].sizeMeasurementURL
+                        group.addTask { (i, scanURL.map { measureDirectorySize(at: $0, useCache: false) } ?? DirectorySizeResult()) }
                         active += 1
                     }
                 }
