@@ -6,6 +6,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
     let groups: [DataDirGroup]
     let matchingItemIDs: Set<String>
     let isFiltering: Bool
+    var showLockedStructure: Bool = false
     let actions: (DataDirItem) -> Actions
 
     @State private var selectedItemID: String?
@@ -59,8 +60,10 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
         .onChange(of: isFiltering) { isFiltering in
             if isFiltering { expandAll() }
         }
+        .onChange(of: showLockedStructure) { show in
+            if show { expandAll() }
+        }
         .onChange(of: matchingItemIDs) { _ in
-            if isFiltering { expandAll() }
             if selectedItem == nil { selectedItemID = nil }
         }
     }
@@ -315,7 +318,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
                 Text(item.description)
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
-                if !item.isMigratable, !DataDirStatus.mountStatuses.contains(item.status) {
+                if !item.isMigratable {
                     Label((item.nonMigratableReason ?? "此目录不支持迁移").localized, systemImage: "lock")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
@@ -473,7 +476,7 @@ private struct AppDataDirectoryRow<Actions: View>: View {
                             .foregroundColor(isEmphasized ? .white : (isContext ? .secondary : .primary))
                             .lineLimit(1)
                             .truncationMode(.middle)
-                        if !row.item.isMigratable && !DataDirStatus.mountStatuses.contains(row.item.status) {
+                        if !row.item.isMigratable {
                             Image(systemName: "lock")
                                 .font(.system(size: 11))
                                 .foregroundColor(isEmphasized ? .white.opacity(0.85) : .secondary)

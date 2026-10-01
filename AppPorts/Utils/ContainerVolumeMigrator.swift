@@ -15,8 +15,8 @@ import Foundation
 /// 把它挂载到容器内的原目录上。路径不离开容器，应用签名与 entitlements 不做任何修改。
 ///
 /// ## 操作流程
-/// - **迁移**：建卷 → 临时挂载并复制 → 卸载 → 原目录改名为安全备份 → 在原路径挂载 → 写记录 → 清理备份
-/// - **还原**：确保已挂载 → 复制到暂存目录 → 卸载 → 暂存目录改回原路径 → 删卷 → 删记录
+/// - **迁移**：建卷 → 临时挂载并复制 → 卸载 → 原目录改名为安全备份 → 在原路径挂载 → 写记录 → 保留原件待验证
+/// - **还原**：确保已挂载 → 复制到暂存目录 → 卸载 → 暂存目录改回原路径 → 保留外置卷待验证
 /// - **挂载 / 卸载**：只处理已有记录。未挂载期间挂载点保持 000 权限，
 ///   应用在盘不在时只会看到空目录，不会把新数据写进本地形成分叉。
 actor ContainerVolumeMigrator {
@@ -31,6 +31,7 @@ actor ContainerVolumeMigrator {
         case mountFailed(URL, String)
         case mountVerificationFailed(URL)
         case mountPointNotEmpty(URL)
+        case mountPointConflict(URL, String)
         case unmountFailed(URL, String)
         case volumeUnavailable(String)
         case insufficientSpace(required: Int64, available: Int64)
@@ -59,6 +60,8 @@ actor ContainerVolumeMigrator {
                 return String(format: "挂载到容器目录失败：%@\n%@".localized, url.path, output)
             case .mountVerificationFailed(let url):
                 return String(format: "挂载后校验失败，该路径不是挂载点：%@".localized, url.path)
+            case .mountPointConflict(let url, let details):
+                return String(format: "挂载点出现并发变化，已保留两端数据，请检查后恢复：%@\n%@".localized, url.path, details)
             case .mountPointNotEmpty(let url):
                 return String(format: "挂载点目录不为空，为避免覆盖数据已停止操作：%@".localized, url.path)
             case .unmountFailed(let url, let output):
@@ -141,6 +144,7 @@ actor ContainerVolumeMigrator {
             case mounted
             case unavailable
             case failed(String)
+            case requiresIntervention(String)
         }
 
         let record: ContainerMountRecord
@@ -198,7 +202,8 @@ actor ContainerVolumeMigrator {
     /// 挂载点的挂载标志，用来发现早期版本挂上、仍会显示在 Finder 里的卷。测试注入固定值。
     private let mountFlags: @Sendable (URL) -> UInt32?
     private let stagingMountRootURL: URL
-    private let removeMigrationBackup: @Sendable (URL) throws -> Void
+    private let safety: DataOperationSafety
+    private let makeMountPointLease: @Sendable (URL) throws -> any MountPointLeasing
 
     init(
         disk: DiskUtility = DiskUtility(),
@@ -211,8 +216,13 @@ actor ContainerVolumeMigrator {
         synchronizeAgent: @escaping @Sendable (ContainerMountStore) -> Void = { ContainerMountAgentInstaller.installIfNeeded(store: $0) },
         availableCapacity: @escaping @Sendable (URL) -> Int64? = { DiskUtility.availableCapacity(at: $0) },
         mountFlags: @escaping @Sendable (URL) -> UInt32? = { DiskUtility.mountFlags(at: $0) },
+        homeDirectory: URL = URL(fileURLWithPath: NSHomeDirectory()),
+        safetyRunner: any ShellCommandRunning = ProcessCommandRunner(),
+        makeMountPointLease: @escaping @Sendable (URL) throws -> any MountPointLeasing = { try MountPointLease(at: $0) },
         removeMigrationBackup: @escaping @Sendable (URL) throws -> Void = { try FileCopier.removeCopy(at: $0) }
     ) {
+        self.safety = DataOperationSafety(homeDirectory: homeDirectory, store: store, runner: safetyRunner)
+        self.makeMountPointLease = makeMountPointLease
         self.disk = disk
         self.store = store
         self.isMountPoint = isMountPoint
@@ -222,7 +232,6 @@ actor ContainerVolumeMigrator {
         self.synchronizeAgent = synchronizeAgent
         self.availableCapacity = availableCapacity
         self.mountFlags = mountFlags
-        self.removeMigrationBackup = removeMigrationBackup
         self.stagingMountRootURL = stagingMountRootURL ?? FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
             .appendingPathComponent("AppPorts/mounts")
@@ -248,258 +257,100 @@ actor ContainerVolumeMigrator {
         progressHandler: FileCopier.ProgressHandler?
     ) async throws -> MigrationResult {
         let source = item.path.standardizedFileURL
-        let operationID = AppLogger.shared.makeOperationID(prefix: "container-mount-migrate")
-        let startedAt = Date()
-        var operationResult = "failed"
-        var operationErrorCode: String?
-        var createdVolume = ""
-
-        defer {
-            AppLogger.shared.logOperationSummary(
-                category: "container_mount_migrate",
-                operationID: operationID,
-                result: operationResult,
-                startedAt: startedAt,
-                errorCode: operationErrorCode,
-                details: [
-                    ("item_name", item.name),
-                    ("type", item.type.rawValue),
-                    ("source_path", source.path),
-                    ("external_root", externalRootURL.path),
-                    ("volume", createdVolume)
-                ]
-            )
+        try await safety.requireNewMigration(at: source, bundleIdentifier: bundleIdentifier)
+        guard existingRealDirectory(at: source) else { throw MigrationError.sourceNotDirectory(source) }
+        guard !isMountPoint(source) else { throw MigrationError.alreadyManaged(source) }
+        guard !DataPathTopology.overlaps(DataPathTopology.relationship(source.path, externalRootURL.path)) else {
+            throw DataOperationSafety.Failure.conflict(externalRootURL.path)
         }
-
-        AppLogger.shared.log("===== 开始挂载迁移容器数据目录 =====")
-        AppLogger.shared.logContext(
-            "挂载迁移上下文",
-            details: [
-                ("operation_id", operationID),
-                ("item_name", item.name),
-                ("type", item.type.rawValue),
-                ("status", item.status),
-                ("source_path", source.path),
-                ("external_root", externalRootURL.path),
-                ("app_name", appName),
-                ("bundle_id", bundleIdentifier)
-            ]
-        )
-        AppLogger.shared.logPathState("挂载迁移前-本地源[\(operationID)]", url: source)
-
-        // 1. 预检：真实目录、未被管理、外置盘是 APFS
-        guard existingRealDirectory(at: source) else {
-            operationErrorCode = "CONTAINER-MOUNT-SOURCE-INVALID"
-            throw MigrationError.sourceNotDirectory(source)
+        // Names reserved for volume management must never hide pre-existing source data.
+        let names = try fileManager.contentsOfDirectory(atPath: source.path)
+        guard Set(names).isDisjoint(with: Self.volumeSystemArtifacts) else {
+            throw DataOperationSafety.Failure.conflict(source.path)
         }
-        guard store.record(forMountPoint: source) == nil, !isMountPoint(source) else {
-            operationErrorCode = "CONTAINER-MOUNT-ALREADY-MANAGED"
-            throw MigrationError.alreadyManaged(source)
-        }
-
-        // diskutil 只认卷的挂载点或设备，不认卷内子目录。
-        let externalVolumePath = mountedVolumePath(externalRootURL) ?? externalRootURL.standardizedFileURL.path
-        let externalInfo: DiskUtility.VolumeInfo
-        do {
-            externalInfo = try await disk.volumeInfo(for: externalVolumePath)
-        } catch {
-            operationErrorCode = "CONTAINER-MOUNT-EXTERNAL-INFO-FAILED"
-            throw MigrationError.volumeCreationFailed(error.localizedDescription)
-        }
+        let externalVolumePath = mountedVolumePath(externalRootURL) ?? externalRootURL.path
+        let externalInfo = try await disk.volumeInfo(for: externalVolumePath)
         guard externalInfo.isAPFS, let container = externalInfo.apfsContainerReference else {
-            AppLogger.shared.logError(
-                "外部存储不是 APFS，无法挂载迁移",
-                errorCode: "CONTAINER-MOUNT-EXTERNAL-NOT-APFS",
-                context: [
-                    ("operation_id", operationID),
-                    ("filesystem", externalInfo.filesystemType ?? "unknown"),
-                    ("device", externalInfo.deviceIdentifier)
-                ],
-                relatedURLs: [("external_root", externalRootURL)]
-            )
-            operationErrorCode = "CONTAINER-MOUNT-EXTERNAL-NOT-APFS"
             throw MigrationError.externalNotAPFS(externalRootURL)
         }
-        guard !externalInfo.isEncrypted else {
-            operationErrorCode = "CONTAINER-MOUNT-ENCRYPTED-DESTINATION"
-            throw MigrationError.encryptedDestination
-        }
-        // 同一 APFS 容器里的卷共享剩余空间；空间不够时在建卷前就停下，不留半截的卷。
+        guard !externalInfo.isEncrypted else { throw MigrationError.encryptedDestination }
         if item.sizeBytes > 0, let available = availableCapacity(externalRootURL) {
             let required = Self.requiredFreeBytes(forDataBytes: item.sizeBytes)
-            guard available >= required else {
-                operationErrorCode = "CONTAINER-MOUNT-INSUFFICIENT-SPACE"
-                throw MigrationError.insufficientSpace(required: required, available: available)
-            }
+            guard available >= required else { throw MigrationError.insufficientSpace(required: required, available: available) }
         }
-
-        // 2. 在外置盘的 APFS 容器中新建卷（与其它卷共享空间）
-        let volumeName = DiskUtility.makeVolumeName(
-            bundleIdentifier: bundleIdentifier,
-            appName: appName,
-            directoryName: source.lastPathComponent
-        )
-        AppLogger.shared.log("步骤1: 创建外置卷 \(volumeName) @ \(container)")
-        await progressHandler?(FileCopier.Progress(copiedBytes: 0, totalBytes: item.sizeBytes, currentFile: "正在创建外置卷...".localized))
-        let device: String
+        let backup = makeMigrationBackupURL(for: source)
+        var transfer = DataTransferRecord(mode: .mount, direction: .migrate, sourceID: item.id,
+            appName: appName, bundleIdentifier: bundleIdentifier, dataDirType: item.type.rawValue,
+            originalPath: source.path, activePath: source.path, destinationPath: source.path,
+            backupPath: backup.path, sourceIdentity: try DataPathIdentity.capture(source))
+        try store.beginTransfer(transfer)
+        let operationID = transfer.operationID.uuidString
+        let volumeName = DiskUtility.makeVolumeName(bundleIdentifier: bundleIdentifier, appName: appName,
+                                                    directoryName: source.lastPathComponent)
         do {
-            device = try await disk.createAPFSVolume(inContainer: container, name: volumeName)
-        } catch {
-            operationErrorCode = "CONTAINER-MOUNT-VOLUME-CREATE-FAILED"
-            throw MigrationError.volumeCreationFailed(error.localizedDescription)
-        }
-        createdVolume = device
-
-        let volumeUUID: String
-        do {
+            let device = try await disk.createAPFSVolume(inContainer: container, name: volumeName)
             let info = try await disk.volumeInfo(for: device)
-            guard let uuid = info.volumeUUID else {
-                throw DiskUtility.Failure.unexpectedOutput(command: "diskutil info", output: device)
+            guard let uuid = info.volumeUUID else { throw MigrationError.volumeCreationFailed(device) }
+            transfer.createdVolumeUUID = uuid
+            let staging = stagingMountRootURL.appendingPathComponent(operationID)
+            transfer.stagingPath = staging.path
+            try store.updateTransfer(transfer)
+            try fileManager.createDirectory(at: staging.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try await mountVolume(uuid, at: staging, operationID: operationID)
+            try requireOwners(at: staging)
+            guard try DataPathIdentity.capture(source) == transfer.sourceIdentity else {
+                throw DataOperationSafety.Failure.conflict(source.path)
             }
-            // 新卷通常被自动挂到 /Volumes 下；先卸载，稍后挂到暂存目录复制。
-            if let autoMountPoint = info.mountPoint, !autoMountPoint.isEmpty {
-                let mountPoint = URL(fileURLWithPath: autoMountPoint)
-                try await requireExpectedVolume(uuid, at: mountPoint)
-                try await disk.unmount(mountPoint: mountPoint)
-            }
-            volumeUUID = uuid
-        } catch {
-            await deleteVolumeQuietly(device, operationID: operationID)
-            operationErrorCode = "CONTAINER-MOUNT-VOLUME-INFO-FAILED"
-            throw MigrationError.volumeCreationFailed(error.localizedDescription)
-        }
-        createdVolume = "\(device) (\(volumeUUID))"
-
-        // 3. 临时挂载到暂存目录并复制数据
-        let staging = stagingMountRootURL.appendingPathComponent(volumeUUID)
-        AppLogger.shared.log("步骤2: 临时挂载到 \(staging.path) 并复制数据...")
-        do {
-            try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
-            try await disk.mount(volume: volumeUUID, at: staging)
-            guard isMountPoint(staging) else { throw MigrationError.mountVerificationFailed(staging) }
-            try await requireExpectedVolume(volumeUUID, at: staging)
-        } catch {
-            await cleanupStaging(staging, expectedVolumeUUID: volumeUUID, operationID: operationID)
-            await deleteVolumeQuietly(volumeUUID, operationID: operationID)
-            operationErrorCode = "CONTAINER-MOUNT-STAGING-MOUNT-FAILED"
-            throw MigrationError.mountFailed(staging, error.localizedDescription)
-        }
-
-        let totalBytes: Int64
-        do {
-            let copier = FileCopier()
-            totalBytes = try await copier.copyDirectory(
-                from: source,
-                to: staging,
-                estimatedTotalBytes: item.sizeBytes,
-                progressHandler: progressHandler
-            )
-            try writeVolumeMarker(
-                at: staging,
-                mountPointPath: source.path,
-                volumeUUID: volumeUUID,
-                dataDirType: item.type.rawValue,
-                appName: appName
-            )
             writeNeverIndexMarkerIfNeeded(at: staging, operationID: operationID)
-            AppLogger.shared.log("步骤2: 复制完成")
-        } catch {
-            AppLogger.shared.logError(
-                "步骤2: 复制到外置卷失败，删除新卷",
-                error: error,
-                errorCode: "CONTAINER-MOUNT-COPY-FAILED",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("source", source), ("staging", staging)]
-            )
-            await cleanupStaging(staging, expectedVolumeUUID: volumeUUID, operationID: operationID)
-            await deleteVolumeQuietly(volumeUUID, operationID: operationID)
-            operationErrorCode = "CONTAINER-MOUNT-COPY-FAILED"
-            throw MigrationError.copyFailed(error)
-        }
-
-        await progressHandler?(FileCopier.Progress(copiedBytes: totalBytes, totalBytes: totalBytes, currentFile: "正在切换本地入口...".localized))
-        do {
-            try await requireExpectedVolume(volumeUUID, at: staging)
+            // Initialize management files while the new volume is writable. The
+            // strict copier applies the source root's final mode (including 0555).
+            try writeVolumeMarker(at: staging, mountPointPath: source.path, volumeUUID: uuid,
+                                  dataDirType: item.type.rawValue, appName: appName)
+            transfer.phase = .copying
+            try store.updateTransfer(transfer)
+            let baseline = try await TreeCopySession().copy(from: source, to: staging,
+                excludingRootEntries: Self.volumeSystemArtifacts, finalDestination: source, progressHandler: progressHandler)
+            try TreeCopySession.applyRootMetadata(at: staging, from: baseline)
+            try TreeCopySession.verifyCopy(at: staging, against: baseline)
+            transfer.baseline = try PropertyListEncoder().encode(baseline)
+            transfer.destinationIdentity = try DataPathIdentity.capture(staging, volumeUUID: uuid)
+            transfer.phase = .verified
+            try store.updateTransfer(transfer)
+            await progressHandler?(FileCopier.Progress(copiedBytes: baseline.logicalBytes,
+                totalBytes: baseline.logicalBytes, currentFile: "正在切换本地入口...".localized))
+            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: bundleIdentifier)
+            try TreeCopySession.verifyUnchanged(at: source, against: baseline)
+            try TreeCopySession.verifyCopy(at: staging, against: baseline)
+            try await requireExpectedVolume(uuid, at: staging)
             try await disk.unmount(mountPoint: staging)
             removeEmptyDirectoryQuietly(at: staging)
-        } catch {
-            await cleanupStaging(staging, expectedVolumeUUID: volumeUUID, operationID: operationID)
-            await deleteVolumeQuietly(volumeUUID, operationID: operationID)
-            operationErrorCode = "CONTAINER-MOUNT-STAGING-UNMOUNT-FAILED"
-            throw MigrationError.unmountFailed(staging, error.localizedDescription)
-        }
-
-        // 4. 原目录改名为同卷安全备份，在原路径挂载新卷
-        AppLogger.shared.log("步骤3: 将原目录移动到本地安全备份并挂载新卷...")
-        let backupURL = makeMigrationBackupURL(for: source)
-        do {
-            try fileManager.moveItem(at: source, to: backupURL)
-        } catch {
-            AppLogger.shared.logError(
-                "步骤3: 移动原目录到本地安全备份失败，删除新卷",
-                error: error,
-                errorCode: "CONTAINER-MOUNT-SOURCE-BACKUP-MOVE-FAILED",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("source", source), ("backup", backupURL)]
-            )
-            await deleteVolumeQuietly(volumeUUID, operationID: operationID)
-            operationErrorCode = "CONTAINER-MOUNT-SOURCE-BACKUP-MOVE-FAILED"
-            throw MigrationError.switchFailed(error)
-        }
-
-        let record = ContainerMountRecord(
-            appName: appName,
-            bundleIdentifier: bundleIdentifier,
-            dataDirType: item.type.rawValue,
-            mountPointPath: source.path,
-            volumeUUID: volumeUUID,
-            volumeName: volumeName,
-            externalRootPath: externalRootURL.standardizedFileURL.path
-        )
-        let cleanup = ContainerCleanupRecord(kind: .migrationBackup, mountRecord: record, localPath: backupURL.path)
-        do {
-            try await mountVolume(volumeUUID, at: source, operationID: operationID)
-            try store.recordMigration(record, cleanup: cleanup)
+            transfer.phase = .switching
+            try store.updateTransfer(transfer)
+            try TreeCopySession.verifyUnchanged(at: source, against: baseline)
+            try DataTreeRelocator.move(source, to: backup)
+            transfer.backupIdentity = try DataPathIdentity.capture(backup)
+            try store.updateTransfer(transfer)
+            try TreeCopySession.verifyUnchanged(at: backup, against: baseline)
+            try await mountVolume(uuid, at: source, operationID: operationID)
+            try requireOwners(at: source)
+            // A held descriptor can still write to the retained original after rename.
+            try TreeCopySession.verifyUnchanged(at: backup, against: baseline)
+            let record = ContainerMountRecord(appName: appName, bundleIdentifier: bundleIdentifier,
+                dataDirType: item.type.rawValue, mountPointPath: source.path, volumeUUID: uuid,
+                volumeName: volumeName, externalRootPath: externalRootURL.standardizedFileURL.path)
+            try store.commitMigration(record: record, transfer: transfer)
             synchronizeAgent(store)
+            invalidateSizeCache(for: source)
+            return MigrationResult(record: record, cleanupWarning: nil)
         } catch {
-            AppLogger.shared.logError(
-                "步骤3: 在原路径挂载或写入记录失败，尝试恢复本地安全备份",
-                error: error,
-                errorCode: "CONTAINER-MOUNT-SWITCH-FAILED",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("source", source), ("backup", backupURL)]
-            )
-            await unmountQuietly(source, expectedVolumeUUID: volumeUUID, operationID: operationID)
-            removeEmptyDirectoryQuietly(at: source)
-            operationErrorCode = "CONTAINER-MOUNT-SWITCH-FAILED"
-            guard restoreMigrationBackup(backupURL, to: source, operationID: operationID) else {
-                // 路径被其它卷或新数据占用时，两份副本都保留，不能声称已经还原。
-                throw MigrationError.rollbackIncomplete(backup: backupURL, volumeName: volumeName, volumeUUID: volumeUUID, underlying: error)
-            }
-            await deleteVolumeQuietly(volumeUUID, operationID: operationID)
-            throw MigrationError.switchFailed(error)
+            // Never erase a partial or switched copy on an error. Durable intent
+            // keeps all known identities available for explicit recovery.
+            transfer.phase = .needsRecovery
+            transfer.recoverableReason = error.localizedDescription
+            do { try store.updateTransfer(transfer) }
+            catch { AppLogger.shared.logError("无法更新迁移恢复记录，原事务仍保留", error: error) }
+            throw error
         }
-        AppLogger.shared.logPathState("挂载迁移步骤3后-挂载点[\(operationID)]", url: source)
-
-        // 5. 清理本地安全备份
-        let cleanupWarning = await performCleanup(cleanup)
-        if let cleanupWarning {
-            AppLogger.shared.logError(
-                "挂载迁移已完成，但本地安全备份清理失败",
-                errorCode: "CONTAINER-MOUNT-BACKUP-CLEANUP-FAILED",
-                context: [("operation_id", operationID), ("error", cleanupWarning.details)],
-                relatedURLs: [("backup", backupURL)]
-            )
-            operationResult = "success_with_warning"
-            operationErrorCode = "CONTAINER-MOUNT-BACKUP-CLEANUP-FAILED"
-        }
-
-        AppLogger.shared.log("===== 挂载迁移完成 =====")
-        invalidateSizeCache(for: source)
-        if operationResult != "success_with_warning" {
-            operationResult = "success"
-        }
-        return MigrationResult(record: record, cleanupWarning: cleanupWarning)
     }
 
     // MARK: - 挂载 / 卸载
@@ -507,14 +358,26 @@ actor ContainerVolumeMigrator {
     /// 把记录对应的卷重新挂到容器内挂载点上；已挂载则直接返回。
     func mount(record: ContainerMountRecord) async throws {
         let mountPoint = record.mountPointURL
+        try safety.requirePolicy(at: mountPoint)
+        guard try store.recordsStrict().contains(record) else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
         if isMountPoint(mountPoint) {
             try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
-            await hideFromFinderIfNeeded(mountPoint)
+            if try store.remountIntervention(forVolumeUUID: record.volumeUUID) != nil {
+                throw DataOperationSafety.Failure.conflict(mountPoint.path)
+            }
             return
         }
+        let related = try store.transfers().filter {
+            $0.mode == .mount && $0.direction == .migrate && $0.createdVolumeUUID == record.volumeUUID
+                && $0.originalPath == record.mountPointPath && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
+        }
+        try safety.requireNoOverlap(at: mountPoint, ownedMount: record,
+                                    ownedTransferIDs: Set(related.map(\.operationID)))
+        try safety.requireNoManagedFileSystemAncestor(at: mountPoint)
         let operationID = AppLogger.shared.makeOperationID(prefix: "container-mount")
         let hint = try await knownMountPoint(for: record, operationID: operationID)
         try await mountVolume(record.volumeUUID, at: mountPoint, operationID: operationID, knownMountPoint: hint)
+        try store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: nil)
         invalidateSizeCache(for: mountPoint)
         AppLogger.shared.logContext(
             "容器卷已挂载",
@@ -569,12 +432,17 @@ actor ContainerVolumeMigrator {
     /// 卸载记录对应的卷，并把空挂载点重新锁住。
     func unmount(record: ContainerMountRecord, force: Bool = false) async throws {
         let mountPoint = record.mountPointURL
+        guard try store.recordsStrict().contains(record) else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
         guard isMountPoint(mountPoint) else {
-            setMode(Self.lockedMountPointMode, at: mountPoint)
+            if fileManager.fileExists(atPath: mountPoint.path) {
+                let lease = try makeMountPointLease(mountPoint)
+                try lease.verifyBeforeMount()
+            }
             return
         }
         let operationID = AppLogger.shared.makeOperationID(prefix: "container-unmount")
         try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+        try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
         do {
             try await disk.unmount(mountPoint: mountPoint, force: force)
         } catch {
@@ -587,7 +455,8 @@ actor ContainerVolumeMigrator {
             )
             throw MigrationError.unmountFailed(mountPoint, error.localizedDescription)
         }
-        setMode(Self.lockedMountPointMode, at: mountPoint)
+        let lease = try makeMountPointLease(mountPoint)
+        try lease.verifyBeforeMount()
         invalidateSizeCache(for: mountPoint)
         AppLogger.shared.logContext(
             "容器卷已卸载",
@@ -598,8 +467,18 @@ actor ContainerVolumeMigrator {
     /// 重挂载所有在线但尚未挂载的记录。启动、插盘和后台代理都走这里。
     func remountAvailableRecords() async -> [RemountOutcome] {
         var outcomes: [RemountOutcome] = []
-        for record in store.records() {
+        let records: [ContainerMountRecord]
+        do { records = try store.recordsStrict() }
+        catch {
+            AppLogger.shared.logError("无法读取挂载记录，自动挂载已停止", error: error)
+            return []
+        }
+        for record in records {
             do {
+                if let reason = try store.remountIntervention(forVolumeUUID: record.volumeUUID) {
+                    outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(reason)))
+                    continue
+                }
                 let alreadyMounted = isMountPoint(record.mountPointURL)
                 // 在线检查放在 mount(record:) 里，和「当前挂载点」共用同一次 diskutil 查询。
                 try await mount(record: record)
@@ -608,10 +487,12 @@ actor ContainerVolumeMigrator {
                 if case .volumeUnavailable = error {
                     outcomes.append(RemountOutcome(record: record, state: .unavailable))
                 } else {
-                    outcomes.append(RemountOutcome(record: record, state: .failed(error.localizedDescription)))
+                    try? store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: error.localizedDescription)
+                    outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(error.localizedDescription)))
                 }
             } catch {
-                outcomes.append(RemountOutcome(record: record, state: .failed(error.localizedDescription)))
+                try? store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: error.localizedDescription)
+                outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(error.localizedDescription)))
             }
         }
         return outcomes
@@ -619,7 +500,7 @@ actor ContainerVolumeMigrator {
 
     // MARK: - 还原
 
-    /// 把卷上的数据复制回本地，删除卷和记录。
+    /// Copy back to local storage and retain the source volume for explicit cleanup.
     @discardableResult
     func restore(
         record: ContainerMountRecord,
@@ -627,156 +508,190 @@ actor ContainerVolumeMigrator {
         progressHandler: FileCopier.ProgressHandler?
     ) async throws -> CleanupWarning? {
         let mountPoint = record.mountPointURL
-        let operationID = AppLogger.shared.makeOperationID(prefix: "container-mount-restore")
-        let startedAt = Date()
-        var operationResult = "failed"
-        var operationErrorCode: String?
-
-        defer {
-            AppLogger.shared.logOperationSummary(
-                category: "container_mount_restore",
-                operationID: operationID,
-                result: operationResult,
-                startedAt: startedAt,
-                errorCode: operationErrorCode,
-                details: [
-                    ("mount_point", mountPoint.path),
-                    ("volume", record.volumeName),
-                    ("uuid", record.volumeUUID)
-                ]
-            )
+        // Exact history ownership is required. A stale UI value cannot authorize recovery.
+        guard try store.recordsStrict().contains(record) else { throw MigrationError.alreadyManaged(mountPoint) }
+        let prior = try store.transfers().first {
+            $0.mode == .mount && $0.direction == .migrate && $0.originalPath == record.mountPointPath
+                && $0.createdVolumeUUID == record.volumeUUID && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
         }
-
-        AppLogger.shared.log("===== 开始还原挂载迁移目录 =====")
-        AppLogger.shared.logContext(
-            "挂载还原上下文",
-            details: [
-                ("operation_id", operationID),
-                ("mount_point", mountPoint.path),
-                ("volume", record.volumeName),
-                ("uuid", record.volumeUUID)
-            ]
-        )
-
-        // 1. 确保卷已挂载
-        do {
-            try await mount(record: record)
-        } catch {
-            operationErrorCode = "CONTAINER-RESTORE-VOLUME-UNAVAILABLE"
-            throw error
-        }
-
-        // 数据要整份复制回本机；本机空间不够时现在就停下，外置卷原样保留。
+        let ownedIDs = Set(prior.map { [$0.operationID] } ?? [])
+        try safety.requireNoOverlap(at: mountPoint, ownedMount: record, ownedTransferIDs: ownedIDs)
+        try safety.requireLocalRestoreParent(at: mountPoint, isMountPoint: isMountPoint)
         if estimatedTotalBytes > 0, let available = availableCapacity(mountPoint.deletingLastPathComponent()) {
             let required = Self.requiredFreeBytes(forDataBytes: estimatedTotalBytes)
-            guard available >= required else {
-                operationErrorCode = "CONTAINER-RESTORE-INSUFFICIENT-SPACE"
-                throw MigrationError.insufficientSpace(required: required, available: available)
+            guard available >= required else { throw MigrationError.insufficientSpace(required: required, available: available) }
+        }
+        let id = UUID()
+        let staging = mountPoint.deletingLastPathComponent().appendingPathComponent(".appports-restore-staging-\(id.uuidString)")
+        let recovery = stagingMountRootURL.appendingPathComponent("recovery-\(id.uuidString)")
+        var transfer = DataTransferRecord(operationID: id, mode: .mount, direction: .restore,
+            sourceID: prior?.sourceID, appName: record.appName, bundleIdentifier: record.bundleIdentifier,
+            dataDirType: record.dataDirType, originalPath: mountPoint.path, activePath: mountPoint.path,
+            destinationPath: mountPoint.path, backupPath: recovery.path, stagingPath: staging.path,
+            sourceIdentity: DataPathIdentity(volumeUUID: record.volumeUUID), priorOperationID: prior?.operationID)
+        try store.beginTransfer(transfer)
+        let operationID = id.uuidString
+        do {
+            let source: URL
+            if isMountPoint(mountPoint) {
+                try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+                source = mountPoint
+            } else {
+                // Recovery never reintroduces a forbidden mount at Data/tmp or a container root.
+                let hint = try await knownMountPoint(for: record, operationID: operationID)
+                if case .mounted(let current) = hint {
+                    try await safety.requireNoKnownWriters(at: current, bundleIdentifier: record.bundleIdentifier)
+                }
+                try fileManager.createDirectory(at: recovery.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try await mountVolume(record.volumeUUID, at: recovery, operationID: operationID, knownMountPoint: hint)
+                source = recovery
             }
-        }
-
-        // 2. 复制到同目录的隐藏暂存路径（逐项复制，跳过卷根上的系统条目）
-        let stagingName = ".appports-restore-staging-\(UUID().uuidString)"
-        let staging = mountPoint.deletingLastPathComponent().appendingPathComponent(stagingName)
-        AppLogger.shared.log("步骤1: 复制数据到暂存目录 \(stagingName)...")
-        do {
-            try await copyVolumeContents(from: mountPoint, to: staging, estimatedTotalBytes: estimatedTotalBytes, progressHandler: progressHandler)
-            AppLogger.shared.log("步骤1: 复制完成")
+            try requireOwners(at: source)
+            transfer.sourceIdentity = try DataPathIdentity.capture(source, volumeUUID: record.volumeUUID)
+            try store.updateTransfer(transfer)
+            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
+            transfer.phase = .copying
+            try store.updateTransfer(transfer)
+            let baseline = try await TreeCopySession().copy(from: source, to: staging,
+                excludingRootEntries: Self.volumeSystemArtifacts, finalDestination: mountPoint,
+                logicalSourceRoot: mountPoint, progressHandler: progressHandler)
+            transfer.baseline = try PropertyListEncoder().encode(baseline)
+            transfer.destinationIdentity = try DataPathIdentity.capture(staging)
+            transfer.backupIdentity = transfer.sourceIdentity
+            transfer.phase = .verified
+            try store.updateTransfer(transfer)
+            await progressHandler?(FileCopier.Progress(copiedBytes: baseline.logicalBytes,
+                totalBytes: baseline.logicalBytes, currentFile: "正在切换本地入口...".localized))
+            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
+            try TreeCopySession.verifyUnchanged(at: source, against: baseline)
+            try TreeCopySession.verifyCopy(at: staging, against: baseline)
+            try safety.requireLocalRestoreParent(at: mountPoint, isMountPoint: isMountPoint)
+            try store.beginRestore(transfer: transfer, removingMount: record)
+            transfer.phase = .switching
+            synchronizeAgent(store)
+            try await requireExpectedVolume(record.volumeUUID, at: source)
+            try await disk.unmount(mountPoint: source)
+            try safety.requireLocalRestoreParent(at: mountPoint, isMountPoint: isMountPoint)
+            if source != mountPoint { removeEmptyDirectoryQuietly(at: source) }
+            if fileManager.fileExists(atPath: mountPoint.path) {
+                try removeEmptyMountPoint(at: mountPoint)
+            } else if isSymbolicLink(at: mountPoint) {
+                throw DataOperationSafety.Failure.conflict(mountPoint.path)
+            }
+            try DataTreeRelocator.move(staging, to: mountPoint)
+            try TreeCopySession.verifyCopy(at: mountPoint, against: baseline)
+            try store.finalizeTransfer(operationID: id, baseline: transfer.baseline!)
+            invalidateSizeCache(for: mountPoint)
+            // The source APFS volume remains unmounted until explicit verified cleanup.
+            return nil
         } catch {
-            AppLogger.shared.logError(
-                "步骤1: 复制到暂存目录失败",
-                error: error,
-                errorCode: "CONTAINER-RESTORE-COPY-FAILED",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("mount_point", mountPoint), ("staging", staging)]
-            )
-            try? FileCopier.removeCopy(at: staging)
-            operationErrorCode = "CONTAINER-RESTORE-COPY-FAILED"
-            throw MigrationError.copyFailed(error)
-        }
-
-        // 3. 卸载卷，把暂存目录改回原路径
-        AppLogger.shared.log("步骤2: 卸载卷并切换回本地目录...")
-        await progressHandler?(FileCopier.Progress(copiedBytes: estimatedTotalBytes, totalBytes: estimatedTotalBytes, currentFile: "正在切换本地入口...".localized))
-        do {
-            try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
-        } catch {
-            try? FileCopier.removeCopy(at: staging)
-            operationErrorCode = "CONTAINER-RESTORE-VOLUME-MISMATCH"
+            transfer.phase = .needsRecovery
+            transfer.recoverableReason = error.localizedDescription
+            do { try store.updateTransfer(transfer) }
+            catch { AppLogger.shared.logError("无法更新还原恢复记录，原事务仍保留", error: error) }
             throw error
         }
-        // 卷根的权限就是迁移前原目录的权限，换回本地目录后沿用。
-        let originalPermissions = (try? fileManager.attributesOfItem(atPath: mountPoint.path))?[.posixPermissions]
-        let cleanup = ContainerCleanupRecord(
-            kind: .restoredVolume, mountRecord: record,
-            localPath: mountPoint.path, restoreStagingPath: staging.path
-        )
-        // 必须先持久化取消自动挂载；写入失败时不切换本地目录、不删除外置卷。
-        do {
-            try store.beginRestore(cleanup)
-        } catch {
-            operationErrorCode = "CONTAINER-RESTORE-RECORD-UPDATE-FAILED"
-            throw MigrationError.restoreRecordRecovery(staging: staging, underlying: error)
-        }
-        do {
-            try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
-            try await disk.unmount(mountPoint: mountPoint)
-        } catch {
-            do { try store.cancelRestore(cleanup) }
-            catch {
-                operationErrorCode = "CONTAINER-RESTORE-RECORD-RECOVERY-FAILED"
-                throw MigrationError.restoreRecordRecovery(staging: staging, underlying: error)
-            }
-            try? FileCopier.removeCopy(at: staging)
-            operationErrorCode = "CONTAINER-RESTORE-UNMOUNT-FAILED"
-            throw MigrationError.unmountFailed(mountPoint, error.localizedDescription)
-        }
-        do {
-            try removeEmptyMountPoint(at: mountPoint)
-            try fileManager.moveItem(at: staging, to: mountPoint)
-            if let originalPermissions {
-                try? fileManager.setAttributes([.posixPermissions: originalPermissions], ofItemAtPath: mountPoint.path)
-            }
-        } catch {
-            AppLogger.shared.logError(
-                "步骤2: 切换本地目录失败，尝试重新挂载卷；暂存目录保留供手动恢复",
-                error: error,
-                errorCode: "CONTAINER-RESTORE-SWITCH-FAILED",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("mount_point", mountPoint), ("staging", staging)]
-            )
-            do { try store.cancelRestore(cleanup) }
-            catch {
-                operationErrorCode = "CONTAINER-RESTORE-RECORD-RECOVERY-FAILED"
-                throw MigrationError.restoreRecordRecovery(staging: staging, underlying: error)
-            }
-            try? await mountVolume(record.volumeUUID, at: mountPoint, operationID: operationID)
-            operationErrorCode = "CONTAINER-RESTORE-SWITCH-FAILED"
-            throw MigrationError.restoreIncomplete(staging: staging, underlying: error)
-        }
-        AppLogger.shared.logPathState("挂载还原步骤2后-本地路径[\(operationID)]", url: mountPoint)
+    }
 
-        // 4. 活动记录已移除；清理失败时仍保留专用记录，但不会再自动挂载。
-        synchronizeAgent(store)
-        AppLogger.shared.log("步骤3: 删除外置卷...")
-        await progressHandler?(FileCopier.Progress(copiedBytes: estimatedTotalBytes, totalBytes: estimatedTotalBytes, currentFile: "正在清理外部存储...".localized))
-        let cleanupWarning = await performCleanup(cleanup)
-        if let cleanupWarning {
-            AppLogger.shared.logError(
-                "删除外置卷失败（本地还原已完成，可在磁盘工具中手动删除）",
-                errorCode: "CONTAINER-RESTORE-VOLUME-DELETE-FAILED",
-                context: [("operation_id", operationID), ("volume", record.volumeName), ("uuid", record.volumeUUID), ("error", cleanupWarning.details)]
-            )
-            operationResult = "success_with_warning"
-            operationErrorCode = "CONTAINER-RESTORE-VOLUME-DELETE-FAILED"
+    /// Explicit retained-copy cleanup; never called by startup or remount loops.
+    func cleanupRetainedTransfer(operationID: UUID) async throws {
+        guard var transfer = try store.transfer(operationID: operationID), transfer.mode == .mount,
+              [.awaitingUserVerification, .cleanupRequested].contains(transfer.phase),
+              let encoded = transfer.baseline, let backupPath = transfer.backupPath else {
+            throw DataOperationSafety.Failure.inspection(operationID.uuidString)
         }
-
-        AppLogger.shared.log("===== 挂载迁移目录还原完成 =====")
-        invalidateSizeCache(for: mountPoint)
-        if operationResult != "success_with_warning" {
-            operationResult = "success"
+        let baseline = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded)
+        let active = URL(fileURLWithPath: transfer.activePath)
+        let backup = URL(fileURLWithPath: backupPath)
+        // Active data may legitimately change. Prove its identity/availability,
+        // rather than requiring equality with the old copy's content.
+        if transfer.direction == .migrate, let uuid = transfer.createdVolumeUUID, isMountPoint(active) {
+            try await requireExpectedVolume(uuid, at: active)
+            guard let expected = transfer.destinationIdentity,
+                  try DataPathIdentity.capture(active, volumeUUID: uuid).matchesFilesystemObject(expected) else {
+                throw DataOperationSafety.Failure.conflict(active.path)
+            }
+        } else {
+            let expected: DataPathIdentity?
+            if transfer.direction == .restore { expected = transfer.destinationIdentity }
+            else {
+                expected = try store.transfers().first {
+                    $0.direction == .restore && $0.priorOperationID == operationID
+                        && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
+                }?.destinationIdentity
+            }
+            guard let expected, !isMountPoint(active), !isSymbolicLink(at: active),
+                  try DataPathIdentity.capture(active).matchesFilesystemObject(expected) else {
+                throw DataOperationSafety.Failure.conflict(active.path)
+            }
         }
-        return cleanupWarning
+        try safety.requireNoOverlap(at: backup, ownedTransferIDs: [operationID], ownedRetainedPath: backup.path)
+        // An offline retained volume is a retryable preflight failure. Do not
+        // turn a completed restore into needsRecovery before touching anything.
+        var retainedVolumeIsPrivatelyMounted = false
+        if transfer.direction == .restore {
+            guard let uuid = transfer.sourceIdentity.volumeUUID else {
+                throw DataOperationSafety.Failure.inspection(backup.path)
+            }
+            let info = try await disk.volumeInfo(for: uuid)
+            guard info.volumeUUID?.caseInsensitiveCompare(uuid) == .orderedSame else {
+                throw DataOperationSafety.Failure.conflict(backup.path)
+            }
+            if let current = info.mountPoint, !current.isEmpty {
+                guard DiskUtility.pathsMatch(current, backup.path) else {
+                    throw DataOperationSafety.Failure.conflict(current)
+                }
+                try await requireExpectedVolume(uuid, at: backup)
+                retainedVolumeIsPrivatelyMounted = true
+            }
+        }
+        try store.requestCleanup(operationID: operationID)
+        transfer.phase = .cleanupRequested
+        var physicalDeletionBegan = false
+        do {
+            if transfer.direction == .migrate {
+                guard let expected = transfer.backupIdentity, !isMountPoint(backup), !isSymbolicLink(at: backup),
+                      try DataPathIdentity.capture(backup).matchesFilesystemObject(expected) else {
+                    throw DataOperationSafety.Failure.conflict(backup.path)
+                }
+                try await safety.requireNoKnownWriters(at: backup, bundleIdentifier: transfer.bundleIdentifier)
+                if let uuid = transfer.sourceIdentity.volumeUUID {
+                    try TreeCopySession.verifyUnchanged(at: backup, against: baseline, expectedVolumeUUID: uuid)
+                } else {
+                    try TreeCopySession.verifyUnchanged(at: backup, against: baseline)
+                }
+                physicalDeletionBegan = true
+                try TreeCopySession.removeVerifiedCopy(at: backup, against: baseline)
+            } else {
+                guard let uuid = transfer.sourceIdentity.volumeUUID else { throw DataOperationSafety.Failure.inspection(backup.path) }
+                if !retainedVolumeIsPrivatelyMounted {
+                    try fileManager.createDirectory(at: backup.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    // Query again inside mountVolume; a formerly offline volume
+                    // may have appeared elsewhere since the preflight check.
+                    try await mountVolume(uuid, at: backup, operationID: operationID.uuidString, allowRelocation: false)
+                }
+                try requireOwners(at: backup)
+                guard try DataPathIdentity.capture(backup, volumeUUID: uuid).matchesFilesystemObject(transfer.sourceIdentity) else {
+                    throw DataOperationSafety.Failure.conflict(backup.path)
+                }
+                try await safety.requireNoKnownWriters(at: backup, bundleIdentifier: transfer.bundleIdentifier)
+                try TreeCopySession.verifyUnchanged(at: backup, against: baseline, expectedVolumeUUID: uuid)
+                try await requireExpectedVolume(uuid, at: backup)
+                try await disk.unmount(mountPoint: backup)
+                removeEmptyDirectoryQuietly(at: backup)
+                physicalDeletionBegan = true
+                try await disk.deleteAPFSVolume(uuid)
+            }
+            try store.finishTransfer(operationID: operationID, deletionConfirmed: true)
+        } catch {
+            // Inspection or private mounting can be retried after revalidating
+            // the complete baseline. Partial deletion cannot be auto-resumed.
+            transfer.phase = physicalDeletionBegan ? .needsRecovery : .cleanupRequested
+            transfer.recoverableReason = error.localizedDescription
+            do { try store.updateTransfer(transfer) }
+            catch { AppLogger.shared.logError("无法更新副本清理恢复记录，原事务仍保留", error: error) }
+            throw error
+        }
     }
 
     /// 用户明确重试时才清理；不经过自动挂载入口，也不重复复制已经还原的数据。
@@ -805,60 +720,13 @@ actor ContainerVolumeMigrator {
     }
 
     private func performCleanup(_ cleanup: ContainerCleanupRecord, recordUpdateOnly: Bool = false) async -> CleanupWarning? {
-        var copyRemoved = recordUpdateOnly
         do {
-            // 必须仍有持久化的清理记录；损坏或失踪时不凭旧 UI 状态删除副本。
             guard try store.pendingCleanups().contains(where: { $0.id == cleanup.id }) else { return nil }
-            let localURL = URL(fileURLWithPath: cleanup.localPath)
-            if !recordUpdateOnly {
-                switch cleanup.kind {
-                case .migrationBackup:
-                    guard !isMountPoint(localURL), !isSymbolicLink(at: localURL),
-                          localURL.lastPathComponent.hasPrefix(".appports-migration-backup-"),
-                          localURL.deletingLastPathComponent() == cleanup.mountRecord.mountPointURL.deletingLastPathComponent() else {
-                        throw MigrationError.unexpectedMountedVolume(localURL)
-                    }
-                    let source = cleanup.mountRecord.mountPointURL
-                    if let active = store.record(forMountPoint: source) {
-                        guard active.volumeUUID == cleanup.mountRecord.volumeUUID else {
-                            throw MigrationError.unexpectedMountedVolume(source)
-                        }
-                        // 外置副本不在线时保留安全备份，不能删掉用户仅有的可用副本。
-                        try await requireExpectedVolume(active.volumeUUID, at: source)
-                    } else {
-                        // 用户可能已完成还原，再来清理早先留下的本地安全备份。
-                        guard existingRealDirectory(at: source), !isMountPoint(source) else {
-                            throw MigrationError.sourceNotDirectory(source)
-                        }
-                    }
-                    if fileManager.fileExists(atPath: localURL.path) {
-                        try removeMigrationBackup(localURL)
-                    }
-                case .restoredVolume:
-                    // 原路径必须已切换为本地目录，暂存副本不能仍在等待就位。
-                    guard existingRealDirectory(at: localURL), !isMountPoint(localURL),
-                          cleanup.restoreStagingPath.map({ !fileManager.fileExists(atPath: $0) }) ?? true else {
-                        throw MigrationError.sourceNotDirectory(localURL)
-                    }
-                    guard !store.records().contains(where: { $0.volumeUUID == cleanup.mountRecord.volumeUUID }) else {
-                        throw MigrationError.alreadyManaged(localURL)
-                    }
-                    let info = try await disk.volumeInfo(for: cleanup.mountRecord.volumeUUID)
-                    guard info.volumeUUID?.caseInsensitiveCompare(cleanup.mountRecord.volumeUUID) == .orderedSame else {
-                        throw MigrationError.unexpectedMountedVolume(localURL)
-                    }
-                    // 不替用户卸载已经重新被使用的卷。保留副本，等待用户检查后再试。
-                    if let mountedPath = info.mountPoint, !mountedPath.isEmpty {
-                        throw MigrationError.unexpectedMountedVolume(URL(fileURLWithPath: mountedPath))
-                    }
-                    try await disk.deleteAPFSVolume(cleanup.mountRecord.volumeUUID)
-                }
-                copyRemoved = true
-            }
-            try store.finishCleanup(cleanup.id)
-            return nil
+            // A legacy record contains no verified baseline. UI state cannot prove
+            // physical deletion either; only explicit record-discard is supported.
+            throw DataOperationSafety.Failure.inspection(cleanup.localPath)
         } catch {
-            return CleanupWarning(cleanup: cleanup, details: error.localizedDescription, needsRecordUpdateOnly: copyRemoved)
+            return CleanupWarning(cleanup: cleanup, details: error.localizedDescription)
         }
     }
 
@@ -876,18 +744,37 @@ actor ContainerVolumeMigrator {
         _ volumeUUID: String,
         at mountPoint: URL,
         operationID: String,
-        knownMountPoint: KnownMountPoint = .unknown
+        knownMountPoint: KnownMountPoint = .unknown,
+        allowRelocation: Bool = true
     ) async throws {
         var hint = knownMountPoint
         for attempt in 1...Self.maximumMountAttempts {
-            try await detachForeignMountPoint(
-                volumeUUID: volumeUUID,
-                target: mountPoint,
-                operationID: operationID,
-                knownMountPoint: hint
-            )
-            try prepareMountPoint(at: mountPoint)
+            if allowRelocation {
+                try await detachForeignMountPoint(
+                    volumeUUID: volumeUUID,
+                    target: mountPoint,
+                    operationID: operationID,
+                    knownMountPoint: hint
+                )
+            } else {
+                // Explicit retained-volume cleanup must never detach an active
+                // volume that the user mounted somewhere else in the meantime.
+                let info = try await disk.volumeInfo(for: volumeUUID)
+                guard info.volumeUUID?.caseInsensitiveCompare(volumeUUID) == .orderedSame,
+                      info.mountPoint?.isEmpty ?? true else {
+                    throw DataOperationSafety.Failure.conflict(mountPoint.path)
+                }
+            }
+            let lease: any MountPointLeasing
+            do {
+                lease = try makeMountPointLease(mountPoint)
+                try lease.verifyBeforeMount()
+            } catch MountPointLease.Failure.notEmpty {
+                throw MigrationError.mountPointNotEmpty(mountPoint)
+            }
             try await performMount(volumeUUID, at: mountPoint, operationID: operationID)
+            do { try lease.verifyUnderlyingDirectory() }
+            catch { throw MigrationError.mountPointConflict(mountPoint, error.localizedDescription) }
 
             let landing = try await mountLanding(volumeUUID: volumeUUID, at: mountPoint)
             switch landing.landing {
@@ -902,8 +789,8 @@ actor ContainerVolumeMigrator {
                         ]
                     )
                 }
+                try requireOwners(at: mountPoint)
                 // 迁移前建的卷（或标记被删掉的卷）在这里补上防索引标记；失败只记日志，不影响挂载。
-                writeNeverIndexMarkerIfNeeded(at: mountPoint, operationID: operationID)
                 return
             case .reportedByDiskUtil:
                 // statfs 还没看到挂载表更新，但磁盘仲裁已经确认卷在目标路径上了，按成功处理。
@@ -913,7 +800,7 @@ actor ContainerVolumeMigrator {
                     details: [("operation_id", operationID), ("mount_point", mountPoint.path)],
                     level: "WARN"
                 )
-                return
+                throw MigrationError.mountVerificationFailed(mountPoint)
             case .notMounted:
                 break
             }
@@ -938,34 +825,10 @@ actor ContainerVolumeMigrator {
         }
     }
 
-    /// 执行挂载命令。部分系统版本会拒绝把卷挂到不可读目录上，这时放开权限再试一次。
+    /// A command failure never opens the local directory for a second attempt.
     private func performMount(_ volumeUUID: String, at mountPoint: URL, operationID: String) async throws {
-        do {
-            try await disk.mount(volume: volumeUUID, at: mountPoint)
-        } catch {
-            AppLogger.shared.logContext(
-                "挂载到锁定的挂载点失败，放开权限后重试",
-                details: [("operation_id", operationID), ("mount_point", mountPoint.path), ("error", error.localizedDescription)],
-                level: "WARN"
-            )
-            setMode(Self.openMountPointMode, at: mountPoint)
-            // 保存未挂载目录的 fd，成功后也能锁住被卷遮住的原目录，避免拔盘后写入本地。
-            let underlyingDirectory = open(mountPoint.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
-            guard underlyingDirectory >= 0 else {
-                setMode(Self.lockedMountPointMode, at: mountPoint)
-                throw MigrationError.mountFailed(mountPoint, error.localizedDescription)
-            }
-            defer {
-                _ = fchmod(underlyingDirectory, Self.lockedMountPointMode)
-                _ = close(underlyingDirectory)
-            }
-            do {
-                try await disk.mount(volume: volumeUUID, at: mountPoint)
-            } catch {
-                setMode(Self.lockedMountPointMode, at: mountPoint)
-                throw MigrationError.mountFailed(mountPoint, error.localizedDescription)
-            }
-        }
+        do { try await disk.mount(volume: volumeUUID, at: mountPoint, requireOwnership: true) }
+        catch { throw MigrationError.mountFailed(mountPoint, error.localizedDescription) }
     }
 
     /// 这次挂载动作的真实落点。
@@ -991,6 +854,12 @@ actor ContainerVolumeMigrator {
             return (.notMounted, info)
         }
         return (DiskUtility.pathsMatch(current, mountPoint.path) ? .reportedByDiskUtil : .notMounted, info)
+    }
+
+    private func requireOwners(at url: URL) throws {
+        guard let flags = mountFlags(url), flags & UInt32(MNT_IGNORE_OWNERSHIP) == 0 else {
+            throw DataOperationSafety.Failure.inspection(url.path)
+        }
     }
 
     private func requireExpectedVolume(_ uuid: String, at mountPoint: URL) async throws {
@@ -1057,76 +926,18 @@ actor ContainerVolumeMigrator {
         }
     }
 
-    /// 挂载点必须是空目录；未挂载期间保持 000 权限。
-    /// 目录里有本地数据时不能锁住它：那是用户还能访问的真实数据，恢复原权限后报错。
-    private func prepareMountPoint(at url: URL) throws {
-        var isDirectory: ObjCBool = false
-        if fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory) {
-            guard isDirectory.boolValue, !isSymbolicLink(at: url) else {
-                throw MigrationError.sourceNotDirectory(url)
-            }
-            let originalMode = currentMode(at: url)
-            setMode(Self.openMountPointMode, at: url)
-            let contents = try fileManager.contentsOfDirectory(atPath: url.path).filter { $0 != ".DS_Store" }
-            guard contents.isEmpty else {
-                if let originalMode { setMode(originalMode, at: url) }
-                throw MigrationError.mountPointNotEmpty(url)
-            }
-        } else {
-            try fileManager.createDirectory(at: url, withIntermediateDirectories: false)
-        }
-        setMode(Self.lockedMountPointMode, at: url)
-    }
-
-    private func currentMode(at url: URL) -> mode_t? {
-        var info = stat()
-        guard lstat(url.path, &info) == 0 else { return nil }
-        return info.st_mode & 0o7777
-    }
-
-    private func setMode(_ mode: mode_t, at url: URL) {
-        if chmod(url.path, mode) != 0 {
-            AppLogger.shared.logContext(
-                "修改挂载点权限失败",
-                details: [("path", url.path), ("mode", String(mode, radix: 8)), ("errno", String(errno))],
-                level: "TRACE"
-            )
-        }
-    }
-
-    private func unmountQuietly(_ mountPoint: URL, expectedVolumeUUID: String, operationID: String) async {
-        guard isMountPoint(mountPoint) else { return }
-        do {
-            try await requireExpectedVolume(expectedVolumeUUID, at: mountPoint)
-            try await disk.unmount(mountPoint: mountPoint)
-        } catch {
-            AppLogger.shared.logError(
-                "回滚：卸载失败",
-                error: error,
-                context: [("operation_id", operationID)],
-                relatedURLs: [("mount_point", mountPoint)]
-            )
-        }
-    }
-
     private func removeEmptyDirectoryQuietly(at url: URL) {
-        guard !isMountPoint(url), !isSymbolicLink(at: url) else { return }
-        setMode(Self.openMountPointMode, at: url)
-        // 原子地只删空目录；其它卷重新挂上或本地新数据出现时，绝不递归删除。
+        guard !isMountPoint(url), !isSymbolicLink(at: url),
+              let lease = try? makeMountPointLease(url), (try? lease.verifyBeforeMount()) != nil else { return }
         _ = rmdir(url.path)
     }
 
-    /// 卸载后删除留下的空挂载点。
-    ///
-    /// 只用 `rmdir`：卷若又被挂了回来、或挂载点底下意外有文件，删除会失败而不是像
-    /// `removeItem` 那样递归删掉外置卷或本地的数据。Finder 留下的 `.DS_Store` 可以清掉。
+    /// Never follow a replacement link or delete a name-based exemption.
     private func removeEmptyMountPoint(at url: URL) throws {
-        guard !isMountPoint(url) else { throw MigrationError.unexpectedMountedVolume(url) }
-        setMode(Self.openMountPointMode, at: url)
-        let finderMetadata = url.appendingPathComponent(".DS_Store")
-        if fileManager.fileExists(atPath: finderMetadata.path) {
-            try? fileManager.removeItem(at: finderMetadata)
-        }
+        guard !isMountPoint(url), !isSymbolicLink(at: url) else { throw MigrationError.unexpectedMountedVolume(url) }
+        let lease: any MountPointLeasing
+        do { lease = try makeMountPointLease(url); try lease.verifyBeforeMount() }
+        catch MountPointLease.Failure.notEmpty { throw MigrationError.mountPointNotEmpty(url) }
         guard rmdir(url.path) == 0 else {
             let code = errno
             if code == ENOTEMPTY || code == EEXIST { throw MigrationError.mountPointNotEmpty(url) }
@@ -1134,59 +945,7 @@ actor ContainerVolumeMigrator {
         }
     }
 
-    private func cleanupStaging(_ staging: URL, expectedVolumeUUID: String, operationID: String) async {
-        await unmountQuietly(staging, expectedVolumeUUID: expectedVolumeUUID, operationID: operationID)
-        removeEmptyDirectoryQuietly(at: staging)
-    }
-
-    private func deleteVolumeQuietly(_ volume: String, operationID: String) async {
-        do {
-            try await disk.deleteAPFSVolume(volume)
-            AppLogger.shared.logContext("回滚：已删除新建的外置卷", details: [("operation_id", operationID), ("volume", volume)])
-        } catch {
-            AppLogger.shared.logError(
-                "回滚：删除新建的外置卷失败，请在磁盘工具中手动删除",
-                error: error,
-                errorCode: "CONTAINER-MOUNT-ROLLBACK-DELETE-VOLUME-FAILED",
-                context: [("operation_id", operationID), ("volume", volume)]
-            )
-        }
-    }
-
-    // MARK: - 私有辅助：复制与标记
-
-    /// 逐项复制卷根目录内容，跳过 `.fseventsd` 等系统条目；它们可能不可读，也不属于应用数据。
-    private func copyVolumeContents(
-        from mountPoint: URL,
-        to staging: URL,
-        estimatedTotalBytes: Int64,
-        progressHandler: FileCopier.ProgressHandler?
-    ) async throws {
-        let entries = try fileManager.contentsOfDirectory(
-            at: mountPoint,
-            includingPropertiesForKeys: nil,
-            options: []
-        ).filter { !Self.volumeSystemArtifacts.contains($0.lastPathComponent) }
-        try fileManager.createDirectory(at: staging, withIntermediateDirectories: false)
-
-        let copier = FileCopier()
-        var copiedBytes: Int64 = 0
-        for entry in entries {
-            let base = copiedBytes
-            let entryBytes = try await copier.copyDirectory(
-                from: entry,
-                to: staging.appendingPathComponent(entry.lastPathComponent),
-                estimatedTotalBytes: nil
-            ) { progress in
-                await progressHandler?(FileCopier.Progress(
-                    copiedBytes: base + progress.copiedBytes,
-                    totalBytes: estimatedTotalBytes,
-                    currentFile: progress.currentFile
-                ))
-            }
-            copiedBytes += entryBytes
-        }
-    }
+    // MARK: - Volume metadata
 
     private func writeVolumeMarker(
         at volumeRoot: URL,
@@ -1295,33 +1054,4 @@ actor ContainerVolumeMigrator {
         return parentURL.appendingPathComponent(backupName)
     }
 
-    private func restoreMigrationBackup(_ backupURL: URL, to sourcePath: URL, operationID: String) -> Bool {
-        if isMountPoint(sourcePath) || fileManager.fileExists(atPath: sourcePath.path) || isSymbolicLink(at: sourcePath) {
-            AppLogger.shared.logError(
-                "挂载迁移回滚：源路径仍存在，未覆盖恢复",
-                errorCode: "CONTAINER-MOUNT-BACKUP-RESTORE-SOURCE-EXISTS",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("source", sourcePath), ("backup", backupURL)]
-            )
-            return false
-        }
-        do {
-            try fileManager.moveItem(at: backupURL, to: sourcePath)
-            AppLogger.shared.logContext(
-                "挂载迁移回滚：已恢复到本地源路径",
-                details: [("operation_id", operationID), ("source_path", sourcePath.path), ("backup_path", backupURL.path)],
-                level: "WARN"
-            )
-            return true
-        } catch {
-            AppLogger.shared.logError(
-                "挂载迁移回滚：恢复到本地源路径失败，备份目录保留",
-                error: error,
-                errorCode: "CONTAINER-MOUNT-BACKUP-RESTORE-FAILED",
-                context: [("operation_id", operationID)],
-                relatedURLs: [("source", sourcePath), ("backup", backupURL)]
-            )
-            return false
-        }
-    }
 }

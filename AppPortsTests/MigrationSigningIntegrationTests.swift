@@ -131,7 +131,7 @@ struct MigrationSigningIntegrationTests {
             isRunning: false,
             progressHandler: nil
         )
-        let mover = DataDirMover(homeDir: workspace.homeURL)
+        let mover = DataDirMover(homeDir: workspace.homeURL, store: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("migration-records.plist")))
         var item = DataDirItem(name: "Chat account", path: localData, type: .containers,
                                priority: .critical, description: "Temporary chat regression fixture")
         try await mover.migrate(item: item, to: externalDataBase, progressHandler: nil)
@@ -155,7 +155,8 @@ struct MigrationSigningIntegrationTests {
         try await mover.restore(item: item, progressHandler: nil)
         #expect(try FileManager.default.attributesOfItem(atPath: localData.path)[.type] as? FileAttributeType == .typeDirectory)
         #expect(try payloadFiles(in: localData) == expectedFiles)
-        #expect(FileManager.default.fileExists(atPath: externalData.path) == false)
+        // Data migration retains the previous copy until explicit verified cleanup.
+        #expect(try payloadFiles(in: externalData) == expectedFiles)
         #expect(FileManager.default.fileExists(atPath: localData.appendingPathComponent(".appports-link-metadata.plist").path) == false)
         #expect(FileManager.default.fileExists(atPath: localData.appendingPathComponent("attachments/empty").path))
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: localData.appendingPathComponent("latest-attachment").path) == "attachments/picture.bin")

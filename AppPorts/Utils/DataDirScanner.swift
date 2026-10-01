@@ -186,6 +186,7 @@ actor DataDirScanner {
     private let isSandboxedApplication: @Sendable (URL) -> Bool
     /// 本轮扫描开始时读取一次的挂载记录，避免逐路径重复读文件。
     private var mountRecordsByPath: [String: ContainerMountRecord] = [:]
+    private var recoveryInspection: ContainerMountStore.Inspection?
     private var readIssues: [DataDirReadIssue] = []
 
     private struct ManagedLinkMetadata: Codable, Sendable {
@@ -462,7 +463,7 @@ actor DataDirScanner {
             ],
             level: "TRACE"
         )
-        refreshMountRecords()
+        refreshMountRecords(for: nil)
         var results: [DataDirItem] = []
 
         for known in knownDotFolders {
@@ -528,8 +529,6 @@ actor DataDirScanner {
         readIssues = []
         guard !app.isFolder else { return DataDirScanResult(items: [], readIssues: []) }
         let scanID = AppLogger.shared.makeOperationID(prefix: "scanner-library-dirs")
-        refreshMountRecords()
-
         let identity: ResolvedAppIdentity?
         let identityIssue: AppIdentityIssue?
         switch AppIdentityResolver.resolve(at: app.displayURL) {
@@ -541,6 +540,7 @@ actor DataDirScanner {
             identityIssue = issue
         }
         let bundleID = identity?.bundleIdentifier
+        refreshMountRecords(for: bundleID)
         let appName = app.displayName.replacingOccurrences(of: ".app", with: "")
         let matchProfile = buildMatchProfile(bundleID: bundleID, appName: appName)
         let appIsSandboxed = isSandboxedApplication(app.displayURL)
@@ -572,44 +572,12 @@ actor DataDirScanner {
             for candidateURL in localCandidates {
                 let inspection = inspectItem(at: candidateURL, type: config.type)
 
-                if config.type == .containers {
-                    // 跳过顶层容器目录（~/Library/Containers/xxx），
-                    // macOS 系统保护不允许在 ~/Library/Containers/ 创建新条目，
-                    // 迁移整个容器目录会导致数据丢失。只扫描容器内的嵌套子目录。
-                    for nestedItem in scanNestedContainerDataLinks(
-                        in: candidateURL,
-                        priority: config.priority,
-                        appName: appName,
-                        externalRootURL: externalRootURL
+                if config.type == .containers || config.type == .groupContainers {
+                    for nestedItem in scanContainerStructure(
+                        in: candidateURL, type: config.type, priority: config.priority,
+                        appName: appName, externalRootURL: externalRootURL
                     ) {
-                        resultsByPath[nestedItem.path.standardizedFileURL.path] = nestedItem
-                    }
-                } else if config.type == .groupContainers {
-                    // 应用组容器根目录同样由 containermanagerd 管理。根目录变成软链后，
-                    // 系统可能无法读取/修复 .com.apple.containermanagerd.metadata.plist。
-                    // 普通本地根目录不作为可迁移项展示；已有软链保留展示，方便用户还原。
-                    if inspection.status == "已链接" || inspection.status == "现有软链" {
-                        var item = makeAppDataItem(
-                            name: candidateURL.lastPathComponent,
-                            path: candidateURL,
-                            type: config.type,
-                            priority: config.priority,
-                            description: config.description,
-                            appName: appName
-                        )
-                        applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
-                        markProtectedGroupContainerRoot(&item)
-                        resultsByPath[candidateURL.standardizedFileURL.path] = item
-                    } else if inspection.status == "本地" {
-                        // 根目录不可迁移，但其直接子目录可以逐个迁移（沙盒应用走挂载迁移）。
-                        for childItem in scanGroupContainerChildren(
-                            in: candidateURL,
-                            priority: config.priority,
-                            appName: appName,
-                            externalRootURL: externalRootURL
-                        ) {
-                            resultsByPath[childItem.path.standardizedFileURL.path] = childItem
-                        }
+                        resultsByPath[nestedItem.id] = nestedItem
                     }
                 } else {
                     var item = makeAppDataItem(
@@ -662,15 +630,47 @@ actor DataDirScanner {
             resultsByPath[item.path.standardizedFileURL.path] = item
         }
 
-        // Containers / Group Containers 下的目录一律挂载迁移，不看主应用是否沙盒：
-        // 容器存在本身就说明它的主人（主应用、小组件、扩展或 helper）是沙盒进程，
-        // 符号链接会被内核按真实路径拒绝；已被重签过的应用虽然此刻能用，也正是升级后秒退的那类。
-        for (key, item) in resultsByPath
-        where (item.type == .containers || item.type == .groupContainers) && item.isMigratable {
-            var mountItem = item
-            mountItem.requiresMountMigration = true
-            mountItem.migrationWarning = nil
-            resultsByPath[key] = mountItem
+        // Persistent records remain visible even when the mount point is absent, deeply nested,
+        // or outside the current discovery whitelist. Ownership was checked before caching them.
+        for record in mountRecordsByPath.values {
+            guard let type = DataDirType(rawValue: record.dataDirType) else { continue }
+            let url = record.mountPointURL.standardizedFileURL
+            var item = makeAppDataItem(name: url.lastPathComponent, path: url, type: type,
+                                      priority: .critical, description: "容器内部数据目录", appName: appName)
+            applyInspectionResult(to: &item, inspection: inspectItem(at: url, type: type), externalRootURL: externalRootURL)
+            resultsByPath[item.id] = item
+        }
+
+        mergeRecoveryRecords(into: &resultsByPath, bundleID: bundleID, appName: appName, externalRootURL: externalRootURL)
+
+        let policy = DataPathPolicy(homeDirectory: homeDir)
+        for (key, item) in resultsByPath where item.type == .containers || item.type == .groupContainers {
+            var updated = item
+            if ![DataPathPolicy.Reason.runtimeConflict, .readFailure, .retainedOriginal].contains(where: { $0 == item.pathPolicy?.reason }) {
+                updated.applyPathPolicy(policy.evaluate(item.path))
+            }
+            if recoveryInspection?.validationError != nil {
+                updated.applyPathPolicy(.init(role: updated.pathPolicy?.role ?? .businessData, reason: .runtimeConflict,
+                                              canMigrate: false, mayDiscoverChildren: false))
+            }
+            if readIssues.contains(where: { $0.url.standardizedFileURL == item.path.standardizedFileURL }) {
+                updated.applyPathPolicy(.init(role: updated.pathPolicy?.role ?? .businessData, reason: .readFailure,
+                                              canMigrate: false, mayDiscoverChildren: false))
+                updated.sizeIsIncomplete = true
+            }
+            if let record = mountRecord(for: item.path),
+               let reason = recoveryInspection?.remountInterventions[record.volumeUUID.uppercased()] {
+                updated.applyPathPolicy(.init(role: updated.pathPolicy?.role ?? .businessData, reason: .runtimeConflict,
+                                              canMigrate: false, mayDiscoverChildren: false))
+                updated.nonMigratableReason = reason
+            }
+            updated.requiresMountMigration = true
+            updated.migrationWarning = nil
+            resultsByPath[key] = updated
+        }
+
+        for key in Array(resultsByPath.keys) {
+            resultsByPath[key]?.associatedBundleIdentifier = bundleID
         }
 
         let sortedResults = Array(resultsByPath.values).sorted {
@@ -720,62 +720,106 @@ actor DataDirScanner {
 
     // MARK: - 私有辅助方法
 
-    /// AppPorts 接管的状态：受管符号链接与挂载迁移都算。
-    private func isManagedStatus(_ status: String) -> Bool {
-        status == "已链接" || status == "待规范" || DataDirStatus.mountStatuses.contains(status)
+    private func refreshMountRecords(for bundleID: String?) {
+        mountRecordsByPath = [:]
+        recoveryInspection = nil
+        guard let bundleID else { return }
+        let records: [ContainerMountRecord]
+        do {
+            let inspection = try mountStore.recordsForInspection()
+            recoveryInspection = inspection
+            records = inspection.mounts
+            if let error = inspection.validationError {
+                recordReadIssue(at: homeDir.appendingPathComponent("Library/Application Support/AppPorts/container-mounts.plist"), error: error)
+            }
+        }
+        catch {
+            recordReadIssue(at: homeDir.appendingPathComponent("Library/Application Support/AppPorts/container-mounts.plist"), error: error)
+            return
+        }
+        for record in records {
+            let url = record.mountPointURL.standardizedFileURL
+            let containerBases = ["Library/Containers", "Library/Group Containers"].map {
+                homeDir.appendingPathComponent($0).standardizedFileURL
+            }
+            guard containerBases.contains(where: { base in
+                let canonical = base.resolvingSymlinksInPath().path
+                let source = url.resolvingSymlinksInPath().path
+                return url.path.hasPrefix(base.path + "/") || source.hasPrefix(canonical + "/")
+            }) else { continue }
+            let root = homeDir.appendingPathComponent("Library/Containers/" + bundleID).standardizedFileURL.path
+            let canonicalRoot = URL(fileURLWithPath: root).resolvingSymlinksInPath().path
+            let path = url.resolvingSymlinksInPath().path
+            let legacyIdentityMatches = record.bundleIdentifier == nil
+                && (url.path == root || url.path.hasPrefix(root + "/")
+                    || path == canonicalRoot || path.hasPrefix(canonicalRoot + "/"))
+            guard record.bundleIdentifier == bundleID || legacyIdentityMatches else { continue }
+            mountRecordsByPath[url.path] = record
+            mountRecordsByPath[path] = record
+        }
     }
 
-    private func refreshMountRecords() {
-        var byPath: [String: ContainerMountRecord] = [:]
-        for record in mountStore.records() {
-            // 临时目录等路径可能以 /var 或 /private/var 两种形式出现，两种键都登记。
-            byPath[record.mountPointPath] = record
-            byPath[URL(fileURLWithPath: record.mountPointPath).resolvingSymlinksInPath().path] = record
+    /// Indexes, unlike directory enumeration, survive missing paths and business-tree depth limits.
+    private func mergeRecoveryRecords(into items: inout [String: DataDirItem], bundleID: String?, appName: String, externalRootURL: URL?) {
+        guard let bundleID, let inspection = recoveryInspection else { return }
+        func belongs(_ recordedBundle: String?, _ source: URL) -> Bool {
+            let lexical = source.standardizedFileURL.path
+            let canonical = source.resolvingSymlinksInPath().path
+            let home = homeDir.resolvingSymlinksInPath().path
+            guard lexical.hasPrefix(homeDir.path + "/") || canonical.hasPrefix(home + "/") else { return false }
+            if recordedBundle == bundleID { return true }
+            guard recordedBundle == nil else { return false }
+            let root = homeDir.appendingPathComponent("Library/Containers/" + bundleID).path
+            return lexical == root || lexical.hasPrefix(root + "/")
         }
-        mountRecordsByPath = byPath
+        func conflict(_ item: inout DataDirItem) {
+            let role = DataPathPolicy(homeDirectory: homeDir).evaluate(item.path).role
+            item.applyPathPolicy(.init(role: role, reason: .runtimeConflict, canMigrate: false, mayDiscoverChildren: false))
+        }
+        for link in inspection.managedLinks {
+            let source = URL(fileURLWithPath: link.originalPath).standardizedFileURL
+            guard belongs(link.bundleIdentifier, source), let type = DataDirType(rawValue: link.dataDirType) else { continue }
+            let destination = URL(fileURLWithPath: link.destinationPath).standardizedFileURL
+            let inspection = inspectItem(at: source, type: type)
+            var item = items[source.path] ?? makeAppDataItem(name: source.lastPathComponent, path: source, type: type,
+                priority: .critical, description: "容器内部数据目录", appName: appName)
+            item.hasManagedLinkRecord = true
+            item.linkedDestination = destination
+            if inspection.linkedDestination?.standardizedFileURL == destination {
+                applyInspectionResult(to: &item, inspection: (DataDirStatus.linked, destination), externalRootURL: externalRootURL)
+            } else {
+                item.status = inspection.status
+                if inspection.status != DataDirStatus.missing { conflict(&item) }
+            }
+            // A same-name replacement never inherits the old migration's identity.
+            if let identity = try? DataPathIdentity.capture(destination), !identity.matchesFilesystemObject(link.destinationIdentity) { conflict(&item) }
+            items[item.id] = item
+        }
+        for transfer in inspection.transfers {
+            let source = URL(fileURLWithPath: transfer.originalPath).standardizedFileURL
+            guard belongs(transfer.bundleIdentifier, source), let type = DataDirType(rawValue: transfer.dataDirType) else { continue }
+            var item = items[source.path] ?? makeAppDataItem(name: source.lastPathComponent, path: source, type: type,
+                priority: .critical, description: "容器内部数据目录", appName: appName)
+            if items[source.path] == nil {
+                applyInspectionResult(to: &item, inspection: inspectItem(at: source, type: type), externalRootURL: externalRootURL)
+            }
+            item.recoveryOperationID = transfer.operationID
+            // Retention after success reserves the layout, but is not an error.
+            // Interrupted operations still require explicit inspection.
+            if [.awaitingUserVerification, .cleanupRequested].contains(transfer.phase), transfer.recoverableReason == nil,
+               item.pathPolicy?.reason != .runtimeConflict, item.pathPolicy?.reason != .readFailure {
+                let role = DataPathPolicy(homeDirectory: homeDir).evaluate(item.path).role
+                item.applyPathPolicy(.init(role: role, reason: .retainedOriginal, canMigrate: false, mayDiscoverChildren: false))
+            } else {
+                conflict(&item)
+            }
+            items[item.id] = item
+        }
     }
 
     private func mountRecord(for url: URL) -> ContainerMountRecord? {
         mountRecordsByPath[url.standardizedFileURL.path]
             ?? mountRecordsByPath[url.resolvingSymlinksInPath().path]
-    }
-
-    /// 应用组容器根目录不可迁移；列出其直接子目录作为可迁移项。
-    private func scanGroupContainerChildren(
-        in rootURL: URL,
-        priority: DataDirPriority,
-        appName: String,
-        externalRootURL: URL?
-    ) -> [DataDirItem] {
-        var results: [DataDirItem] = []
-
-        for childURL in directoryEntries(at: rootURL) {
-            let inspection = inspectItem(at: childURL, type: .groupContainers)
-            let resolvedTarget = resolveSymlinkDestination(at: childURL)
-            let shouldSurface = resolvedTarget.map { shouldSurfaceNestedContainerLink(from: childURL, to: $0, externalRootURL: externalRootURL) } ?? false
-            guard inspection.status == "本地" || isManagedStatus(inspection.status) || shouldSurface else { continue }
-
-            var item = DataDirItem(
-                name: "\(DataDirType.groupContainers.localizedTitle): \(rootURL.lastPathComponent)/\(childURL.lastPathComponent)",
-                path: childURL,
-                type: .groupContainers,
-                priority: priority,
-                description: "应用组容器内部数据目录".localized,
-                isMigratable: true
-            )
-            item.associatedAppName = appName
-            if inspection.status == "本地" {
-                item.migrationWarning = "此目录位于沙盒应用容器内，迁移后应用可能无法打开。如遇此情况，请将该目录迁回本地即可恢复。".localized
-            }
-            applyInspectionResult(
-                to: &item,
-                inspection: (inspection.status, inspection.linkedDestination ?? resolvedTarget),
-                externalRootURL: externalRootURL
-            )
-            results.append(item)
-        }
-
-        return deduplicate(items: results)
     }
 
     private func appDataSearchConfigs() -> [AppDataSearchConfig] {
@@ -845,566 +889,51 @@ actor DataDirScanner {
         ]
     }
 
-    private func scanNestedContainerDataLinks(
-        in containerURL: URL,
+    /// Enumerate structure, not entire business trees. A protected node is a display item;
+    /// its lock never propagates to ordinary business descendants.
+    private func scanContainerStructure(
+        in rootURL: URL,
+        type: DataDirType,
         priority: DataDirPriority,
         appName: String,
         externalRootURL: URL?
     ) -> [DataDirItem] {
-        let dataURL = containerURL.appendingPathComponent("Data")
-        guard fileManager.fileExists(atPath: dataURL.path) else { return [] }
-
-        // 微信专属策略：仅允许 xwechat_files 子目录和 Application Support/com.tencent.xinWeChat 迁移
-        let isWeChat = containerURL.lastPathComponent == "com.tencent.xinWeChat"
-        if isWeChat {
-            AppLogger.shared.log("[NestedDebug] Container=\(containerURL.lastPathComponent) | WeChat 专属策略激活", level: "DEBUG")
-            return scanWeChatContainerDataLinks(
-                in: containerURL,
-                priority: priority,
-                appName: appName,
-                externalRootURL: externalRootURL
-            )
-        }
-
+        let policy = DataPathPolicy(homeDirectory: homeDir)
         var results: [DataDirItem] = []
 
-        let entries = directoryEntries(at: dataURL)
-        AppLogger.shared.log("[NestedDebug] Container=\(containerURL.lastPathComponent) | Data/ entries=\(entries.count) | \(entries.map(\.lastPathComponent).joined(separator: ", "))", level: "DEBUG")
-
-        for childURL in entries {
-            let inspection = inspectItem(at: childURL, type: .containers)
-            let relativeSuffix = containerRelativeSuffix(of: childURL, in: containerURL)
-
-            // 已迁移的符号链接（指向外部）
-            let resolvedTarget = resolveSymlinkDestination(at: childURL)
-            let shouldSurface = resolvedTarget.map { shouldSurfaceNestedContainerLink(from: childURL, to: $0, externalRootURL: externalRootURL) } ?? false
-            AppLogger.shared.log("[NestedDebug] \(relativeSuffix) | status=\(inspection.status) | resolved=\(resolvedTarget?.path ?? "nil") | shouldSurface=\(shouldSurface) | extRoot=\(externalRootURL?.path ?? "nil")", level: "DEBUG")
-
-            // AppPorts 受管链接与挂载迁移项始终显示（不受路径检查限制）
-            if isManagedStatus(inspection.status) {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "容器内部拆分迁移的数据目录（如聊天记录、下载文件或运行时数据）".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.linkedDestination = inspection.linkedDestination ?? resolvedTarget
-                applyInspectionResult(
-                    to: &item,
-                    inspection: (inspection.status, inspection.linkedDestination ?? resolvedTarget),
-                    externalRootURL: externalRootURL
-                )
-                results.append(item)
-                continue
+        func visit(_ url: URL, depth: Int) {
+            let inspection = inspectItem(at: url, type: type)
+            let decision = policy.evaluate(url)
+            var item = makeAppDataItem(name: containerRelativeSuffix(of: url, in: rootURL), path: url,
+                                      type: type, priority: priority, description: "容器内部数据目录", appName: appName)
+            applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
+            item.applyPathPolicy(decision)
+            // Ordinary sandbox convenience links point at user folders and are not app data.
+            // Protected/managed links are still shown for diagnosis and recovery.
+            if inspection.status == DataDirStatus.existingSymlink, decision.canMigrate,
+               let target = inspection.linkedDestination,
+               !shouldSurfaceNestedContainerLink(from: url, to: target, externalRootURL: externalRootURL) {
+                return
             }
-
-            // 其他符号链接 — 仅在目标为外部存储时展示
-            if let targetURL = resolvedTarget, shouldSurface {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "容器内部拆分迁移的数据目录（如聊天记录、下载文件或运行时数据）".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.linkedDestination = targetURL
-                applyInspectionResult(
-                    to: &item,
-                    inspection: (inspection.status, targetURL),
-                    externalRootURL: externalRootURL
-                )
-                results.append(item)
-                continue
-            }
-
-            // 普通本地子目录
-            if inspection.status == "本地" {
-                // Data/Library 和 Data/Documents 受沙盒保护，不可迁移。其子目录可迁移。
-                let isProtectedDirectory = relativeSuffix == "Data/Library" || relativeSuffix == "Data/Documents"
-
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "容器内部数据目录".localized,
-                    isMigratable: !isProtectedDirectory,
-                    nonMigratableReason: isProtectedDirectory
-                        ? "容器目录受沙盒保护，直接迁移会导致应用崩溃。请迁移其子目录。".localized : nil
-                )
-                item.associatedAppName = appName
-                applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
-                results.append(item)
-
-                // 受保护目录自身不可迁移，但扫描其子目录（如 xwechat_files、Application Support）
-                if isProtectedDirectory {
-                    let libEntries = directoryEntries(at: childURL)
-                    for libChild in libEntries {
-                        let libInspection = inspectItem(at: libChild, type: .containers)
-                        let libSuffix = containerRelativeSuffix(of: libChild, in: containerURL)
-
-                        let libResolved = resolveSymlinkDestination(at: libChild)
-                        _ = libResolved.map { shouldSurfaceNestedContainerLink(from: libChild, to: $0, externalRootURL: externalRootURL) }
-
-                        let isProtectedAppSupport = libSuffix == "Data/Library/Application Support"
-
-                        switch libInspection.status {
-                        case "已链接", "待规范", DataDirStatus.mounted, DataDirStatus.pendingMount, DataDirStatus.volumeMissing:
-                            var libItem = DataDirItem(
-                                name: "容器子目录: \(libSuffix)",
-                                path: libChild,
-                                type: .containers,
-                                priority: priority,
-                                description: "容器内部拆分迁移的数据目录（如聊天记录、下载文件或运行时数据）".localized,
-                                isMigratable: !isProtectedAppSupport,
-                                nonMigratableReason: isProtectedAppSupport
-                                    ? "容器目录受沙盒保护，直接迁移会导致应用崩溃。请迁移其子目录。".localized : nil
-                            )
-                            libItem.associatedAppName = appName
-                            if !isProtectedAppSupport {
-                                libItem.migrationWarning = "此目录位于沙盒应用容器内，迁移后应用可能无法打开。如遇此情况，请将该目录迁回本地即可恢复。".localized
-                            }
-                            libItem.linkedDestination = libInspection.linkedDestination ?? libResolved
-                            applyInspectionResult(
-                                to: &libItem,
-                                inspection: (libInspection.status, libInspection.linkedDestination ?? libResolved),
-                                externalRootURL: externalRootURL
-                            )
-                            results.append(libItem)
-                        case "本地":
-                            var libItem = DataDirItem(
-                                name: "容器子目录: \(libSuffix)",
-                                path: libChild,
-                                type: .containers,
-                                priority: priority,
-                                description: "容器内部数据目录".localized,
-                                isMigratable: !isProtectedAppSupport,
-                                nonMigratableReason: isProtectedAppSupport
-                                    ? "容器目录受沙盒保护，直接迁移会导致应用崩溃。请迁移其子目录。".localized : nil
-                            )
-                            libItem.associatedAppName = appName
-                            if !isProtectedAppSupport {
-                                libItem.migrationWarning = "此目录位于沙盒应用容器内，迁移后应用可能无法打开。如遇此情况，请将该目录迁回本地即可恢复。".localized
-                            }
-                            applyInspectionResult(to: &libItem, inspection: libInspection, externalRootURL: externalRootURL)
-                            results.append(libItem)
-                        default:
-                            break
-                        }
-
-                        // Application Support 自身不可迁移，但扫描其子目录
-                        if isProtectedAppSupport && libInspection.status == "本地" {
-                            let appSupportEntries = directoryEntries(at: libChild)
-                            for appSupportChild in appSupportEntries {
-                                let asInspection = inspectItem(at: appSupportChild, type: .containers)
-                                let asSuffix = containerRelativeSuffix(of: appSupportChild, in: containerURL)
-                                guard asInspection.status == "本地" || isManagedStatus(asInspection.status) else { continue }
-
-                                var asItem = DataDirItem(
-                                    name: "容器子目录: \(asSuffix)",
-                                    path: appSupportChild,
-                                    type: .containers,
-                                    priority: priority,
-                                    description: "容器内部数据目录".localized,
-                                    isMigratable: true
-                                )
-                                asItem.associatedAppName = appName
-                                asItem.migrationWarning = "此目录位于沙盒应用容器内，迁移后应用可能无法打开。如遇此情况，请将该目录迁回本地即可恢复。".localized
-                                applyInspectionResult(to: &asItem, inspection: asInspection, externalRootURL: externalRootURL)
-                                results.append(asItem)
-                            }
-                        }
-                    }
-                }
+            results.append(item)
+            guard inspection.status == DataDirStatus.local,
+                  !isSymbolicLinkPath(at: url), !isMountPoint(url),
+                  decision.mayDiscoverChildren, depth < 5 else { return }
+            let entries = directoryEntries(at: url)
+            for child in entries {
+                // Container metadata is not a data candidate. The Data root is deliberately visible.
+                if depth == 0 && type == .containers && child.lastPathComponent != "Data" { continue }
+                visit(child, depth: depth + 1)
             }
         }
 
+        visit(rootURL, depth: 0)
         return deduplicate(items: results)
     }
 
-    // MARK: - 微信专属沙盒容器扫描策略
-
-    /// 微信容器 Data/ 第一层：仅展示 Documents 和 Library 作为不可迁移父节点
-    private func scanWeChatContainerDataLinks(
-        in containerURL: URL,
-        priority: DataDirPriority,
-        appName: String,
-        externalRootURL: URL?
-    ) -> [DataDirItem] {
-        let dataURL = containerURL.appendingPathComponent("Data")
-        var results: [DataDirItem] = []
-
-        let entries = directoryEntries(at: dataURL)
-        AppLogger.shared.log("[NestedDebug] WeChat Container=\(containerURL.lastPathComponent) | Data/ entries=\(entries.count) | \(entries.map(\.lastPathComponent).joined(separator: ", "))", level: "DEBUG")
-
-        for childURL in entries {
-            let relativeSuffix = childURL.standardizedFileURL.path.replacingOccurrences(of: containerURL.standardizedFileURL.path + "/", with: "")
-            let isDocuments = relativeSuffix == "Data/Documents"
-            let isLibrary = relativeSuffix == "Data/Library"
-            guard isDocuments || isLibrary else { continue }
-
-            let inspection = inspectItem(at: childURL, type: .containers)
-            let resolvedTarget = resolveSymlinkDestination(at: childURL)
-
-            // 处理已链接 / 待规范 / 外部软链的情况
-            if isManagedStatus(inspection.status) {
-                var item = makeWeChatParentItem(
-                    relativeSuffix: relativeSuffix,
-                    path: childURL,
-                    priority: priority,
-                    appName: appName
-                )
-                item.linkedDestination = inspection.linkedDestination ?? resolvedTarget
-                applyInspectionResult(
-                    to: &item,
-                    inspection: (inspection.status, inspection.linkedDestination ?? resolvedTarget),
-                    externalRootURL: externalRootURL
-                )
-                results.append(item)
-            } else if let targetURL = resolvedTarget,
-                      shouldSurfaceNestedContainerLink(from: childURL, to: targetURL, externalRootURL: externalRootURL) {
-                var item = makeWeChatParentItem(
-                    relativeSuffix: relativeSuffix,
-                    path: childURL,
-                    priority: priority,
-                    appName: appName
-                )
-                item.linkedDestination = targetURL
-                applyInspectionResult(to: &item, inspection: (inspection.status, targetURL), externalRootURL: externalRootURL)
-                results.append(item)
-            } else if inspection.status == "本地" {
-                var item = makeWeChatParentItem(
-                    relativeSuffix: relativeSuffix,
-                    path: childURL,
-                    priority: priority,
-                    appName: appName
-                )
-                applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
-                results.append(item)
-            } else {
-                continue
-            }
-
-            // 扫描子目录
-            if isDocuments {
-                results.append(contentsOf: scanWeChatDocumentsChildren(
-                    in: containerURL,
-                    parentURL: childURL,
-                    priority: priority,
-                    appName: appName,
-                    externalRootURL: externalRootURL
-                ))
-            } else if isLibrary {
-                results.append(contentsOf: scanWeChatLibraryChildren(
-                    in: containerURL,
-                    parentURL: childURL,
-                    priority: priority,
-                    appName: appName,
-                    externalRootURL: externalRootURL
-                ))
-            }
-        }
-
-        return deduplicate(items: results)
-    }
-
-    /// 创建微信不可迁移父节点
-    private func makeWeChatParentItem(
-        relativeSuffix: String,
-        path: URL,
-        priority: DataDirPriority,
-        appName: String
-    ) -> DataDirItem {
-        var item = DataDirItem(
-            name: "容器子目录: \(relativeSuffix)",
-            path: path,
-            type: .containers,
-            priority: priority,
-            description: "容器内部数据目录".localized,
-            isMigratable: false,
-            nonMigratableReason: "容器目录受沙盒保护，直接迁移会导致应用崩溃。请迁移其子目录。".localized
-        )
-        item.associatedAppName = appName
-        return item
-    }
-
-    /// 微信 Data/Documents/ 第二层：仅展示 xwechat_files（不可迁移），其子目录各自可迁移
-    private func scanWeChatDocumentsChildren(
-        in containerURL: URL,
-        parentURL: URL,
-        priority: DataDirPriority,
-        appName: String,
-        externalRootURL: URL?
-    ) -> [DataDirItem] {
-        var results: [DataDirItem] = []
-        let entries = directoryEntries(at: parentURL)
-
-        for childURL in entries {
-            let relativeSuffix = childURL.standardizedFileURL.path.replacingOccurrences(of: containerURL.standardizedFileURL.path + "/", with: "")
-            guard relativeSuffix == "Data/Documents/xwechat_files" else { continue }
-
-            let inspection = inspectItem(at: childURL, type: .containers)
-            let nonMigratableReason = "请选择 xwechat_files 内的子目录进行迁移".localized
-
-            var xItem: DataDirItem
-            if isManagedStatus(inspection.status) {
-                xItem = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信聊天文件存储目录。请选择内部子目录迁移。".localized,
-                    isMigratable: false,
-                    nonMigratableReason: nonMigratableReason
-                )
-                xItem.associatedAppName = appName
-                xItem.linkedDestination = inspection.linkedDestination ?? resolveSymlinkDestination(at: childURL)
-                applyInspectionResult(
-                    to: &xItem,
-                    inspection: (inspection.status, xItem.linkedDestination),
-                    externalRootURL: externalRootURL
-                )
-            } else if inspection.status == "本地" {
-                xItem = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信聊天文件存储目录。请选择内部子目录迁移。".localized,
-                    isMigratable: false,
-                    nonMigratableReason: nonMigratableReason
-                )
-                xItem.associatedAppName = appName
-                applyInspectionResult(to: &xItem, inspection: inspection, externalRootURL: externalRootURL)
-            } else {
-                continue
-            }
-            results.append(xItem)
-
-            // 扫描 xwechat_files 内部子目录（第三层）
-            results.append(contentsOf: scanWeChatXwechatFilesChildren(
-                in: containerURL,
-                parentURL: childURL,
-                priority: priority,
-                appName: appName,
-                externalRootURL: externalRootURL
-            ))
-        }
-
-        return results
-    }
-
-    /// 微信 xwechat_files/ 第三层：每个子目录独立可迁移
-    private func scanWeChatXwechatFilesChildren(
-        in containerURL: URL,
-        parentURL: URL,
-        priority: DataDirPriority,
-        appName: String,
-        externalRootURL: URL?
-    ) -> [DataDirItem] {
-        var results: [DataDirItem] = []
-        let entries = directoryEntries(at: parentURL)
-
-        for childURL in entries {
-            let relativeSuffix = childURL.standardizedFileURL.path.replacingOccurrences(of: containerURL.standardizedFileURL.path + "/", with: "")
-            let inspection = inspectItem(at: childURL, type: .containers)
-            let warning = "此目录位于沙盒应用容器内，迁移后应用可能无法打开。如遇此情况，请将该目录迁回本地即可恢复。".localized
-
-            if isManagedStatus(inspection.status) {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信聊天文件子目录".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.linkedDestination = inspection.linkedDestination ?? resolveSymlinkDestination(at: childURL)
-                applyInspectionResult(
-                    to: &item,
-                    inspection: (inspection.status, item.linkedDestination),
-                    externalRootURL: externalRootURL
-                )
-                results.append(item)
-            } else if let resolvedTarget = resolveSymlinkDestination(at: childURL),
-                      shouldSurfaceNestedContainerLink(from: childURL, to: resolvedTarget, externalRootURL: externalRootURL) {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信聊天文件子目录".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.linkedDestination = resolvedTarget
-                applyInspectionResult(to: &item, inspection: (inspection.status, resolvedTarget), externalRootURL: externalRootURL)
-                results.append(item)
-            } else if inspection.status == "本地" {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信聊天文件子目录".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.migrationWarning = warning
-                applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
-                results.append(item)
-            }
-        }
-
-        return results
-    }
-
-    /// 微信 Data/Library/ 第二层：仅展示 Application Support（不可迁移），其下 com.tencent.xinWeChat 可迁移
-    private func scanWeChatLibraryChildren(
-        in containerURL: URL,
-        parentURL: URL,
-        priority: DataDirPriority,
-        appName: String,
-        externalRootURL: URL?
-    ) -> [DataDirItem] {
-        var results: [DataDirItem] = []
-        let entries = directoryEntries(at: parentURL)
-
-        for childURL in entries {
-            let relativeSuffix = childURL.standardizedFileURL.path.replacingOccurrences(of: containerURL.standardizedFileURL.path + "/", with: "")
-            guard relativeSuffix == "Data/Library/Application Support" else { continue }
-
-            let inspection = inspectItem(at: childURL, type: .containers)
-            let nonMigratableReason = "容器目录受沙盒保护，直接迁移会导致应用崩溃。请迁移其子目录。".localized
-
-            var asItem: DataDirItem
-            if isManagedStatus(inspection.status) {
-                asItem = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "容器内部数据目录".localized,
-                    isMigratable: false,
-                    nonMigratableReason: nonMigratableReason
-                )
-                asItem.associatedAppName = appName
-                asItem.linkedDestination = inspection.linkedDestination ?? resolveSymlinkDestination(at: childURL)
-                applyInspectionResult(
-                    to: &asItem,
-                    inspection: (inspection.status, asItem.linkedDestination),
-                    externalRootURL: externalRootURL
-                )
-            } else if inspection.status == "本地" {
-                asItem = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "容器内部数据目录".localized,
-                    isMigratable: false,
-                    nonMigratableReason: nonMigratableReason
-                )
-                asItem.associatedAppName = appName
-                applyInspectionResult(to: &asItem, inspection: inspection, externalRootURL: externalRootURL)
-            } else {
-                continue
-            }
-            results.append(asItem)
-
-            // 扫描 Application Support 内部子目录（第三层）
-            results.append(contentsOf: scanWeChatAppSupportChildren(
-                in: containerURL,
-                parentURL: childURL,
-                priority: priority,
-                appName: appName,
-                externalRootURL: externalRootURL
-            ))
-        }
-
-        return results
-    }
-
-    /// 微信 Application Support/ 第三层：仅 com.tencent.xinWeChat 可迁移
-    private func scanWeChatAppSupportChildren(
-        in containerURL: URL,
-        parentURL: URL,
-        priority: DataDirPriority,
-        appName: String,
-        externalRootURL: URL?
-    ) -> [DataDirItem] {
-        var results: [DataDirItem] = []
-        let entries = directoryEntries(at: parentURL)
-
-        for childURL in entries {
-            let relativeSuffix = childURL.standardizedFileURL.path.replacingOccurrences(of: containerURL.standardizedFileURL.path + "/", with: "")
-            guard relativeSuffix == "Data/Library/Application Support/com.tencent.xinWeChat" else { continue }
-
-            let inspection = inspectItem(at: childURL, type: .containers)
-            let warning = "此目录位于沙盒应用容器内，迁移后应用可能无法打开。如遇此情况，请将该目录迁回本地即可恢复。".localized
-
-            if isManagedStatus(inspection.status) {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信应用核心数据（设置、数据库等）".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.linkedDestination = inspection.linkedDestination ?? resolveSymlinkDestination(at: childURL)
-                applyInspectionResult(
-                    to: &item,
-                    inspection: (inspection.status, item.linkedDestination),
-                    externalRootURL: externalRootURL
-                )
-                results.append(item)
-            } else if let resolvedTarget = resolveSymlinkDestination(at: childURL),
-                      shouldSurfaceNestedContainerLink(from: childURL, to: resolvedTarget, externalRootURL: externalRootURL) {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信应用核心数据（设置、数据库等）".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.linkedDestination = resolvedTarget
-                applyInspectionResult(to: &item, inspection: (inspection.status, resolvedTarget), externalRootURL: externalRootURL)
-                results.append(item)
-            } else if inspection.status == "本地" {
-                var item = DataDirItem(
-                    name: "容器子目录: \(relativeSuffix)",
-                    path: childURL,
-                    type: .containers,
-                    priority: priority,
-                    description: "微信应用核心数据（设置、数据库等）".localized,
-                    isMigratable: true
-                )
-                item.associatedAppName = appName
-                item.migrationWarning = warning
-                applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
-                results.append(item)
-            }
-        }
-
-        return results
-    }
-
-    /// 容器内相对路径（如 `Data/Documents`）。
-    /// 临时目录会以 `/var` 与 `/private/var` 两种写法出现，只解析父目录，不跟随条目本身的软链。
     private func containerRelativeSuffix(of url: URL, in containerURL: URL) -> String {
-        let containerPath = containerURL.resolvingSymlinksInPath().path
-        let parentPath = url.deletingLastPathComponent().resolvingSymlinksInPath().path
-        let fullPath = parentPath + "/" + url.lastPathComponent
+        let containerPath = containerURL.standardizedFileURL.path
+        let fullPath = url.standardizedFileURL.path
         guard fullPath.hasPrefix(containerPath + "/") else { return url.lastPathComponent }
         return String(fullPath.dropFirst(containerPath.count + 1))
     }
@@ -1466,11 +995,6 @@ actor DataDirScanner {
         }
 
         item.status = "待规范"
-    }
-
-    private func markProtectedGroupContainerRoot(_ item: inout DataDirItem) {
-        item.isMigratable = false
-        item.nonMigratableReason = "应用组容器根目录由 macOS 管理，不能迁移根目录。请只迁移容器内更深层的数据目录。".localized
     }
 
     private func needsNormalization(for item: DataDirItem, currentTarget: URL, externalRootURL: URL?) -> Bool {

@@ -7,6 +7,21 @@
 
 import SwiftUI
 import AppKit
+import Darwin
+
+enum CustomDirRecoveryEligibility {
+    static func canRestoreMissingSource(config: CustomDirConfig, managedLinks: [ManagedDataLinkRecord]) -> Bool {
+        var localEntry = stat()
+        guard lstat(config.localURL.path, &localEntry) != 0, errno == ENOENT,
+              let indexed = managedLinks.first(where: {
+                  URL(fileURLWithPath: $0.originalPath).standardizedFileURL.path == config.localURL.path
+              }),
+              DataPathTopology.relationship(indexed.destinationPath, config.externalDestinationURL.path) == .same,
+              let actual = try? DataPathIdentity.capture(config.externalDestinationURL),
+              indexed.destinationIdentity.matchesFilesystemObject(actual) else { return false }
+        return true
+    }
+}
 
 @MainActor
 struct CustomDirsView: View {
@@ -21,6 +36,9 @@ struct CustomDirsView: View {
     @State private var showAddSheet = false
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var retainedTransfers: [DataTransferRecord] = []
+    @State private var managedLinks: [ManagedDataLinkRecord] = []
+    @State private var selectedTransfer: DataTransferRecord?
 
     @State private var showProgress = false
     @State private var progressTitle = ""
@@ -53,17 +71,37 @@ struct CustomDirsView: View {
     }
 
     private var restorablePairs: [CustomDirPair] {
-        selectedExternalPairs.filter { $0.external.status == CustomDirStatus.linked }
+        selectedExternalPairs.filter {
+            $0.external.status == CustomDirStatus.linked
+                || ($0.external.status == CustomDirStatus.pendingRelink
+                    && CustomDirRecoveryEligibility.canRestoreMissingSource(config: $0.config, managedLinks: managedLinks))
+        }
     }
 
     var body: some View {
         ZStack {
-            HSplitView {
-                localPane
-                    .frame(minWidth: 320, maxWidth: .infinity)
+            VStack(spacing: 0) {
+                if !retainedTransfers.isEmpty {
+                    HStack {
+                        Text("原件仍保留，清理后才会释放空间。".localized).foregroundStyle(.secondary)
+                        Spacer()
+                        Menu("副本管理".localized) {
+                            ForEach(retainedTransfers) { transfer in
+                                Button { selectedTransfer = transfer } label: {
+                                    Text(verbatim: URL(fileURLWithPath: transfer.originalPath).lastPathComponent)
+                                }
+                            }
+                        }
+                    }
+                    .padding(12)
+                }
+                HSplitView {
+                    localPane
+                        .frame(minWidth: 320, maxWidth: .infinity)
 
-                externalPane
-                    .frame(minWidth: 320, maxWidth: .infinity)
+                    externalPane
+                        .frame(minWidth: 320, maxWidth: .infinity)
+                }
             }
             .disabled(operationState.isBusy)
 
@@ -91,6 +129,9 @@ struct CustomDirsView: View {
             AddCustomDirSheet(existingConfigs: configs) { config in
                 addAndMigrateConfig(config)
             }
+        }
+        .sheet(item: $selectedTransfer) { transfer in
+            DataTransferReviewView(transfer: transfer, onCleanup: { cleanupTransfer(transfer) })
         }
         .alert("操作失败".localized, isPresented: $showError) {
             Button("好的".localized, role: .cancel) {}
@@ -284,6 +325,16 @@ struct CustomDirsView: View {
 
     private func refresh() {
         guard isVisible else { return }
+        do {
+            managedLinks = try ContainerMountStore.shared.managedLinks()
+            retainedTransfers = try ContainerMountStore.shared.transfers().filter { transfer in
+                configs.contains { DataPathTopology.relationship($0.localURL.path, transfer.originalPath) == .same }
+            }
+        } catch {
+            managedLinks = []
+            errorMessage = error.localizedDescription
+            showError = true
+        }
         let requestID = UUID()
         let requestedConfigs = configs
         refreshRequestID = requestID
@@ -303,6 +354,30 @@ struct CustomDirsView: View {
     private func invalidateRefresh() {
         refreshRequestID = nil
         isScanning = false
+    }
+
+    private func cleanupTransfer(_ transfer: DataTransferRecord) {
+        guard let operationID = beginOperation() else { return }
+        Task { @MainActor in
+            let lock = OperationLock()
+            let acquired = await lock.acquire(timeout: OperationLock.appWaitTimeout)
+            defer {
+                if acquired { lock.release() }
+                operationState.finish(operationID)
+                refresh()
+            }
+            do {
+                guard acquired else { throw DataOperationSafety.Failure.occupied(transfer.originalPath) }
+                if transfer.mode == .mount {
+                    try await ContainerVolumeMigrator().cleanupRetainedTransfer(operationID: transfer.operationID)
+                } else {
+                    try await DataDirMover().cleanupRetainedTransfer(operationID: transfer.operationID)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+                showError = true
+            }
+        }
     }
 
     private func beginOperation() -> UUID? {
@@ -381,8 +456,14 @@ struct CustomDirsView: View {
         )
 
         Task { @MainActor in
-            defer { operationState.finish(operationID) }
+            let lock = OperationLock()
+            let acquired = await lock.acquire(timeout: OperationLock.appWaitTimeout)
+            defer {
+                if acquired { lock.release() }
+                operationState.finish(operationID)
+            }
             do {
+                guard acquired else { throw DataOperationSafety.Failure.occupied(entry.url.path) }
                 try await DataDirMover().deleteLink(localPath: entry.url)
                 await MainActor.run {
                     selectedLocalIDs.remove(entry.id)
@@ -411,7 +492,12 @@ struct CustomDirsView: View {
         progressFileName = ""
         showProgress = true
 
+        let lock = OperationLock()
+        let acquired = await lock.acquire(timeout: OperationLock.appWaitTimeout)
+        defer { if acquired { lock.release() } }
+
         do {
+            guard acquired else { throw DataOperationSafety.Failure.occupied(selectedPairs[0].config.localPath) }
             for pair in selectedPairs {
                 await MainActor.run {
                     progressFileName = pair.config.displayName

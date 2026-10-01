@@ -318,6 +318,8 @@ struct ContentView: View {
         .disabled(operationState.isBusy)
         .frame(minWidth: 900, minHeight: 600)
         .onAppear {
+            // A unit-test host must not scan apps, refresh agents, or observe real volumes.
+            guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
             isVisible = true
             // Restore persistence
             if let savedPath = UserDefaults.standard.string(forKey: "ExternalDrivePath") {

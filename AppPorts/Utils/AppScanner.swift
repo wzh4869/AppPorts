@@ -5,6 +5,7 @@
 //  Created by shimoko.com on 2026/2/6.
 //
 
+import Darwin
 import Foundation
 
 // MARK: - 应用扫描器
@@ -1417,7 +1418,6 @@ actor AppScanner {
         let finished = process.waitUntilExit(withTimeout: timeoutSeconds)
 
         if !finished {
-            process.terminate()
             AppLogger.shared.logContext(
                 "isAdHocSigned: codesign 超时，已终止",
                 details: [
@@ -1445,15 +1445,48 @@ actor AppScanner {
     }
 }
 
-private extension Process {
+extension Process {
     /// 带超时的 waitUntilExit。返回 true 表示正常退出，false 表示超时。
     func waitUntilExit(withTimeout timeout: TimeInterval) -> Bool {
-        let semaphore = DispatchSemaphore(value: 0)
-        DispatchQueue.global().async { [weak self] in
-            self?.waitUntilExit()
-            semaphore.signal()
+        let deadline = SignatureProbeDeadline()
+        let timer = DispatchSource.makeTimerSource(queue: .global(qos: .utility))
+        timer.setEventHandler { deadline.terminateIfRunning(self) }
+        timer.schedule(deadline: .now() + timeout)
+        timer.resume()
+        // Foundation must observe exit on the thread that launched the process.
+        // Waiting elsewhere while blocking this thread can miss its run-loop
+        // completion notification, even after the child was already reaped.
+        waitUntilExit()
+        let finished = deadline.finish()
+        timer.cancel()
+        return finished
+    }
+}
+
+private final class SignatureProbeDeadline: @unchecked Sendable {
+    private let lock = NSLock()
+    private var completed = false
+    private var timedOut = false
+
+    func terminateIfRunning(_ process: Process) {
+        lock.lock()
+        guard !completed, process.isRunning else { lock.unlock(); return }
+        timedOut = true
+        process.terminate()
+        lock.unlock()
+        // A child that ignores SIGTERM must not leave the launch thread blocked.
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) {
+            self.lock.lock()
+            defer { self.lock.unlock() }
+            guard !self.completed, process.isRunning else { return }
+            _ = kill(process.processIdentifier, SIGKILL)
         }
-        let result = semaphore.wait(timeout: .now() + timeout)
-        return result == .success
+    }
+
+    func finish() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        completed = true
+        return !timedOut
     }
 }

@@ -94,6 +94,24 @@ struct AppScannerSignatureCheckTests {
         #expect(result.map(\.displayName) == ["Present.app"])
     }
 
+    @Test("Repeated real signature probes retain their classification and backup")
+    func repeatedActualSignatureProbesComplete() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let root = try workspace.makeSearchRoot()
+        let identifier = "com.appports.tests.repeated-probe"
+        let app = try workspace.makeApp(in: root, named: "Repeated.app", identifier: identifier, adHoc: true)
+        try workspace.writeBackup(bundleID: identifier, identity: Self.developerIdentity, originalPath: app.path)
+        let scanner = AppScanner(backupDirectoryURL: workspace.backups)
+        for _ in 0..<12 {
+            let status = await scanner.checkSigningStatus(bundleURL: app)
+            #expect(status.isResigned)
+            #expect(status.signatureReplaced)
+            #expect(!status.signatureCheckUnavailable)
+        }
+        #expect(FileManager.default.fileExists(atPath: workspace.backups.appendingPathComponent(identifier + ".plist").path))
+    }
+
     @Test("没有签名备份时直接返回空")
     func emptyWithoutBackups() async throws {
         let workspace = try Workspace()

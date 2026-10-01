@@ -82,6 +82,41 @@ final class DataDirTreeTests: XCTestCase {
         XCTAssertNil(rows[2].contextPath)
     }
 
+    func testVisibilityCombinationsKeepContextAndManagedOrUnreadableItems() {
+        var root = item("/Data")
+        root.isMigratable = false
+        root.applySize(DirectorySizeResult(bytes: 0))
+        var locked = item("/Data/Locked")
+        locked.isMigratable = false
+        locked.applySize(DirectorySizeResult(bytes: 0))
+        var empty = item("/Data/Empty")
+        empty.applySize(DirectorySizeResult(bytes: 0))
+        var business = item("/Data/Business")
+        business.applySize(DirectorySizeResult(bytes: 128))
+        var managed = item("/Data/Managed")
+        managed.isMigratable = false
+        managed.status = DataDirStatus.needsNormalization
+        managed.applySize(DirectorySizeResult(bytes: 0))
+        var unreadable = item("/Data/Unreadable")
+        unreadable.isMigratable = false
+        unreadable.sizeIsIncomplete = true
+        let items = [root, locked, empty, business, managed, unreadable]
+        for zeros in [false, true] {
+            for locks in [false, true] {
+                let matches = Set(items.filter { $0.matchesVisibility(showZeroByteDirectories: zeros, showLockedStructure: locks) }.map(\.id))
+                let tree = DataDirTree.retainingMatches(in: DataDirTree.build(from: items), matchingIDs: matches)
+                let visible = Set(DataDirTree.rows(in: tree).map(\.id))
+                XCTAssertTrue(visible.isSuperset(of: [root.id, business.id, managed.id, unreadable.id]))
+                XCTAssertEqual(visible.contains(empty.id), zeros)
+                XCTAssertEqual(visible.contains(locked.id), locks)
+                // Explicit search/status/type predicates still narrow matching IDs before retention.
+                let explicitMatches = matches.intersection([business.id])
+                let explicitTree = DataDirTree.retainingMatches(in: DataDirTree.build(from: items), matchingIDs: explicitMatches)
+                XCTAssertEqual(DataDirTree.rows(in: explicitTree).map(\.id), [root.id, business.id])
+            }
+        }
+    }
+
     private func item(_ path: String) -> DataDirItem {
         DataDirItem(
             name: URL(fileURLWithPath: path).lastPathComponent,

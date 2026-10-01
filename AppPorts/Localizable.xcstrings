@@ -28488,139 +28488,139 @@
         }
       }
     },
-    "创建符号链接失败，数据已紧急还原：%@" : {
+    "创建符号链接失败：%@" : {
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "تعذّر إنشاء الرابط الرمزي: %@"
           }
         },
         "br" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⠠⠋⠁⠊⠇⠑⠙ ⠞⠕ ⠉⠗⠑⠁⠞⠑ ⠎⠽⠍⠇⠊⠝⠅⠂ ⠙⠁⠞⠁ ⠓⠁⠎ ⠃⠑⠑⠝ ⠑⠍⠑⠗⠛⠑⠝⠉⠽ ⠗⠑⠎⠞⠕⠗⠑⠙⠒ %@"
+            "value" : "⠠⠋⠁⠊⠇⠑⠙ ⠞⠕ ⠉⠗⠑⠁⠞⠑ ⠎⠽⠍⠇⠊⠝⠅⠒ %@"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Symbolischer Link konnte nicht erstellt werden: %@"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Failed to create symbolic link: %@"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Ne eblis krei simbolan ligilon: %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "No se pudo crear el enlace simbólico: %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Impossible de créer le lien symbolique : %@"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "प्रतीकात्मक लिंक नहीं बनाया जा सका: %@"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Gagal membuat tautan simbolis: %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Impossibile creare il collegamento simbolico: %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "シンボリックリンクを作成できませんでした：%@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "심볼릭 링크를 만들지 못했습니다: %@"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Kan symbolische koppeling niet maken: %@"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Nie udało się utworzyć dowiązania symbolicznego: %@"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Não foi possível criar o link simbólico: %@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось создать символическую ссылку, данные аварийно восстановлены: %@"
+            "value" : "Не удалось создать символическую ссылку: %@"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "ไม่สามารถสร้างลิงก์สัญลักษณ์ได้: %@"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Sembolik bağlantı oluşturulamadı: %@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to create symlink, data has been emergency restored: %@"
+            "value" : "Không thể tạo liên kết tượng trưng: %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "创建符号链接失败，数据已紧急还原：%@"
+            "value" : "创建符号链接失败：%@"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "创建符号連結失败，資料已紧急還原：%@"
+            "value" : "建立符號連結失敗：%@"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "创建符号链接失败，数据已紧急还原：%@"
+            "value" : "創建符呺鏈接夨敗：%@"
           }
         }
       }
@@ -125479,6 +125479,3705 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "檢查針對当前進程，無法直接比對系统授權列表中の蝂夲。若已開啟但仍被拒絕，請將此處の AppPorts 重新添加到「完全磁盤訪問權限」，退出重開後再檢查。"
+          }
+        }
+      }
+    },
+    "显示锁定目录结构" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show locked directory structure"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示锁定目录结构"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示鎖定目錄結構"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar estructura de directorios bloqueados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher la structure des dossiers verrouillés"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar estrutura de pastas bloqueadas"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra struttura delle cartelle bloccate"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Struktur gesperrter Ordner anzeigen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロックされたディレクトリ構造を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠긴 디렉터리 구조 표시"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать структуру заблокированных каталогов"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إظهار بنية المجلدات المقفلة"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लॉक की गई निर्देशिका संरचना दिखाएँ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiện cấu trúc thư mục bị khóa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แสดงโครงสร้างโฟลเดอร์ที่ล็อก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kilitli dizin yapısını göster"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Structuur van vergrendelde mappen tonen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż strukturę zablokowanych katalogów"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tampilkan struktur direktori terkunci"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montri la strukturon de ŝlositaj dosierujoj"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示鎖萣目錄結構"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠓⠕⠺ ⠇⠕⠉⠅⠑⠙ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠎⠞⠗⠥⠉⠞⠥⠗⠑"
+          }
+        }
+      }
+    },
+    "此目录由 macOS 管理，只能迁移其允许的子目录。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS manages this directory. Only its permitted subdirectories can be migrated."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目录由 macOS 管理，只能迁移其允许的子目录。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目錄由 macOS 管理，只能遷移其允許的子目錄。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS administra este directorio. Solo se pueden migrar los subdirectorios permitidos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS gère ce dossier. Seuls ses sous-dossiers autorisés peuvent être migrés."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O macOS gere esta pasta. Apenas as subpastas permitidas podem ser migradas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS gestisce questa cartella. È possibile migrare solo le sottocartelle consentite."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS verwaltet diesen Ordner. Nur zulässige Unterordner können migriert werden."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このディレクトリは macOS が管理しています。許可されたサブディレクトリのみ移行できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS가 관리하는 디렉터리입니다. 허용된 하위 디렉터리만 이전할 수 있습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этим каталогом управляет macOS. Можно переносить только разрешённые подкаталоги."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يدير macOS هذا المجلد. يمكن نقل المجلدات الفرعية المسموح بها فقط."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह निर्देशिका macOS द्वारा प्रबंधित है। केवल अनुमत उपनिर्देशिकाएँ स्थानांतरित की जा सकती हैं।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS quản lý thư mục này. Chỉ có thể di chuyển các thư mục con được phép."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS จัดการโฟลเดอร์นี้ ย้ายได้เฉพาะโฟลเดอร์ย่อยที่อนุญาตเท่านั้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu dizini macOS yönetir. Yalnızca izin verilen alt dizinler taşınabilir."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS beheert deze map. Alleen toegestane submappen kunnen worden verplaatst."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tym katalogiem zarządza macOS. Można przenosić tylko dozwolone podkatalogi."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS mengelola direktori ini. Hanya subdirektori yang diizinkan yang dapat dipindahkan."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS administras ĉi tiun dosierujon. Nur permesitaj subdosierujoj povas esti migrigitaj."
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目錄甴 macOS 管理，只能遷移其允許の孒目錄。"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠍⠁⠉⠠⠕⠠⠎ ⠍⠁⠝⠁⠛⠑⠎ ⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽⠲ ⠠⠕⠝⠇⠽ ⠊⠞⠎ ⠏⠑⠗⠍⠊⠞⠞⠑⠙ ⠎⠥⠃⠙⠊⠗⠑⠉⠞⠕⠗⠊⠑⠎ ⠉⠁⠝ ⠃⠑ ⠍⠊⠛⠗⠁⠞⠑⠙⠲"
+          }
+        }
+      }
+    },
+    "为保持微信兼容性，此目录不能新迁移；已有迁移仍可还原。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To preserve WeChat compatibility, new migrations of this directory are blocked. Existing migrations can still be restored."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为保持微信兼容性，此目录不能新迁移；已有迁移仍可还原。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為保持微信相容性，此目錄不能新遷移；已有遷移仍可還原。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para mantener la compatibilidad con WeChat, no se permiten nuevas migraciones de este directorio. Las existentes se pueden restaurar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour préserver la compatibilité avec WeChat, ce dossier ne peut plus être migré. Les migrations existantes peuvent être restaurées."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para manter a compatibilidade com o WeChat, não são permitidas novas migrações desta pasta. As existentes podem ser restauradas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per mantenere la compatibilità con WeChat, non sono consentite nuove migrazioni di questa cartella. Quelle esistenti possono essere ripristinate."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Wahrung der WeChat-Kompatibilität sind neue Migrationen dieses Ordners gesperrt. Bestehende Migrationen können wiederhergestellt werden."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat との互換性を保つため、このディレクトリの新規移行は禁止されています。既存の移行は復元できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat 호환성을 유지하기 위해 이 디렉터리의 새 이전은 차단됩니다. 기존 이전은 복원할 수 있습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для совместимости с WeChat новые переносы этого каталога запрещены. Существующие переносы можно восстановить."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "للحفاظ على التوافق مع WeChat، يُحظر نقل هذا المجلد من جديد. لا يزال بالإمكان استعادة عمليات النقل الحالية."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat के साथ संगतता बनाए रखने के लिए इस निर्देशिका के नए स्थानांतरण रोके गए हैं। मौजूदा स्थानांतरण अभी भी बहाल किए जा सकते हैं।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Để duy trì khả năng tương thích với WeChat, không cho phép di chuyển mới thư mục này. Các lần di chuyển hiện có vẫn có thể khôi phục."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพื่อรักษาความเข้ากันได้กับ WeChat จึงไม่อนุญาตให้ย้ายโฟลเดอร์นี้ใหม่ แต่ยังคืนค่าการย้ายที่มีอยู่ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat uyumluluğunu korumak için bu dizinin yeni taşımaları engellenir. Mevcut taşımalar geri yüklenebilir."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor compatibiliteit met WeChat zijn nieuwe verplaatsingen van deze map geblokkeerd. Bestaande verplaatsingen kunnen worden hersteld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aby zachować zgodność z WeChat, nowe przenoszenie tego katalogu jest zablokowane. Istniejące przeniesienia można przywrócić."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untuk menjaga kompatibilitas WeChat, pemindahan baru direktori ini diblokir. Pemindahan yang ada masih dapat dipulihkan."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por konservi kongruecon kun WeChat, novaj migrigoj de ĉi tiu dosierujo estas blokitaj. Ekzistantaj migrigoj ankoraŭ povas esti restaŭritaj."
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為保持微信兼容性，此目錄不能噺遷移；巳有遷移仍可還原。"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠕ ⠏⠗⠑⠎⠑⠗⠧⠑ ⠠⠺⠑⠠⠉⠓⠁⠞ ⠉⠕⠍⠏⠁⠞⠊⠃⠊⠇⠊⠞⠽⠂ ⠝⠑⠺ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠎ ⠕⠋ ⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠁⠗⠑ ⠃⠇⠕⠉⠅⠑⠙⠲ ⠠⠑⠭⠊⠎⠞⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠎ ⠉⠁⠝ ⠎⠞⠊⠇⠇ ⠃⠑ ⠗⠑⠎⠞⠕⠗⠑⠙⠲"
+          }
+        }
+      }
+    },
+    "此路径存在链接或挂载冲突，请先检查现有数据。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This path has a link or mount conflict. Check the existing data first."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此路径存在链接或挂载冲突，请先检查现有数据。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此路徑存在連結或掛載衝突，請先檢查現有資料。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta ruta tiene un conflicto de enlace o montaje. Comprueba primero los datos existentes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce chemin présente un conflit de lien ou de montage. Vérifiez les données existantes."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este caminho tem um conflito de ligação ou montagem. Verifique primeiro os dados existentes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo percorso presenta un conflitto di collegamento o montaggio. Controlla prima i dati esistenti."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Pfad weist einen Verknüpfungs- oder Einbindungskonflikt auf. Prüfe zuerst die vorhandenen Daten."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このパスにはリンクまたはマウントの競合があります。先に既存のデータを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 경로에 링크 또는 마운트 충돌이 있습니다. 먼저 기존 데이터를 확인하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этом пути есть конфликт ссылки или монтирования. Сначала проверьте существующие данные."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يوجد تعارض رابط أو تحميل في هذا المسار. تحقق من البيانات الموجودة أولاً."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस पथ में लिंक या माउंट का विरोध है। पहले मौजूदा डेटा की जाँच करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đường dẫn này có xung đột liên kết hoặc gắn ổ. Hãy kiểm tra dữ liệu hiện có trước."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เส้นทางนี้มีข้อขัดแย้งของลิงก์หรือการเมานต์ โปรดตรวจสอบข้อมูลที่มีอยู่ก่อน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu yolda bağlantı veya bağlama çakışması var. Önce mevcut verileri kontrol edin."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit pad heeft een koppelings- of aankoppelconflict. Controleer eerst de bestaande gegevens."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta ścieżka ma konflikt dowiązania lub montowania. Najpierw sprawdź istniejące dane."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jalur ini memiliki konflik tautan atau pemasangan. Periksa data yang ada terlebih dahulu."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu vojo havas ligilan aŭ muntan konflikton. Unue kontrolu la ekzistantajn datumojn."
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此路徑存在鏈接或掛載沖突，請先檢查現有數據。"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠏⠁⠞⠓ ⠓⠁⠎ ⠁ ⠇⠊⠝⠅ ⠕⠗ ⠍⠕⠥⠝⠞ ⠉⠕⠝⠋⠇⠊⠉⠞⠲ ⠠⠉⠓⠑⠉⠅ ⠞⠓⠑ ⠑⠭⠊⠎⠞⠊⠝⠛ ⠙⠁⠞⠁ ⠋⠊⠗⠎⠞⠲"
+          }
+        }
+      }
+    },
+    "目录无法完整读取，请检查访问权限后重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The directory could not be read completely. Check access permissions and try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目录无法完整读取，请检查访问权限后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目錄無法完整讀取，請檢查存取權限後重試。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer todo el directorio. Comprueba los permisos de acceso e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dossier n’a pas pu être lu entièrement. Vérifiez les autorisations et réessayez."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler toda a pasta. Verifique as permissões de acesso e tente novamente."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile leggere completamente la cartella. Controlla i permessi di accesso e riprova."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ordner konnte nicht vollständig gelesen werden. Prüfe die Zugriffsrechte und versuche es erneut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディレクトリを完全に読み取れませんでした。アクセス権を確認して再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디렉터리를 완전히 읽을 수 없습니다. 접근 권한을 확인한 후 다시 시도하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось полностью прочитать каталог. Проверьте права доступа и повторите попытку."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذرت قراءة المجلد بالكامل. تحقق من أذونات الوصول وأعد المحاولة."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "निर्देशिका पूरी तरह पढ़ी नहीं जा सकी। पहुँच अनुमतियाँ जाँचें और फिर प्रयास करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể đọc toàn bộ thư mục. Kiểm tra quyền truy cập rồi thử lại."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถอ่านโฟลเดอร์ได้ครบถ้วน โปรดตรวจสอบสิทธิ์การเข้าถึงแล้วลองอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dizin tamamen okunamadı. Erişim izinlerini kontrol edip tekrar deneyin."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De map kon niet volledig worden gelezen. Controleer de toegangsrechten en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się odczytać całego katalogu. Sprawdź uprawnienia dostępu i spróbuj ponownie."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direktori tidak dapat dibaca sepenuhnya. Periksa izin akses dan coba lagi."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La dosierujo ne povis esti tute legita. Kontrolu la alirpermesojn kaj reprovu."
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目錄無法完整讀取，請檢查訪問權限後重試。"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠗⠑⠁⠙ ⠉⠕⠍⠏⠇⠑⠞⠑⠇⠽⠲ ⠠⠉⠓⠑⠉⠅ ⠁⠉⠉⠑⠎⠎ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠁⠝⠙ ⠞⠗⠽ ⠁⠛⠁⠊⠝⠲"
+          }
+        }
+      }
+    },
+    "此目录受迁移策略保护，请选择允许的子目录：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This directory is protected by the migration policy. Choose an allowed subdirectory: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目錄受遷移策略保護，請選擇允許的子目錄：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Ordner ist durch die Migrationsrichtlinie geschützt. Wähle einen zulässigen Unterordner: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta carpeta está protegida por la política de migración. Elige una subcarpeta permitida: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce dossier est protégé par la politique de migration. Choisissez un sous-dossier autorisé : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta pasta está protegida pela política de migração. Escolha uma subpasta permitida: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa cartella è protetta dai criteri di migrazione. Scegli una sottocartella consentita: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このフォルダは移行ポリシーで保護されています。許可されたサブフォルダを選択してください：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 폴더는 마이그레이션 정책으로 보호됩니다. 허용된 하위 폴더를 선택하세요: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот каталог защищён политикой переноса. Выберите разрешённый подкаталог: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze map is beschermd door het migratiebeleid. Kies een toegestane submap: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten katalog jest chroniony zasadami migracji. Wybierz dozwolony podkatalog: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder ini dilindungi kebijakan migrasi. Pilih subfolder yang diizinkan: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu klasör taşıma ilkesiyle korunuyor. İzin verilen bir alt klasör seçin: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thư mục này được chính sách di chuyển bảo vệ. Hãy chọn thư mục con được phép: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu dosierujo estas protektata de la migra politiko. Elektu permesitan subdosierujon: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह फ़ोल्डर स्थानांतरण नीति से सुरक्षित है। अनुमत उपफ़ोल्डर चुनें: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا المجلد محمي بسياسة النقل. اختر مجلدًا فرعيًا مسموحًا به: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โฟลเดอร์นี้ได้รับการป้องกันตามนโยบายการย้าย โปรดเลือกโฟลเดอร์ย่อยที่อนุญาต: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠊⠎ ⠏⠗⠕⠞⠑⠉⠞⠑⠙ ⠃⠽ ⠞⠓⠑ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠏⠕⠇⠊⠉⠽⠲ ⠠⠉⠓⠕⠕⠎⠑ ⠁⠝ ⠁⠇⠇⠕⠺⠑⠙ ⠎⠥⠃⠙⠊⠗⠑⠉⠞⠕⠗⠽⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目录受迁移策略保护，请选择允许的子目录：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "茈目錄受遷移策略葆护，請選擇允许啲子目錄：%@"
+          }
+        }
+      }
+    },
+    "此目录与已有迁移或保留副本重叠，请先处理原迁移：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This directory overlaps an existing migration or retained copy. Resolve that migration first: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目錄與既有遷移或保留副本重疊，請先處理原遷移：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Ordner überschneidet sich mit einer Migration oder aufbewahrten Kopie. Kläre zuerst diese Migration: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta carpeta se superpone con una migración o copia conservada. Resuelve primero esa migración: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce dossier chevauche une migration ou une copie conservée. Résolvez d’abord cette migration : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta pasta sobrepõe-se a uma migração ou cópia preservada. Resolva primeiro essa migração: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa cartella si sovrappone a una migrazione o copia conservata. Risolvi prima quella migrazione: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このフォルダは既存の移行先または保持されたコピーと重複しています。先にその移行を解決してください：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 폴더가 기존 마이그레이션 또는 보관된 복사본과 겹칩니다. 먼저 해당 마이그레이션을 해결하세요: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот каталог пересекается с существующим переносом или сохранённой копией. Сначала завершите разбор того переноса: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze map overlapt een bestaande migratie of bewaarde kopie. Los die migratie eerst op: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten katalog nakłada się na istniejącą migrację lub zachowaną kopię. Najpierw rozwiąż tę migrację: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder ini bertumpang tindih dengan migrasi atau salinan yang disimpan. Selesaikan migrasi tersebut terlebih dahulu: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu klasör mevcut bir taşıma veya saklanan kopyayla çakışıyor. Önce o taşımayı çözümleyin: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thư mục này chồng lấn với một lần di chuyển hoặc bản sao được giữ lại. Hãy xử lý lần di chuyển đó trước: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu dosierujo interkovras ekzistantan migradon aŭ konservitan kopion. Unue solvu tiun migradon: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह फ़ोल्डर किसी मौजूदा स्थानांतरण या रखी गई प्रतिलिपि से टकराता है। पहले उस स्थानांतरण को सुलझाएँ: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يتداخل هذا المجلد مع عملية نقل قائمة أو نسخة محفوظة. عالج تلك العملية أولًا: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โฟลเดอร์นี้ทับซ้อนกับการย้ายหรือสำเนาที่เก็บไว้ โปรดจัดการการย้ายนั้นก่อน: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠕⠧⠑⠗⠇⠁⠏⠎ ⠁⠝ ⠑⠭⠊⠎⠞⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠕⠗ ⠗⠑⠞⠁⠊⠝⠑⠙ ⠉⠕⠏⠽⠲ ⠠⠗⠑⠎⠕⠇⠧⠑ ⠞⠓⠁⠞ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠋⠊⠗⠎⠞⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此目录与已有迁移或保留副本重叠，请先处理原迁移：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "茈目錄與已冇遷移或葆畱副本重叠，請先处理厵遷移：%@"
+          }
+        }
+      }
+    },
+    "相关应用或进程仍在使用数据，请退出后重试：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An associated app or process is still using the data. Quit it and try again: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相關應用程式或程序仍在使用資料，請結束後再試：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine zugehörige App oder ein Prozess verwendet die Daten noch. Beende sie und versuche es erneut: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una app o proceso asociado sigue usando los datos. Ciérralo e inténtalo de nuevo: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une app ou un processus associé utilise encore les données. Quittez-le et réessayez : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma aplicação ou processo associado ainda utiliza os dados. Encerre-o e tente novamente: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un’app o un processo associato sta ancora usando i dati. Chiudilo e riprova: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "関連するアプリまたはプロセスがデータを使用中です。終了してから再試行してください：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관련 앱이나 프로세스가 아직 데이터를 사용 중입니다. 종료한 후 다시 시도하세요: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связанное приложение или процесс ещё использует данные. Завершите его и повторите попытку: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een bijbehorende app of een proces gebruikt de gegevens nog. Sluit deze en probeer opnieuw: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiązana aplikacja lub proces nadal używa danych. Zamknij go i spróbuj ponownie: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi atau proses terkait masih menggunakan data. Tutup lalu coba lagi: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İlgili bir uygulama veya işlem hâlâ verileri kullanıyor. Kapatıp yeniden deneyin: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng hoặc tiến trình liên quan vẫn đang dùng dữ liệu. Hãy thoát rồi thử lại: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilata aplikaĵo aŭ procezo ankoraŭ uzas la datumojn. Fermu ĝin kaj reprovu: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "संबंधित ऐप या प्रक्रिया अभी भी डेटा का उपयोग कर रही है। उसे बंद करके फिर प्रयास करें: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يزال تطبيق أو إجراء مرتبط يستخدم البيانات. أغلقه ثم حاول مجددًا: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปหรือกระบวนการที่เกี่ยวข้องยังใช้ข้อมูลอยู่ โปรดปิดแล้วลองอีกครั้ง: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠝ ⠁⠎⠎⠕⠉⠊⠁⠞⠑⠙ ⠁⠏⠏ ⠕⠗ ⠏⠗⠕⠉⠑⠎⠎ ⠊⠎ ⠎⠞⠊⠇⠇ ⠥⠎⠊⠝⠛ ⠞⠓⠑ ⠙⠁⠞⠁⠲ ⠠⠟⠥⠊⠞ ⠊⠞ ⠁⠝⠙ ⠞⠗⠽ ⠁⠛⠁⠊⠝⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相关应用或进程仍在使用数据，请退出后重试：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相関應苚或进程仍茬使苚數據，請退出後重試：%@"
+          }
+        }
+      }
+    },
+    "无法完成数据安全检查，已停止操作并保留数据：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data safety checks could not be completed. The operation stopped and the data was preserved: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法完成資料安全檢查，已停止操作並保留資料：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datensicherheitsprüfung konnte nicht abgeschlossen werden. Der Vorgang wurde gestoppt und die Daten bleiben erhalten: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron completar las comprobaciones de seguridad. La operación se detuvo y los datos se conservaron: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les contrôles de sécurité des données n’ont pas pu aboutir. L’opération s’est arrêtée et les données sont conservées : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível concluir as verificações de segurança dos dados. A operação foi interrompida e os dados foram preservados: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile completare i controlli di sicurezza dei dati. L’operazione è stata interrotta e i dati sono conservati: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データの安全確認を完了できませんでした。操作を停止し、データを保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터 안전 검사를 완료할 수 없습니다. 작업을 중단하고 데이터를 보존했습니다: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось завершить проверку безопасности данных. Операция остановлена, данные сохранены: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De veiligheidscontrole kon niet worden voltooid. De bewerking is gestopt en de gegevens zijn bewaard: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się ukończyć kontroli bezpieczeństwa danych. Operacja została zatrzymana, a dane zachowane: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemeriksaan keamanan data tidak dapat diselesaikan. Operasi dihentikan dan data dipertahankan: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veri güvenliği kontrolleri tamamlanamadı. İşlem durduruldu ve veriler korundu: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể hoàn tất kiểm tra an toàn dữ liệu. Thao tác đã dừng và dữ liệu được giữ nguyên: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La datumsekurecaj kontroloj ne povis finiĝi. La operacio haltis kaj la datumoj estas konservitaj: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेटा सुरक्षा जाँच पूरी नहीं हो सकी। कार्रवाई रोक दी गई है और डेटा सुरक्षित रखा गया है: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر إكمال فحوص سلامة البيانات. أُوقفت العملية وحُفظت البيانات: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบความปลอดภัยของข้อมูลไม่สำเร็จ หยุดการทำงานและเก็บข้อมูลไว้แล้ว: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠁⠞⠁ ⠎⠁⠋⠑⠞⠽ ⠉⠓⠑⠉⠅⠎ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠉⠕⠍⠏⠇⠑⠞⠑⠙⠲ ⠠⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠞⠓⠑ ⠙⠁⠞⠁ ⠺⠁⠎ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法完成数据安全检查，已停止操作并保留数据：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法完成數據安全檢査，已停止操作並葆畱數據：%@"
+          }
+        }
+      }
+    },
+    "挂载点出现并发变化，已保留两端数据，请检查后恢复：%@\n%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The mount point changed concurrently. Data at both locations was preserved. Inspect it before recovery: %@\n%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掛載點出現同時變更，已保留兩端資料，請檢查後復原：%@\n%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Einhängepunkt wurde gleichzeitig geändert. Daten an beiden Orten bleiben erhalten. Prüfe sie vor der Wiederherstellung: %@\n%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El punto de montaje cambió simultáneamente. Se conservaron los datos de ambas ubicaciones. Revísalos antes de recuperar: %@\n%@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le point de montage a été modifié simultanément. Les données des deux emplacements sont conservées. Vérifiez-les avant la récupération : %@\n%@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O ponto de montagem foi alterado em simultâneo. Os dados dos dois locais foram preservados. Verifique-os antes da recuperação: %@\n%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il punto di montaggio è cambiato contemporaneamente. I dati in entrambe le posizioni sono conservati. Controllali prima del recupero: %@\n%@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウントポイントが同時に変更されました。両方の場所のデータを保持しました。確認してから復旧してください：%@\n%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마운트 지점이 동시에 변경되었습니다. 양쪽 데이터를 보존했습니다. 확인 후 복구하세요: %@\n%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Точка подключения была изменена одновременно. Данные в обоих местах сохранены. Проверьте их перед восстановлением: %@\n%@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het koppelpunt is gelijktijdig gewijzigd. De gegevens op beide locaties zijn bewaard. Controleer ze vóór herstel: %@\n%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punkt montowania został jednocześnie zmieniony. Dane w obu lokalizacjach zachowano. Sprawdź je przed odzyskiwaniem: %@\n%@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titik pemasangan berubah secara bersamaan. Data di kedua lokasi dipertahankan. Periksa sebelum pemulihan: %@\n%@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bağlama noktası aynı anda değişti. Her iki konumdaki veriler korundu. Kurtarmadan önce kontrol edin: %@\n%@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Điểm gắn kết đã thay đổi đồng thời. Dữ liệu ở cả hai vị trí được giữ nguyên. Hãy kiểm tra trước khi khôi phục: %@\n%@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La muntejo ŝanĝiĝis samtempe. Datumoj ĉe ambaŭ lokoj estas konservitaj. Kontrolu ilin antaŭ reakiro: %@\n%@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "माउंट बिंदु पर एक साथ बदलाव हुआ है। दोनों स्थानों का डेटा सुरक्षित है। पुनर्प्राप्ति से पहले जाँचें: %@\n%@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تغيرت نقطة التركيب بالتزامن مع العملية. حُفظت البيانات في الموقعين. افحصها قبل الاسترداد: %@\n%@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จุดเชื่อมต่อถูกเปลี่ยนพร้อมกัน เก็บข้อมูลทั้งสองตำแหน่งไว้แล้ว โปรดตรวจสอบก่อนกู้คืน: %@\n%@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠍⠕⠥⠝⠞ ⠏⠕⠊⠝⠞ ⠉⠓⠁⠝⠛⠑⠙ ⠉⠕⠝⠉⠥⠗⠗⠑⠝⠞⠇⠽⠲ ⠠⠙⠁⠞⠁ ⠁⠞ ⠃⠕⠞⠓ ⠇⠕⠉⠁⠞⠊⠕⠝⠎ ⠺⠁⠎ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠲ ⠠⠊⠝⠎⠏⠑⠉⠞ ⠊⠞ ⠃⠑⠋⠕⠗⠑ ⠗⠑⠉⠕⠧⠑⠗⠽⠒ %@\n%@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "挂载点出现并发变化，已保留两端数据，请检查后恢复：%@\n%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "挂载点出现並發變化，已葆畱两端數據，請檢査後恢複：%@\n%@"
+          }
+        }
+      }
+    },
+    "数据目录包含不支持的路径关系，已停止操作并保留原件：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The data directory contains unsupported path relationships. The operation stopped and originals were preserved: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料目錄包含不支援的路徑關係，已停止操作並保留原件：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Datenordner enthält nicht unterstützte Pfadbeziehungen. Der Vorgang wurde gestoppt und die Originale bleiben erhalten: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carpeta de datos contiene relaciones de rutas no compatibles. La operación se detuvo y los originales se conservaron: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dossier contient des relations de chemins non prises en charge. L’opération s’est arrêtée et les originaux sont conservés : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pasta de dados contém relações de caminhos não suportadas. A operação foi interrompida e os originais foram preservados: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cartella dati contiene relazioni tra percorsi non supportate. L’operazione è stata interrotta e gli originali sono conservati: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データフォルダに未対応のパス関係があります。操作を停止し、元のデータを保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터 폴더에 지원하지 않는 경로 관계가 있습니다. 작업을 중단하고 원본을 보존했습니다: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Каталог данных содержит неподдерживаемые связи путей. Операция остановлена, оригиналы сохранены: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De gegevensmap bevat niet-ondersteunde padrelaties. De bewerking is gestopt en de originelen zijn bewaard: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Katalog danych zawiera nieobsługiwane powiązania ścieżek. Operacja została zatrzymana, a oryginały zachowane: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder data berisi hubungan jalur yang tidak didukung. Operasi dihentikan dan data asli dipertahankan: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veri klasörü desteklenmeyen yol ilişkileri içeriyor. İşlem durduruldu ve asıllar korundu: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thư mục dữ liệu chứa quan hệ đường dẫn không được hỗ trợ. Thao tác đã dừng và bản gốc được giữ lại: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La datumdosierujo enhavas nesubtenatajn vojrilatojn. La operacio haltis kaj la originaloj estas konservitaj: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेटा फ़ोल्डर में असमर्थित पथ संबंध हैं। कार्रवाई रोक दी गई है और मूल डेटा सुरक्षित है: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتوي مجلد البيانات على علاقات مسارات غير مدعومة. أُوقفت العملية وحُفظت النسخ الأصلية: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โฟลเดอร์ข้อมูลมีความสัมพันธ์ของพาธที่ไม่รองรับ หยุดการทำงานและเก็บต้นฉบับไว้แล้ว: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠁⠞⠁ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠉⠕⠝⠞⠁⠊⠝⠎ ⠥⠝⠎⠥⠏⠏⠕⠗⠞⠑⠙ ⠏⠁⠞⠓ ⠗⠑⠇⠁⠞⠊⠕⠝⠎⠓⠊⠏⠎⠲ ⠠⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠕⠗⠊⠛⠊⠝⠁⠇⠎ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据目录包含不支持的路径关系，已停止操作并保留原件：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "數據目錄包含卟支持啲路径関系，已停止操作並葆畱厵件：%@"
+          }
+        }
+      }
+    },
+    "无法完整保留此项目的内容或权限，已停止操作并保留原件：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This item’s content or permissions cannot be preserved completely. The operation stopped and originals were preserved: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法完整保留此項目的內容或權限，已停止操作並保留原件：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inhalt oder Berechtigungen dieses Objekts können nicht vollständig erhalten werden. Der Vorgang wurde gestoppt; die Originale bleiben erhalten: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pueden conservar por completo el contenido o los permisos de este elemento. La operación se detuvo y los originales se conservaron: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le contenu ou les autorisations de cet élément ne peuvent pas être entièrement préservés. L’opération s’est arrêtée et les originaux sont conservés : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível preservar integralmente o conteúdo ou as permissões deste item. A operação foi interrompida e os originais foram preservados: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile conservare integralmente contenuto o permessi di questo elemento. L’operazione è stata interrotta e gli originali sono conservati: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目の内容またはアクセス権を完全に保持できません。操作を停止し、元のデータを保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 항목의 내용이나 권한을 완전히 보존할 수 없습니다. 작업을 중단하고 원본을 보존했습니다: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Невозможно полностью сохранить содержимое или права этого объекта. Операция остановлена, оригиналы сохранены: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De inhoud of rechten van dit onderdeel kunnen niet volledig worden behouden. De bewerking is gestopt en de originelen zijn bewaard: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można w pełni zachować zawartości lub uprawnień tego elementu. Operacja została zatrzymana, a oryginały zachowane: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isi atau izin item ini tidak dapat dipertahankan sepenuhnya. Operasi dihentikan dan data asli dipertahankan: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğenin içeriği veya izinleri tamamen korunamıyor. İşlem durduruldu ve asıllar korundu: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể bảo toàn đầy đủ nội dung hoặc quyền của mục này. Thao tác đã dừng và bản gốc được giữ lại: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La enhavo aŭ permesoj de ĉi tiu ero ne povas esti plene konservitaj. La operacio haltis kaj la originaloj estas konservitaj: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस आइटम की सामग्री या अनुमतियाँ पूरी तरह सुरक्षित नहीं रखी जा सकतीं। कार्रवाई रोक दी गई है और मूल डेटा सुरक्षित है: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يتعذر الحفاظ الكامل على محتوى هذا العنصر أو أذوناته. أُوقفت العملية وحُفظت النسخ الأصلية: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถรักษาเนื้อหาหรือสิทธิ์ของรายการนี้ได้ครบถ้วน หยุดการทำงานและเก็บต้นฉบับไว้แล้ว: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠊⠞⠑⠍’⠎ ⠉⠕⠝⠞⠑⠝⠞ ⠕⠗ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙ ⠉⠕⠍⠏⠇⠑⠞⠑⠇⠽⠲ ⠠⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠕⠗⠊⠛⠊⠝⠁⠇⠎ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法完整保留此项目的内容或权限，已停止操作并保留原件：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法完整葆畱茈项目啲内容或权限，已停止操作並葆畱厵件：%@"
+          }
+        }
+      }
+    },
+    "数据在操作期间发生变化或校验不一致，已保留副本，请检查后重试：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data changed during the operation or verification did not match. Copies were preserved. Inspect them before retrying: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料在操作期間發生變更或驗證不一致，已保留副本，請檢查後再試：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten wurden während des Vorgangs geändert oder die Prüfung ergab Abweichungen. Kopien bleiben erhalten. Prüfe sie vor einem erneuten Versuch: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los datos cambiaron durante la operación o la verificación no coincidió. Se conservaron las copias. Revísalas antes de reintentar: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les données ont changé pendant l’opération ou la vérification a révélé un écart. Les copies sont conservées. Vérifiez-les avant de réessayer : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os dados mudaram durante a operação ou a verificação não coincidiu. As cópias foram preservadas. Verifique-as antes de tentar novamente: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I dati sono cambiati durante l’operazione o la verifica non è riuscita. Le copie sono conservate. Controllale prima di riprovare: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作中にデータが変化したか、検証結果が一致しませんでした。コピーを保持しました。確認してから再試行してください：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작업 중 데이터가 변경되었거나 검증 결과가 일치하지 않습니다. 복사본을 보존했습니다. 확인 후 다시 시도하세요: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Данные изменились во время операции или проверка выявила расхождение. Копии сохранены. Проверьте их перед повторной попыткой: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De gegevens zijn tijdens de bewerking gewijzigd of de verificatie wijkt af. De kopieën zijn bewaard. Controleer ze voordat je opnieuw probeert: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dane zmieniły się podczas operacji lub weryfikacja wykazała różnice. Kopie zachowano. Sprawdź je przed ponowną próbą: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data berubah selama operasi atau hasil verifikasi tidak cocok. Salinan dipertahankan. Periksa sebelum mencoba lagi: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İşlem sırasında veriler değişti veya doğrulama eşleşmedi. Kopyalar korundu. Yeniden denemeden önce kontrol edin: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dữ liệu đã thay đổi trong khi thao tác hoặc kết quả xác minh không khớp. Các bản sao được giữ lại. Hãy kiểm tra trước khi thử lại: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datumoj ŝanĝiĝis dum la operacio aŭ la kontrolo trovis malsamon. Kopioj estas konservitaj. Kontrolu ilin antaŭ reprovo: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्रवाई के दौरान डेटा बदल गया या सत्यापन में अंतर मिला। प्रतिलिपियाँ सुरक्षित हैं। फिर प्रयास करने से पहले जाँचें: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تغيرت البيانات أثناء العملية أو لم تتطابق نتائج التحقق. حُفظت النسخ. افحصها قبل إعادة المحاولة: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ข้อมูลเปลี่ยนระหว่างดำเนินการหรือผลการตรวจสอบไม่ตรงกัน เก็บสำเนาไว้แล้ว โปรดตรวจสอบก่อนลองอีกครั้ง: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠁⠞⠁ ⠉⠓⠁⠝⠛⠑⠙ ⠙⠥⠗⠊⠝⠛ ⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠕⠗ ⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝ ⠙⠊⠙ ⠝⠕⠞ ⠍⠁⠞⠉⠓⠲ ⠠⠉⠕⠏⠊⠑⠎ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠲ ⠠⠊⠝⠎⠏⠑⠉⠞ ⠞⠓⠑⠍ ⠃⠑⠋⠕⠗⠑ ⠗⠑⠞⠗⠽⠊⠝⠛⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据在操作期间发生变化或校验不一致，已保留副本，请检查后重试：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "數據茬操作期間發生變化或校驗卟一致，已葆畱副本，請檢査後重試：%@"
+          }
+        }
+      }
+    },
+    "目标位置已存在数据，已停止操作并保留两端：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination already contains data. The operation stopped and both locations were preserved: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標位置已存在資料，已停止操作並保留兩端：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Ziel enthält bereits Daten. Der Vorgang wurde gestoppt und beide Orte bleiben erhalten: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El destino ya contiene datos. La operación se detuvo y se conservaron ambas ubicaciones: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La destination contient déjà des données. L’opération s’est arrêtée et les deux emplacements sont conservés : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O destino já contém dados. A operação foi interrompida e os dois locais foram preservados: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La destinazione contiene già dati. L’operazione è stata interrotta ed entrambe le posizioni sono conservate: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行先には既にデータがあります。操作を停止し、両方の場所のデータを保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 위치에 이미 데이터가 있습니다. 작업을 중단하고 양쪽 데이터를 보존했습니다: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Место назначения уже содержит данные. Операция остановлена, данные в обоих местах сохранены: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bestemming bevat al gegevens. De bewerking is gestopt en beide locaties zijn bewaard: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miejsce docelowe zawiera już dane. Operacja została zatrzymana, a obie lokalizacje zachowane: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tujuan sudah berisi data. Operasi dihentikan dan kedua lokasi dipertahankan: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedefte zaten veri var. İşlem durduruldu ve her iki konum korundu: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vị trí đích đã có dữ liệu. Thao tác đã dừng và cả hai vị trí được giữ nguyên: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La celloko jam enhavas datumojn. La operacio haltis kaj ambaŭ lokoj estas konservitaj: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लक्ष्य स्थान पर पहले से डेटा है। कार्रवाई रोक दी गई है और दोनों स्थान सुरक्षित हैं: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحتوي الوجهة على بيانات بالفعل. أُوقفت العملية وحُفظ الموقعان: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตำแหน่งปลายทางมีข้อมูลอยู่แล้ว หยุดการทำงานและเก็บข้อมูลทั้งสองตำแหน่งไว้แล้ว: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠁⠇⠗⠑⠁⠙⠽ ⠉⠕⠝⠞⠁⠊⠝⠎ ⠙⠁⠞⠁⠲ ⠠⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠃⠕⠞⠓ ⠇⠕⠉⠁⠞⠊⠕⠝⠎ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标位置已存在数据，已停止操作并保留两端：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标位置已存茬數據，已停止操作並葆畱两端：%@"
+          }
+        }
+      }
+    },
+    "副本管理" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Copies"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "副本管理"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopien verwalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestionar copias"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer les copies"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerir cópias"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci copie"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーの管理"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사본 관리"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление копиями"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieën beheren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzaj kopiami"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kelola Salinan"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopyaları Yönet"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản lý bản sao"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administri kopiojn"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रतिलिपियाँ प्रबंधित करें"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إدارة النسخ"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จัดการสำเนา"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠁⠝⠁⠛⠑ ⠠⠉⠕⠏⠊⠑⠎"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "副本管理"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "副本菅理"
+          }
+        }
+      }
+    },
+    "原件已保留，仍占用存储空间。验证应用与数据正常后，可以校验并清理。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The original is retained and still uses storage. After checking that the app and data work correctly, you can verify and clean it up."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原件已保留，仍占用儲存空間。確認應用程式與資料正常後，可以驗證並清理。"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Original wird aufbewahrt und belegt weiterhin Speicherplatz. Nachdem du App und Daten geprüft hast, kannst du es überprüfen und bereinigen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El original se conserva y sigue ocupando espacio. Tras comprobar que la app y los datos funcionan correctamente, puedes verificarlo y limpiarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’original est conservé et occupe toujours de l’espace. Après avoir vérifié le bon fonctionnement de l’app et des données, vous pouvez le vérifier et le nettoyer."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O original está preservado e continua a ocupar espaço. Depois de confirmar que a aplicação e os dados funcionam corretamente, pode verificá-lo e eliminá-lo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’originale è conservato e occupa ancora spazio. Dopo aver controllato che app e dati funzionino correttamente, puoi verificarlo e rimuoverlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元のデータは保持されており、保存領域を使用しています。アプリとデータが正常であることを確認した後、検証して削除できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본이 보관되어 있으며 저장 공간을 사용하고 있습니다. 앱과 데이터가 정상인지 확인한 후 검증하고 정리할 수 있습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оригинал сохранён и продолжает занимать место. Убедившись, что приложение и данные работают правильно, можно проверить и удалить его."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het origineel wordt bewaard en neemt nog opslagruimte in. Nadat je hebt gecontroleerd dat de app en gegevens goed werken, kun je het verifiëren en opruimen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oryginał jest zachowany i nadal zajmuje miejsce. Po sprawdzeniu poprawnego działania aplikacji i danych można go zweryfikować i usunąć."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data asli dipertahankan dan masih menggunakan ruang penyimpanan. Setelah memastikan aplikasi dan data berfungsi dengan benar, Anda dapat memverifikasi dan membersihkannya."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asıl kopya saklanıyor ve depolama alanı kullanmaya devam ediyor. Uygulamanın ve verilerin düzgün çalıştığını kontrol ettikten sonra doğrulayıp temizleyebilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản gốc được giữ lại và vẫn chiếm dung lượng. Sau khi kiểm tra ứng dụng và dữ liệu hoạt động bình thường, bạn có thể xác minh rồi dọn dẹp."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La originalo estas konservita kaj ankoraŭ okupas spacon. Post kontrolo, ke la aplikaĵo kaj datumoj funkcias ĝuste, vi povas kontroli kaj forigi ĝin."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मूल डेटा रखा गया है और अभी भी संग्रहण स्थान ले रहा है। ऐप और डेटा के सही काम करने की जाँच के बाद आप सत्यापन करके इसे हटा सकते हैं।"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النسخة الأصلية محفوظة ولا تزال تشغل مساحة تخزين. بعد التأكد من سلامة التطبيق والبيانات، يمكنك التحقق منها وتنظيفها."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เก็บต้นฉบับไว้แล้วและยังใช้พื้นที่จัดเก็บอยู่ หลังตรวจสอบว่าแอปและข้อมูลทำงานปกติ คุณสามารถตรวจสอบความถูกต้องและล้างต้นฉบับได้"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠊⠎ ⠗⠑⠞⠁⠊⠝⠑⠙ ⠁⠝⠙ ⠎⠞⠊⠇⠇ ⠥⠎⠑⠎ ⠎⠞⠕⠗⠁⠛⠑⠲ ⠠⠁⠋⠞⠑⠗ ⠉⠓⠑⠉⠅⠊⠝⠛ ⠞⠓⠁⠞ ⠞⠓⠑ ⠁⠏⠏ ⠁⠝⠙ ⠙⠁⠞⠁ ⠺⠕⠗⠅ ⠉⠕⠗⠗⠑⠉⠞⠇⠽⠂ ⠽⠕⠥ ⠉⠁⠝ ⠧⠑⠗⠊⠋⠽ ⠁⠝⠙ ⠉⠇⠑⠁⠝ ⠊⠞ ⠥⠏⠲"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原件已保留，仍占用存储空间。验证应用与数据正常后，可以校验并清理。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "厵件已葆畱，仍占苚存储悾間。驗证應苚與數據正常後，岢苡校驗並淸理。"
+          }
+        }
+      }
+    },
+    "操作尚需检查，所有已记录的副本都会保留。请先检查这些位置，不要合并或覆盖数据。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This operation needs inspection. All recorded copies will be retained. Check these locations before merging or overwriting any data."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作仍需檢查，所有已記錄的副本都會保留。請先檢查這些位置，不要合併或覆寫資料。"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Vorgang muss geprüft werden. Alle erfassten Kopien bleiben erhalten. Prüfe diese Orte, bevor du Daten zusammenführst oder überschreibst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta operación necesita revisión. Se conservarán todas las copias registradas. Revisa estas ubicaciones antes de combinar o sobrescribir datos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette opération doit être examinée. Toutes les copies enregistrées seront conservées. Vérifiez ces emplacements avant de fusionner ou d’écraser des données."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta operação precisa de verificação. Todas as cópias registadas serão preservadas. Verifique estes locais antes de combinar ou substituir dados."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa operazione richiede un controllo. Tutte le copie registrate saranno conservate. Controlla queste posizioni prima di unire o sovrascrivere dati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この操作は確認が必要です。記録されたコピーはすべて保持されます。データを結合したり上書きしたりする前に、これらの場所を確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 작업은 확인이 필요합니다. 기록된 모든 복사본이 보존됩니다. 데이터를 병합하거나 덮어쓰기 전에 해당 위치를 확인하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта операция требует проверки. Все зарегистрированные копии будут сохранены. Проверьте эти места, прежде чем объединять или перезаписывать данные."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze bewerking moet worden gecontroleerd. Alle vastgelegde kopieën blijven bewaard. Controleer deze locaties voordat je gegevens samenvoegt of overschrijft."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta operacja wymaga sprawdzenia. Wszystkie zapisane kopie zostaną zachowane. Sprawdź te lokalizacje przed scalaniem lub nadpisywaniem danych."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operasi ini perlu diperiksa. Semua salinan yang tercatat akan dipertahankan. Periksa lokasi ini sebelum menggabungkan atau menimpa data."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu işlemin incelenmesi gerekiyor. Kayıtlı tüm kopyalar saklanacak. Verileri birleştirmeden veya üzerlerine yazmadan önce bu konumları kontrol edin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thao tác này cần được kiểm tra. Tất cả bản sao đã ghi nhận sẽ được giữ lại. Hãy kiểm tra các vị trí này trước khi hợp nhất hoặc ghi đè dữ liệu."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu operacio bezonas inspekton. Ĉiuj registritaj kopioj restos konservitaj. Kontrolu ĉi tiujn lokojn antaŭ kunfandi aŭ superskribi datumojn."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस कार्रवाई की जाँच आवश्यक है। सभी दर्ज प्रतिलिपियाँ रखी जाएँगी। डेटा मिलाने या अधिलेखित करने से पहले इन स्थानों की जाँच करें।"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحتاج هذه العملية إلى فحص. ستُحفظ جميع النسخ المسجلة. افحص هذه المواقع قبل دمج البيانات أو الكتابة فوقها."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การดำเนินการนี้ยังต้องตรวจสอบ สำเนาที่บันทึกไว้ทั้งหมดจะถูกเก็บไว้ โปรดตรวจสอบตำแหน่งเหล่านี้ก่อนรวมข้อมูลหรือเขียนทับ"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠝⠑⠑⠙⠎ ⠊⠝⠎⠏⠑⠉⠞⠊⠕⠝⠲ ⠠⠁⠇⠇ ⠗⠑⠉⠕⠗⠙⠑⠙ ⠉⠕⠏⠊⠑⠎ ⠺⠊⠇⠇ ⠃⠑ ⠗⠑⠞⠁⠊⠝⠑⠙⠲ ⠠⠉⠓⠑⠉⠅ ⠞⠓⠑⠎⠑ ⠇⠕⠉⠁⠞⠊⠕⠝⠎ ⠃⠑⠋⠕⠗⠑ ⠍⠑⠗⠛⠊⠝⠛ ⠕⠗ ⠕⠧⠑⠗⠺⠗⠊⠞⠊⠝⠛ ⠁⠝⠽ ⠙⠁⠞⠁⠲"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作尚需检查，所有已记录的副本都会保留。请先检查这些位置，不要合并或覆盖数据。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作尚需檢査，所冇已记錄啲副本都会葆畱。請先檢査这些位置，卟要合並或覆盖數據。"
+          }
+        }
+      }
+    },
+    "当前数据" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Data"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前資料"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelle Daten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos actuales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données actuelles"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dados atuais"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dati attuali"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のデータ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 데이터"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текущие данные"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Huidige gegevens"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bieżące dane"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data Saat Ini"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçerli Veriler"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dữ liệu hiện tại"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualaj datumoj"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "वर्तमान डेटा"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "البيانات الحالية"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ข้อมูลปัจจุบัน"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠥⠗⠗⠑⠝⠞ ⠠⠙⠁⠞⠁"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前数据"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當偂數據"
+          }
+        }
+      }
+    },
+    "保留原件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retained Original"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保留原件"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufbewahrtes Original"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original conservado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original conservé"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original preservado"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originale conservato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持された元データ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보관된 원본"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранённый оригинал"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaard origineel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowany oryginał"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data Asli Tersimpan"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saklanan Asıl"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản gốc được giữ lại"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konservita originalo"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रखा गया मूल डेटा"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الأصل المحفوظ"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ต้นฉบับที่เก็บไว้"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠞⠁⠊⠝⠑⠙ ⠠⠕⠗⠊⠛⠊⠝⠁⠇"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保留原件"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "葆畱厵件"
+          }
+        }
+      }
+    },
+    "暂存副本" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Staged Copy"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫存副本"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwischengespeicherte Kopie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia temporal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie temporaire"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia temporária"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia temporanea"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時コピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "임시 복사본"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Временная копия"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tijdelijke kopie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopia tymczasowa"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salinan Sementara"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçici Kopya"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản sao tạm"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provizora kopio"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अस्थायी प्रतिलिपि"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نسخة مؤقتة"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สำเนาชั่วคราว"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠞⠁⠛⠑⠙ ⠠⠉⠕⠏⠽"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂存副本"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂存副本"
+          }
+        }
+      }
+    },
+    "我已验证应用与数据正常" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I have verified that the app and data work correctly"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我已確認應用程式與資料正常"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich habe geprüft, dass App und Daten ordnungsgemäß funktionieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "He comprobado que la app y los datos funcionan correctamente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "J’ai vérifié le bon fonctionnement de l’app et des données"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmei que a aplicação e os dados funcionam corretamente"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ho verificato che app e dati funzionano correttamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリとデータが正常であることを確認しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱과 데이터가 정상인지 확인했습니다"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Я проверил работу приложения и данных"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ik heb gecontroleerd dat de app en gegevens goed werken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdziłem poprawne działanie aplikacji i danych"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saya telah memastikan aplikasi dan data berfungsi dengan benar"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulamanın ve verilerin düzgün çalıştığını doğruladım"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tôi đã xác nhận ứng dụng và dữ liệu hoạt động bình thường"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi kontrolis, ke la aplikaĵo kaj datumoj funkcias ĝuste"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैंने जाँच लिया है कि ऐप और डेटा सही काम करते हैं"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحققت من أن التطبيق والبيانات يعملان بشكل سليم"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ฉันตรวจสอบแล้วว่าแอปและข้อมูลทำงานปกติ"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠊ ⠓⠁⠧⠑ ⠧⠑⠗⠊⠋⠊⠑⠙ ⠞⠓⠁⠞ ⠞⠓⠑ ⠁⠏⠏ ⠁⠝⠙ ⠙⠁⠞⠁ ⠺⠕⠗⠅ ⠉⠕⠗⠗⠑⠉⠞⠇⠽"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我已验证应用与数据正常"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "莪已驗证應苚與數據正常"
+          }
+        }
+      }
+    },
+    "校验并清理原件" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verify and Clean Up Original"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "驗證並清理原件"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original prüfen und bereinigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar y limpiar el original"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifier et nettoyer l’original"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar e eliminar o original"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica e rimuovi l’originale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元データを検証して削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본 검증 및 정리"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить и удалить оригинал"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Origineel verifiëren en opruimen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zweryfikuj i usuń oryginał"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifikasi dan Bersihkan Data Asli"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aslı Doğrula ve Temizle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác minh và dọn bản gốc"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontroli kaj forigi originalon"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मूल डेटा सत्यापित करके हटाएँ"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التحقق من الأصل وتنظيفه"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบและล้างต้นฉบับ"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠧⠑⠗⠊⠋⠽ ⠁⠝⠙ ⠠⠉⠇⠑⠁⠝ ⠠⠥⠏ ⠠⠕⠗⠊⠛⠊⠝⠁⠇"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "校验并清理原件"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "校驗並淸理厵件"
+          }
+        }
+      }
+    },
+    "仅在原件与已复制内容一致、且没有占用或路径冲突时清理。清理后无法通过这份原件撤销。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cleanup proceeds only if the original matches the copied content and there are no usage or path conflicts. After cleanup, this original cannot be used to undo the operation."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅在原件與已複製內容一致，且沒有使用中或路徑衝突時清理。清理後將無法透過這份原件復原操作。"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bereinigung erfolgt nur, wenn Original und kopierter Inhalt übereinstimmen und keine Nutzungs- oder Pfadkonflikte bestehen. Danach kann dieses Original den Vorgang nicht mehr rückgängig machen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limpieza solo se realiza si el original coincide con el contenido copiado y no hay conflictos de uso o rutas. Después, este original no podrá usarse para deshacer la operación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le nettoyage n’a lieu que si l’original correspond au contenu copié et qu’aucun conflit d’utilisation ou de chemin n’existe. Cet original ne permettra ensuite plus d’annuler l’opération."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A limpeza só ocorre se o original corresponder ao conteúdo copiado e não houver conflitos de utilização ou de caminhos. Depois, este original não poderá ser usado para anular a operação."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La rimozione avviene solo se l’originale corrisponde ai contenuti copiati e non ci sono conflitti d’uso o di percorso. Dopo, questo originale non potrà più annullare l’operazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元データがコピー内容と一致し、使用中やパスの競合がない場合にのみ削除します。削除後は、この元データで操作を元に戻すことはできません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본이 복사된 내용과 일치하고 사용 중이거나 경로 충돌이 없을 때만 정리합니다. 정리 후에는 이 원본으로 작업을 되돌릴 수 없습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаление выполняется только при совпадении оригинала с копией и отсутствии конфликтов использования или путей. После удаления этот оригинал нельзя будет использовать для отмены операции."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opruimen gebeurt alleen als het origineel overeenkomt met de gekopieerde inhoud en er geen gebruiks- of padconflicten zijn. Daarna kan dit origineel de bewerking niet meer ongedaan maken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwanie następuje tylko wtedy, gdy oryginał odpowiada skopiowanej zawartości i nie ma konfliktów użycia ani ścieżek. Po usunięciu tego oryginału nie będzie można użyć do cofnięcia operacji."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pembersihan hanya dilakukan jika data asli cocok dengan isi yang disalin dan tidak ada konflik penggunaan atau jalur. Setelah dibersihkan, data asli ini tidak dapat digunakan untuk membatalkan operasi."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temizleme yalnızca asıl, kopyalanan içerikle eşleşiyorsa ve kullanım veya yol çakışması yoksa yapılır. Temizleme sonrasında bu asıl kopyayla işlem geri alınamaz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ dọn dẹp khi bản gốc khớp nội dung đã sao chép và không có xung đột sử dụng hoặc đường dẫn. Sau khi dọn, không thể dùng bản gốc này để hoàn tác."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forigo okazas nur se la originalo kongruas kun la kopiita enhavo kaj ne ekzistas uzaj aŭ vojaj konfliktoj. Poste ĉi tiu originalo ne povos esti uzata por malfari la operacion."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मूल डेटा के कॉपी की गई सामग्री से मेल खाने और उपयोग या पथ का टकराव न होने पर ही सफ़ाई होगी। इसके बाद इस मूल डेटा से कार्रवाई वापस नहीं की जा सकेगी।"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يتم التنظيف إلا إذا طابق الأصل المحتوى المنسوخ ولم توجد تعارضات استخدام أو مسارات. بعد التنظيف لن يمكن استخدام هذا الأصل للتراجع عن العملية."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จะล้างต่อเมื่อต้นฉบับตรงกับเนื้อหาที่คัดลอก และไม่มีการใช้งานหรือพาธขัดแย้งกัน หลังล้างแล้วจะไม่สามารถใช้ต้นฉบับนี้ย้อนกลับการทำงานได้"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠇⠑⠁⠝⠥⠏ ⠏⠗⠕⠉⠑⠑⠙⠎ ⠕⠝⠇⠽ ⠊⠋ ⠞⠓⠑ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠍⠁⠞⠉⠓⠑⠎ ⠞⠓⠑ ⠉⠕⠏⠊⠑⠙ ⠉⠕⠝⠞⠑⠝⠞ ⠁⠝⠙ ⠞⠓⠑⠗⠑ ⠁⠗⠑ ⠝⠕ ⠥⠎⠁⠛⠑ ⠕⠗ ⠏⠁⠞⠓ ⠉⠕⠝⠋⠇⠊⠉⠞⠎⠲ ⠠⠁⠋⠞⠑⠗ ⠉⠇⠑⠁⠝⠥⠏⠂ ⠞⠓⠊⠎ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠥⠎⠑⠙ ⠞⠕ ⠥⠝⠙⠕ ⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅在原件与已复制内容一致、且没有占用或路径冲突时清理。清理后无法通过这份原件撤销。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅茬厵件與已複制内容一致、且没冇占苚或路径冲突時淸理。淸理後无法通过这份厵件撤销。"
+          }
+        }
+      }
+    },
+    "在访达中显示" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in Finder"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Finder 中顯示"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Finder anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar en Finder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans le Finder"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar no Finder"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra nel Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderに表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에서 보기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать в Finder"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon in Finder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż w Finderze"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tampilkan di Finder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder’da Göster"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiển thị trong Finder"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montri en Finder"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder में दिखाएँ"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إظهار في Finder"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แสดงใน Finder"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠓⠕⠺ ⠊⠝ ⠠⠋⠊⠝⠙⠑⠗"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在访达中显示"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "茬访达中显示"
+          }
+        }
+      }
+    },
+    "原件仍保留，清理后才会释放空间。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The original is retained. Space is released only after cleanup."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原件仍保留，清理後才會釋放空間。"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Original bleibt erhalten. Speicherplatz wird erst nach der Bereinigung freigegeben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El original se conserva. El espacio solo se libera tras la limpieza."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’original est conservé. L’espace ne sera libéré qu’après le nettoyage."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O original está preservado. O espaço só será libertado após a limpeza."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’originale è conservato. Lo spazio sarà liberato solo dopo la rimozione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元データは保持されています。削除するまで空き容量は増えません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본이 보관되어 있습니다. 정리한 후에만 공간이 확보됩니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оригинал сохранён. Место освободится только после удаления."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het origineel blijft bewaard. Er komt pas ruimte vrij na het opruimen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oryginał jest zachowany. Miejsce zostanie zwolnione dopiero po usunięciu."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data asli masih disimpan. Ruang hanya dibebaskan setelah pembersihan."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asıl saklanıyor. Alan ancak temizlemeden sonra boşaltılır."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản gốc vẫn được giữ lại. Dung lượng chỉ được giải phóng sau khi dọn dẹp."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La originalo estas konservita. Spaco liberiĝos nur post forigo."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मूल डेटा अभी रखा गया है। सफ़ाई के बाद ही स्थान खाली होगा।"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الأصل محفوظ. لن تتحرر المساحة إلا بعد التنظيف."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังเก็บต้นฉบับไว้ พื้นที่จะว่างหลังจากล้างเท่านั้น"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠊⠎ ⠗⠑⠞⠁⠊⠝⠑⠙⠲ ⠠⠎⠏⠁⠉⠑ ⠊⠎ ⠗⠑⠇⠑⠁⠎⠑⠙ ⠕⠝⠇⠽ ⠁⠋⠞⠑⠗ ⠉⠇⠑⠁⠝⠥⠏⠲"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原件仍保留，清理后才会释放空间。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "厵件仍葆畱，淸理後才会释放悾間。"
+          }
+        }
+      }
+    },
+    "将「%@」还原到本地。\n\n外部来源：%@\n还原到：%@\n\n还原后保留外部原件；验证应用与数据正常后，可在副本管理中校验并清理。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore “%@” locally.\n\nExternal source: %@\nRestore to: %@\n\nThe external original will be retained. After checking that the app and data work correctly, use Manage Copies to verify and clean it up."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將「%@」還原到本機。\n\n外部來源：%@\n還原到：%@\n\n還原後保留外部原件；確認應用程式與資料正常後，可在副本管理中驗證並清理。"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ lokal wiederherstellen.\n\nExterne Quelle: %@\nWiederherstellen nach: %@\n\nDas externe Original bleibt erhalten. Prüfe App und Daten und nutze dann „Kopien verwalten“ zum Überprüfen und Bereinigen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar «%@» en el equipo.\n\nOrigen externo: %@\nRestaurar en: %@\n\nEl original externo se conservará. Tras comprobar la app y los datos, usa Gestionar copias para verificarlo y limpiarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer « %@ » sur ce Mac.\n\nSource externe : %@\nRestaurer vers : %@\n\nL’original externe sera conservé. Après avoir vérifié l’app et les données, utilisez Gérer les copies pour le vérifier et le nettoyer."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar «%@» localmente.\n\nOrigem externa: %@\nRestaurar para: %@\n\nO original externo será preservado. Depois de verificar a aplicação e os dados, use Gerir cópias para o verificar e eliminar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina “%@” in locale.\n\nOrigine esterna: %@\nRipristina in: %@\n\nL’originale esterno sarà conservato. Dopo aver controllato app e dati, usa Gestisci copie per verificarlo e rimuoverlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」をローカルに復元します。\n\n外部のコピー元：%@\n復元先：%@\n\n外部の元データは保持されます。アプリとデータが正常であることを確認した後、「コピーの管理」で検証して削除できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”을(를) 로컬로 복원합니다.\n\n외부 원본: %@\n복원 위치: %@\n\n외부 원본은 보관됩니다. 앱과 데이터가 정상인지 확인한 후 복사본 관리에서 검증하고 정리할 수 있습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановить «%@» локально.\n\nВнешний источник: %@\nВосстановить в: %@\n\nВнешний оригинал будет сохранён. Проверив приложение и данные, используйте «Управление копиями», чтобы проверить и удалить его."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” lokaal herstellen.\n\nExterne bron: %@\nHerstellen naar: %@\n\nHet externe origineel blijft bewaard. Controleer de app en gegevens en gebruik daarna Kopieën beheren om het te verifiëren en op te ruimen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywróć „%@” lokalnie.\n\nŹródło zewnętrzne: %@\nPrzywróć do: %@\n\nOryginał zewnętrzny zostanie zachowany. Po sprawdzeniu aplikacji i danych użyj Zarządzaj kopiami, aby go zweryfikować i usunąć."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulihkan “%@” ke lokasi lokal.\n\nSumber eksternal: %@\nPulihkan ke: %@\n\nData asli eksternal akan dipertahankan. Setelah memeriksa aplikasi dan data, gunakan Kelola Salinan untuk memverifikasi dan membersihkannya."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” öğesini yerel olarak geri yükle.\n\nHarici kaynak: %@\nGeri yükleme konumu: %@\n\nHarici asıl saklanacak. Uygulamayı ve verileri kontrol ettikten sonra Kopyaları Yönet üzerinden doğrulayıp temizleyebilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục “%@” về máy.\n\nNguồn bên ngoài: %@\nKhôi phục đến: %@\n\nBản gốc bên ngoài sẽ được giữ lại. Sau khi kiểm tra ứng dụng và dữ liệu, dùng Quản lý bản sao để xác minh và dọn dẹp."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarigi “%@” loke.\n\nEkstera fonto: %@\nRestarigi al: %@\n\nLa ekstera originalo restos konservita. Post kontrolo de la aplikaĵo kaj datumoj, uzu Administri kopiojn por kontroli kaj forigi ĝin."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” को स्थानीय रूप से बहाल करें।\n\nबाहरी स्रोत: %@\nयहाँ बहाल करें: %@\n\nबाहरी मूल डेटा रखा जाएगा। ऐप और डेटा की जाँच के बाद प्रतिलिपियाँ प्रबंधित करें से इसे सत्यापित करके हटा सकते हैं।"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استعادة «%@» محليًا.\n\nالمصدر الخارجي: %@\nالاستعادة إلى: %@\n\nسيُحفظ الأصل الخارجي. بعد فحص التطبيق والبيانات، استخدم إدارة النسخ للتحقق منه وتنظيفه."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กู้คืน “%@” กลับมายังเครื่องนี้\n\nแหล่งข้อมูลภายนอก: %@\nกู้คืนไปที่: %@\n\nจะเก็บต้นฉบับภายนอกไว้ หลังตรวจสอบแอปและข้อมูลแล้ว สามารถใช้จัดการสำเนาเพื่อตรวจสอบและล้างได้"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠑ “%@” ⠇⠕⠉⠁⠇⠇⠽⠲\n\n⠠⠑⠭⠞⠑⠗⠝⠁⠇ ⠎⠕⠥⠗⠉⠑⠒ %@\n⠠⠗⠑⠎⠞⠕⠗⠑ ⠞⠕⠒ %@\n\n⠠⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠺⠊⠇⠇ ⠃⠑ ⠗⠑⠞⠁⠊⠝⠑⠙⠲ ⠠⠁⠋⠞⠑⠗ ⠉⠓⠑⠉⠅⠊⠝⠛ ⠞⠓⠁⠞ ⠞⠓⠑ ⠁⠏⠏ ⠁⠝⠙ ⠙⠁⠞⠁ ⠺⠕⠗⠅ ⠉⠕⠗⠗⠑⠉⠞⠇⠽⠂ ⠥⠎⠑ ⠠⠍⠁⠝⠁⠛⠑ ⠠⠉⠕⠏⠊⠑⠎ ⠞⠕ ⠧⠑⠗⠊⠋⠽ ⠁⠝⠙ ⠉⠇⠑⠁⠝ ⠊⠞ ⠥⠏⠲"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将「%@」还原到本地。\n\n外部来源：%@\n还原到：%@\n\n还原后保留外部原件；验证应用与数据正常后，可在副本管理中校验并清理。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将「%@」还厵到本地。\n\n外部来源：%@\n还厵到：%@\n\n还厵後葆畱外部厵件；驗证應苚與數據正常後，岢茬副本菅理中校驗並淸理。"
+          }
+        }
+      }
+    },
+    "目标副本" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination Copy"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標副本"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zielkopie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de destino"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie de destination"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia de destino"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia di destinazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピー先"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 복사본"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копия в месте назначения"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doelkopie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopia docelowa"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salinan Tujuan"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef Kopya"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản sao đích"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celkopio"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गंतव्य प्रतिलिपि"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نسخة الوجهة"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สำเนาปลายทาง"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠠⠉⠕⠏⠽"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标副本"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標副夲"
           }
         }
       }

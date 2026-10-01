@@ -206,6 +206,7 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
 
     /// 关联的应用名称（仅 Library 类型目录有，dotFolder 为 nil）
     var associatedAppName: String? = nil
+    var associatedBundleIdentifier: String? = nil
 
     // MARK: - 状态属性
 
@@ -249,6 +250,31 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     /// 不可迁移时的原因说明
     var nonMigratableReason: String? = nil
 
+    var pathPolicy: DataPathPolicy.Decision? = nil
+    var hasManagedLinkRecord = false
+    var recoveryOperationID: UUID? = nil
+
+    var canRestore: Bool {
+        hasManagedLinkRecord || DataDirStatus.mountStatuses.contains(status)
+            || status == DataDirStatus.linked || status == DataDirStatus.needsNormalization
+    }
+
+    var needsRecoveryOrAttention: Bool {
+        status != DataDirStatus.local || sizeIsIncomplete || hasManagedLinkRecord || recoveryOperationID != nil
+    }
+
+    func matchesVisibility(showZeroByteDirectories: Bool, showLockedStructure: Bool) -> Bool {
+        if needsRecoveryOrAttention { return true }
+        if !isMigratable { return showLockedStructure }
+        return showZeroByteDirectories || !isEmptyLocalDirectory
+    }
+
+    mutating func applyPathPolicy(_ decision: DataPathPolicy.Decision) {
+        pathPolicy = decision
+        isMigratable = decision.canMigrate
+        nonMigratableReason = decision.reason?.localizedDescription
+    }
+
     /// 迁移警告（可迁移但有风险时显示，用户确认后仍可继续）
     var migrationWarning: String? = nil
 
@@ -278,6 +304,10 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
         lhs.sizeIsIncomplete == rhs.sizeIsIncomplete &&
         lhs.linkedDestination == rhs.linkedDestination &&
         lhs.isMigratable == rhs.isMigratable &&
+        lhs.nonMigratableReason == rhs.nonMigratableReason &&
+        lhs.pathPolicy == rhs.pathPolicy &&
+        lhs.hasManagedLinkRecord == rhs.hasManagedLinkRecord &&
+        lhs.recoveryOperationID == rhs.recoveryOperationID &&
         lhs.migrationWarning == rhs.migrationWarning &&
         lhs.requiresMountMigration == rhs.requiresMountMigration
     }

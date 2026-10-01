@@ -179,23 +179,8 @@ struct DataDirOperationButtons: View {
     var body: some View {
         if DataDirStatus.mountStatuses.contains(item.status) {
             mountOperationButtons
-        } else if item.status == "已链接" {
-            // 已链接：显示「还原」按钮
-            Button(action: { onRestore(item) }) {
-                HStack(spacing: 5) {
-                    Image(systemName: "arrow.uturn.backward.circle.fill")
-                    Text("还原".localized)
-                }
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.white)
-                .padding(.horizontal, inline ? 8 : 10)
-                .padding(.vertical, inline ? 7 : 5)
-                .background(
-                    Capsule().fill(Color.orange)
-                )
-            }
-            .buttonStyle(.plain)
-            .help("将数据目录还原到本地".localized)
+        } else if item.canRestore && (!item.isMigratable || item.status != DataDirStatus.needsNormalization) {
+            restoreButton()
         } else if !item.isMigratable {
             // 不可迁移的目录：显示禁用按钮 + tooltip
             Image(systemName: "lock.fill")
@@ -220,6 +205,9 @@ struct DataDirOperationButtons: View {
                 .buttonStyle(.plain)
                 .help("将已接管的链接整理到 AppPorts 规范路径".localized)
             }
+            // A legacy managed link can always be restored without first normalizing it.
+            // Keep the secondary action compact inside the browser's fixed-width column.
+            if item.canRestore { restoreButton(compact: inline) }
         } else if item.status == "现有软链" {
             if item.linkedDestination != nil {
                 Button(action: { onManageExistingLink(item) }) {
@@ -321,6 +309,23 @@ struct DataDirOperationButtons: View {
         }
     }
 
+    private func restoreButton(compact: Bool = false) -> some View {
+        Button(action: { onRestore(item) }) {
+            HStack(spacing: 5) {
+                Image(systemName: "arrow.uturn.backward.circle.fill")
+                if !compact { Text("还原".localized) }
+            }
+            .font(.system(size: 12, weight: .medium))
+            .foregroundColor(.white)
+            .padding(.horizontal, inline ? 8 : 10)
+            .padding(.vertical, inline ? 7 : 5)
+            .background(Capsule().fill(Color.orange))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("还原".localized)
+        .help("将数据目录还原到本地".localized)
+    }
+
     /// 挂载迁移项：已挂载可卸载/还原，待挂载可挂载/还原，外置盘未连接时只提示。
     @ViewBuilder
     private var mountOperationButtons: some View {
@@ -377,7 +382,7 @@ struct DataDirOperationButtons: View {
                     .background(Capsule().fill(Color.orange))
                 }
                 .buttonStyle(.plain)
-                .help("把数据复制回本地并删除外置卷".localized)
+                .help("将数据目录还原到本地".localized)
             }
         }
     }

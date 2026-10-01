@@ -53,7 +53,7 @@ final class DataDirScannerTests: XCTestCase {
             try createDirectoryWithPayload(at: workspace.homeURL.appendingPathComponent(relativePath))
         }
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders()
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders()
         let itemsByRelativePath = Dictionary(
             uniqueKeysWithValues: items.map {
                 ($0.path.path.replacingOccurrences(of: workspace.homeURL.path + "/", with: ""), $0)
@@ -81,7 +81,7 @@ final class DataDirScannerTests: XCTestCase {
             try createDirectoryWithPayload(at: externalURL)
         }
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
         let itemsByRelativePath = Dictionary(
@@ -105,7 +105,7 @@ final class DataDirScannerTests: XCTestCase {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
         let issue49Paths = Set([".gradle", ".android", ".pub-cache"])
@@ -128,7 +128,7 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: localPubCacheURL)
         try createDirectoryWithPayload(at: externalPubCacheURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
 
@@ -147,7 +147,7 @@ final class DataDirScannerTests: XCTestCase {
         try fileManager.createDirectory(at: externalToolRootURL, withIntermediateDirectories: true)
         try "not a directory".write(to: externalPubCacheURL, atomically: true, encoding: .utf8)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
 
@@ -184,7 +184,7 @@ final class DataDirScannerTests: XCTestCase {
         )
         try fileManager.createSymbolicLink(at: localPubCacheURL, withDestinationURL: externalPubCacheURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
 
@@ -204,7 +204,7 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: externalPubCacheURL)
         try fileManager.createSymbolicLink(at: localPubCacheURL, withDestinationURL: externalPubCacheURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
 
@@ -225,7 +225,7 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: externalPubCacheURL)
         try fileManager.createSymbolicLink(at: localPubCacheURL, withDestinationURL: danglingTargetURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
 
@@ -246,12 +246,12 @@ final class DataDirScannerTests: XCTestCase {
             .appendingPathComponent("Application Support/com.example.focus")
 
         try createDirectoryWithPayload(at: externalDataURL)
-        try await DataDirMover(homeDir: workspace.homeURL).createLink(
+        try await DataDirMover(homeDir: workspace.homeURL, store: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).createLink(
             localPath: localDataURL,
             externalPath: externalDataURL
         )
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "Focus.app", path: appURL, status: "本地"),
             externalRootURL: externalRootURL
         )
@@ -273,12 +273,12 @@ final class DataDirScannerTests: XCTestCase {
         let externalRootURL = workspace.externalRootURL
 
         try createDirectoryWithPayload(at: currentExternalURL)
-        try await DataDirMover(homeDir: workspace.homeURL).createLink(
+        try await DataDirMover(homeDir: workspace.homeURL, store: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).createLink(
             localPath: localDataURL,
             externalPath: currentExternalURL
         )
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "Focus.app", path: appURL, status: "本地"),
             externalRootURL: externalRootURL
         )
@@ -302,7 +302,7 @@ final class DataDirScannerTests: XCTestCase {
         try fileManager.createDirectory(at: localDataURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fileManager.createSymbolicLink(at: localDataURL, withDestinationURL: externalDataURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "Focus.app", path: appURL, status: "本地")
         )
 
@@ -332,7 +332,7 @@ final class DataDirScannerTests: XCTestCase {
         )
         UserDefaults.standard.set(logURL.path, forKey: "LogFilePath")
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "Focus.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
@@ -355,7 +355,7 @@ final class DataDirScannerTests: XCTestCase {
 
         try createDirectoryWithPayload(at: externalDataURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "Focus.app", path: appURL, status: "本地"),
             externalRootURL: externalRootURL
         )
@@ -375,12 +375,12 @@ final class DataDirScannerTests: XCTestCase {
 
         try createDirectoryWithPayload(at: localGroupContainerURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
 
-        XCTAssertNil(items.first(where: { $0.path.standardizedFileURL == localGroupContainerURL.standardizedFileURL }))
+        XCTAssertFalse(try XCTUnwrap(items.first(where: { $0.path.standardizedFileURL == localGroupContainerURL.standardizedFileURL })).isMigratable)
     }
 
     // MARK: - Bundle ID 后缀匹配
@@ -439,7 +439,7 @@ final class DataDirScannerTests: XCTestCase {
         let ownDataURL = workspace.homeURL.appendingPathComponent("Library/Application Support/QQ")
         try createDirectoryWithPayload(at: ownDataURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "QQ.app", path: appURL, status: AppStatus.local)
         )
         XCTAssertTrue(items.contains { $0.path.standardizedFileURL == ownDataURL.standardizedFileURL })
@@ -573,7 +573,7 @@ final class DataDirScannerTests: XCTestCase {
         )
         try fileManager.createSymbolicLink(at: localGroupContainerURL, withDestinationURL: externalGroupContainerURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
@@ -887,7 +887,7 @@ final class DataDirScannerTests: XCTestCase {
             try fileManager.createSymbolicLink(at: localURL, withDestinationURL: danglingTargetURL)
         }
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanKnownDotFolders(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanKnownDotFolders(
             externalRootURL: workspace.externalRootURL
         )
         let item = items.first { $0.path.standardizedFileURL == localURL.standardizedFileURL }
@@ -973,7 +973,7 @@ final class DataDirScannerTests: XCTestCase {
             throw XCTSkip("当前进程可绕过测试目录的文件权限")
         }
 
-        let scanner = DataDirScanner(homeDir: workspace.homeURL)
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist")))
         let app = AppItem(name: "WeChat.app", path: appURL, status: "本地")
         let partial = await scanner.scanLibraryDirsWithDiagnostics(for: app)
         XCTAssertTrue(partial.items.contains { $0.path.resolvingSymlinksInPath() == cacheURL.resolvingSymlinksInPath() })
@@ -987,7 +987,7 @@ final class DataDirScannerTests: XCTestCase {
         XCTAssertTrue(retried.items.contains { $0.path.resolvingSymlinksInPath() == accountURL.resolvingSymlinksInPath() })
     }
 
-    func testWeChatContainerOnlySurfacesDocumentsAndLibraryAtDataLevel() async throws {
+    func testWeChatContainerSurfacesLockedSystemDataAtDataLevel() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -1000,7 +1000,7 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: dataURL.appendingPathComponent("Library"))
         try createDirectoryWithPayload(at: dataURL.appendingPathComponent("SystemData"))
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
@@ -1008,7 +1008,7 @@ final class DataDirScannerTests: XCTestCase {
         // 仅 Documents 和 Library 出现（作为不可迁移父节点）
         let dataLevelItems = items.filter { $0.path.deletingLastPathComponent().lastPathComponent == "Data" }
         let dataLevelNames = Set(dataLevelItems.map { $0.path.lastPathComponent })
-        XCTAssertEqual(dataLevelNames, ["Documents", "Library"])
+        XCTAssertEqual(dataLevelNames, ["Documents", "Library", "SystemData"])
         for item in dataLevelItems {
             XCTAssertFalse(item.isMigratable)
         }
@@ -1026,7 +1026,7 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: xwechatFilesURL.appendingPathComponent("file"))
         try createDirectoryWithPayload(at: xwechatFilesURL.appendingPathComponent("video"))
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
@@ -1048,7 +1048,7 @@ final class DataDirScannerTests: XCTestCase {
             .appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files")
         try createDirectoryWithPayload(at: xwechatFilesURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
@@ -1067,7 +1067,7 @@ final class DataDirScannerTests: XCTestCase {
             .appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Library/Application Support/com.tencent.xinWeChat")
         try createDirectoryWithPayload(at: weChatDataURL)
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
@@ -1077,7 +1077,7 @@ final class DataDirScannerTests: XCTestCase {
         XCTAssertEqual(weChatItem.status, "本地")
     }
 
-    func testWeChatOtherDocumentsChildrenAreNotSurfaced() async throws {
+    func testWeChatOtherDocumentsChildrenAreVisibleButLocked() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -1087,18 +1087,20 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: documentsURL.appendingPathComponent("OtherStuff"))
         try createDirectoryWithPayload(at: documentsURL.appendingPathComponent("RandomDir"))
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
 
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "OtherStuff" })
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "RandomDir" })
         for item in items {
-            XCTAssertFalse(item.path.path.contains("OtherStuff"))
-            XCTAssertFalse(item.path.path.contains("RandomDir"))
+            if item.path.path.contains("OtherStuff") { XCTAssertFalse(item.isMigratable) }
+            if item.path.path.contains("RandomDir") { XCTAssertFalse(item.isMigratable) }
         }
     }
 
-    func testWeChatOtherLibraryChildrenAreNotSurfaced() async throws {
+    func testWeChatOtherLibraryChildrenAreVisibleButLocked() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -1108,18 +1110,20 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: libraryURL.appendingPathComponent("Caches"))
         try createDirectoryWithPayload(at: libraryURL.appendingPathComponent("Preferences"))
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
 
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "Caches" })
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "Preferences" })
         for item in items {
-            XCTAssertFalse(item.path.path.contains("Data/Library/Caches"))
-            XCTAssertFalse(item.path.path.contains("Data/Library/Preferences"))
+            if item.path.path.contains("Data/Library/Caches") { XCTAssertFalse(item.isMigratable) }
+            if item.path.path.contains("Data/Library/Preferences") { XCTAssertFalse(item.isMigratable) }
         }
     }
 
-    func testWeChatOtherApplicationSupportChildrenAreNotSurfaced() async throws {
+    func testWeChatOtherApplicationSupportChildrenAreVisibleButLocked() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -1129,18 +1133,20 @@ final class DataDirScannerTests: XCTestCase {
         try createDirectoryWithPayload(at: appSupportURL.appendingPathComponent("com.other.App"))
         try createDirectoryWithPayload(at: appSupportURL.appendingPathComponent("RandomSupport"))
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
 
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "com.other.App" })
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "RandomSupport" })
         for item in items {
-            XCTAssertFalse(item.path.path.contains("com.other.App"))
-            XCTAssertFalse(item.path.path.contains("RandomSupport"))
+            if item.path.path.contains("com.other.App") { XCTAssertFalse(item.isMigratable) }
+            if item.path.path.contains("RandomSupport") { XCTAssertFalse(item.isMigratable) }
         }
     }
 
-    func testWeChatNonDocumentsNonLibraryDataChildrenAreNotSurfaced() async throws {
+    func testWeChatNonDocumentsNonLibraryDataChildrenAreVisibleButLocked() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -1149,13 +1155,223 @@ final class DataDirScannerTests: XCTestCase {
             .appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data")
         try createDirectoryWithPayload(at: dataURL.appendingPathComponent("SystemData"))
 
-        let items = await DataDirScanner(homeDir: workspace.homeURL).scanLibraryDirs(
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
             for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
             externalRootURL: workspace.externalRootURL
         )
 
+        XCTAssertTrue(items.contains { $0.path.lastPathComponent == "SystemData" })
         for item in items {
-            XCTAssertFalse(item.path.path.contains("SystemData"))
+            if item.path.path.contains("SystemData") { XCTAssertFalse(item.isMigratable) }
         }
     }
+    func testEveryContainerStructuralDirectoryIsVisibleButCannotMigrate() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Example.app", bundleID: "com.example.test", in: workspace.appsURL)
+        let container = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.test")
+        let relatives = ["", "Data", "Data/Documents", "Data/Library", "Data/Library/Application Scripts",
+                         "Data/Library/Application Support", "Data/Library/Caches", "Data/Library/Images",
+                         "Data/Library/Logs", "Data/Library/Preferences", "Data/Library/Saved Application State",
+                         "Data/SystemData", "Data/tmp"]
+        for relative in relatives {
+            try createDirectoryWithPayload(at: container.appendingPathComponent(relative))
+        }
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
+            for: AppItem(name: "Example.app", path: appURL, status: "本地"))
+        for relative in relatives {
+            let url = container.appendingPathComponent(relative).standardizedFileURL
+            let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == url }, relative)
+            XCTAssertFalse(item.isMigratable, relative)
+            XCTAssertNotNil(item.nonMigratableReason, relative)
+        }
+    }
+
+    func testChangingLockReasonChangesItemEquality() {
+        var original = DataDirItem(name: "Data", path: URL(fileURLWithPath: "/Data"), type: .containers,
+                                   priority: .critical, description: "", isMigratable: false,
+                                   nonMigratableReason: "System structure")
+        let previous = original
+        original.nonMigratableReason = "Read failed"
+        XCTAssertNotEqual(original, previous)
+    }
+
+    func testMissingAndDeepMountRecordsAreMergedByBundleIdentity() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "WeChat.app", bundleID: "com.tencent.xinWeChat", in: workspace.appsURL)
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        let paths = ["Library/Containers/com.tencent.xinWeChat/Data/Library/Caches",
+                     "Library/Containers/com.tencent.xinWeChat/Data/SystemData/hidden/deep/history",
+                     "Library/Group Containers/legacy-renamed/Data/deep"]
+        for path in paths {
+            try store.upsert(ContainerMountRecord(appName: "Old display name", bundleIdentifier: "com.tencent.xinWeChat",
+                dataDirType: path.contains("Group Containers") ? DataDirType.groupContainers.rawValue : DataDirType.containers.rawValue,
+                mountPointPath: workspace.homeURL.appendingPathComponent(path).path,
+                volumeUUID: path, volumeName: "history", externalRootPath: workspace.externalRootURL.path))
+        }
+        let unrelated = workspace.homeURL.appendingPathComponent("Library/Containers/com.other/Data")
+        try store.upsert(ContainerMountRecord(appName: "WeChat", bundleIdentifier: "com.other",
+            dataDirType: DataDirType.containers.rawValue, mountPointPath: unrelated.path,
+            volumeUUID: "unrelated", volumeName: "other", externalRootPath: workspace.externalRootURL.path))
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: store,
+                                     isMountPoint: { _ in false }, isVolumeOnline: { _ in false })
+        let items = await scanner.scanLibraryDirs(for: AppItem(name: "WeChat.app", path: appURL, status: "本地"))
+        for path in paths {
+            let item = try XCTUnwrap(items.first { $0.path.path == workspace.homeURL.appendingPathComponent(path).path })
+            XCTAssertEqual(item.status, DataDirStatus.volumeMissing)
+            XCTAssertTrue(item.canRestore)
+        }
+        XCTAssertFalse(items.contains { $0.path == unrelated })
+    }
+
+    func testLockedHistoricalLinkRetainsNeedsNormalizationRecovery() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "WeChat.app", bundleID: "com.tencent.xinWeChat", in: workspace.appsURL)
+        let source = workspace.homeURL.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Documents")
+        let target = workspace.externalRootURL.appendingPathComponent("old-location")
+        try createDirectoryWithPayload(at: target)
+        try writeManagedLinkMetadata(sourcePath: source, destinationPath: target, dataDirType: DataDirType.containers.rawValue)
+        try fileManager.createDirectory(at: source.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fileManager.createSymbolicLink(at: source, withDestinationURL: target)
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("scanner-records.plist"))).scanLibraryDirs(
+            for: AppItem(name: "WeChat.app", path: appURL, status: "本地"), externalRootURL: workspace.externalRootURL)
+        let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertEqual(item.status, DataDirStatus.needsNormalization)
+        XCTAssertFalse(item.isMigratable)
+        XCTAssertTrue(item.canRestore)
+        XCTAssertFalse(items.contains { $0.path.path.hasPrefix(source.path + "/") })
+    }
+
+    func testIncompleteTransferOutsideDiscoveryDepthRemainsVisibleAndBlocked() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "WeChat.app", bundleID: "com.tencent.xinWeChat", in: workspace.appsURL)
+        let source = workspace.homeURL.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/SystemData/hidden/deep/operation")
+        try createDirectoryWithPayload(at: source)
+        let destination = workspace.externalRootURL.appendingPathComponent("operation")
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        let transfer = DataTransferRecord(mode: .symlink, direction: .migrate, sourceID: source.path,
+            appName: "Old name", bundleIdentifier: "com.tencent.xinWeChat", dataDirType: DataDirType.containers.rawValue,
+            originalPath: source.path, activePath: source.path, destinationPath: destination.path,
+            sourceIdentity: try DataPathIdentity.capture(source))
+        try store.beginTransfer(transfer)
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: store).scanLibraryDirs(
+            for: AppItem(name: "WeChat.app", path: appURL, status: "本地"))
+        let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertFalse(item.isMigratable)
+        XCTAssertTrue(item.matchesVisibility(showZeroByteDirectories: false, showLockedStructure: false))
+    }
+
+    func testCompletedRetentionUsesNormalExplanationInsteadOfConflict() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Synthetic.app", bundleID: "com.example.synthetic", in: workspace.appsURL)
+        let source = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.synthetic/Data/Documents/Payload")
+        try createDirectoryWithPayload(at: source)
+        let destination = workspace.externalRootURL.appendingPathComponent("operation")
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        var transfer = DataTransferRecord(mode: .symlink, direction: .migrate, sourceID: source.path,
+            appName: "Synthetic", bundleIdentifier: "com.example.synthetic", dataDirType: DataDirType.containers.rawValue,
+            originalPath: source.path, activePath: source.path, destinationPath: destination.path,
+            sourceIdentity: try DataPathIdentity.capture(source))
+        try store.beginTransfer(transfer)
+        transfer.phase = .copying
+        try store.updateTransfer(transfer)
+        transfer.phase = .verified
+        transfer.destinationIdentity = try DataPathIdentity.capture(source)
+        transfer.baseline = Data("fixture-baseline".utf8)
+        try store.updateTransfer(transfer)
+        transfer.phase = .switching
+        try store.updateTransfer(transfer)
+        try store.finalizeTransfer(operationID: transfer.operationID, baseline: transfer.baseline!)
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: store).scanLibraryDirs(
+            for: AppItem(name: "Synthetic.app", path: appURL, status: "本地"))
+        let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertFalse(item.isMigratable)
+        XCTAssertEqual(item.pathPolicy?.reason, .retainedOriginal)
+        XCTAssertTrue(item.matchesVisibility(showZeroByteDirectories: false, showLockedStructure: false))
+    }
+
+    func testPersistedRemountInterventionReasonIsVisibleAfterRescan() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Synthetic.app", bundleID: "com.example.synthetic", in: workspace.appsURL)
+        let source = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.synthetic/Data/Documents/Payload")
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        try store.upsert(ContainerMountRecord(appName: "Synthetic", bundleIdentifier: "com.example.synthetic",
+            dataDirType: DataDirType.containers.rawValue, mountPointPath: source.path, volumeUUID: "OFFLINE",
+            volumeName: "Synthetic", externalRootPath: workspace.externalRootURL.path))
+        try store.setRemountIntervention(volumeUUID: "OFFLINE", reason: "Preserved local files prevent overlay")
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: store).scanLibraryDirs(
+            for: AppItem(name: "Synthetic.app", path: appURL, status: "本地"))
+        let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertFalse(item.isMigratable)
+        XCTAssertEqual(item.nonMigratableReason, "Preserved local files prevent overlay")
+        XCTAssertTrue(item.canRestore)
+    }
+
+    func testPersistentLinkIndexRetainsMissingDeepHistoricalSourceWithRecovery() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "WeChat.app", bundleID: "com.tencent.xinWeChat", in: workspace.appsURL)
+        let source = workspace.homeURL.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/SystemData/a/b/missing")
+        let target = workspace.externalRootURL.appendingPathComponent("historic-target")
+        try createDirectoryWithPayload(at: target)
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        try store.upsertManagedLink(ManagedDataLinkRecord(operationID: UUID(), originalPath: source.path,
+            destinationPath: target.path, destinationIdentity: try DataPathIdentity.capture(target), appName: "Old display name",
+            bundleIdentifier: "com.tencent.xinWeChat", dataDirType: DataDirType.containers.rawValue))
+        let items = await DataDirScanner(homeDir: workspace.homeURL, mountStore: store).scanLibraryDirs(
+            for: AppItem(name: "WeChat.app", path: appURL, status: "本地"))
+        let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertEqual(item.status, DataDirStatus.missing)
+        XCTAssertFalse(item.isMigratable)
+        XCTAssertTrue(item.canRestore)
+        XCTAssertEqual(item.linkedDestination?.standardizedFileURL, target.standardizedFileURL)
+        XCTAssertTrue(item.matchesVisibility(showZeroByteDirectories: false, showLockedStructure: false))
+    }
+
+    func testMountedDataRootDoesNotEnumerateBusinessChildren() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Example.app", bundleID: "com.example.test", in: workspace.appsURL)
+        let data = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.test/Data")
+        try createDirectoryWithPayload(at: data.appendingPathComponent("Documents/Business"))
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        try store.upsert(ContainerMountRecord(appName: "Example", bundleIdentifier: "com.example.test", dataDirType: DataDirType.containers.rawValue,
+            mountPointPath: data.path, volumeUUID: "fixture", volumeName: "fixture", externalRootPath: workspace.externalRootURL.path))
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: store,
+                                     isMountPoint: { $0.lastPathComponent == "Data" }, isVolumeOnline: { _ in true })
+        let items = await scanner.scanLibraryDirs(for: AppItem(name: "Example.app", path: appURL, status: "本地"))
+        let root = try XCTUnwrap(items.first { $0.path.standardizedFileURL == data.standardizedFileURL })
+        XCTAssertTrue(root.canRestore)
+        XCTAssertFalse(root.isMigratable)
+        XCTAssertFalse(items.contains { $0.path.path.hasPrefix(data.path + "/") })
+    }
+
+    func testContradictoryLegacyMountHistoryRemainsVisibleWithDiagnostics() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Example.app", bundleID: "com.example.test", in: workspace.appsURL)
+        let parent = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.test/Data")
+        let child = parent.appendingPathComponent("Documents/deep/child")
+        let records = [parent, child].map { path in
+            ContainerMountRecord(appName: "Example", bundleIdentifier: "com.example.test", dataDirType: DataDirType.containers.rawValue,
+                mountPointPath: path.path, volumeUUID: path.lastPathComponent, volumeName: "legacy", externalRootPath: workspace.externalRootURL.path)
+        }
+        let storeURL = workspace.rootURL.appendingPathComponent("records.plist")
+        try PropertyListEncoder().encode(records).write(to: storeURL)
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: ContainerMountStore(fileURL: storeURL),
+                                     isMountPoint: { _ in false }, isVolumeOnline: { _ in false })
+        let result = await scanner.scanLibraryDirsWithDiagnostics(for: AppItem(name: "Example.app", path: appURL, status: "本地"))
+        XCTAssertFalse(result.readIssues.isEmpty)
+        for path in [parent, child] {
+            let item = try XCTUnwrap(result.items.first { $0.path.standardizedFileURL == path.standardizedFileURL })
+            XCTAssertFalse(item.isMigratable)
+            XCTAssertTrue(item.canRestore)
+        }
+    }
+
 }

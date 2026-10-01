@@ -57,7 +57,8 @@ final class AppLogger: @unchecked Sendable {
     }
 
     /// 单例实例
-    static let shared = AppLogger(userDefaults: .standard)
+    static let shared = AppLogger(userDefaults: .standard,
+        usesTestLogDirectory: ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil)
     
     // MARK: - 私有属性
     
@@ -74,6 +75,7 @@ final class AppLogger: @unchecked Sendable {
     private let diagnosticQueue = DispatchQueue(label: "com.shimoko.AppPorts.logger.diagnostics", qos: .utility)
 
     nonisolated(unsafe) private let userDefaults: UserDefaults
+    nonisolated private let usesTestLogDirectory: Bool
 
     /// 当前启动会话 ID，便于用户粘贴日志后快速关联一次运行
     nonisolated private let sessionID: String
@@ -127,6 +129,11 @@ final class AppLogger: @unchecked Sendable {
     ///
     /// - Note: 如果目录不存在会自动创建
     nonisolated var logFileURL: URL {
+        if usesTestLogDirectory {
+            let directory = fileManager.temporaryDirectory.appendingPathComponent("AppPortsTestLogs-\(ProcessInfo.processInfo.processIdentifier)")
+            try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+            return directory.appendingPathComponent("AppPorts_Log.txt")
+        }
         if let savedPath = userDefaults.string(forKey: logPathKey) {
             return URL(fileURLWithPath: savedPath)
         }
@@ -160,7 +167,8 @@ final class AppLogger: @unchecked Sendable {
     // MARK: - 初始化
     
     /// 应用使用标准设置；独立设置可用于隔离诊断测试。
-    nonisolated init(userDefaults: UserDefaults) {
+    nonisolated init(userDefaults: UserDefaults, usesTestLogDirectory: Bool = false) {
+        self.usesTestLogDirectory = usesTestLogDirectory
         self.userDefaults = userDefaults
         dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"

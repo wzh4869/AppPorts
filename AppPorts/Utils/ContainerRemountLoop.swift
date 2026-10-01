@@ -61,7 +61,7 @@ enum ContainerRemountLoop {
     ) -> [ContainerVolumeMigrator.RemountOutcome] {
         outcomes.filter {
             switch $0.state {
-            case .mounted, .alreadyMounted: return false
+            case .mounted, .alreadyMounted, .requiresIntervention: return false
             case .unavailable, .failed: return true
             }
         }

@@ -68,6 +68,7 @@ struct DataDirsView: View {
     @State private var libraryIdentityIssue: AppIdentityIssue?
     @State private var showReadinessCheck = false
     @AppStorage("showZeroByteDataDirectories") private var showZeroByteDirectories = false
+    @AppStorage("showLockedAppDataDirectoryStructure") private var showLockedDirectoryStructure = false
 
     @State private var showAppDataFilters = false
     @State private var selectedPriorityFilters: Set<DataDirPriority> = []
@@ -104,6 +105,8 @@ struct DataDirsView: View {
     /// 挂载迁移前正在检查目标盘；检查期间忽略重复点击
     @State private var isCheckingMountDestination = false
     @State private var pendingCleanups: [ContainerCleanupRecord] = []
+    @State private var dataTransfers: [DataTransferRecord] = []
+    @State private var selectedTransfer: DataTransferRecord?
     @State private var cleanupWarning: ContainerVolumeMigrator.CleanupWarning?
     @State private var showCleanupWarning = false
 
@@ -166,6 +169,22 @@ struct DataDirsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if !dataTransfers.isEmpty {
+                HStack {
+                    Label("原件仍保留，清理后才会释放空间。".localized, systemImage: "doc.on.doc")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Menu("副本管理".localized) {
+                        ForEach(dataTransfers) { transfer in
+                            Button { selectedTransfer = transfer } label: {
+                                Text(verbatim: transfer.appName + " · " + URL(fileURLWithPath: transfer.originalPath).lastPathComponent)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            }
             if !pendingCleanups.isEmpty {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
@@ -218,6 +237,9 @@ struct DataDirsView: View {
         .warningSheet($mountMigrationRequest)
         .sheet(isPresented: $showReadinessCheck) {
             ReadinessCheckSheet()
+        }
+        .sheet(item: $selectedTransfer) { transfer in
+            DataTransferReviewView(transfer: transfer, onCleanup: { cleanupTransfer(transfer) })
         }
         // 错误弹窗
         .alert("操作失败".localized, isPresented: $showError) {
@@ -401,14 +423,14 @@ struct DataDirsView: View {
                         directorySearchField
                         if hasActiveAppDataFilters { appDataFilterSummary }
                         if !libraryItems.isEmpty || !libraryReadIssues.isEmpty || libraryIdentityIssue != nil {
-                            HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 statsSummary(
                                     items: filteredLibraryItems,
                                     allItems: libraryItems,
                                     readIssues: libraryReadIssues,
                                     hasIdentityIssue: libraryIdentityIssue != nil
                                 )
-                                zeroByteDirectoriesToggle
+                                appDataVisibilityToggles
                             }
                         }
                         if let issue = libraryIdentityIssue {
@@ -452,6 +474,7 @@ struct DataDirsView: View {
                             groups: groupedLibraryItems,
                             matchingItemIDs: Set(filteredLibraryItems.map(\.id)),
                             isFiltering: hasActiveAppDataFilters || !directorySearchText.isEmpty,
+                            showLockedStructure: showLockedDirectoryStructure,
                             actions: directoryOperationButtons
                         )
                     }
@@ -761,6 +784,11 @@ struct DataDirsView: View {
         .padding(12)
     }
 
+    private var appDataVisibilityToggles: some View {
+        AppDataVisibilityControls(showZeroByteDirectories: $showZeroByteDirectories,
+                                  showLockedStructure: $showLockedDirectoryStructure)
+    }
+
     private var zeroByteDirectoriesToggle: some View {
         Toggle("显示零字节目录".localized, isOn: $showZeroByteDirectories)
             .toggleStyle(.checkbox)
@@ -831,6 +859,7 @@ struct DataDirsView: View {
                     systemImage: "sparkles"
                 )
                     .foregroundColor(.accentColor)
+                    .help("原件仍保留，清理后才会释放空间。".localized)
             }
             if linked > 0 {
                 Label(String(format: "%lld 个已链接".localized, Int64(linked)), systemImage: "link.circle.fill")
@@ -955,7 +984,8 @@ struct DataDirsView: View {
         return matchesSearch && (selectedPriorityFilters.isEmpty || selectedPriorityFilters.contains(item.priority))
             && (selectedStatusFilters.isEmpty || selectedStatusFilters.contains(item.status))
             && (selectedTypeFilters.isEmpty || selectedTypeFilters.contains(item.type))
-            && (showZeroByteDirectories || !item.isEmptyLocalDirectory)
+            && item.matchesVisibility(showZeroByteDirectories: showZeroByteDirectories,
+                                      showLockedStructure: showLockedDirectoryStructure)
     }
 
     private func clearAppDataFilters() {
@@ -1015,6 +1045,11 @@ struct DataDirsView: View {
     // MARK: - 扫描逻辑
 
     private func reloadCurrentTab() {
+        do { dataTransfers = try ContainerMountStore.shared.transfers() }
+        catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
         do { pendingCleanups = try ContainerMountStore.shared.pendingCleanups() }
         catch {
             AppLogger.shared.logError("无法读取待清理记录，保留原文件", error: error, errorCode: "CONTAINER-CLEANUP-RECORD-READ-FAILED")
@@ -1289,7 +1324,7 @@ struct DataDirsView: View {
         confirmRequest = makeConfirmRequest(
             title: "还原数据目录".localized,
             actionTitle: "继续".localized,
-            message: String(format: "将「%@」从外部存储还原到本地。\n\n外部路径：%@\n还原到：%@\n\n还原完成后，外部存储中的副本将被删除。".localized,
+            message: String(format: "将「%@」还原到本地。\n\n外部来源：%@\n还原到：%@\n\n还原后保留外部原件；验证应用与数据正常后，可在副本管理中校验并清理。".localized,
                 item.name, linkedDest, item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")),
             action: { performRestore(item) }
         )
@@ -1827,7 +1862,8 @@ struct DataDirsView: View {
             }
             let mover = DataDirMover()
             do {
-                try await mover.createLink(localPath: item.path, externalPath: target)
+                try await mover.createLink(localPath: item.path, externalPath: target,
+                    bundleIdentifier: item.associatedBundleIdentifier, appName: item.associatedAppName)
                 AppLogger.shared.logContext(
                     "接回外部数据成功",
                     details: [("operation_id", operationID), ("item_name", item.name)]
@@ -2153,7 +2189,7 @@ struct DataDirsView: View {
             title: "还原挂载迁移目录".localized,
             actionTitle: "继续".localized,
             message: String(
-                format: "将「%@」从外置卷复制回本地，然后删除外置卷「%@」。\n\n还原到：%@\n\n还原需要外部存储保持连接，完成后外置卷及其数据会被删除。".localized,
+                format: "将「%@」还原到本地。\n\n外部来源：%@\n还原到：%@\n\n还原后保留外部原件；验证应用与数据正常后，可在副本管理中校验并清理。".localized,
                 item.name,
                 record.volumeName,
                 item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")
@@ -2246,6 +2282,40 @@ struct DataDirsView: View {
         guard let warning else { return }
         cleanupWarning = warning
         showCleanupWarning = true
+    }
+
+    private func cleanupTransfer(_ transfer: DataTransferRecord) {
+        guard let token = AppOperationState.shared.begin() else { return }
+        showProgress = true
+        progressTitle = "校验并清理原件".localized
+        progressBytes = 0
+        progressTotalBytes = 0
+        progressFileName = ""
+        Task { @MainActor in
+            let operationLock = OperationLock()
+            let lockAcquired = await operationLock.acquire(timeout: OperationLock.appWaitTimeout)
+            defer {
+                showProgress = false
+                AppOperationState.shared.finish(token)
+                if lockAcquired { operationLock.release() }
+                reloadCurrentTab()
+            }
+            if !lockAcquired {
+                errorMessage = "后台正在连接外部存储，本次操作尚未开始。请稍后重试。".localized
+                showError = true
+                return
+            }
+            do {
+                if transfer.mode == .mount {
+                    try await ContainerVolumeMigrator().cleanupRetainedTransfer(operationID: transfer.operationID)
+                } else {
+                    try await DataDirMover().cleanupRetainedTransfer(operationID: transfer.operationID)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+                showError = true
+            }
+        }
     }
 
     private func presentPendingCleanup(_ cleanup: ContainerCleanupRecord) {

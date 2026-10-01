@@ -222,18 +222,58 @@ struct DiskUtility: Sendable {
 
     // MARK: 卷操作
 
-    /// 在已有 APFS 容器中新建一个卷；返回新卷的设备标识（如 disk5s7）。
-    /// 新卷先保持未挂载，避免 Finder 突然出现一个内部数据盘。
+    /// Add a volume with an actual user-owned root so an owners-enabled mount
+    /// can preserve source uid/gid. diskutil addVolume creates a root-owned root.
+    /// A timed-out or failed creation is never retried: it may already have run.
     func createAPFSVolume(inContainer container: String, name: String) async throws -> String {
-        let result = try await run(["apfs", "addVolume", container, "APFS", name, "-nomount"])
-        if let device = Self.firstMatch(pattern: #"Created new APFS Volume (disk\d+s\d+)"#, in: result.stdoutText) {
-            return device
+        guard container.range(of: #"^disk[0-9]+$"#, options: .regularExpression) != nil,
+              !name.isEmpty else {
+            throw Failure.unexpectedOutput(command: "newfs_apfs add volume", output: "Invalid container or volume name")
         }
-        // 输出格式变化时，回退为按名称在容器中查找。
-        if let device = try await findAPFSVolumeDevice(named: name, inContainer: container) {
-            return device
+        let before = try await creationContainer(container)
+        let arguments = ["-A", "-w", "-U", String(getuid()), "-G", String(getgid()), "-v", name, container]
+        let command = "newfs_apfs " + arguments.joined(separator: " ")
+        let result = try await runner.run(executable: "/sbin/newfs_apfs", arguments: arguments, timeout: commandTimeout)
+        if result.timedOut { throw Failure.timedOut(command: command) }
+        guard result.status == 0 else { throw Failure.commandFailed(command: command, output: result.combinedText) }
+        let after = try await creationContainer(container)
+        let previousUUIDs = Set(before.volumes.map(\.uuid))
+        let currentUUIDs = Set(after.volumes.map(\.uuid))
+        let added = after.volumes.filter { !previousUUIDs.contains($0.uuid) }
+        guard before.uuid == after.uuid, previousUUIDs.isSubset(of: currentUUIDs),
+              added.count == 1, let fresh = added.first, fresh.name == name,
+              !before.volumes.contains(where: { $0.device == fresh.device }) else {
+            throw Failure.unexpectedOutput(command: command, output: "Cannot prove exactly one fresh volume in the original APFS container")
         }
-        throw Failure.unexpectedOutput(command: "diskutil apfs addVolume", output: result.combinedText)
+        return fresh.device
+    }
+
+    private struct CreationContainer {
+        struct Volume { let uuid: String; let device: String; let name: String }
+        let uuid: String
+        let volumes: [Volume]
+    }
+
+    private func creationContainer(_ reference: String) async throws -> CreationContainer {
+        let arguments = ["apfs", "list", "-plist", reference]
+        let plist = try await runPlist(arguments)
+        func invalid() -> Failure {
+            .unexpectedOutput(command: "diskutil " + arguments.joined(separator: " "), output: "Ambiguous APFS container identity")
+        }
+        guard let containers = plist["Containers"] as? [[String: Any]], containers.count == 1,
+              let container = containers.first, container["ContainerReference"] as? String == reference,
+              let uuid = container["APFSContainerUUID"] as? String, !uuid.isEmpty,
+              let rawVolumes = container["Volumes"] as? [[String: Any]] else { throw invalid() }
+        let volumes = try rawVolumes.map { value -> CreationContainer.Volume in
+            guard let uuid = value["APFSVolumeUUID"] as? String, !uuid.isEmpty,
+                  let device = value["DeviceIdentifier"] as? String,
+                  device.range(of: "^" + reference + #"s[0-9]+$"#, options: .regularExpression) != nil,
+                  let name = value["Name"] as? String else { throw invalid() }
+            return .init(uuid: uuid.uppercased(), device: device, name: name)
+        }
+        guard Set(volumes.map(\.uuid)).count == volumes.count,
+              Set(volumes.map(\.device)).count == volumes.count else { throw invalid() }
+        return CreationContainer(uuid: uuid.uppercased(), volumes: volumes)
     }
 
     func findAPFSVolumeDevice(named name: String, inContainer container: String) async throws -> String? {
@@ -250,8 +290,9 @@ struct DiskUtility: Sendable {
         return nil
     }
 
-    func mount(volume: String, at mountPoint: URL) async throws {
-        _ = try await run(["mount", "nobrowse", "-mountPoint", mountPoint.path, volume])
+    func mount(volume: String, at mountPoint: URL, requireOwnership: Bool = false) async throws {
+        let options = requireOwnership ? ["-mountOptions", "owners"] : []
+        _ = try await run(["mount", "nobrowse", "-mountPoint", mountPoint.path] + options + [volume])
     }
 
     /// 给早期版本挂上、没带 `nobrowse` 的卷补上这个选项，不用卸载。
@@ -317,7 +358,11 @@ struct DiskUtility: Sendable {
 
     /// 使用系统卷属性确认身份，不把路径上任意一个挂载卷都认作 AppPorts 的数据卷。
     static func mountedVolumeUUID(at url: URL) -> String? {
-        try? url.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString
+        // A reused URL may describe the filesystem that occupied this path
+        // before a mount/unmount. Identity checks must query its current volume.
+        var fresh = URL(fileURLWithPath: url.path)
+        fresh.removeAllCachedResourceValues()
+        return try? fresh.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString
     }
 
     /// 路径所在卷的可用空间（字节）；查不到时返回 nil。
