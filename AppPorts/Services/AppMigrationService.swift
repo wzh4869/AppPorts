@@ -615,11 +615,17 @@ struct AppMigrationService {
         operationResult = "success"
     }
 
+    struct RestoreResult {
+        let retiredLocalPortalURLs: [URL]
+        let externalSourceRemains: Bool
+    }
+
+    @discardableResult
     func moveBack(
         app: AppItem,
         localDestinationURL: URL,
         progressHandler: FileCopier.ProgressHandler?
-    ) async throws {
+    ) async throws -> RestoreResult {
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-restore")
         let startedAt = Date()
         var operationResult = "failed"
@@ -827,6 +833,10 @@ struct AppMigrationService {
         if operationResult != "success_with_warning" {
             operationResult = "success"
         }
+        return RestoreResult(
+            retiredLocalPortalURLs: suitePortalSnapshots.map(\.localURL),
+            externalSourceRemains: fileManager.fileExists(atPath: app.path.path)
+        )
     }
 
     /// 恢复到已有入口所在的扫描目录；旧版展开入口仍恢复整个应用容器。

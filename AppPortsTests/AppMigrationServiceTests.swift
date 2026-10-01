@@ -760,9 +760,20 @@ final class AppMigrationServiceTests: XCTestCase {
                 of: app, defaultDirectory: workspace.localAppsURL, additionalDirectories: [customAppsURL]
             )
             XCTAssertEqual(destination, localSuiteURL, "Restore the complete container in its original custom directory")
-            try await service.moveBack(
+            let result = try await service.moveBack(
                 app: app, localDestinationURL: destination, progressHandler: nil
             )
+            XCTAssertEqual(result.retiredLocalPortalURLs.map { $0.standardizedFileURL.path }, [flattenedPortalURL.standardizedFileURL.path])
+            XCTAssertFalse(result.externalSourceRemains)
+            var localRows = [AppItem(name: "Word.app", path: flattenedPortalURL, status: AppStatus.linked)]
+            var externalRows = [app, AppItem(name: "Word.app", path: externalAppURL, status: AppStatus.linked)]
+            AppListTransfer.movedBack(app, localDestination: destination,
+                                      externalSourceRemains: result.externalSourceRemains,
+                                      retiredLocalURLs: result.retiredLocalPortalURLs)
+                .apply(localApps: &localRows, externalApps: &externalRows)
+            XCTAssertEqual(localRows.map(\.path), [destination])
+            XCTAssertEqual(localRows.first?.status, AppStatus.local)
+            XCTAssertTrue(externalRows.isEmpty)
             XCTAssertEqual(updates.map { $0.source.path }, [externalSuiteURL.path, flattenedPortalURL.path])
             XCTAssertEqual(updates.map { $0.destination.path }, [localSuiteURL.path, localSuiteURL.appendingPathComponent("Word.app").path])
             try assertRealAppBundle(localSuiteURL.appendingPathComponent("Word.app"))
@@ -821,13 +832,15 @@ final class AppMigrationServiceTests: XCTestCase {
             }
         )
 
-        try await service.moveBack(
+        let result = try await service.moveBack(
             app: AppItem(name: "Cleanup.app", path: externalAppURL, status: AppStatus.linked),
             localDestinationURL: localAppURL, progressHandler: nil
         )
         try assertRealAppBundle(localAppURL)
         try assertRealAppBundle(externalAppURL)
         XCTAssertEqual(updates, 1)
+        XCTAssertTrue(result.externalSourceRemains)
+        XCTAssertTrue(result.retiredLocalPortalURLs.isEmpty)
     }
 
     private final class CleanupFailingFileManager: FileManager {

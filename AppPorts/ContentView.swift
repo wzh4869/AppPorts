@@ -195,13 +195,9 @@ private struct MarkdownTextView: NSViewRepresentable {
 struct ContentView: View {
 
     @ObservedObject private var operationState = AppOperationState.shared
-    private struct ScanRequest: Equatable, Sendable {
-        let id = UUID()
-        let externalDirectory: URL?
-        let customPaths: [String]
-    }
-    @State private var localScanRequest: ScanRequest?
-    @State private var externalScanRequest: ScanRequest?
+    private typealias ScanRequest = AppListScanState.Request
+    @State private var localScanState = AppListScanState()
+    @State private var externalScanState = AppListScanState()
     @State private var isVisible = false
     @State private var needsAppRescan = false
 
@@ -378,8 +374,8 @@ struct ContentView: View {
         }
         .onDisappear {
             isVisible = false
-            localScanRequest = nil
-            externalScanRequest = nil
+            localScanState.invalidate()
+            externalScanState.invalidate()
             localMonitor?.stopMonitoring()
             customLocalMonitors.forEach { $0.stopMonitoring() }
             stopMonitoringExternal()
@@ -387,7 +383,7 @@ struct ContentView: View {
         }
         .onChange(of: operationState.isBusy) { isBusy in
             // 补上操作期间延后的监控刷新，也初始化操作期间新打开的窗口。
-            if !isBusy, needsAppRescan || localScanRequest == nil || externalScanRequest == nil {
+            if !isBusy, needsAppRescan || localScanState.request == nil || externalScanState.request == nil {
                 scanBothAppsAtomic()
             }
         }
@@ -514,6 +510,7 @@ struct ContentView: View {
         var actionButtonText: String? = nil
         var onAction: (() -> Void)? = nil
         var onRefresh: (() -> Void)? = nil
+        var isRefreshing = false
         var accessory: AnyView? = nil
         
         var body: some View {
@@ -556,13 +553,22 @@ struct ContentView: View {
 
                             if let onRefresh {
                                 Button(action: onRefresh) {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(.secondary)
-                                        .frame(width: 26, height: 26)
+                                    Group {
+                                        if isRefreshing {
+                                            ProgressView()
+                                                .controlSize(.small)
+                                        } else {
+                                            Image(systemName: "arrow.clockwise")
+                                                .font(.system(size: 12, weight: .medium))
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    .frame(width: 26, height: 26)
                                 }
                                 .buttonStyle(.borderless)
-                                .help("刷新列表".localized)
+                                .disabled(isRefreshing)
+                                .accessibilityLabel(isRefreshing ? "正在扫描...".localized : "刷新列表".localized)
+                                .help(isRefreshing ? "正在扫描...".localized : "刷新列表".localized)
                             }
                         }
                         .fixedSize()
@@ -846,7 +852,8 @@ struct ContentView: View {
                 iconColumnWidth: 40,
                 actionButtonText: "＋",
                 onAction: addCustomLocalScanPath,
-                onRefresh: { scanLocalApps() },
+                onRefresh: { scanLocalApps(forceSizeRefresh: true) },
+                isRefreshing: localScanState.isScanning,
                 accessory: customLocalScanPaths.isEmpty ? nil : AnyView(localScanSourcesMenu)
             )
 
@@ -858,7 +865,7 @@ struct ContentView: View {
                 Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
 
                 if filteredLocalApps.isEmpty {
-                    if searchText.isEmpty {
+                    if localScanState.isScanning && localApps.isEmpty {
                         EmptyStateView(icon: "magnifyingglass", text: "正在扫描...".localized)
                     } else {
                         EmptyStateView(icon: "doc.text.magnifyingglass", text: "未找到匹配应用".localized)
@@ -910,7 +917,8 @@ struct ContentView: View {
                 tint: .teal,
                 actionButtonText: "选择文件夹".localized,
                 onAction: { _ = openPanelForExternalDrive() },
-                onRefresh: { scanExternalApps() }
+                onRefresh: { scanExternalApps(forceSizeRefresh: true) },
+                isRefreshing: externalScanState.isScanning
             )
 
         ZStack {
@@ -934,7 +942,13 @@ struct ContentView: View {
                         .controlSize(.large)
                 }
             } else if filteredExternalApps.isEmpty {
-                EmptyStateView(icon: "folder", text: "空文件夹".localized)
+                if externalScanState.isScanning && externalApps.isEmpty {
+                    EmptyStateView(icon: "magnifyingglass", text: "正在扫描...".localized)
+                } else if !externalApps.isEmpty || !searchText.isEmpty {
+                    EmptyStateView(icon: "doc.text.magnifyingglass", text: "未找到匹配应用".localized)
+                } else {
+                    EmptyStateView(icon: "folder", text: "空文件夹".localized)
+                }
             } else {
                 List(filteredExternalApps, selection: $selectedExternalApps) { app in
                     AppRowView(
@@ -1224,10 +1238,11 @@ struct ContentView: View {
     }
     
     @MainActor
-    func scanLocalApps() {
+    func scanLocalApps(forceSizeRefresh: Bool = false) {
         guard isVisible else { return }
-        let request = ScanRequest(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths)
-        localScanRequest = request
+        guard let request = localScanState.begin(externalDirectory: externalDriveURL,
+                                                customPaths: customLocalScanPaths,
+                                                isManual: forceSizeRefresh) else { return }
         let scanID = AppLogger.shared.makeOperationID(prefix: "scan-local-apps")
         AppLogger.shared.logContext(
             "开始扫描本地应用",
@@ -1304,14 +1319,16 @@ struct ContentView: View {
     }
 
     @MainActor
-    func scanExternalApps() {
+    func scanExternalApps(forceSizeRefresh: Bool = false) {
         guard isVisible else { return }
-        let request = ScanRequest(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths)
-        externalScanRequest = request
+        guard let request = externalScanState.begin(externalDirectory: externalDriveURL,
+                                                   customPaths: customLocalScanPaths,
+                                                   isManual: forceSizeRefresh) else { return }
         guard let dir = externalDriveURL else {
             AppLogger.shared.log("未选择外部路径，清空外部应用列表", level: "TRACE")
             self.externalApps = []
             self.selectedExternalApps.removeAll()
+            externalScanState.finish(request)
             return
         }
         
@@ -1382,98 +1399,87 @@ struct ContentView: View {
         }
     }
     
-    /// 会话级体积缓存条目。
-    /// - Note: `mtime` 记录测量时应用包的修改时间；若再次扫描时修改时间不变即视为缓存有效，
-    ///   应用在原地更新（内容被改写，目录修改时间变化）则自动失效并后台重算。
+    /// 目录 mtime 仅用于自动扫描的快速缓存判断；手动刷新始终重测包内内容。
     struct CachedAppSize {
         let size: String
         let bytes: Int64
         let mtime: Date?
+        let isLocalPortal: Bool
+
+        init(size: String, bytes: Int64, mtime: Date?, isLocalPortal: Bool = false) {
+            self.size = size
+            self.bytes = bytes
+            self.mtime = mtime
+            self.isLocalPortal = isLocalPortal
+        }
     }
 
-    /// 读取应用包的内容修改时间，用于缓存有效性判断。
     nonisolated func bundleModificationDate(for app: AppItem) -> Date? {
         (try? app.path.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
     }
 
-    /// 用会话缓存填充体积：命中且未失效的项直接写入 AppItem，未命中/已失效的项作为待计算列表返回。
-    /// - Note: 纯函数（不触碰已发布状态），可在后台线程调用，从而在赋值前就填好体积，避免命中缓存的行闪烁“计算中”。
+    /// 强制刷新时先保留可用的旧大小以免闪烁，同时将所有条目加入重测队列。
     nonisolated func fillCachedSizes(
         into apps: [AppItem],
-        cache: [String: CachedAppSize]
+        cache: [String: CachedAppSize],
+        isLocal: Bool = true,
+        forceRefresh: Bool = false
     ) -> (filled: [AppItem], misses: [(app: AppItem, mtime: Date?)]) {
         var filled = apps
         var misses: [(app: AppItem, mtime: Date?)] = []
         for i in filled.indices {
             let currentMtime = bundleModificationDate(for: filled[i])
-            if let entry = cache[filled[i].id], entry.mtime == currentMtime {
+            let isLocalPortal = isLocal && filled[i].status == AppStatus.linked
+            let entry = cache[filled[i].id]
+            let valid = currentMtime != nil && entry?.mtime == currentMtime
+                && entry?.isLocalPortal == isLocalPortal
+            if let entry, valid {
                 filled[i].size = entry.size
                 filled[i].sizeBytes = entry.bytes
-            } else {
+            }
+            if forceRefresh || !valid {
                 misses.append((filled[i], currentMtime))
             }
         }
         return (filled, misses)
     }
 
-    /// 后台并行计算缓存未命中项的体积，结果写回会话缓存与对应列表（按 id 精确匹配）。
-    /// - Note: 即使某项已不在列表中（扫描间隙发生变化），结果仍写入缓存，下次扫描即可瞬时命中。
+    /// AppScanner 串行读取目录；每完成一项便更新大小，避免慢目录拖住所有行。
     private func computeAndStoreSizes(
         misses: [(app: AppItem, mtime: Date?)],
         isLocal: Bool,
         scanner: AppScanner,
         request: ScanRequest
     ) async {
-        guard !misses.isEmpty else { return }
-        guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
-
-        let results = await withTaskGroup(of: (String, Int64, Date?).self) { group -> [(String, Int64, Date?)] in
-            var out: [(String, Int64, Date?)] = []
-            var iterator = misses.makeIterator()
-            let maxConcurrency = 4
-
-            // 启动初始批次
-            for _ in 0..<min(maxConcurrency, misses.count) {
-                guard let miss = iterator.next() else { break }
-                group.addTask {
-                    let bytes = await scanner.calculateDisplayedSize(for: miss.app, isLocalEntry: isLocal)
-                    return (miss.app.id, bytes, miss.mtime)
-                }
-            }
-
-            // 每完成一个再启动一个
-            for await result in group {
-                out.append(result)
-                if let miss = iterator.next() {
-                    group.addTask {
-                        let bytes = await scanner.calculateDisplayedSize(for: miss.app, isLocalEntry: isLocal)
-                        return (miss.app.id, bytes, miss.mtime)
-                    }
-                }
-            }
-            return out
-        }
-
-        await MainActor.run {
-            guard self.isCurrentScan(request, isLocal: isLocal) else { return }
-            for (id, bytes, mtime) in results {
+        for miss in misses {
+            guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
+            let bytes = await scanner.calculateDisplayedSize(for: miss.app, isLocalEntry: isLocal)
+            await MainActor.run {
+                guard self.isCurrentScan(request, isLocal: isLocal) else { return }
+                let id = miss.app.id
                 let sizeString = LocalizedByteCountFormatter.string(fromByteCount: bytes)
-                self.sizeCache[id] = CachedAppSize(size: sizeString, bytes: bytes, mtime: mtime)
+                self.sizeCache[id] = CachedAppSize(size: sizeString, bytes: bytes, mtime: miss.mtime,
+                                                  isLocalPortal: isLocal && miss.app.status == AppStatus.linked)
                 if isLocal {
                     if let index = self.localApps.firstIndex(where: { $0.id == id }) {
-                        withAnimation {
-                            self.localApps[index].size = sizeString
-                            self.localApps[index].sizeBytes = bytes
-                        }
+                        self.localApps[index].size = sizeString
+                        self.localApps[index].sizeBytes = bytes
                     }
                 } else {
                     if let index = self.externalApps.firstIndex(where: { $0.id == id }) {
-                        withAnimation {
-                            self.externalApps[index].size = sizeString
-                            self.externalApps[index].sizeBytes = bytes
-                        }
+                        self.externalApps[index].size = sizeString
+                        self.externalApps[index].sizeBytes = bytes
                     }
                 }
+            }
+        }
+        // 空列表或全部命中缓存时也必须结束进度；过期请求不能结束新一轮扫描。
+        await MainActor.run {
+            guard self.isCurrentScan(request, isLocal: isLocal) else { return }
+            if isLocal {
+                self.localScanState.finish(request)
+            } else {
+                self.externalScanState.finish(request)
             }
         }
     }
@@ -1483,7 +1489,7 @@ struct ContentView: View {
     @MainActor
     private func isCurrentScan(_ request: ScanRequest, isLocal: Bool) -> Bool {
         isVisible
-            && (isLocal ? localScanRequest : externalScanRequest) == request
+            && (isLocal ? localScanState.request : externalScanState.request) == request
             && externalDriveURL == request.externalDirectory
             && customLocalScanPaths == request.customPaths
     }
@@ -1491,7 +1497,8 @@ struct ContentView: View {
     private func applySizes(for apps: [AppItem], isLocal: Bool, scanner: AppScanner, request: ScanRequest) async {
         guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
         let cache = await MainActor.run { self.sizeCache }
-        let (filled, misses) = fillCachedSizes(into: apps, cache: cache)
+        let (filled, misses) = fillCachedSizes(into: apps, cache: cache, isLocal: isLocal,
+                                             forceRefresh: request.forceSizeRefresh)
         let committed = await MainActor.run {
             guard self.isCurrentScan(request, isLocal: isLocal) else { return false }
             if isLocal {
@@ -1661,6 +1668,18 @@ struct ContentView: View {
         return false
     }
 
+    /// 先发布已完成的迁移状态，再安排完整扫描；迁移前启动的旧扫描不可覆盖此结果。
+    @MainActor
+    private func recordCompletedTransfer(_ transfer: AppListTransfer) {
+        localScanState.invalidate()
+        externalScanState.invalidate()
+        let changedIDs = transfer.apply(localApps: &localApps, externalApps: &externalApps)
+        for id in changedIDs { sizeCache.removeValue(forKey: id) }
+        selectedLocalApps.formIntersection(Set(localApps.map(\.id)))
+        selectedExternalApps.formIntersection(Set(externalApps.map(\.id)))
+        needsAppRescan = true
+    }
+
     func moveAndLink(appToMove: AppItem, destinationURL: URL, lockExternal: Bool = true, progressHandler: FileCopier.ProgressHandler?) async throws {
         let service = AppMigrationService()
         try await service.moveAndLink(
@@ -1710,6 +1729,7 @@ struct ContentView: View {
                         }
                     }
                 )
+                recordCompletedTransfer(.movedOut(app, destination: destURL, isMASExternal: false))
                 AppLogger.shared.logContext("传统链接迁移成功", details: [("app_name", app.displayName)])
             } catch {
                 AppLogger.shared.logError("传统链接迁移失败", error: error, context: [("app_name", app.displayName)])
@@ -1720,8 +1740,7 @@ struct ContentView: View {
             await MainActor.run {
                 showProgress = false
                 isMigrating = false
-                scanLocalApps()
-                scanExternalApps()
+                scanBothAppsAtomic()
             }
         }
     }
@@ -1734,7 +1753,8 @@ struct ContentView: View {
         try AppMigrationService().deleteLink(app: app)
     }
     
-    func moveBack(app: AppItem, localDestinationURL: URL, progressHandler: FileCopier.ProgressHandler?) async throws {
+    @discardableResult
+    func moveBack(app: AppItem, localDestinationURL: URL, progressHandler: FileCopier.ProgressHandler?) async throws -> AppMigrationService.RestoreResult {
         try await AppMigrationService().moveBack(
             app: app,
             localDestinationURL: localDestinationURL,
@@ -2047,6 +2067,8 @@ struct ContentView: View {
                             self.progressFileName = progress.currentFile
                         }
                     }
+                    recordCompletedTransfer(.movedOut(app, destination: destURL,
+                                                       isMASExternal: app.isAppStoreApp && AppMigrationService.isMASExternalInstallSupported))
                     AppLogger.shared.logContext(
                         "批量迁移单项成功",
                         details: [("batch_id", batchID), ("app_name", app.displayName)]
@@ -2066,8 +2088,7 @@ struct ContentView: View {
                 showProgress = false
                 isMigrating = false
                 selectedLocalApps.removeAll()
-                scanLocalApps()
-                scanExternalApps()
+                scanBothAppsAtomic()
 
                 if !errors.isEmpty {
                     showError(title: "部分迁移失败".localized, message: errors.joined(separator: "\n"))
@@ -2162,6 +2183,7 @@ struct ContentView: View {
                     if lockExternal && item.app.needsLock {
                         AppMigrationService().lockExternalApp(at: item.sourcePath)
                     }
+                    recordCompletedTransfer(.linkedIn(item.app, localDestination: destination))
                     AppLogger.shared.logContext(
                         "批量链接单项成功",
                         details: [("batch_id", batchID), ("app_name", appName)]
@@ -2183,8 +2205,7 @@ struct ContentView: View {
                 showProgress = false
                 isMigrating = false
                 selectedExternalApps.removeAll()
-                scanLocalApps()
-                scanExternalApps()
+                scanBothAppsAtomic()
 
                 if !errors.isEmpty {
                     showError(title: "部分链接失败".localized, message: errors.joined(separator: "\n"))
@@ -2302,13 +2323,16 @@ struct ContentView: View {
         Task { @MainActor in
             defer { operationState.finish(activityToken) }
             do {
-                try await moveBack(app: target, localDestinationURL: destination) { progress in
+                let result = try await moveBack(app: target, localDestinationURL: destination) { progress in
                     await MainActor.run {
                         self.progressBytes = progress.copiedBytes
                         self.progressTotalBytes = progress.totalBytes
                         self.progressFileName = progress.currentFile
                     }
                 }
+                recordCompletedTransfer(.movedBack(target, localDestination: destination,
+                                                    externalSourceRemains: result.externalSourceRemains,
+                                                    retiredLocalURLs: result.retiredLocalPortalURLs))
                 AppLogger.shared.logContext(
                     "单个应用还原成功",
                     details: [("operation_id", operationID), ("app_name", target.displayName)]
@@ -2328,8 +2352,7 @@ struct ContentView: View {
             await MainActor.run {
                 showProgress = false
                 isMigrating = false
-                scanLocalApps()
-                scanExternalApps()
+                scanBothAppsAtomic()
             }
         }
     }
@@ -2380,13 +2403,16 @@ struct ContentView: View {
                 )
                 
                 do {
-                    try await moveBack(app: app, localDestinationURL: destination) { progress in
+                    let result = try await moveBack(app: app, localDestinationURL: destination) { progress in
                         await MainActor.run {
                             self.progressBytes = progress.copiedBytes
                             self.progressTotalBytes = progress.totalBytes
                             self.progressFileName = progress.currentFile
                         }
                     }
+                    recordCompletedTransfer(.movedBack(app, localDestination: destination,
+                                                        externalSourceRemains: result.externalSourceRemains,
+                                                        retiredLocalURLs: result.retiredLocalPortalURLs))
                     AppLogger.shared.logContext(
                         "批量还原单项成功",
                         details: [("batch_id", batchID), ("app_name", app.displayName)]
@@ -2406,8 +2432,7 @@ struct ContentView: View {
                 showProgress = false
                 isMigrating = false
                 selectedExternalApps.removeAll()
-                scanLocalApps()
-                scanExternalApps()
+                scanBothAppsAtomic()
 
                 if !errors.isEmpty {
                     showError(title: "部分迁移失败".localized, message: errors.joined(separator: "\n"))
@@ -2744,15 +2769,14 @@ struct ContentView: View {
             return
         }
         needsAppRescan = false
-        let request = ScanRequest(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths)
-        localScanRequest = request
-        externalScanRequest = request
-        let externalDir = request.externalDirectory
+        guard let localRequest = localScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths),
+              let externalRequest = externalScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths) else { return }
+        let externalDir = localRequest.externalDirectory
         Task.detached(priority: .userInitiated) {
             let scanner = AppScanner()
             let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
             let localDir = self.localAppsURL
-            let customPaths = request.customPaths
+            let customPaths = localRequest.customPaths
 
             // 扫描默认目录和自定义目录
             var newLocalApps = await scanner.scanLocalApps(
@@ -2784,14 +2808,14 @@ struct ContentView: View {
             }
 
             guard await MainActor.run(body: {
-                self.isCurrentScan(request, isLocal: true) || self.isCurrentScan(request, isLocal: false)
+                self.isCurrentScan(localRequest, isLocal: true) || self.isCurrentScan(externalRequest, isLocal: false)
             }) else { return }
 
             // 检测外置 app 版本变化，刷新本地 Stub Portal
             let service = AppMigrationService()
             for localApp in newLocalApps where localApp.status == AppStatus.linked {
                 guard await MainActor.run(body: {
-                    self.isCurrentScan(request, isLocal: true)
+                    self.isCurrentScan(localRequest, isLocal: true)
                         && !self.operationState.isBusy
                 }) else { break }
                 guard let externalApp = newExternalApps.first(where: { $0.name == localApp.name }) else { continue }
@@ -2805,25 +2829,34 @@ struct ContentView: View {
 
             // 会话缓存填充后一次性原子赋值，避免列表跳动与“计算中”闪烁；缺失项后台计算
             let cache = await MainActor.run { self.sizeCache }
-            let (filledLocal, missesLocal) = self.fillCachedSizes(into: newLocalApps, cache: cache)
-            let (filledExternal, missesExternal) = self.fillCachedSizes(into: newExternalApps, cache: cache)
+            let (filledLocal, missesLocal) = self.fillCachedSizes(into: newLocalApps, cache: cache, isLocal: true,
+                                                                  forceRefresh: localRequest.forceSizeRefresh)
+            let (filledExternal, missesExternal) = self.fillCachedSizes(into: newExternalApps, cache: cache, isLocal: false,
+                                                                        forceRefresh: externalRequest.forceSizeRefresh)
             let committed = await MainActor.run {
-                let localIsCurrent = self.isCurrentScan(request, isLocal: true)
-                let externalIsCurrent = self.isCurrentScan(request, isLocal: false)
+                let localIsCurrent = self.isCurrentScan(localRequest, isLocal: true)
+                let externalIsCurrent = self.isCurrentScan(externalRequest, isLocal: false)
                 // 单侧手动刷新可能已取代本轮请求，另一侧仍应完成更新。
                 if localIsCurrent {
                     self.localApps = filledLocal
                     self.selectedLocalApps.formIntersection(Set(filledLocal.map(\.id)))
+                    if missesLocal.isEmpty {
+                        self.localScanState.finish(localRequest)
+                    }
                 }
                 if externalIsCurrent {
                     self.externalApps = filledExternal
                     self.selectedExternalApps.formIntersection(Set(filledExternal.map(\.id)))
+                    // 此侧已经完成时立即恢复按钮，不等待另一侧的目录体积计算。
+                    if missesExternal.isEmpty {
+                        self.externalScanState.finish(externalRequest)
+                    }
                 }
                 return localIsCurrent || externalIsCurrent
             }
             guard committed else { return }
-            await self.computeAndStoreSizes(misses: missesLocal, isLocal: true, scanner: scanner, request: request)
-            await self.computeAndStoreSizes(misses: missesExternal, isLocal: false, scanner: scanner, request: request)
+            await self.computeAndStoreSizes(misses: missesLocal, isLocal: true, scanner: scanner, request: localRequest)
+            await self.computeAndStoreSizes(misses: missesExternal, isLocal: false, scanner: scanner, request: externalRequest)
         }
     }
     
