@@ -385,6 +385,39 @@ final class DataDirScannerTests: XCTestCase {
 
     // MARK: - Bundle ID 后缀匹配
 
+    func testOrdinaryContainersRequireExactBundleIdentifierAtContainerRoot() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Focus.app", bundleID: "com.example.focus", in: workspace.appsURL)
+        let base = workspace.homeURL.appendingPathComponent("Library/Containers")
+        let own = base.appendingPathComponent("com.example.focus/Data/Documents/Payload")
+        try createDirectoryWithPayload(at: own)
+        for name in ["Focus", "com.other.focus", "com.example.focusBackup", "com.example.focus.helper", "unrelated/com.example.focus"] {
+            try createDirectoryWithPayload(at: base.appendingPathComponent(name + "/Data/Documents/Payload"))
+        }
+        let items = await DataDirScanner(homeDir: workspace.homeURL,
+            mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("mounts.plist")))
+            .scanLibraryDirs(for: AppItem(name: "Focus.app", path: appURL, status: AppStatus.local))
+        let containerItems = items.filter { $0.type == .containers }
+        XCTAssertTrue(containerItems.contains { $0.path.standardizedFileURL == own.standardizedFileURL })
+        let ownRoot = base.appendingPathComponent("com.example.focus").standardizedFileURL.path
+        XCTAssertFalse(containerItems.isEmpty)
+        XCTAssertTrue(containerItems.allSatisfy { $0.path.standardizedFileURL.path == ownRoot || $0.path.standardizedFileURL.path.hasPrefix(ownRoot + "/") },
+                      "Similar names, helper prefixes and nested exact names do not establish container ownership")
+    }
+
+    func testMissingExactContainerDoesNotFallBackToProductName() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Focus.app", bundleID: "com.example.focus", in: workspace.appsURL)
+        try createDirectoryWithPayload(at: workspace.homeURL.appendingPathComponent("Library/Containers/com.other.focus/Data/Documents/Payload"))
+        let result = await DataDirScanner(homeDir: workspace.homeURL,
+            mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("mounts.plist")))
+            .scanLibraryDirsWithDiagnostics(for: AppItem(name: "Focus.app", path: appURL, status: AppStatus.local))
+        XCTAssertFalse(result.items.contains { $0.type == .containers })
+        XCTAssertTrue(result.readIssues.isEmpty, "An absent optional container is not a read failure")
+    }
+
     func testGenericBundleIDSuffixDoesNotMatchOtherAppsContainers() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
@@ -1191,7 +1224,7 @@ final class DataDirScannerTests: XCTestCase {
                 let measured = await scanner.calculateSize(for: row)
                 XCTAssertEqual(measured, 0)
                 XCTAssertFalse(row.matchesVisibility(showZeroByteDirectories: true, showLockedStructure: false))
-                XCTAssertTrue(row.matchesVisibility(showZeroByteDirectories: false, showLockedStructure: true))
+                XCTAssertFalse(row.matchesVisibility(showZeroByteDirectories: false, showLockedStructure: true))
                 XCTAssertEqual(try String(contentsOf: workspace.homeURL.appendingPathComponent(name + "/payload.txt")), "payload")
             }
         }

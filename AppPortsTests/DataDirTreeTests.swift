@@ -2,6 +2,15 @@ import XCTest
 @testable import AppPorts
 
 final class DataDirTreeTests: XCTestCase {
+    func testDataRowAlwaysShowsContainerIdentity() {
+        let root = item("/Library/Containers/com.example.app")
+        let data = item("/Library/Containers/com.example.app/Data")
+        let rows = DataDirTree.rows(in: DataDirTree.build(from: [root, data]))
+        XCTAssertEqual(rows[1].contextPath, "/Library/Containers/com.example.app")
+        let promoted = DataDirTree.rows(in: DataDirTree.build(from: [data]))
+        XCTAssertEqual(promoted[0].contextPath, "/Library/Containers/com.example.app")
+    }
+
     func testNearestAncestorOwnsEachDirectoryEvenWhenChildrenArriveFirst() {
         let account = item("/Containers/wechat/Data/Documents/xwechat_files/account")
         let documents = item("/Containers/wechat/Data/Documents")

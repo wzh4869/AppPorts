@@ -567,7 +567,11 @@ actor DataDirScanner {
         var resultsByPath: [String: DataDirItem] = [:]
 
         for config in appDataSearchConfigs() {
-            let localCandidates = findMatchingDirs(in: config.localBaseURL, matchProfile: matchProfile)
+            // Ordinary sandbox containers are keyed by application identity. Product-name
+            // similarities are insufficient evidence that another container belongs to this app.
+            let localCandidates = config.type == .containers
+                ? findExactAppContainer(in: config.localBaseURL, bundleID: bundleID)
+                : findMatchingDirs(in: config.localBaseURL, matchProfile: matchProfile)
 
             for candidateURL in localCandidates {
                 let inspection = inspectItem(at: candidateURL, type: config.type)
@@ -593,6 +597,9 @@ actor DataDirScanner {
                 }
             }
 
+            // Detached container data is recovered from persistent records below, not
+            // rediscovered by fuzzy product names in an external mirror.
+            if config.type == .containers { continue }
             for externalBaseURL in externalBaseURLs(for: config.localBaseURL, externalRootURL: externalRootURL) {
                 let externalCandidates = findMatchingDirs(in: externalBaseURL, matchProfile: matchProfile)
 
@@ -1369,6 +1376,20 @@ actor DataDirScanner {
         }
 
         return deduplicated
+    }
+
+    /// Ordinary container discovery requires the resolved application identity.
+    private func findExactAppContainer(in baseURL: URL, bundleID: String?) -> [URL] {
+        guard let bundleID else { return [] }
+        let candidate = baseURL.appendingPathComponent(bundleID).standardizedFileURL
+        guard candidate.deletingLastPathComponent() == baseURL.standardizedFileURL else { return [] }
+        do {
+            let values = try candidate.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            return values.isDirectory == true || values.isSymbolicLink == true ? [candidate] : []
+        } catch {
+            recordReadIssue(at: candidate, error: error)
+            return []
+        }
     }
 
     /// 在指定目录中查找与应用匹配的子目录。

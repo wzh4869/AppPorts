@@ -34,7 +34,12 @@ enum DataDirTree {
         /// Only show the part of the parent path that the indentation does not explain.
         var contextPath: String? {
             let parentPath = item.path.standardizedFileURL.deletingLastPathComponent().path
-            if let parentID {
+            // Data is a common name: keep its container identity visible even when
+            // its parent is present elsewhere in a scrolled outline.
+            let isContainerData = item.type == .containers
+                && item.path.lastPathComponent == "Data"
+                && item.path.deletingLastPathComponent().deletingLastPathComponent().lastPathComponent == "Containers"
+            if let parentID, !isContainerData {
                 guard parentPath != parentID else { return nil }
                 return String(parentPath.dropFirst(parentID.count + 1))
             }

@@ -299,6 +299,7 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
 
     func matchesVisibility(showZeroByteDirectories: Bool, showLockedStructure: Bool) -> Bool {
         if needsRecoveryOrAttention { return true }
+        if isUserDirectoryLink { return false }
         if !isMigratable { return showLockedStructure }
         return showZeroByteDirectories || !isEmptyLocalDirectory
     }

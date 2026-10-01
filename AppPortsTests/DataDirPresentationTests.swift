@@ -43,12 +43,12 @@ struct DataDirPresentationTests {
         #expect(DataDirSpaceSummary(items: [item], allItems: [item]).reclaimableBytes == 0)
     }
 
-    @Test("Personal folder shortcuts follow the structure toggle independently of zero-byte visibility",
+    @Test("Personal folder shortcuts stay outside app data regardless of visibility toggles",
           arguments: [false, true], [false, true])
     func shortcutVisibility(showZero: Bool, showStructure: Bool) {
         let item = shortcut()
-        #expect(item.matchesVisibility(showZeroByteDirectories: showZero,
-                                       showLockedStructure: showStructure) == showStructure)
+        #expect(!item.matchesVisibility(showZeroByteDirectories: showZero,
+                                        showLockedStructure: showStructure))
     }
 
     @Test("Similar folder names and nested paths remain ordinary existing links",
