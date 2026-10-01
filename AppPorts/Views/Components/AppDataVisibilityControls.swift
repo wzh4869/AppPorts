@@ -6,20 +6,11 @@ struct AppDataVisibilityControls: View {
     @Binding var showLockedStructure: Bool
 
     var body: some View {
-        GeometryReader { geometry in
-            if geometry.size.width < 640 {
-                VStack(alignment: .leading, spacing: 6) {
-                    zeroByteDirectoriesToggle
-                    lockedStructureToggle
-                }
-            } else {
-                HStack(spacing: 12) {
-                    zeroByteDirectoriesToggle
-                    lockedStructureToggle
-                }
-            }
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            zeroByteDirectoriesToggle
+            lockedStructureToggle
         }
-        .frame(height: 42)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var zeroByteDirectoriesToggle: some View {
