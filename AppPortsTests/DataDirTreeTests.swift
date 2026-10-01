@@ -2,6 +2,74 @@ import XCTest
 @testable import AppPorts
 
 final class DataDirTreeTests: XCTestCase {
+    func testMountedSummaryShowsOnlyTwoDistantMatchesAndPreservesTheirContext() {
+        let data = item("/Library/Containers/com.example.app/Data")
+        let documents = item(data.id + "/Documents")
+        var account = item(documents.id + "/xwechat_files/account")
+        account.status = DataDirStatus.mounted
+        var cache = item(data.id + "/Library/Caches/files")
+        cache.status = DataDirStatus.mounted
+        let unrelated = item(documents.id + "/xwechat_files/all_users")
+
+        let rows = DataDirTree.rows(in: DataDirTree.summaryTree(
+            from: [data, documents, account, unrelated, cache], filter: .mounted))
+
+        XCTAssertEqual(rows.map(\.id), [account.id, cache.id])
+        XCTAssertEqual(rows.map(\.level), [0, 0])
+        XCTAssertEqual(rows.map(\.contextPath), [documents.id + "/xwechat_files", data.id + "/Library/Caches"])
+    }
+
+    func testMountedSummaryIncludesPendingAndMissingVolumesButNotOtherStatuses() {
+        let statuses = [DataDirStatus.mounted, DataDirStatus.pendingMount, DataDirStatus.volumeMissing,
+                        DataDirStatus.local, DataDirStatus.linked, DataDirStatus.existingSymlink,
+                        DataDirStatus.needsNormalization]
+        let items = statuses.enumerated().map { index, status in
+            var entry = item("/Data/entry-\(index)")
+            entry.status = status
+            return entry
+        }
+
+        let rows = DataDirTree.rows(in: DataDirTree.summaryTree(from: items, filter: .mounted))
+
+        XCTAssertEqual(rows.map(\.item.status), Array(statuses.prefix(3)))
+    }
+
+    func testLinkedSummaryDoesNotIncludeUnmanagedSymlinks() {
+        var linked = item("/Data/linked")
+        linked.status = DataDirStatus.linked
+        var existing = item("/Data/existing")
+        existing.status = DataDirStatus.existingSymlink
+
+        let rows = DataDirTree.rows(in: DataDirTree.summaryTree(from: [linked, existing], filter: .linked))
+
+        XCTAssertEqual(rows.map(\.id), [linked.id])
+    }
+
+    func testExistingSymlinkSummaryExcludesPersonalDirectoryEntries() {
+        var personal = item("/Users/example/Library/Containers/com.example.app/Data/Downloads")
+        personal.status = DataDirStatus.existingSymlink
+        personal.linkedDestination = URL(fileURLWithPath: "/Users/example/Downloads")
+        var existing = item("/Users/example/Library/Containers/com.example.app/Data/Documents/files")
+        existing.status = DataDirStatus.existingSymlink
+        existing.linkedDestination = URL(fileURLWithPath: "/Volumes/External/files")
+
+        XCTAssertTrue(personal.isUserDirectoryLink)
+        let rows = DataDirTree.rows(in: DataDirTree.summaryTree(from: [personal, existing], filter: .existingSymlink))
+
+        XCTAssertEqual(rows.map(\.id), [existing.id])
+    }
+
+    func testSummaryTreeRemovesUnmatchedChildrenAlreadyStoredInInput() {
+        var mounted = item("/Data/mounted")
+        mounted.status = DataDirStatus.mounted
+        mounted.children = [item("/Data/mounted/local")]
+
+        let rows = DataDirTree.rows(in: DataDirTree.summaryTree(from: [mounted], filter: .mounted))
+
+        XCTAssertEqual(rows.map(\.id), [mounted.id])
+        XCTAssertTrue(DataDirTree.summaryTree(from: [item("/Data/local")], filter: .mounted).isEmpty)
+    }
+
     func testDataRowAlwaysShowsContainerIdentity() {
         let root = item("/Library/Containers/com.example.app")
         let data = item("/Library/Containers/com.example.app/Data")

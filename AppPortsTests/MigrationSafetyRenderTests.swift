@@ -77,6 +77,35 @@ final class MigrationSafetyRenderTests: XCTestCase {
     }
 
     @MainActor
+    func testMountedSummaryShowsOnlyBothMatchingDirectories() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to verify synthetic summary filtering")
+        }
+        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        let root = "/AppPortsSyntheticHome/Library/Containers/com.example.summary/Data"
+        func item(_ relative: String, status: String = DataDirStatus.local) -> DataDirItem {
+            let url = URL(fileURLWithPath: root + "/" + relative)
+            var value = DataDirItem(name: url.lastPathComponent, path: url, type: .containers,
+                                    priority: .optional, description: "Synthetic summary filter", status: status)
+            value.applySize(DirectorySizeResult(bytes: 1_048_576))
+            return value
+        }
+        let first = item("Documents/Account", status: DataDirStatus.mounted)
+        let second = item("Library/Caches/Archive", status: DataDirStatus.pendingMount)
+        let unrelated = (0..<80).map { item("Documents/Unrelated-\($0)") }
+        let items = [item(""), item("Documents"), first] + unrelated
+            + [item("Library"), item("Library/Caches"), second]
+        let tree = DataDirTree.summaryTree(from: items, filter: .mounted)
+        XCTAssertEqual(DataDirTree.rows(in: tree).map(\.id), [first.id, second.id],
+                       "Filtering must remove unrelated rows and structural parents, retaining both matches")
+        let view = AppDataDirectoryBrowser(groups: [DataDirGroup(type: .containers, items: tree)],
+            matchingItemIDs: [first.id, second.id], isFiltering: true) { item in self.actions(for: item) }
+        try await render(view, size: NSSize(width: 900, height: 740),
+                         to: URL(fileURLWithPath: path).appendingPathComponent("summary-filter.png"),
+                         expectedTableRowCount: 3)
+    }
+
+    @MainActor
     private final class NavigationRenderController: ObservableObject {
         @Published var request: DataDirTree.RevealRequest?
     }
@@ -101,13 +130,15 @@ final class MigrationSafetyRenderTests: XCTestCase {
 
     @MainActor
     private func render<V: View>(_ view: V, size: NSSize, to url: URL, requiresScrolling: Bool = false,
-                                 afterLayout: (() -> Void)? = nil, requiresNavigation: Bool = false) async throws {
+                                 afterLayout: (() -> Void)? = nil, requiresNavigation: Bool = false,
+                                 expectedTableRowCount: Int? = nil) async throws {
         let host = NSHostingView(rootView: view.environment(\.colorScheme, .light).background(Color.white))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless],
                               backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
+        defer { window.close() }
         window.contentView = host
-        if requiresNavigation {
+        if requiresNavigation || expectedTableRowCount != nil {
             window.setFrameOrigin(NSPoint(x: -10_000, y: 0))
             window.orderFront(nil)
         }
@@ -141,7 +172,18 @@ final class MigrationSafetyRenderTests: XCTestCase {
                               "The selected target must actually be visible, including after a repeated click")
             }
         }
-        defer { window.close() }
+        if let expectedTableRowCount {
+            func tables(in view: NSView) -> [NSTableView] {
+                (view as? NSTableView).map { [$0] } ?? view.subviews.flatMap { tables(in: $0) }
+            }
+            let table = try XCTUnwrap(tables(in: host).first)
+            XCTAssertEqual(table.numberOfRows, expectedTableRowCount,
+                           "The rendered list must contain just two matches and their section header")
+            for row in 1..<expectedTableRowCount {
+                XCTAssertTrue(NSLocationInRange(row, table.rows(in: table.visibleRect)),
+                              "Both matching directories should be visible together")
+            }
+        }
         if requiresScrolling {
             func scrollViews(in view: NSView) -> [NSScrollView] {
                 (view as? NSScrollView).map { [$0] } ?? view.subviews.flatMap { scrollViews(in: $0) }

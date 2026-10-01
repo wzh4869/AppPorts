@@ -2,6 +2,29 @@ import Foundation
 
 /// Presentation-only hierarchy. Input order is preserved within each sibling list.
 enum DataDirTree {
+    enum SummaryFilter: Equatable {
+        case linked
+        case mounted
+        case existingSymlink
+
+        func matches(_ item: DataDirItem) -> Bool {
+            switch self {
+            case .linked:
+                return item.status == DataDirStatus.linked
+            case .mounted:
+                return DataDirStatus.mountStatuses.contains(item.status)
+            case .existingSymlink:
+                return item.status == DataDirStatus.existingSymlink && !item.isUserDirectoryLink
+            }
+        }
+    }
+
+    /// Summary selection lists only matching entries. Context paths identify their
+    /// locations without restoring unrelated parent directories as visible rows.
+    static func summaryTree(from items: [DataDirItem], filter: SummaryFilter) -> [DataDirItem] {
+        build(from: items.filter(filter.matches))
+    }
+
     struct RevealRequest: Equatable {
         let id = UUID()
         let itemIDs: Set<String>

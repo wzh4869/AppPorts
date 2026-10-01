@@ -64,6 +64,7 @@ struct DataDirsView: View {
     @State private var dotFolderItems: [DataDirItem] = []
     @State private var libraryItems:   [DataDirItem] = []
     @State private var directoryRevealRequest: DataDirTree.RevealRequest?
+    @State private var summaryFilter: DataDirTree.SummaryFilter?
     @State private var dotFolderReadIssues: [DataDirReadIssue] = []
     @State private var libraryReadIssues: [DataDirReadIssue] = []
     @State private var libraryIdentityIssue: AppIdentityIssue?
@@ -217,6 +218,7 @@ struct DataDirsView: View {
         }
         .onChange(of: selectedTab) { _ in
             directoryRevealRequest = nil
+            summaryFilter = nil
             reloadCurrentTab()
         }
         .onChange(of: refreshTrigger) { _ in
@@ -383,6 +385,7 @@ struct DataDirsView: View {
             .frame(minWidth: 200, maxWidth: 280)
             .onChange(of: selectedApp) { newApp in
                 directoryRevealRequest = nil
+                summaryFilter = nil
                 if let app = newApp { scanLibraryDirs(for: app) }
                 else {
                     libraryScanToken = UUID()
@@ -428,11 +431,12 @@ struct DataDirsView: View {
                         if !libraryItems.isEmpty || !libraryReadIssues.isEmpty || libraryIdentityIssue != nil {
                             VStack(alignment: .leading, spacing: 8) {
                                 statsSummary(
-                                    items: filteredLibraryItems,
+                                    items: summaryBaseLibraryItems,
                                     allItems: libraryItems,
                                     readIssues: libraryReadIssues,
                                     hasIdentityIssue: libraryIdentityIssue != nil,
-                                    onReveal: { directoryRevealRequest = $0 }
+                                    displayedItems: filteredLibraryItems,
+                                    onSelectSummary: selectSummaryFilter
                                 )
                                 appDataVisibilityToggles
                             }
@@ -840,10 +844,12 @@ struct DataDirsView: View {
 
     private func statsSummary(
         items: [DataDirItem], allItems: [DataDirItem], readIssues: [DataDirReadIssue], hasIdentityIssue: Bool = false,
-        onReveal: ((DataDirTree.RevealRequest) -> Void)? = nil
+        displayedItems: [DataDirItem]? = nil,
+        onSelectSummary: ((DataDirTree.SummaryFilter) -> Void)? = nil
     ) -> some View {
+        let visibleItems = displayedItems ?? items
         let summary = DataDirSpaceSummary(
-            items: items, allItems: allItems, hasReadIssues: !readIssues.isEmpty, hasIdentityIssue: hasIdentityIssue
+            items: visibleItems, allItems: allItems, hasReadIssues: !readIssues.isEmpty, hasIdentityIssue: hasIdentityIssue
         )
         let linked = items.filter { $0.status == "已链接" }.count
         let mounted = items.filter { DataDirStatus.mountStatuses.contains($0.status) }.count
@@ -851,7 +857,7 @@ struct DataDirsView: View {
         let existingSymlinks = items.filter { $0.status == "现有软链" && !$0.isUserDirectoryLink }.count
         let relinkable = items.filter { $0.status == "待接回" }.count
         return HStack(spacing: 14) {
-            Label(String(format: "%lld 个目录".localized, Int64(items.count)), systemImage: "folder.fill")
+            Label(String(format: "%lld 个目录".localized, Int64(visibleItems.count)), systemImage: "folder.fill")
                 .foregroundColor(.secondary)
             if summary.isIncomplete {
                 Label("空间统计不完整".localized, systemImage: "exclamationmark.circle")
@@ -870,12 +876,12 @@ struct DataDirsView: View {
             if linked > 0 {
                 summaryNavigationLabel(String(format: "%lld 个已链接".localized, Int64(linked)),
                     systemImage: "link.circle.fill", color: .green,
-                    itemIDs: Set(items.filter { $0.status == DataDirStatus.linked }.map(\.id)), onReveal: onReveal)
+                    filter: .linked, onSelect: onSelectSummary)
             }
             if mounted > 0 {
                 summaryNavigationLabel(String(format: "%lld 个挂载迁移".localized, Int64(mounted)),
                     systemImage: "externaldrive.fill.badge.checkmark", color: .purple,
-                    itemIDs: Set(items.filter { DataDirStatus.mountStatuses.contains($0.status) }.map(\.id)), onReveal: onReveal)
+                    filter: .mounted, onSelect: onSelectSummary)
             }
             if needsNormalization > 0 {
                 Label(String(format: "%lld 个待整理".localized, Int64(needsNormalization)), systemImage: "arrow.triangle.2.circlepath")
@@ -884,7 +890,7 @@ struct DataDirsView: View {
             if existingSymlinks > 0 {
                 summaryNavigationLabel(String(format: "%lld 个现有软链".localized, Int64(existingSymlinks)),
                     systemImage: "questionmark.circle", color: .teal,
-                    itemIDs: Set(items.filter { $0.status == DataDirStatus.existingSymlink && !$0.isUserDirectoryLink }.map(\.id)), onReveal: onReveal)
+                    filter: .existingSymlink, onSelect: onSelectSummary)
             }
             if relinkable > 0 {
                 Label(String(format: "%lld 个待接回".localized, Int64(relinkable)), systemImage: "arrow.triangle.branch")
@@ -897,10 +903,13 @@ struct DataDirsView: View {
 
     @ViewBuilder
     private func summaryNavigationLabel(_ title: String, systemImage: String, color: Color,
-                                        itemIDs: Set<String>, onReveal: ((DataDirTree.RevealRequest) -> Void)?) -> some View {
-        if let onReveal {
-            Button { onReveal(.init(itemIDs: itemIDs)) } label: {
-                Label(title, systemImage: systemImage).contentShape(Rectangle())
+                                        filter: DataDirTree.SummaryFilter, onSelect: ((DataDirTree.SummaryFilter) -> Void)?) -> some View {
+        if let onSelect {
+            Button { onSelect(filter) } label: {
+                Label(title, systemImage: systemImage)
+                    .padding(.horizontal, 5).padding(.vertical, 3)
+                    .background(RoundedRectangle(cornerRadius: 5).fill(color.opacity(summaryFilter == filter ? 0.16 : 0)))
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .foregroundColor(color)
@@ -926,8 +935,19 @@ struct DataDirsView: View {
         )
     }
 
-    private var filteredLibraryItems: [DataDirItem] {
+    private func selectSummaryFilter(_ filter: DataDirTree.SummaryFilter) {
+        summaryFilter = summaryFilter == filter ? nil : filter
+        directoryRevealRequest = summaryFilter.map { selected in
+            .init(itemIDs: Set(summaryBaseLibraryItems.filter { selected.matches($0) }.map(\.id)))
+        }
+    }
+
+    private var summaryBaseLibraryItems: [DataDirItem] {
         libraryItems.filter(matchesAppDataFilters)
+    }
+
+    private var filteredLibraryItems: [DataDirItem] {
+        summaryBaseLibraryItems.filter { summaryFilter?.matches($0) ?? true }
     }
 
     private var filteredDotFolderItems: [DataDirItem] {
@@ -942,7 +962,7 @@ struct DataDirsView: View {
     }
 
     private var sortedFilteredLibraryItems: [DataDirItem] {
-        sortedLibraryItems.filter(matchesAppDataFilters)
+        sortedLibraryItems.filter { matchesAppDataFilters($0) && (summaryFilter?.matches($0) ?? true) }
     }
 
     private var sortedLibraryItems: [DataDirItem] {
@@ -975,7 +995,9 @@ struct DataDirsView: View {
         let groups = Dictionary(grouping: sortedLibraryItems, by: \.type)
         return DataDirType.allCases.compactMap { type in
             guard let items = groups[type] else { return nil }
-            let tree = DataDirTree.visibleTree(from: items,
+            let tree = summaryFilter.map { filter in
+                DataDirTree.summaryTree(from: items.filter { matchingIDs.contains($0.id) }, filter: filter)
+            } ?? DataDirTree.visibleTree(from: items,
                                               showZeroByteDirectories: showZeroByteDirectories,
                                               showLockedStructure: showLockedDirectoryStructure,
                                               matchingIDs: matchingIDs)
@@ -984,15 +1006,22 @@ struct DataDirsView: View {
     }
 
     private var hasActiveAppDataFilters: Bool {
-        !selectedPriorityFilters.isEmpty || !selectedStatusFilters.isEmpty || !selectedTypeFilters.isEmpty
+        summaryFilter != nil || !selectedPriorityFilters.isEmpty || !selectedStatusFilters.isEmpty || !selectedTypeFilters.isEmpty
     }
 
     private var activeAppDataFilterCount: Int {
-        selectedPriorityFilters.count + selectedStatusFilters.count + selectedTypeFilters.count
+        selectedPriorityFilters.count + selectedStatusFilters.count + selectedTypeFilters.count + (summaryFilter == nil ? 0 : 1)
     }
 
     private var activeAppDataFilterLabels: [String] {
         var labels: [String] = []
+        if let summaryFilter {
+            switch summaryFilter {
+            case .linked: labels.append("已链接".localized)
+            case .mounted: labels.append("挂载迁移".localized)
+            case .existingSymlink: labels.append("现有软链".localized)
+            }
+        }
         labels.append(contentsOf: DataDirPriority.allCases.filter(selectedPriorityFilters.contains).map(\.localizedTitle))
         labels.append(contentsOf: appDataStatusOrder.filter(selectedStatusFilters.contains).map(DataDirStatus.localized))
         labels.append(contentsOf: appDataFilterTypes.filter(selectedTypeFilters.contains).map(\.localizedTitle))
@@ -1015,6 +1044,8 @@ struct DataDirsView: View {
     }
 
     private func clearAppDataFilters() {
+        summaryFilter = nil
+        directoryRevealRequest = nil
         selectedPriorityFilters.removeAll()
         selectedStatusFilters.removeAll()
         selectedTypeFilters.removeAll()
