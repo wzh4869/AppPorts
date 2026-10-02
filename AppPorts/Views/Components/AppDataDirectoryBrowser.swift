@@ -13,7 +13,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
     @State private var selectedItemID: String?
     @State private var collapsedDirectoryIDs: Set<String> = []
     @State private var collapsedGroups: Set<DataDirType> = []
-    @State private var informationPanelHeight: CGFloat = 160
+    @State private var informationPanelHeight: CGFloat = DirectoryPanelLayout.minimumInformationHeight
     @State private var informationResizeStartHeight: CGFloat?
     @State private var isInformationHandleHovered = false
     @FocusState private var isOutlineFocused: Bool
