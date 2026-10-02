@@ -100,20 +100,25 @@ final class AppIdentityScannerTests: XCTestCase {
         XCTAssertTrue(result.contains { $0.path.standardizedFileURL.path == nativeData.standardizedFileURL.path })
     }
 
-    func testOfflineNameFallbackSurvivesAndResolvesAfterTargetReturns() async throws {
+    func testOfflineNameFallbackPreservesSupportButRequiresResolvedContainerIdentity() async throws {
         let f = try IdentityFixture()
         defer { f.cleanup() }
         let target = f.root.appendingPathComponent("External/wpsoffice.app")
         let portal = try f.stub("Apps/wpsoffice.app", id: "com.kingsoft.wpsoffice.mac", target: target)
         let data = try f.container("com.kingsoft.wpsoffice.mac")
+        let support = try f.directory("Home/Library/Application Support/wpsoffice")
         let scanner = f.scanner()
         let offline = await scanner.scanLibraryDirsWithDiagnostics(for: f.app(portal))
-        XCTAssertTrue(offline.items.contains { $0.path.standardizedFileURL.path == data.standardizedFileURL.path }, "Existing long-name fallback must survive")
+        XCTAssertTrue(offline.items.contains { $0.path.standardizedFileURL.path == support.standardizedFileURL.path },
+                      "Non-container name fallback remains available while the real app is offline")
+        XCTAssertFalse(offline.items.contains { $0.path.standardizedFileURL.path == data.standardizedFileURL.path },
+                       "An ordinary sandbox container requires a resolved application identity")
         XCTAssertEqual(offline.identityIssue?.reason, .realAppUnavailable)
         XCTAssertTrue(offline.readIssues.isEmpty, "Identity failure is not a directory permission error")
         _ = try f.native("External/wpsoffice.app", id: "com.kingsoft.wpsoffice.mac")
         let online = await scanner.scanLibraryDirsWithDiagnostics(for: f.app(portal))
         XCTAssertTrue(online.items.contains { $0.path.standardizedFileURL.path == data.standardizedFileURL.path })
+        XCTAssertTrue(online.items.contains { $0.path.standardizedFileURL.path == support.standardizedFileURL.path })
         XCTAssertNil(online.identityIssue)
     }
 
