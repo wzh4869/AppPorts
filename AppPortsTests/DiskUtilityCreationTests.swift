@@ -25,6 +25,15 @@ private actor VolumeCreationRunner: ShellCommandRunning {
 }
 
 struct DiskUtilityCreationTests {
+    @Test("Restore ownership updates preserve Finder and security flags", arguments: [false, true])
+    func restoreOwnershipOptions(enabled: Bool) async throws {
+        let runner = FakeDiskCommandRunner()
+        let disk = DiskUtility(runner: runner, administratorRunner: nil)
+        let flags = UInt32(MNT_IGNORE_OWNERSHIP | MNT_NODEV | MNT_NOSUID | MNT_NOEXEC | MNT_RDONLY)
+        try await disk.setOwnershipForRestore(mountPoint: URL(fileURLWithPath: "/synthetic/only"), originalFlags: flags, enabled: enabled)
+        #expect(runner.calls.map(\.arguments) == [["-u", "-o", "nobrowse,rdonly,nodev,nosuid,noexec," + (enabled ? "owners" : "noowners"), "/synthetic/only"]])
+    }
+
     private let containerUUID = "46F1B932-305F-481E-A5BA-F648DD9CB99D"
     private let oldUUID = "77213F03-9D48-478F-A91B-B48B6F05C6A0"
     private let newUUID = "65E246B0-FD8C-488A-BFA2-B5B4CD05B2CD"

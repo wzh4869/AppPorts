@@ -8,12 +8,19 @@ import Foundation
 /// identities for checking a retained original. The caller must retain that
 /// original: no userspace copy can rule out a write after this method returns.
 actor TreeCopySession {
+    // macOS owns this provenance tag. It may inject it into a new local root,
+    // and xattr removal can return success without removing it. Do not copy or
+    // erase the OS tag; retain it in manifests for diagnostics, but exclude it
+    // from portable metadata equality (including manifests from older builds).
+    nonisolated private static let systemProvenanceAttribute = "com.apple.provenance"
+
     func copy(
         from source: URL,
         to destination: URL,
         excludingRootEntries: Set<String> = [],
         finalDestination: URL? = nil,
         logicalSourceRoot: URL? = nil,
+        legacyRootOwnership: TreeCopySnapshot.Ownership? = nil,
         progressHandler: FileCopier.ProgressHandler? = nil
     ) async throws -> TreeCopySnapshot {
         try Task.checkCancellation()
@@ -23,8 +30,15 @@ actor TreeCopySession {
         guard !Self.contains(source.path, destination.path), !Self.contains(destination.path, source.path) else {
             throw TreeCopyError.unsafeLayout(destination.path)
         }
-        let baseline = try Self.snapshot(at: source, excludingRootEntries: excludingRootEntries,
+        var baseline = try Self.snapshot(at: source, excludingRootEntries: excludingRootEntries,
                                          finalDestination: finalDestination, logicalSourceRoot: logicalSourceRoot)
+        if let legacyRootOwnership {
+            guard legacyRootOwnership.uid == geteuid(), legacyRootOwnership.gid == getegid(),
+                  let root = baseline.entries.first, root.path.isEmpty, root.kind == .directory,
+                  root.uid == 0 || root.uid == legacyRootOwnership.uid,
+                  DiskUtility.isMountPoint(source) else { throw TreeCopyError.unsupportedMetadata(source.path) }
+            baseline.restoredRootOwnership = legacyRootOwnership
+        }
         try Self.requireOwnership(at: destination.deletingLastPathComponent())
         let context = CopyContext(snapshot: baseline, source: source, destination: destination, progress: progressHandler)
         await progressHandler?(FileCopier.Progress(copiedBytes: 0, totalBytes: baseline.logicalBytes, currentFile: source.lastPathComponent))
@@ -58,7 +72,7 @@ actor TreeCopySession {
     /// Checks semantic equality, including hardlink relationships, without
     /// comparing source and destination device/inode numbers.
     nonisolated static func verifyCopy(at root: URL, against snapshot: TreeCopySnapshot) throws {
-        try compare(scan(canonicalRoot(root), exclusions: snapshot.excludedRootEntries), snapshot, identities: false)
+        try compare(scan(canonicalRoot(root), exclusions: snapshot.excludedRootEntries), snapshot, identities: false, destinationOwnership: true)
     }
 
     /// Checks a retained original even after its root has been renamed. ctime
@@ -204,7 +218,7 @@ actor TreeCopySession {
 
         init(snapshot: TreeCopySnapshot, source: URL, destination: URL, progress: FileCopier.ProgressHandler?) {
             self.snapshot = snapshot
-            entries = Dictionary(uniqueKeysWithValues: snapshot.entries.map { ($0.path, $0) })
+            entries = Dictionary(uniqueKeysWithValues: snapshot.entries.map { ($0.path, snapshot.destinationEntry($0)) })
             children = Dictionary(grouping: snapshot.entries.filter { !$0.path.isEmpty }.map(\.path)) {
                 ($0 as NSString).deletingLastPathComponent
             }
@@ -350,10 +364,10 @@ actor TreeCopySession {
         try setACL(nil, fd: fd, path: entry.path)
         guard fchown(fd, entry.uid, entry.gid) == 0 else { throw posix(entry.path) }
         let current = try extendedAttributes(fd: fd, path: entry.path)
-        for name in current.keys where entry.extendedAttributes[name] == nil {
+        for name in current.keys where name != systemProvenanceAttribute && entry.extendedAttributes[name] == nil {
             guard fremovexattr(fd, name, 0) == 0 else { throw posix(entry.path) }
         }
-        for (name, data) in entry.extendedAttributes {
+        for (name, data) in entry.extendedAttributes where name != systemProvenanceAttribute {
             guard data.withUnsafeBytes({ fsetxattr(fd, name, $0.baseAddress, $0.count, 0, 0) }) == 0 else { throw posix(entry.path) }
         }
         guard fchmod(fd, entry.mode) == 0 else { throw posix(entry.path) }
@@ -539,19 +553,25 @@ actor TreeCopySession {
         return (fd, components.last!)
     }
 
-    nonisolated private static func compare(_ actual: TreeCopySnapshot, _ expected: TreeCopySnapshot, identities: Bool) throws {
+    nonisolated private static func compare(_ actual: TreeCopySnapshot, _ expected: TreeCopySnapshot, identities: Bool, destinationOwnership: Bool = false) throws {
         guard actual.entries.map(\.path) == expected.entries.map(\.path) else { throw TreeCopyError.verificationFailed("") }
-        for (actual, expected) in zip(actual.entries, expected.entries) { try compareEntry(actual, expected, identities: identities) }
+        for (actual, entry) in zip(actual.entries, expected.entries) {
+            try compareEntry(actual, destinationOwnership ? expected.destinationEntry(entry) : entry, identities: identities)
+        }
     }
 
     nonisolated private static func compareEntry(_ a: TreeCopySnapshot.Entry, _ b: TreeCopySnapshot.Entry, identities: Bool) throws {
         guard (!identities || a.identity == b.identity), a.path == b.path, a.kind == b.kind,
               a.mode == b.mode, a.uid == b.uid, a.gid == b.gid, a.flags == b.flags,
               a.birthTime == b.birthTime, a.modificationTime == b.modificationTime,
-              a.extendedAttributes == b.extendedAttributes, a.acl == b.acl, a.size == b.size,
+              portableAttributes(a.extendedAttributes) == portableAttributes(b.extendedAttributes), a.acl == b.acl, a.size == b.size,
               a.digest == b.digest, a.linkTarget == b.linkTarget, a.hardlinkGroup == b.hardlinkGroup else {
             throw TreeCopyError.verificationFailed(b.path)
         }
+    }
+
+    nonisolated private static func portableAttributes(_ attributes: [String: Data]) -> [String: Data] {
+        attributes.filter { $0.key != systemProvenanceAttribute }
     }
 
     nonisolated private static func validateLinks(_ snapshot: TreeCopySnapshot, source: URL, finalDestination: URL) throws {

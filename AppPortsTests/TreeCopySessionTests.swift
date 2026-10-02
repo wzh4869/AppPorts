@@ -6,6 +6,65 @@ import XCTest
 final class TreeCopySessionTests: XCTestCase {
     private let fm = FileManager.default
 
+    func testSystemProvenanceIsDiagnosticWhileApplicationXattrsRemainStrict() async throws {
+        let w = try workspace()
+        defer { cleanup(w.root) }
+        try Data("content".utf8).write(to: w.source.appendingPathComponent("payload"))
+        let baseline = try await TreeCopySession().copy(from: w.source, to: w.destination)
+        var raw = try XCTUnwrap(try PropertyListSerialization.propertyList(from: PropertyListEncoder().encode(baseline), format: nil) as? [String: Any])
+        var entries = try XCTUnwrap(raw["entries"] as? [[String: Any]])
+        var attributes = try XCTUnwrap(entries[0]["extendedAttributes"] as? [String: Data])
+        attributes["com.apple.provenance"] = Data("old OS provenance".utf8)
+        entries[0]["extendedAttributes"] = attributes
+        raw["entries"] = entries
+        func decode() throws -> TreeCopySnapshot {
+            try PropertyListDecoder().decode(TreeCopySnapshot.self,
+                from: PropertyListSerialization.data(fromPropertyList: raw, format: .binary, options: 0))
+        }
+        let historical = try decode()
+        XCTAssertEqual(historical.entries[0].extendedAttributes["com.apple.provenance"], Data("old OS provenance".utf8))
+        try TreeCopySession.verifyCopy(at: w.destination, against: historical)
+        try TreeCopySession.verifyUnchanged(at: w.source, against: historical)
+        attributes["org.appports.business-metadata"] = Data("must not be ignored".utf8)
+        entries[0]["extendedAttributes"] = attributes
+        raw["entries"] = entries
+        let changed = try decode()
+        XCTAssertThrowsError(try TreeCopySession.verifyCopy(at: w.destination, against: changed))
+        XCTAssertThrowsError(try TreeCopySession.verifyUnchanged(at: w.source, against: changed))
+    }
+
+    func testLegacyOwnershipOverrideIsNotAllowedForOrdinaryDirectories() async throws {
+        let w = try workspace()
+        defer { cleanup(w.root) }
+        try Data("original".utf8).write(to: w.source.appendingPathComponent("payload"))
+        await assertFails { try await TreeCopySession().copy(from: w.source, to: w.destination,
+            legacyRootOwnership: .init(uid: geteuid(), gid: getegid())) }
+        XCTAssertFalse(fm.fileExists(atPath: w.destination.path))
+        XCTAssertEqual(try Data(contentsOf: w.source.appendingPathComponent("payload")), Data("original".utf8))
+    }
+
+    func testLegacyManifestProjectionChangesOnlyDestinationRoot() async throws {
+        let w = try workspace()
+        defer { cleanup(w.root) }
+        try Data("original".utf8).write(to: w.source.appendingPathComponent("payload"))
+        var snapshot = try await TreeCopySession().copy(from: w.source, to: w.destination)
+        let entries = snapshot.entries
+        snapshot.restoredRootOwnership = .init(uid: 0, gid: 0)
+        let decoded = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: PropertyListEncoder().encode(snapshot))
+        XCTAssertEqual(decoded.entries, entries)
+        XCTAssertEqual(decoded.destinationEntry(entries[0]).uid, 0)
+        XCTAssertEqual(decoded.destinationEntry(entries[1]), entries[1])
+        // Unchanged-source checks ignore destination projection, but copy checks enforce it.
+        try TreeCopySession.verifyUnchanged(at: w.source, against: decoded)
+        XCTAssertThrowsError(try TreeCopySession.verifyCopy(at: w.destination, against: decoded))
+        var raw = try XCTUnwrap(try PropertyListSerialization.propertyList(from: PropertyListEncoder().encode(snapshot), format: nil) as? [String: Any])
+        raw.removeValue(forKey: "restoredRootOwnership")
+        let old = try PropertyListDecoder().decode(TreeCopySnapshot.self,
+            from: PropertyListSerialization.data(fromPropertyList: raw, format: .binary, options: 0))
+        XCTAssertNil(old.restoredRootOwnership)
+        try TreeCopySession.verifyCopy(at: w.destination, against: old)
+    }
+
     func testCopiesWholeRootMetadataAndNestedReadOnlyItems() async throws {
         let w = try workspace()
         defer { cleanup(w.root) }

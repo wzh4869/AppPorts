@@ -219,6 +219,32 @@ final class ContainerMountStore: @unchecked Sendable {
         }
     }
 
+    /// Resume only an unchanged intent for which no copying could have begun.
+    /// Caller additionally verifies expected path templates, absence and current volume.
+    func resumeUnstartedMountRestore(_ expected: DataTransferRecord, record: ContainerMountRecord) throws -> DataTransferRecord {
+        var resumed = expected
+        try mutate { current in
+            guard let index = current.transfers.firstIndex(where: { $0.operationID == expected.operationID }),
+                  current.transfers[index] == expected, expected.isUnstartedMountRestore,
+                  current.mounts.contains(record), expected.originalPath == record.mountPointPath,
+                  self.sameUUID(expected.sourceIdentity.volumeUUID, record.volumeUUID),
+                  expected.appName == record.appName, expected.bundleIdentifier == record.bundleIdentifier,
+                  expected.dataDirType == record.dataDirType else { throw StoreError.conflict("Restore intent changed or already started") }
+            if let priorID = expected.priorOperationID {
+                guard current.transfers.contains(where: {
+                    $0.operationID == priorID && $0.mode == .mount && $0.direction == .migrate
+                        && $0.originalPath == expected.originalPath
+                        && self.sameUUID($0.createdVolumeUUID, record.volumeUUID)
+                        && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
+                }) else { throw StoreError.conflict("Restore migration lineage changed") }
+            }
+            resumed.phase = .preparing
+            resumed.recoverableReason = nil
+            current.transfers[index] = resumed
+        }
+        return resumed
+    }
+
     /// A created volume UUID can be filled once immediately after creation, never replaced.
     func updateTransfer(_ transfer: DataTransferRecord) throws {
         try mutate { current in try self.replaceTransfer(transfer, in: &current) }
@@ -452,7 +478,11 @@ final class ContainerMountStore: @unchecked Sendable {
               old.createdVolumeUUID == nil || sameUUID(old.createdVolumeUUID, transfer.createdVolumeUUID),
               old.destinationIdentity == nil || old.destinationIdentity == transfer.destinationIdentity,
               old.backupIdentity == nil || old.backupIdentity == transfer.backupIdentity,
-              old.baseline == nil || old.baseline == transfer.baseline else {
+              old.baseline == nil || old.baseline == transfer.baseline,
+              old.legacyRootOwnership == transfer.legacyRootOwnership
+                || (old.isUnstartedMountRestore && transfer.isUnstartedMountRestore && old.legacyRootOwnership == nil),
+              old.legacyMountFlags == transfer.legacyMountFlags
+                || (old.isUnstartedMountRestore && transfer.isUnstartedMountRestore && old.legacyMountFlags == nil) else {
             throw StoreError.conflict("Transfer identity or verified baseline changed")
         }
         guard permits(old.phase, transfer.phase) else { throw StoreError.invalidState("Invalid transfer phase transition") }
@@ -487,6 +517,44 @@ final class ContainerMountStore: @unchecked Sendable {
         return !lhs.isEmpty && lhs.caseInsensitiveCompare(rhs) == .orderedSame
     }
     private func validPath(_ path: String) -> Bool { path.hasPrefix("/") && URL(fileURLWithPath: path).standardizedFileURL.path != "/" && !path.contains("\0") }
+
+    /// Ordinary records need only the exception marker, not a second in-memory copy of every entry.
+    private struct LegacyOwnershipMarker: Decodable {
+        let restoredRootOwnership: TreeCopySnapshot.Ownership?
+    }
+
+    /// The destination-only ownership exception must never leak into source or cleanup metadata.
+    private func validateLegacyOwnership(_ transfer: DataTransferRecord) throws {
+        let marker = transfer.baseline.flatMap { try? PropertyListDecoder().decode(LegacyOwnershipMarker.self, from: $0) }
+        // An intent has no manifest yet; once copying succeeds, both records must agree.
+        if transfer.baseline != nil, marker?.restoredRootOwnership != transfer.legacyRootOwnership {
+            throw StoreError.invalidState("Legacy restored-root ownership does not match the verified baseline")
+        }
+        guard transfer.legacyRootOwnership != nil || transfer.legacyMountFlags != nil else { return }
+        try validateLegacyOwnershipIntent(transfer)
+        if let encoded = transfer.baseline {
+            guard let snapshot = try? PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded),
+                  let root = snapshot.entries.first, root.path.isEmpty, root.kind == .directory,
+                  snapshot.entries.filter({ $0.path.isEmpty }).count == 1,
+                  let owner = transfer.legacyRootOwnership,
+                  root.uid == 0 || root.uid == owner.uid,
+                  root.identity.inode == transfer.sourceIdentity.inode,
+                  UInt64(UInt32(bitPattern: root.identity.device)) == transfer.sourceIdentity.device else {
+                throw StoreError.invalidState("Legacy source-root metadata is missing or inconsistent")
+            }
+        }
+    }
+
+    private func validateLegacyOwnershipIntent(_ transfer: DataTransferRecord) throws {
+        guard transfer.mode == .mount, transfer.direction == .restore,
+              !(transfer.sourceIdentity.volumeUUID ?? "").isEmpty,
+              transfer.destinationPath == transfer.originalPath,
+              transfer.backupPath != nil, transfer.stagingPath != nil,
+              let owner = transfer.legacyRootOwnership, owner.uid == geteuid(), owner.gid == getegid(),
+              transfer.legacyMountFlags.map({ $0 & UInt32(MNT_IGNORE_OWNERSHIP) != 0 }) ?? true else {
+            throw StoreError.invalidState("Invalid legacy restore ownership intent")
+        }
+    }
 
     private func validate(_ document: Document) throws {
         for (uuid, reason) in document.remountInterventions {
@@ -533,6 +601,7 @@ final class ContainerMountStore: @unchecked Sendable {
             }
         }
         for transfer in document.transfers {
+            try validateLegacyOwnership(transfer)
             guard transfer.policyVersion > 0, validSourceIdentity(transfer),
                   transfer.topologyEntries.allSatisfy({ validPath($0.path) }),
                   transfer.createdVolumeUUID.map({ !$0.isEmpty }) ?? true,

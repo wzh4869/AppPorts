@@ -130140,6 +130140,280 @@
           }
         }
       }
+    },
+    "此卷仍在忽略文件所有权，无法验证权限；已停止操作并保留原件：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This volume still ignores file ownership, so permissions cannot be verified. The operation stopped and originals were preserved: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此卷仍在忽略檔案擁有權，無法驗證權限；已停止操作並保留原件：%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Volume ignoriert weiterhin Dateieigentümer. Berechtigungen können nicht geprüft werden. Der Vorgang wurde gestoppt, Originale bleiben erhalten: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este volumen sigue ignorando la propiedad de los archivos; no se pueden verificar los permisos. La operación se detuvo y los originales se conservaron: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce volume ignore toujours la propriété des fichiers ; les autorisations ne peuvent pas être vérifiées. L’opération s’est arrêtée et les originaux sont conservés : %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este volume ainda ignora a propriedade dos arquivos; não é possível verificar as permissões. A operação foi interrompida e os originais foram preservados: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo volume ignora ancora la proprietà dei file; non è possibile verificare i permessi. L’operazione è stata interrotta e gli originali sono conservati: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このボリュームはファイルの所有権を無視しているため、アクセス権を検証できません。操作を停止し、元のデータを保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 볼륨은 파일 소유권을 무시하고 있어 권한을 검증할 수 없습니다. 작업을 중단하고 원본을 보존했습니다: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот том по-прежнему игнорирует владельцев файлов, поэтому проверить права невозможно. Операция остановлена, оригиналы сохранены: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit volume negeert nog steeds bestandseigendom; rechten kunnen niet worden geverifieerd. De bewerking is gestopt en de originelen zijn bewaard: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten wolumin nadal ignoruje właścicieli plików, więc nie można zweryfikować uprawnień. Operacja została zatrzymana, a oryginały zachowane: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume ini masih mengabaikan kepemilikan berkas, sehingga izin tidak dapat diverifikasi. Operasi dihentikan dan data asli dipertahankan: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu birim hâlâ dosya sahipliğini yok sayıyor; izinler doğrulanamıyor. İşlem durduruldu ve asıllar korundu: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ổ đĩa này vẫn bỏ qua quyền sở hữu tệp nên không thể xác minh quyền truy cập. Thao tác đã dừng và bản gốc được giữ lại: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu volumo ankoraŭ ignoras dosierposedon, do permesoj ne povas esti kontrolitaj. La operacio haltis kaj la originaloj estas konservitaj: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह वॉल्यूम अब भी फ़ाइल स्वामित्व को अनदेखा करता है, इसलिए अनुमतियाँ सत्यापित नहीं की जा सकतीं। कार्रवाई रोक दी गई है और मूल डेटा सुरक्षित है: %@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يزال هذا القسم يتجاهل ملكية الملفات، لذا يتعذر التحقق من الأذونات. أُوقفت العملية وحُفظت النسخ الأصلية: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โวลุ่มนี้ยังคงละเลยความเป็นเจ้าของไฟล์ จึงตรวจสอบสิทธิ์ไม่ได้ หยุดการทำงานและเก็บต้นฉบับไว้แล้ว: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此卷仍在忽略文件所有权，无法验证权限；已停止操作并保留原件：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此卷仍在忽略攵件所有权，无法验证权限；已停止操作并葆畱原件：%@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠧⠕⠇⠥⠍⠑ ⠎⠞⠊⠇⠇ ⠊⠛⠝⠕⠗⠑⠎ ⠋⠊⠇⠑ ⠕⠺⠝⠑⠗⠎⠓⠊⠏, ⠎⠕ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠧⠑⠗⠊⠋⠊⠑⠙. ⠠⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠕⠗⠊⠛⠊⠝⠁⠇⠎ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙: %@"
+          }
+        }
+      }
+    },
+    "还原失败，且无法恢复卷的原挂载选项；数据已保留，请检查挂载状态：%@\n%@\n%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore failed and the original mount options could not be restored. Data was preserved; check the mount state: %@\n%@\n%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還原失敗，且無法恢復卷的原掛載選項；資料已保留，請檢查掛載狀態：%@\n%@\n%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung fehlgeschlagen; die ursprünglichen Einhängeoptionen konnten nicht wiederhergestellt werden. Daten bleiben erhalten. Prüfen Sie den Einhängestatus: %@\n%@\n%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauración falló y no se pudieron restablecer las opciones de montaje originales. Los datos se conservaron; compruebe el estado del montaje: %@\n%@\n%@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration a échoué et les options de montage d’origine n’ont pas pu être rétablies. Les données sont conservées ; vérifiez l’état du montage : %@\n%@\n%@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A restauração falhou e as opções de montagem originais não puderam ser restabelecidas. Os dados foram preservados; verifique o estado da montagem: %@\n%@\n%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino non riuscito; impossibile ristabilire le opzioni di montaggio originali. I dati sono conservati; controllare lo stato del montaggio: %@\n%@\n%@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復元に失敗し、元のマウントオプションに戻せませんでした。データは保持されています。マウント状態を確認してください：%@\n%@\n%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복원에 실패했으며 원래 마운트 옵션으로 되돌리지 못했습니다. 데이터는 보존되어 있습니다. 마운트 상태를 확인하세요: %@\n%@\n%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление не удалось; исходные параметры монтирования восстановить не удалось. Данные сохранены; проверьте состояние монтирования: %@\n%@\n%@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstellen is mislukt en de oorspronkelijke koppelopties konden niet worden teruggezet. Gegevens zijn bewaard; controleer de koppelstatus: %@\n%@\n%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywracanie nie powiodło się i nie można przywrócić pierwotnych opcji montowania. Dane zachowano; sprawdź stan montowania: %@\n%@\n%@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan gagal dan opsi pemasangan awal tidak dapat dipulihkan. Data dipertahankan; periksa status pemasangan: %@\n%@\n%@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geri yükleme başarısız oldu ve özgün bağlama seçenekleri geri yüklenemedi. Veriler korundu; bağlama durumunu kontrol edin: %@\n%@\n%@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục thất bại và không thể đặt lại tùy chọn gắn ban đầu. Dữ liệu được giữ lại; hãy kiểm tra trạng thái gắn: %@\n%@\n%@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaŭro malsukcesis kaj la originaj muntaj opcioj ne povis esti restarigitaj. Datumoj estas konservitaj; kontrolu la muntan staton: %@\n%@\n%@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बहाली विफल हुई और मूल माउंट विकल्प बहाल नहीं हो सके। डेटा सुरक्षित है; माउंट की स्थिति जाँचें: %@\n%@\n%@"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فشلت الاستعادة وتعذرت إعادة خيارات التركيب الأصلية. حُفظت البيانات؛ تحقق من حالة التركيب: %@\n%@\n%@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การกู้คืนล้มเหลวและไม่สามารถคืนค่าตัวเลือกการเมานต์เดิมได้ เก็บข้อมูลไว้แล้ว โปรดตรวจสอบสถานะการเมานต์: %@\n%@\n%@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还原失败，且无法恢复卷的原挂载选项；数据已保留，请检查挂载状态：%@\n%@\n%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还原失败，且无法恢复卷的原挂载选项；数據已葆畱，请检查挂载状态：%@\n%@\n%@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠑ ⠋⠁⠊⠇⠑⠙ ⠁⠝⠙ ⠞⠓⠑ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠍⠕⠥⠝⠞ ⠕⠏⠞⠊⠕⠝⠎ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠗⠑⠎⠞⠕⠗⠑⠙. ⠠⠙⠁⠞⠁ ⠺⠁⠎ ⠏⠗⠑⠎⠑⠗⠧⠑⠙; ⠉⠓⠑⠉⠅ ⠞⠓⠑ ⠍⠕⠥⠝⠞ ⠎⠞⠁⠞⠑: %@\n%@\n%@"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -295,6 +295,18 @@ struct DiskUtility: Sendable {
         _ = try await run(["mount", "nobrowse", "-mountPoint", mountPoint.path] + options + [volume])
     }
 
+    /// Explicit restore only. Keep Finder/safety flags while enabling real ownership.
+    func setOwnershipForRestore(mountPoint: URL, originalFlags: UInt32, enabled: Bool) async throws {
+        let flags = enabled ? originalFlags & ~UInt32(MNT_IGNORE_OWNERSHIP) : originalFlags
+        var options = Self.updateOptions(addingNobrowseTo: flags)
+        if enabled { options += ",owners" }
+        let result = try await runner.run(executable: Self.mountPath,
+            arguments: ["-u", "-o", options, mountPoint.path], timeout: commandTimeout)
+        guard result.status == 0, !result.timedOut else {
+            throw Failure.commandFailed(command: "mount ownership update", output: result.combinedText)
+        }
+    }
+
     /// 给早期版本挂上、没带 `nobrowse` 的卷补上这个选项，不用卸载。
     ///
     /// `mount -u` 会按给出的选项重设标志，只写 `nobrowse` 会把 `noowners` 等冲掉

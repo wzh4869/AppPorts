@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import Testing
 @testable import AppPorts
@@ -302,6 +303,211 @@ struct DataTransferStoreTests {
         #expect(throws: ContainerMountStore.StoreError.self) { try fixture.store.updateTransfer(restore) }
     }
 
+    @Test("An unstarted restore retries with its original operation identity and paths")
+    func unstartedRestoreResumesSameIntent() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("A")
+        try fixture.store.upsert(mount)
+        var restore = fixture.restore(mount)
+        try fixture.store.beginTransfer(restore)
+        restore.legacyRootOwnership = .init(uid: geteuid(), gid: getegid())
+        restore.legacyMountFlags = UInt32(MNT_IGNORE_OWNERSHIP | MNT_DONTBROWSE | MNT_NODEV)
+        try fixture.store.updateTransfer(restore)
+        restore.phase = .needsRecovery
+        restore.recoverableReason = "Ownership inspection failed before copying"
+        try fixture.store.updateTransfer(restore)
+        var unsafeGenericUpdate = restore
+        unsafeGenericUpdate.phase = .preparing
+        #expect(throws: ContainerMountStore.StoreError.self) { try fixture.store.updateTransfer(unsafeGenericUpdate) }
+
+        let reopened = ContainerMountStore(fileURL: fixture.file)
+        let saved = try #require(try reopened.transfer(operationID: restore.operationID))
+        let resumed = try reopened.resumeUnstartedMountRestore(saved, record: mount)
+        var expected = saved
+        expected.phase = .preparing
+        expected.recoverableReason = nil
+        #expect(resumed == expected)
+        #expect(try reopened.transfers() == [expected])
+        #expect(try reopened.recordsStrict() == [mount])
+        #expect(try reopened.resumeUnstartedMountRestore(resumed, record: mount) == expected)
+        let before = try Data(contentsOf: fixture.file)
+        #expect(throws: ContainerMountStore.StoreError.self) {
+            try reopened.resumeUnstartedMountRestore(saved, record: mount)
+        }
+        #expect(try Data(contentsOf: fixture.file) == before)
+    }
+
+    @Test("Copy evidence or a changed restore shape cannot take the unstarted retry route",
+          arguments: ["sourceIdentity", "destinationIdentity", "backupIdentity", "baseline", "createdVolume",
+                      "activePath", "destinationPath", "missingStaging", "missingBackup", "copying"])
+    func startedRestoreCannotResume(kind: String) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("A")
+        try fixture.store.upsert(mount)
+        var restore = fixture.restore(mount)
+        switch kind {
+        case "sourceIdentity", "copying": restore.sourceIdentity = DataPathIdentity(device: 3, inode: 600, volumeUUID: mount.volumeUUID)
+        case "destinationIdentity": restore.destinationIdentity = DataPathIdentity(device: 1, inode: 901)
+        case "backupIdentity": restore.backupIdentity = DataPathIdentity(device: 3, inode: 600)
+        case "baseline": restore.baseline = Data("evidence-copy-started".utf8)
+        case "createdVolume": restore.createdVolumeUUID = mount.volumeUUID
+        case "activePath": restore.activePath = fixture.root.appendingPathComponent("elsewhere").path
+        case "destinationPath": restore.destinationPath = fixture.root.appendingPathComponent("elsewhere").path
+        case "missingStaging": restore.stagingPath = nil
+        case "missingBackup": restore.backupPath = nil
+        default: break
+        }
+        try fixture.store.beginTransfer(restore)
+        restore.phase = kind == "copying" ? .copying : .needsRecovery
+        restore.recoverableReason = "Interrupted"
+        try fixture.store.updateTransfer(restore)
+        let before = try Data(contentsOf: fixture.file)
+        #expect(!restore.isUnstartedMountRestore)
+        #expect(throws: ContainerMountStore.StoreError.self) {
+            try fixture.store.resumeUnstartedMountRestore(restore, record: mount)
+        }
+        #expect(try Data(contentsOf: fixture.file) == before)
+    }
+
+    @Test("Resume requires the exact current mount and application identity", arguments: ["volume", "app", "bundle", "type", "path"])
+    func resumeRejectsDifferentMountRecord(kind: String) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("A")
+        try fixture.store.upsert(mount)
+        let restore = fixture.restore(mount)
+        try fixture.store.beginTransfer(restore)
+        let changed = ContainerMountRecord(appName: kind == "app" ? "Other" : mount.appName,
+            bundleIdentifier: kind == "bundle" ? "test.other" : mount.bundleIdentifier,
+            dataDirType: kind == "type" ? "other" : mount.dataDirType,
+            mountPointPath: kind == "path" ? fixture.root.appendingPathComponent("Other").path : mount.mountPointPath,
+            volumeUUID: kind == "volume" ? "OTHER-VOLUME" : mount.volumeUUID,
+            volumeName: mount.volumeName, externalRootPath: mount.externalRootPath, createdAt: mount.createdAt)
+        let before = try Data(contentsOf: fixture.file)
+        #expect(throws: ContainerMountStore.StoreError.self) {
+            try fixture.store.resumeUnstartedMountRestore(restore, record: changed)
+        }
+        #expect(try Data(contentsOf: fixture.file) == before)
+    }
+
+    @Test("Legacy metadata persists separately from actual source ownership and cannot be rewritten", arguments: [false, true])
+    func legacyOwnershipBaselineSurvivesReopen(online: Bool) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("A")
+        try fixture.store.upsert(mount)
+        var restore = fixture.restore(mount)
+        try fixture.store.beginTransfer(restore)
+        let owner = TreeCopySnapshot.Ownership(uid: geteuid(), gid: getegid())
+        restore.legacyRootOwnership = owner
+        restore.legacyMountFlags = online ? UInt32(MNT_IGNORE_OWNERSHIP | MNT_DONTBROWSE) : nil
+        try fixture.store.updateTransfer(restore)
+        restore.sourceIdentity = DataPathIdentity(device: 3, inode: 600, volumeUUID: mount.volumeUUID)
+        try fixture.store.updateTransfer(restore)
+        restore.phase = .copying
+        try fixture.store.updateTransfer(restore)
+        let baseline = fixture.legacySnapshot(owner: owner)
+        restore.baseline = try PropertyListEncoder().encode(baseline)
+        restore.destinationIdentity = DataPathIdentity(device: 1, inode: 901)
+        restore.backupIdentity = restore.sourceIdentity
+        restore.phase = .verified
+        try fixture.store.updateTransfer(restore)
+        let reopened = ContainerMountStore(fileURL: fixture.file)
+        let saved = try #require(try reopened.transfer(operationID: restore.operationID))
+        let snapshot = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: #require(saved.baseline))
+        #expect(saved == restore)
+        #expect(snapshot.entries.first?.uid == 0)
+        #expect(snapshot.restoredRootOwnership == owner)
+        #expect(snapshot.destinationEntry(try #require(snapshot.entries.first)).uid == owner.uid)
+        var changed = saved
+        changed.legacyMountFlags = UInt32(MNT_IGNORE_OWNERSHIP)
+        #expect(throws: ContainerMountStore.StoreError.self) { try reopened.updateTransfer(changed) }
+        changed = saved
+        changed.legacyRootOwnership = nil
+        #expect(throws: ContainerMountStore.StoreError.self) { try reopened.updateTransfer(changed) }
+    }
+
+    @Test("Ownership exceptions cannot be attached after the source has been inspected")
+    func legacyOwnershipCannotBeIntroducedLate() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("A")
+        try fixture.store.upsert(mount)
+        var restore = fixture.restore(mount)
+        try fixture.store.beginTransfer(restore)
+        restore.sourceIdentity = DataPathIdentity(device: 3, inode: 600, volumeUUID: mount.volumeUUID)
+        try fixture.store.updateTransfer(restore)
+        let before = try Data(contentsOf: fixture.file)
+        restore.legacyRootOwnership = .init(uid: geteuid(), gid: getegid())
+        #expect(throws: ContainerMountStore.StoreError.self) { try fixture.store.updateTransfer(restore) }
+        #expect(try Data(contentsOf: fixture.file) == before)
+    }
+
+    @Test("Pre-compatibility transfer and snapshot data decode without ownership exceptions")
+    func missingLegacyFieldsRemainBackwardCompatible() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let original = fixture.transfer()
+        let encoded = try PropertyListEncoder().encode(original)
+        var record = try #require(try PropertyListSerialization.propertyList(from: encoded, format: nil) as? [String: Any])
+        record.removeValue(forKey: "legacyRootOwnership")
+        record.removeValue(forKey: "legacyMountFlags")
+        // Binary plist preserves createdAt's subsecond value, matching the production store.
+        // XML dates round to whole seconds, which would test date conversion instead of missing fields.
+        let legacy = try PropertyListSerialization.data(fromPropertyList: record, format: .binary, options: 0)
+        let decoded = try PropertyListDecoder().decode(DataTransferRecord.self, from: legacy)
+        #expect(decoded == original)
+        #expect(decoded.legacyRootOwnership == nil)
+        #expect(decoded.legacyMountFlags == nil)
+
+        let snapshot = fixture.legacySnapshot(owner: nil)
+        let snapshotData = try PropertyListEncoder().encode(snapshot)
+        var manifest = try #require(try PropertyListSerialization.propertyList(from: snapshotData, format: nil) as? [String: Any])
+        manifest.removeValue(forKey: "restoredRootOwnership")
+        let oldManifest = try PropertyListSerialization.data(fromPropertyList: manifest, format: .xml, options: 0)
+        #expect(try PropertyListDecoder().decode(TreeCopySnapshot.self, from: oldManifest) == snapshot)
+    }
+
+    @Test("Corrupt legacy compatibility metadata fails closed on reopen",
+          arguments: ["flagsWithoutOwner", "flagsWithoutNoowners", "otherUID", "otherGID", "wrongMode", "wrongDirection",
+                      "missingManifestOverride", "unmarkedManifestOverride", "opaqueManifest", "wrongRootOwner", "wrongRootInode"])
+    func invalidLegacyMetadataPreservesBytes(kind: String) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        var restore = fixture.restore(fixture.mount("A"))
+        let owner = TreeCopySnapshot.Ownership(uid: geteuid(), gid: getegid())
+        restore.legacyRootOwnership = owner
+        restore.legacyMountFlags = UInt32(MNT_IGNORE_OWNERSHIP)
+        restore.sourceIdentity = DataPathIdentity(device: 3, inode: 600, volumeUUID: "VOLUME-A")
+        switch kind {
+        case "flagsWithoutOwner": restore.legacyRootOwnership = nil
+        case "flagsWithoutNoowners": restore.legacyMountFlags = UInt32(MNT_DONTBROWSE)
+        case "otherUID": restore.legacyRootOwnership = .init(uid: geteuid() &+ 1, gid: getegid())
+        case "otherGID": restore.legacyRootOwnership = .init(uid: geteuid(), gid: getegid() &+ 1)
+        case "missingManifestOverride": restore.baseline = try PropertyListEncoder().encode(fixture.legacySnapshot(owner: nil))
+        case "unmarkedManifestOverride":
+            restore.legacyRootOwnership = nil
+            restore.legacyMountFlags = nil
+            restore.baseline = try PropertyListEncoder().encode(fixture.legacySnapshot(owner: owner))
+        case "opaqueManifest": restore.baseline = Data("invalid-manifest".utf8)
+        case "wrongRootOwner": restore.baseline = try PropertyListEncoder().encode(fixture.legacySnapshot(owner: owner, actualUID: geteuid() &+ 1))
+        case "wrongRootInode": restore.baseline = try PropertyListEncoder().encode(fixture.legacySnapshot(owner: owner, inode: 601))
+        default: break
+        }
+        let encoded = try PropertyListEncoder().encode(restore)
+        var record = try #require(try PropertyListSerialization.propertyList(from: encoded, format: nil) as? [String: Any])
+        if kind == "wrongMode" { record["mode"] = "symlink" }
+        if kind == "wrongDirection" { record["direction"] = "migrate" }
+        let object: [String: Any] = ["schemaVersion": 3, "mounts": [], "cleanups": [], "transfers": [record]]
+        let bytes = try PropertyListSerialization.data(fromPropertyList: object, format: .xml, options: 0)
+        try bytes.write(to: fixture.file)
+        #expect(throws: ContainerMountStore.StoreError.self) { try fixture.store.transfers() }
+        #expect(throws: ContainerMountStore.StoreError.self) { try fixture.store.beginTransfer(fixture.transfer()) }
+        #expect(try Data(contentsOf: fixture.file) == bytes)
+    }
+
     @Test("Contradictory legacy facts remain inspectable but never executable", arguments: [false, true])
     func conflictingLegacyRecordsRemainVisible(reversed: Bool) throws {
         let fixture = try Fixture()
@@ -495,6 +701,23 @@ struct DataTransferStoreTests {
                 backupPath: root.appendingPathComponent("A.backup").path,
                 sourceIdentity: DataPathIdentity(device: 1, inode: 42),
                 destinationIdentity: DataPathIdentity(device: 2, inode: 500))
+        }
+        func restore(_ mount: ContainerMountRecord) -> DataTransferRecord {
+            let id = UUID()
+            return DataTransferRecord(operationID: id, mode: .mount, direction: .restore,
+                appName: mount.appName, bundleIdentifier: mount.bundleIdentifier, dataDirType: mount.dataDirType,
+                originalPath: mount.mountPointPath, activePath: mount.mountPointPath, destinationPath: mount.mountPointPath,
+                backupPath: root.appendingPathComponent("recovery-\(id.uuidString)").path,
+                stagingPath: root.appendingPathComponent(".appports-restore-staging-\(id.uuidString)").path,
+                sourceIdentity: DataPathIdentity(volumeUUID: mount.volumeUUID))
+        }
+        func legacySnapshot(owner: TreeCopySnapshot.Ownership?, actualUID: UInt32 = 0, inode: UInt64 = 600) -> TreeCopySnapshot {
+            TreeCopySnapshot(restoredRootOwnership: owner, entries: [
+                .init(path: "", kind: .directory, identity: .init(device: 3, inode: inode), mode: 0o755,
+                      uid: actualUID, gid: 0, flags: 0, birthTime: .init(seconds: 1, nanoseconds: 0),
+                      modificationTime: .init(seconds: 1, nanoseconds: 0), extendedAttributes: [:], acl: nil,
+                      size: 0, digest: nil, linkTarget: nil, hardlinkGroup: nil)
+            ], excludedRootEntries: [])
         }
         func remove() { try? FileManager.default.removeItem(at: root) }
     }

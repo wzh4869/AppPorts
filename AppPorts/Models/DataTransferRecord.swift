@@ -82,6 +82,10 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
     let policyVersion: Int
     var phase: Phase
     var baseline: Data?
+    /// Preserve the effective legacy root owner without rewriting the retained source manifest.
+    var legacyRootOwnership: TreeCopySnapshot.Ownership? = nil
+    /// Original online flags, recorded before ownership is enabled; absent for an offline restore.
+    var legacyMountFlags: UInt32? = nil
     var recoverableReason: String?
 
     init(operationID: UUID = UUID(), mode: Mode, direction: Direction, sourceID: String? = nil,
@@ -114,6 +118,14 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
         self.phase = phase
         self.baseline = baseline
         self.recoverableReason = recoverableReason
+    }
+
+    var isUnstartedMountRestore: Bool {
+        mode == .mount && direction == .restore && [.preparing, .needsRecovery].contains(phase)
+            && sourceIdentity.isVolumeOnly && destinationIdentity == nil && backupIdentity == nil
+            && baseline == nil && createdVolumeUUID == nil
+            && activePath == originalPath && destinationPath == originalPath
+            && backupPath != nil && stagingPath != nil
     }
 
     var topologyEntries: [DataPathTopology.Entry] {

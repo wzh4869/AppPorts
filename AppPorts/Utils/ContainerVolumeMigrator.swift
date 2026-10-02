@@ -41,6 +41,7 @@ actor ContainerVolumeMigrator {
         /// 还原时本地副本已复制好，但没能换到原路径。外置卷和记录保持不变。
         case restoreIncomplete(staging: URL, underlying: Error)
         case restoreRecordRecovery(staging: URL, underlying: Error)
+        case ownershipRollbackFailed(URL, operation: Error, rollback: Error)
 
         var errorDescription: String? {
             switch self {
@@ -94,6 +95,9 @@ actor ContainerVolumeMigrator {
                     format: "还原未完成，已复制的本地数据保留在「%@」，外置卷也已保留。请检查迁移记录和挂载状态后重试。%@".localized,
                     staging.path, error.localizedDescription
                 )
+            case .ownershipRollbackFailed(let url, let operation, let rollback):
+                return String(format: "还原失败，且无法恢复卷的原挂载选项；数据已保留，请检查挂载状态：%@\n%@\n%@".localized,
+                              url.path, operation.localizedDescription, rollback.localizedDescription)
             }
         }
     }
@@ -510,18 +514,44 @@ actor ContainerVolumeMigrator {
         let mountPoint = record.mountPointURL
         // Exact history ownership is required. A stale UI value cannot authorize recovery.
         guard try store.recordsStrict().contains(record) else { throw MigrationError.alreadyManaged(mountPoint) }
-        let prior = try store.transfers().first {
+        let transfers = try store.transfers()
+        let prior = transfers.first {
             $0.mode == .mount && $0.direction == .migrate && $0.originalPath == record.mountPointPath
                 && $0.createdVolumeUUID == record.volumeUUID && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
         }
-        let ownedIDs = Set(prior.map { [$0.operationID] } ?? [])
+        let resumable = transfers.filter {
+            $0.isUnstartedMountRestore && $0.originalPath == record.mountPointPath
+                && $0.sourceIdentity.volumeUUID?.caseInsensitiveCompare(record.volumeUUID) == .orderedSame
+                && $0.priorOperationID == prior?.operationID
+        }
+        guard resumable.count <= 1 else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
+        if let pending = resumable.first { try validateUnstartedRestorePaths(pending, record: record) }
+        var ownedIDs = Set(prior.map { [$0.operationID] } ?? [])
+        if let pending = resumable.first { ownedIDs.insert(pending.operationID) }
         try safety.requireNoOverlap(at: mountPoint, ownedMount: record, ownedTransferIDs: ownedIDs)
         try safety.requireLocalRestoreParent(at: mountPoint, isMountPoint: isMountPoint)
         if estimatedTotalBytes > 0, let available = availableCapacity(mountPoint.deletingLastPathComponent()) {
             let required = Self.requiredFreeBytes(forDataBytes: estimatedTotalBytes)
             guard available >= required else { throw MigrationError.insufficientSpace(required: required, available: available) }
         }
-        let id = UUID()
+        // Online inspection is read-only and must finish before creating an intent.
+        let originallyOnline = isMountPoint(mountPoint)
+        var originalFlags: UInt32?
+        var projectedOwner: TreeCopySnapshot.Ownership?
+        if originallyOnline {
+            try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+            try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
+            guard let flags = mountFlags(mountPoint) else { throw DataOperationSafety.Failure.inspection(mountPoint.path) }
+            originalFlags = flags
+            if flags & UInt32(MNT_IGNORE_OWNERSHIP) != 0 {
+                var info = stat()
+                guard lstat(mountPoint.path, &info) == 0, info.st_uid == geteuid(), info.st_gid == getegid() else {
+                    throw TreeCopyError.unsupportedMetadata(mountPoint.path)
+                }
+                projectedOwner = .init(uid: info.st_uid, gid: info.st_gid)
+            }
+        }
+        let id = resumable.first?.operationID ?? UUID()
         let staging = mountPoint.deletingLastPathComponent().appendingPathComponent(".appports-restore-staging-\(id.uuidString)")
         let recovery = stagingMountRootURL.appendingPathComponent("recovery-\(id.uuidString)")
         var transfer = DataTransferRecord(operationID: id, mode: .mount, direction: .restore,
@@ -529,12 +559,31 @@ actor ContainerVolumeMigrator {
             dataDirType: record.dataDirType, originalPath: mountPoint.path, activePath: mountPoint.path,
             destinationPath: mountPoint.path, backupPath: recovery.path, stagingPath: staging.path,
             sourceIdentity: DataPathIdentity(volumeUUID: record.volumeUUID), priorOperationID: prior?.operationID)
-        try store.beginTransfer(transfer)
+        if let pending = resumable.first {
+            transfer = try store.resumeUnstartedMountRestore(pending, record: record)
+        } else {
+            try store.beginTransfer(transfer)
+        }
+        if let projectedOwner {
+            transfer.legacyRootOwnership = transfer.legacyRootOwnership ?? projectedOwner
+            transfer.legacyMountFlags = transfer.legacyMountFlags ?? originalFlags
+            try store.updateTransfer(transfer)
+        }
         let operationID = id.uuidString
+        var ownershipUpdateFlags: UInt32?
         do {
             let source: URL
             if isMountPoint(mountPoint) {
                 try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+                if let flags = originalFlags, flags & UInt32(MNT_IGNORE_OWNERSHIP) != 0 {
+                    // Do not overwrite mount options changed since the initial preflight.
+                    try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
+                    try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+                    guard mountFlags(mountPoint) == flags else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
+                    ownershipUpdateFlags = flags
+                    try await disk.setOwnershipForRestore(mountPoint: mountPoint, originalFlags: flags, enabled: true)
+                    try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+                }
                 source = mountPoint
             } else {
                 // Recovery never reintroduces a forbidden mount at Data/tmp or a container root.
@@ -547,6 +596,17 @@ actor ContainerVolumeMigrator {
                 source = recovery
             }
             try requireOwners(at: source)
+            // Offline legacy volumes have no prior verified manifest. A root-owned
+            // APFS volume root was an implementation artifact of the old creator.
+            // Only that root receives the current user's former effective ownership.
+            if !originallyOnline, prior == nil, transfer.legacyRootOwnership == nil {
+                var info = stat()
+                guard lstat(source.path, &info) == 0 else { throw DataOperationSafety.Failure.inspection(source.path) }
+                if info.st_uid == 0 {
+                    transfer.legacyRootOwnership = .init(uid: geteuid(), gid: getegid())
+                    try store.updateTransfer(transfer)
+                }
+            }
             transfer.sourceIdentity = try DataPathIdentity.capture(source, volumeUUID: record.volumeUUID)
             try store.updateTransfer(transfer)
             try await safety.requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
@@ -554,7 +614,7 @@ actor ContainerVolumeMigrator {
             try store.updateTransfer(transfer)
             let baseline = try await TreeCopySession().copy(from: source, to: staging,
                 excludingRootEntries: Self.volumeSystemArtifacts, finalDestination: mountPoint,
-                logicalSourceRoot: mountPoint, progressHandler: progressHandler)
+                logicalSourceRoot: mountPoint, legacyRootOwnership: transfer.legacyRootOwnership, progressHandler: progressHandler)
             transfer.baseline = try PropertyListEncoder().encode(baseline)
             transfer.destinationIdentity = try DataPathIdentity.capture(staging)
             transfer.backupIdentity = transfer.sourceIdentity
@@ -585,11 +645,31 @@ actor ContainerVolumeMigrator {
             // The source APFS volume remains unmounted until explicit verified cleanup.
             return nil
         } catch {
+            var reportedError: Error = error
             transfer.phase = .needsRecovery
-            transfer.recoverableReason = error.localizedDescription
+            // Revert only an update attempted by this invocation, using its fresh
+            // flags. Persisted historical flags must not override a later user edit.
+            if let flags = ownershipUpdateFlags, isMountPoint(mountPoint) {
+                do {
+                    // Use the same UUID fallback as forward preflight. A missing
+                    // fast UUID must not silently skip restoring the mount options.
+                    try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+                    try await disk.setOwnershipForRestore(mountPoint: mountPoint, originalFlags: flags, enabled: false)
+                    try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+                    let mask = UInt32(MNT_IGNORE_OWNERSHIP | MNT_DONTBROWSE | MNT_RDONLY | MNT_NODEV | MNT_NOSUID | MNT_NOEXEC)
+                    guard let restored = mountFlags(mountPoint), restored & mask == (flags | UInt32(MNT_DONTBROWSE)) & mask else {
+                        throw DataOperationSafety.Failure.inspection(mountPoint.path)
+                    }
+                }
+                catch {
+                    AppLogger.shared.logError("还原失败后无法恢复原挂载选项", error: error, relatedURLs: [("mount_point", mountPoint)])
+                    reportedError = MigrationError.ownershipRollbackFailed(mountPoint, operation: reportedError, rollback: error)
+                }
+            }
+            transfer.recoverableReason = reportedError.localizedDescription
             do { try store.updateTransfer(transfer) }
             catch { AppLogger.shared.logError("无法更新还原恢复记录，原事务仍保留", error: error) }
-            throw error
+            throw reportedError
         }
     }
 
@@ -856,9 +936,28 @@ actor ContainerVolumeMigrator {
         return (DiskUtility.pathsMatch(current, mountPoint.path) ? .reportedByDiskUtil : .notMounted, info)
     }
 
+    private func validateUnstartedRestorePaths(_ transfer: DataTransferRecord, record: ContainerMountRecord) throws {
+        let root = record.mountPointURL
+        let staging = root.deletingLastPathComponent().appendingPathComponent(".appports-restore-staging-\(transfer.operationID.uuidString)")
+        let recovery = stagingMountRootURL.appendingPathComponent("recovery-\(transfer.operationID.uuidString)")
+        guard transfer.isUnstartedMountRestore, transfer.appName == record.appName,
+              transfer.bundleIdentifier == record.bundleIdentifier, transfer.dataDirType == record.dataDirType,
+              transfer.stagingPath == staging.path, transfer.backupPath == recovery.path else {
+            throw DataOperationSafety.Failure.conflict(root.path)
+        }
+        for path in [staging, recovery] {
+            var info = stat()
+            guard lstat(path.path, &info) != 0, errno == ENOENT else {
+                throw DataOperationSafety.Failure.conflict(path.path)
+            }
+        }
+    }
+
     private func requireOwners(at url: URL) throws {
-        guard let flags = mountFlags(url), flags & UInt32(MNT_IGNORE_OWNERSHIP) == 0 else {
-            throw DataOperationSafety.Failure.inspection(url.path)
+        guard let flags = mountFlags(url) else { throw DataOperationSafety.Failure.inspection(url.path) }
+        guard flags & UInt32(MNT_IGNORE_OWNERSHIP) == 0 else {
+            AppLogger.shared.logContext("文件所有权检查失败", details: [("path", url.path), ("mount_flags", String(flags)), ("reason", "noowners")], level: "ERROR")
+            throw TreeCopyError.ownershipDisabled(url.path)
         }
     }
 
