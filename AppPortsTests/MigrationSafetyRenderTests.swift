@@ -5,7 +5,7 @@ import XCTest
 
 /// Opt-in visual evidence from production components and synthetic models only.
 /// Run with TEST_RUNNER_APPPORTS_RENDER_UI_OUTPUT=/absolute/output/directory.
-/// No DataDirsView, scanner, migration service, or persistent setting is instantiated.
+/// No DataDirsView, scanner or migration service is instantiated; preferences use isolated test suites.
 final class MigrationSafetyRenderTests: XCTestCase {
     @MainActor
     func testRenderMigrationSafetyComponents() async throws {
@@ -121,6 +121,45 @@ final class MigrationSafetyRenderTests: XCTestCase {
     }
 
     @MainActor
+    func testInformationHeightRestoresInRecreatedBrowser() async throws {
+        guard let output = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"] else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to export renders")
+        }
+        let suite = "AppPortsHeightTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let key = "appDataDirectoryInformationPanelHeight"
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let items = fixtureItems()
+        func browser() -> some View {
+            AppDataDirectoryBrowser(groups: [DataDirGroup(type: .containers, items: DataDirTree.build(from: items))],
+                matchingItemIDs: Set(items.map(\.id)), isFiltering: false) { _ in EmptyView() }
+        }
+        func tableHeight(_ view: NSView) -> CGFloat? {
+            if let table = view as? NSTableView { return table.enclosingScrollView?.frame.height }
+            return view.subviews.compactMap(tableHeight).first
+        }
+        var compact: CGFloat?
+        try await render(browser(), size: NSSize(width: 900, height: 740),
+                         to: directory.appendingPathComponent("height-default.png"), defaults: defaults,
+                         inspect: { compact = tableHeight($0) })
+        XCTAssertNil(defaults.object(forKey: key), "Rendering must not overwrite the saved preference")
+        defaults.set(248.0, forKey: key)
+        let reopened = try XCTUnwrap(UserDefaults(suiteName: suite))
+        var expanded: CGFloat?
+        try await render(browser(), size: NSSize(width: 900, height: 740),
+                         to: directory.appendingPathComponent("height-restored.png"), defaults: reopened,
+                         inspect: { expanded = tableHeight($0) })
+        XCTAssertEqual(try XCTUnwrap(compact) - XCTUnwrap(expanded), 200, accuracy: 1,
+                       "Recreating the browser restores 248pt instead of the initial 48pt")
+        try await render(browser(), size: NSSize(width: 900, height: 300),
+                         to: directory.appendingPathComponent("height-small-window.png"), defaults: reopened)
+        XCTAssertEqual(reopened.double(forKey: key), 248,
+                       "A smaller window clamps display without losing the user's preferred height")
+    }
+
+    @MainActor
     private func actions(for item: DataDirItem) -> some View {
         DataDirOperationButtons(item: item, onMigrate: { _ in }, onRestore: { _ in },
                                 onManageExistingLink: { _ in }, onNormalizeManagedLink: { _ in },
@@ -131,14 +170,18 @@ final class MigrationSafetyRenderTests: XCTestCase {
     @MainActor
     private func render<V: View>(_ view: V, size: NSSize, to url: URL, requiresScrolling: Bool = false,
                                  afterLayout: (() -> Void)? = nil, requiresNavigation: Bool = false,
-                                 expectedTableRowCount: Int? = nil) async throws {
-        let host = NSHostingView(rootView: view.environment(\.colorScheme, .light).background(Color.white))
+                                 expectedTableRowCount: Int? = nil, defaults: UserDefaults? = nil,
+                                 inspect: ((NSView) -> Void)? = nil) async throws {
+        let suite = "AppPortsRender-\(UUID().uuidString)"
+        let isolatedDefaults = try XCTUnwrap(defaults ?? UserDefaults(suiteName: suite))
+        defer { if defaults == nil { isolatedDefaults.removePersistentDomain(forName: suite) } }
+        let host = NSHostingView(rootView: view.defaultAppStorage(isolatedDefaults).environment(\.colorScheme, .light).background(Color.white))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless],
                               backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         defer { window.close() }
         window.contentView = host
-        if requiresNavigation || expectedTableRowCount != nil {
+        if requiresNavigation || expectedTableRowCount != nil || inspect != nil {
             window.setFrameOrigin(NSPoint(x: -10_000, y: 0))
             window.orderFront(nil)
         }
@@ -193,6 +236,7 @@ final class MigrationSafetyRenderTests: XCTestCase {
             XCTAssertGreaterThan(content.frame.height, scroll.contentView.bounds.height,
                                  "Long recovery details must remain reachable by scrolling")
         }
+        inspect?(host)
         let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
         host.cacheDisplay(in: host.bounds, to: bitmap)
         XCTAssertEqual(bitmap.colorAt(x: 0, y: 0)?.alphaComponent, 1, "Export an opaque, reviewable snapshot")

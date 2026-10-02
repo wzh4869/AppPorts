@@ -13,11 +13,16 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
     @State private var selectedItemID: String?
     @State private var collapsedDirectoryIDs: Set<String> = []
     @State private var collapsedGroups: Set<DataDirType> = []
-    @State private var informationPanelHeight: CGFloat = DirectoryPanelLayout.minimumInformationHeight
+    @AppStorage("appDataDirectoryInformationPanelHeight") private var savedInformationPanelHeight = Double(DirectoryPanelLayout.minimumInformationHeight)
     @State private var informationResizeStartHeight: CGFloat?
     @State private var isInformationHandleHovered = false
     @FocusState private var isOutlineFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var informationPanelHeight: CGFloat {
+        get { savedInformationPanelHeight.isFinite ? CGFloat(savedInformationPanelHeight) : DirectoryPanelLayout.minimumInformationHeight }
+        nonmutating set { savedInformationPanelHeight = Double(newValue) }
+    }
 
     private var allRows: [DataDirTree.Row] {
         groups.flatMap { DataDirTree.rows(in: $0.items) }
