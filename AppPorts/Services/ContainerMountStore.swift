@@ -55,7 +55,7 @@ final class ContainerMountStore: @unchecked Sendable {
         init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             schemaVersion = try values.decode(Int.self, forKey: .schemaVersion)
-            guard schemaVersion == 2 || schemaVersion == 3 else { throw StoreError.unsupportedSchema(schemaVersion) }
+            guard (2...4).contains(schemaVersion) else { throw StoreError.unsupportedSchema(schemaVersion) }
             mounts = try values.decode([ContainerMountRecord].self, forKey: .mounts)
             cleanups = try values.decode([ContainerCleanupRecord].self, forKey: .cleanups)
             transfers = schemaVersion == 2 ? [] : try values.decode([DataTransferRecord].self, forKey: .transfers)
@@ -341,6 +341,15 @@ final class ContainerMountStore: @unchecked Sendable {
             guard deletionConfirmed else { throw StoreError.deletionNotConfirmed }
             guard let transfer = current.transfers.first(where: { $0.operationID == operationID }) else { return }
             guard transfer.phase == .cleanupRequested else { throw StoreError.invalidState("Cleanup must be explicitly requested") }
+            // Earlier safety builds kept the owners contract only in the
+            // verified migration. Persist it atomically before removing that proof.
+            if transfer.mode == .mount, transfer.direction == .migrate, transfer.baseline != nil,
+               let uuid = transfer.createdVolumeUUID,
+               let index = current.mounts.firstIndex(where: {
+                   $0.mountPointPath == transfer.originalPath && self.sameUUID($0.volumeUUID, uuid)
+               }) {
+                current.mounts[index].ownershipPolicy = .owners
+            }
             current.transfers.removeAll { $0.operationID == operationID }
         }
     }
@@ -359,7 +368,14 @@ final class ContainerMountStore: @unchecked Sendable {
         defer { _ = flock(writer, LOCK_UN); _ = close(writer) }
         var document = try load()
         try body(&document)
-        document.schemaVersion = 3
+        // Older schema-3 writers drop unknown transfer fields while preserving
+        // the opaque baseline. Protect ownership-aware records before any such
+        // writer can erase the exception required to interpret that baseline.
+        let needsOwnershipSchema = document.transfers.contains {
+            $0.legacyRootOwnership != nil || $0.legacyMountFlags != nil
+        } || document.mounts.contains { $0.ownershipPolicy != nil }
+            || document.cleanups.contains { $0.mountRecord.ownershipPolicy != nil }
+        document.schemaVersion = max(document.schemaVersion, needsOwnershipSchema ? 4 : 3)
         // Removing a mount also resolves its remount-only block; transfer recovery remains independent.
         let activeVolumes = Set(document.mounts.map { $0.volumeUUID.uppercased() })
         document.remountInterventions = document.remountInterventions.filter { activeVolumes.contains($0.key) }
@@ -443,7 +459,10 @@ final class ContainerMountStore: @unchecked Sendable {
             guard sameUUID(document.mounts[index].volumeUUID, mount.volumeUUID) else {
                 throw StoreError.conflict("A different volume already owns this mount point")
             }
-            document.mounts[index] = mount
+            var replacement = mount
+            // A stale caller must not erase the persisted ownership contract.
+            replacement.ownershipPolicy = document.mounts[index].ownershipPolicy ?? mount.ownershipPolicy
+            document.mounts[index] = replacement
         } else { document.mounts.append(mount) }
     }
     private func putLink(_ link: ManagedDataLinkRecord, into document: inout Document, replacingFor transfer: DataTransferRecord? = nil) throws {

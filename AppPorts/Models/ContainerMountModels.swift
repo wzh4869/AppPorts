@@ -18,6 +18,10 @@ import Foundation
 struct ContainerMountRecord: Codable, Equatable, Identifiable, Sendable {
     static let currentSchemaVersion = 1
 
+    enum OwnershipPolicy: String, Codable, Sendable {
+        case owners
+    }
+
     /// 以挂载点路径作为稳定 ID
     var id: String { mountPointPath }
 
@@ -37,6 +41,9 @@ struct ContainerMountRecord: Codable, Equatable, Identifiable, Sendable {
     /// 迁移时用户选择的外部存储根目录（记录来源，不参与挂载）
     let externalRootPath: String
     let createdAt: Date
+    /// Missing in historical records: use the volume's persistent system setting.
+    /// New verified migrations require real ownership, even after backup cleanup.
+    var ownershipPolicy: OwnershipPolicy?
 
     init(
         appName: String,
@@ -46,7 +53,8 @@ struct ContainerMountRecord: Codable, Equatable, Identifiable, Sendable {
         volumeUUID: String,
         volumeName: String,
         externalRootPath: String,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        ownershipPolicy: OwnershipPolicy? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.appName = appName
@@ -57,6 +65,7 @@ struct ContainerMountRecord: Codable, Equatable, Identifiable, Sendable {
         self.volumeName = volumeName
         self.externalRootPath = externalRootPath
         self.createdAt = createdAt
+        self.ownershipPolicy = ownershipPolicy
     }
 
     var mountPointURL: URL {

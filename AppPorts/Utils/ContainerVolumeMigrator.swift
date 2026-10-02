@@ -341,7 +341,8 @@ actor ContainerVolumeMigrator {
             try TreeCopySession.verifyUnchanged(at: backup, against: baseline)
             let record = ContainerMountRecord(appName: appName, bundleIdentifier: bundleIdentifier,
                 dataDirType: item.type.rawValue, mountPointPath: source.path, volumeUUID: uuid,
-                volumeName: volumeName, externalRootPath: externalRootURL.standardizedFileURL.path)
+                volumeName: volumeName, externalRootPath: externalRootURL.standardizedFileURL.path,
+                ownershipPolicy: .owners)
             try store.commitMigration(record: record, transfer: transfer)
             synchronizeAgent(store)
             invalidateSizeCache(for: source)
@@ -364,23 +365,26 @@ actor ContainerVolumeMigrator {
         let mountPoint = record.mountPointURL
         try safety.requirePolicy(at: mountPoint)
         guard try store.recordsStrict().contains(record) else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
+        let related = try store.transfers().filter {
+            $0.mode == .mount && $0.direction == .migrate && $0.createdVolumeUUID == record.volumeUUID
+                && $0.originalPath == record.mountPointPath && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
+        }
+        let requiresOwnership = record.ownershipPolicy == .owners || related.contains { $0.baseline != nil }
         if isMountPoint(mountPoint) {
             try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
             if try store.remountIntervention(forVolumeUUID: record.volumeUUID) != nil {
                 throw DataOperationSafety.Failure.conflict(mountPoint.path)
             }
+            if requiresOwnership { try requireOwners(at: mountPoint) }
             return
-        }
-        let related = try store.transfers().filter {
-            $0.mode == .mount && $0.direction == .migrate && $0.createdVolumeUUID == record.volumeUUID
-                && $0.originalPath == record.mountPointPath && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
         }
         try safety.requireNoOverlap(at: mountPoint, ownedMount: record,
                                     ownedTransferIDs: Set(related.map(\.operationID)))
         try safety.requireNoManagedFileSystemAncestor(at: mountPoint)
         let operationID = AppLogger.shared.makeOperationID(prefix: "container-mount")
         let hint = try await knownMountPoint(for: record, operationID: operationID)
-        try await mountVolume(record.volumeUUID, at: mountPoint, operationID: operationID, knownMountPoint: hint)
+        try await mountVolume(record.volumeUUID, at: mountPoint, operationID: operationID, knownMountPoint: hint,
+                              requireOwnership: requiresOwnership)
         try store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: nil)
         invalidateSizeCache(for: mountPoint)
         AppLogger.shared.logContext(
@@ -548,7 +552,9 @@ actor ContainerVolumeMigrator {
                 guard lstat(mountPoint.path, &info) == 0, info.st_uid == geteuid(), info.st_gid == getegid() else {
                     throw TreeCopyError.unsupportedMetadata(mountPoint.path)
                 }
-                projectedOwner = .init(uid: info.st_uid, gid: info.st_gid)
+                if record.ownershipPolicy == nil, prior == nil {
+                    projectedOwner = .init(uid: info.st_uid, gid: info.st_gid)
+                }
             }
         }
         let id = resumable.first?.operationID ?? UUID()
@@ -596,10 +602,11 @@ actor ContainerVolumeMigrator {
                 source = recovery
             }
             try requireOwners(at: source)
-            // Offline legacy volumes have no prior verified manifest. A root-owned
-            // APFS volume root was an implementation artifact of the old creator.
-            // Only that root receives the current user's former effective ownership.
-            if !originallyOnline, prior == nil, transfer.legacyRootOwnership == nil {
+            // A legacy volume can already use owners after a normal remount.
+            // Without a prior verified manifest, the old creator's root-owned
+            // volume root needs the same destination projection online or offline.
+            // Descendants and the retained source keep their actual ownership.
+            if record.ownershipPolicy == nil, prior == nil, transfer.legacyRootOwnership == nil {
                 var info = stat()
                 guard lstat(source.path, &info) == 0 else { throw DataOperationSafety.Failure.inspection(source.path) }
                 if info.st_uid == 0 {
@@ -825,7 +832,8 @@ actor ContainerVolumeMigrator {
         at mountPoint: URL,
         operationID: String,
         knownMountPoint: KnownMountPoint = .unknown,
-        allowRelocation: Bool = true
+        allowRelocation: Bool = true,
+        requireOwnership: Bool = true
     ) async throws {
         var hint = knownMountPoint
         for attempt in 1...Self.maximumMountAttempts {
@@ -852,7 +860,7 @@ actor ContainerVolumeMigrator {
             } catch MountPointLease.Failure.notEmpty {
                 throw MigrationError.mountPointNotEmpty(mountPoint)
             }
-            try await performMount(volumeUUID, at: mountPoint, operationID: operationID)
+            try await performMount(volumeUUID, at: mountPoint, requireOwnership: requireOwnership)
             do { try lease.verifyUnderlyingDirectory() }
             catch { throw MigrationError.mountPointConflict(mountPoint, error.localizedDescription) }
 
@@ -869,7 +877,7 @@ actor ContainerVolumeMigrator {
                         ]
                     )
                 }
-                try requireOwners(at: mountPoint)
+                if requireOwnership { try requireOwners(at: mountPoint) }
                 // 迁移前建的卷（或标记被删掉的卷）在这里补上防索引标记；失败只记日志，不影响挂载。
                 return
             case .reportedByDiskUtil:
@@ -906,8 +914,8 @@ actor ContainerVolumeMigrator {
     }
 
     /// A command failure never opens the local directory for a second attempt.
-    private func performMount(_ volumeUUID: String, at mountPoint: URL, operationID: String) async throws {
-        do { try await disk.mount(volume: volumeUUID, at: mountPoint, requireOwnership: true) }
+    private func performMount(_ volumeUUID: String, at mountPoint: URL, requireOwnership: Bool) async throws {
+        do { try await disk.mount(volume: volumeUUID, at: mountPoint, requireOwnership: requireOwnership) }
         catch { throw MigrationError.mountFailed(mountPoint, error.localizedDescription) }
     }
 

@@ -84,7 +84,7 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
     var baseline: Data?
     /// Preserve the effective legacy root owner without rewriting the retained source manifest.
     var legacyRootOwnership: TreeCopySnapshot.Ownership? = nil
-    /// Original online flags, recorded before ownership is enabled; absent for an offline restore.
+    /// Original noowners flags; absent if the source already uses owners or is restored offline.
     var legacyMountFlags: UInt32? = nil
     var recoverableReason: String?
 

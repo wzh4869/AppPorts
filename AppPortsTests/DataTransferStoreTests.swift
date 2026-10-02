@@ -4,6 +4,52 @@ import Testing
 @testable import AppPorts
 
 struct DataTransferStoreTests {
+    @Test("Ownership-aware records require schema 4 before an old writer can discard their meaning", arguments: [false, true])
+    func ownershipMetadataProtectsAgainstOlderWriters(online: Bool) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("A")
+        try fixture.store.upsert(mount)
+        func document() throws -> [String: Any] {
+            try #require(try PropertyListSerialization.propertyList(from: Data(contentsOf: fixture.file), format: nil) as? [String: Any])
+        }
+        #expect(try document()["schemaVersion"] as? Int == 3)
+        var transfer = fixture.restore(mount)
+        try fixture.store.beginTransfer(transfer)
+        let before = try Data(contentsOf: fixture.file)
+        transfer.legacyRootOwnership = .init(uid: geteuid(), gid: getegid())
+        transfer.legacyMountFlags = online ? UInt32(MNT_IGNORE_OWNERSHIP) : nil
+        let rejecting = ContainerMountStore(fileURL: fixture.file, writeData: { _, _ in throw CocoaError(.fileWriteNoPermission) })
+        #expect(throws: (any Error).self) { try rejecting.updateTransfer(transfer) }
+        #expect(try Data(contentsOf: fixture.file) == before)
+        try fixture.store.updateTransfer(transfer)
+        #expect(try document()["schemaVersion"] as? Int == 4)
+        let protected = try Data(contentsOf: fixture.file)
+        #expect(throws: (any Error).self) { try PropertyListDecoder().decode(Schema3Reader.self, from: protected) }
+        #expect(try ContainerMountStore(fileURL: fixture.file).transfer(operationID: transfer.operationID) == transfer)
+        // The preceding build wrote these fields as schema 3. Read it without changing bytes,
+        // then promote atomically on the next mutation instead of dropping the optional fields.
+        var priorBuild = try document()
+        priorBuild["schemaVersion"] = 3
+        let oldBytes = try PropertyListSerialization.data(fromPropertyList: priorBuild, format: .binary, options: 0)
+        try oldBytes.write(to: fixture.file)
+        let reopened = ContainerMountStore(fileURL: fixture.file)
+        #expect(try reopened.transfer(operationID: transfer.operationID) == transfer)
+        #expect(try Data(contentsOf: fixture.file) == oldBytes)
+        try reopened.upsert(fixture.mount("Other", volume: "VOLUME-B"))
+        #expect(try document()["schemaVersion"] as? Int == 4)
+        #expect(try reopened.transfer(operationID: transfer.operationID) == transfer)
+    }
+
+    private struct Schema3Reader: Decodable {
+        enum Keys: String, CodingKey { case schemaVersion }
+        init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: Keys.self)
+            let schema = try values.decode(Int.self, forKey: .schemaVersion)
+            guard schema == 2 || schema == 3 else { throw ContainerMountStore.StoreError.unsupportedSchema(schema) }
+        }
+    }
+
     @Test("A different volume cannot silently replace the same recorded source")
     func rejectsConflictingMountIdentity() throws {
         let fixture = try Fixture()

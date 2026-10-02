@@ -317,6 +317,66 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
 
 @Suite("Container volume migration", .serialized)
 struct ContainerVolumeMigratorTests {
+    @Test("Legacy remount follows the volume setting; modern remount requires owners", arguments: [false, true])
+    func remountOwnershipPolicy(modern: Bool) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let runner = FakeDiskCommandRunner(onlineVolumes: ["OWNERSHIP-UUID"])
+        let source = try workspace.makeContainerDirectory(named: "Policy")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        var record = workspace.record(mountPoint: source, volumeUUID: "OWNERSHIP-UUID")
+        record.ownershipPolicy = modern ? .owners : nil
+        try workspace.store.upsert(record)
+        let migrator = workspace.makeMigrator(runner: runner)
+        try await migrator.mount(record: record)
+        let options = modern ? ["-mountOptions", "owners"] : []
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", source.path] + options + [record.volumeUUID]])
+
+        let noowners = workspace.makeMigrator(runner: runner, mountFlags: { _ in UInt32(MNT_IGNORE_OWNERSHIP) })
+        if modern {
+            await #expect(throws: (any Error).self) { try await noowners.mount(record: record) }
+        } else {
+            try await noowners.mount(record: record)
+        }
+        #expect(runner.commands(prefix: ["-u"]).isEmpty)
+    }
+
+    @Test("Verified older migration keeps its owners policy after transfer cleanup and stale writes")
+    func ownershipSurvivesTransferCleanup() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let runner = FakeDiskCommandRunner()
+        let migrator = workspace.makeMigrator(runner: runner)
+        let source = try workspace.makeContainerDirectory(named: "Policy")
+        let result = try await migrator.migrate(item: workspace.item(for: source), externalRootURL: workspace.externalRootURL,
+            appName: "Chat", bundleIdentifier: "com.example.chat", progressHandler: nil)
+        #expect(result.record.ownershipPolicy == .owners)
+        let file = workspace.rootURL.appendingPathComponent("container-mounts.plist")
+        var document = try #require(try PropertyListSerialization.propertyList(from: Data(contentsOf: file), format: nil) as? [String: Any])
+        var mounts = try #require(document["mounts"] as? [[String: Any]])
+        mounts[0].removeValue(forKey: "ownershipPolicy")
+        document["mounts"] = mounts
+        document["schemaVersion"] = 3
+        let legacyBytes = try PropertyListSerialization.data(fromPropertyList: document, format: .binary, options: 0)
+        try legacyBytes.write(to: file)
+        let old = try #require(try workspace.store.recordsStrict().first)
+        #expect(old.ownershipPolicy == nil)
+        #expect(try Data(contentsOf: file) == legacyBytes)
+        let noowners = workspace.makeMigrator(runner: runner, mountFlags: { _ in UInt32(MNT_IGNORE_OWNERSHIP) })
+        await #expect(throws: (any Error).self) { try await noowners.mount(record: old) }
+        let transfer = try #require(try workspace.store.transfers().first)
+        try workspace.store.requestCleanup(operationID: transfer.operationID)
+        try workspace.store.finishTransfer(operationID: transfer.operationID, deletionConfirmed: true)
+        try workspace.store.upsert(old)
+        let reopened = ContainerMountStore(fileURL: file)
+        let current = try #require(try reopened.recordsStrict().first)
+        #expect(current.ownershipPolicy == .owners)
+        #expect(try reopened.transfers().isEmpty)
+        let saved = try #require(try PropertyListSerialization.propertyList(from: Data(contentsOf: file), format: nil) as? [String: Any])
+        #expect(saved["schemaVersion"] as? Int == 4)
+        await #expect(throws: (any Error).self) { try await noowners.mount(record: current) }
+    }
+
     @Test("Migration creates a volume, copies data, mounts it in place, and records it")
     func migrationHappyPath() async throws {
         let workspace = try Workspace()
@@ -1148,7 +1208,7 @@ struct ContainerVolumeMigratorTests {
         #expect(states["ONLINE-UUID"] == .mounted)
         #expect(states["OFFLINE-UUID"] == .unavailable)
         #expect(states["MOUNTED-UUID"] == .alreadyMounted)
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", online.path, "-mountOptions", "owners", "ONLINE-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", online.path, "ONLINE-UUID"]])
         // 每个记录只查一次 diskutil（在线 + 挂载点合并）；离线的那个查一次就放弃。
         #expect(runner.commands(prefix: ["info"]).count == 2)
         #expect(runner.commands(prefix: ["info"]).allSatisfy { $0.last != "MOUNTED-UUID" })
@@ -1206,8 +1266,8 @@ struct ContainerVolumeMigratorTests {
         #expect(runner.isMounted(mountPoint))
         #expect(runner.commands(prefix: ["unmount"]) == [["unmount", "/Volumes/AppPorts-auto"]])
         #expect(runner.commands(prefix: ["mount"]) == [
-            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "owners", "RACE-UUID"],
-            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "owners", "RACE-UUID"]
+            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "RACE-UUID"],
+            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "RACE-UUID"]
         ])
     }
 
@@ -1255,7 +1315,7 @@ struct ContainerVolumeMigratorTests {
         // 关键：一次 diskutil 查询都不该发出去（开机时那次查询实测要 9 秒）
         #expect(runner.commands(prefix: ["info"]).isEmpty)
         #expect(runner.commands(prefix: ["unmount"]) == [["unmount", autoMountPoint]])
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "owners", "AUTO-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "AUTO-UUID"]])
     }
 
     @Test("自动挂载点上不是我们的卷时退回 diskutil 查询")
@@ -1294,7 +1354,7 @@ struct ContainerVolumeMigratorTests {
 
         #expect(outcomes.first?.state == .mounted)
         #expect(runner.commands(prefix: ["info"]).count == 1)
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "owners", "FREE-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "FREE-UUID"]])
     }
 
     private func makeRecord(
@@ -1445,7 +1505,7 @@ struct ContainerVolumeMigratorTests {
 
         // 必须先把卷从系统挂载点卸下来，再挂到容器路径。
         #expect(runner.commands(prefix: ["unmount"]) == [["unmount", systemMountPoint]])
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "owners", "AUTO-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "AUTO-UUID"]])
         // 在线检查和「当前挂在哪」共用同一次 diskutil：开机时一次查询要一秒上下，别退化成两次。
         #expect(runner.commands(prefix: ["info"]).count == 1)
         #expect(runner.isMounted(mountPoint))
