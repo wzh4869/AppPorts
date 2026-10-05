@@ -365,6 +365,7 @@ actor FileCopier {
             }
             Self.copyDirectoryExtendedAttributes(from: directory.source, to: directory.destination, removeQuarantine: removeQuarantine)
             try fileManager.setAttributes(directory.attributes, ofItemAtPath: directory.destination.path)
+            try Self.copyDirectoryACL(from: directory.source, to: directory.destination)
             await reportProgressIfNeeded(name: directory.source.lastPathComponent, state: &state, progressHandler: progressHandler)
         }
         if let firstGroupRestoreError {
@@ -520,6 +521,36 @@ actor FileCopier {
                 }
             }
         }
+    }
+
+    nonisolated private static func copyDirectoryACL(from source: URL, to destination: URL) throws {
+        var sourceACL = acl_get_file(source.path, ACL_TYPE_EXTENDED)
+        if sourceACL == nil {
+            if errno == ENOTSUP { return }
+            // Darwin uses ENOENT for a present directory with no extended ACL.
+            guard errno == ENOENT, FileManager.default.fileExists(atPath: source.path) else {
+                throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+            }
+            sourceACL = acl_init(0)
+        }
+        guard let acl = sourceACL else { throw POSIXError(.ENOMEM) }
+        defer { acl_free(UnsafeMutableRawPointer(acl)) }
+        var entry: acl_entry_t?
+        let hasEntries = acl_get_entry(acl, ACL_FIRST_ENTRY.rawValue, &entry) == 0
+        guard acl_set_file(destination.path, ACL_TYPE_EXTENDED, acl) == 0 else {
+            if !hasEntries, errno == ENOTSUP { return }
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        guard let actual = acl_get_file(destination.path, ACL_TYPE_EXTENDED) else {
+            if !hasEntries, errno == ENOENT, FileManager.default.fileExists(atPath: destination.path) { return }
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        defer { acl_free(UnsafeMutableRawPointer(actual)) }
+        guard let expectedText = acl_to_text(acl, nil), let actualText = acl_to_text(actual, nil) else {
+            throw POSIXError(.EIO)
+        }
+        defer { acl_free(expectedText); acl_free(actualText) }
+        guard String(cString: expectedText) == String(cString: actualText) else { throw POSIXError(.EIO) }
     }
 
     nonisolated private static func isManagedLinkMetadataFile(_ fileName: String) -> Bool {

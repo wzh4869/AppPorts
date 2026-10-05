@@ -5,6 +5,29 @@ import XCTest
 final class FileCopierTests: XCTestCase {
     private let fileManager = FileManager.default
 
+    func testDirectoryACLIsPreserved() async throws {
+        let w = try makeWorkspace()
+        defer { cleanup(w.root) }
+        let command = Process()
+        command.executableURL = URL(fileURLWithPath: "/bin/chmod")
+        command.arguments = ["+a", "everyone allow read,readattr,readextattr,readsecurity", w.source.path]
+        try command.run()
+        command.waitUntilExit()
+        XCTAssertEqual(command.terminationStatus, 0)
+        func aclText(_ url: URL) throws -> String {
+            guard let acl = acl_get_file(url.path, ACL_TYPE_EXTENDED) else { return "" }
+            defer { acl_free(UnsafeMutableRawPointer(acl)) }
+            guard let text = acl_to_text(acl, nil) else { return "" }
+            defer { acl_free(text) }
+            return String(cString: text)
+        }
+        let original = try aclText(w.source)
+        XCTAssertFalse(original.isEmpty)
+        _ = try await FileCopier().copyDirectory(from: w.source, to: w.destination, progressHandler: nil)
+        XCTAssertEqual(try aclText(w.destination), original)
+        XCTAssertEqual(try aclText(w.source), original)
+    }
+
     func testCopiesManySmallFilesWithRootAndNestedDirectoryMetadata() async throws {
         let workspace = try makeWorkspace()
         defer { cleanup(workspace.root) }
