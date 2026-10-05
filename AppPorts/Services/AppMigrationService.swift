@@ -1227,6 +1227,26 @@ struct AppMigrationService {
         return nil
     }
 
+    private func samePortalTarget(_ stored: String, _ expected: URL) -> Bool {
+        guard stored.hasPrefix("/") else { return false }
+        let url = URL(fileURLWithPath: stored).standardizedFileURL
+        return url.lastPathComponent == expected.lastPathComponent
+            && DiskUtility.pathsMatch(url.deletingLastPathComponent().path, expected.deletingLastPathComponent().path)
+    }
+
+    private func hasRealStubStorage(at url: URL) -> Bool {
+        for path in ["", "Contents", "Contents/MacOS", "Contents/Resources"] {
+            let candidate = path.isEmpty ? url : url.appendingPathComponent(path)
+            guard let attributes = try? fileManager.attributesOfItem(atPath: candidate.path),
+                  attributes[.type] as? FileAttributeType == .typeDirectory else { return false }
+        }
+        for path in ["Contents/Info.plist", "Contents/MacOS/launcher"] {
+            guard let attributes = try? fileManager.attributesOfItem(atPath: url.appendingPathComponent(path).path),
+                  attributes[.type] as? FileAttributeType == .typeRegular else { return false }
+        }
+        return true
+    }
+
     private func externalTargetReplacementReason(for appToMove: AppItem, destinationURL: URL) -> String? {
         if appToMove.status == AppStatus.pendingMoveOut {
             // A scanner status is not authority to delete the name-based destination.
@@ -1349,14 +1369,18 @@ struct AppMigrationService {
             let pathFile = localContentsURL.appendingPathComponent("Resources/real_app_path.txt")
             if let raw = try? String(contentsOf: pathFile, encoding: .utf8) {
                 let realPath = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !realPath.isEmpty && realPath == standardizedExternalURL.path {
+                if !realPath.isEmpty && samePortalTarget(realPath, standardizedExternalURL) {
                     return .stubPortal
                 }
             }
             // 旧版 bash launcher：检查脚本内容
             if let script = try? String(contentsOf: launcherPath, encoding: .utf8),
-               script.contains(standardizedExternalURL.path) {
-                return .stubPortal
+               let assignment = script.components(separatedBy: .newlines)
+                    .map({ $0.trimmingCharacters(in: .whitespaces) }).first(where: { $0.hasPrefix("REAL_APP=") }),
+               assignment.hasPrefix("REAL_APP='"), assignment.hasSuffix("'") {
+                let path = String(assignment.dropFirst("REAL_APP='".count).dropLast())
+                    .replacingOccurrences(of: "'\\''", with: "'")
+                if samePortalTarget(path, standardizedExternalURL) { return .stubPortal }
             }
         }
 
@@ -1556,72 +1580,40 @@ struct AppMigrationService {
     /// 仅对带标记文件的真实镜像文件夹生效，旧版整体符号链接文件夹会被安全跳过。
     func refreshFolderMirror(at localFolderURL: URL, from externalFolderURL: URL) {
         let fm = fileManager
-
-        // 仅处理 AppPorts 镜像文件夹（标记存在），其余（旧 symlink 文件夹、用户真实文件夹）跳过
-        let markerURL = localFolderURL.appendingPathComponent(Self.folderPortalMarkerName)
-        guard fm.fileExists(atPath: markerURL.path),
-              let externalEntries = try? fm.contentsOfDirectory(
-                  at: externalFolderURL,
-                  includingPropertiesForKeys: nil,
-                  options: .skipsHiddenFiles
-              ) else {
-            return
-        }
-
-        let externalNames = Set(externalEntries.map { $0.lastPathComponent })
+        guard (try? fm.attributesOfItem(atPath: localFolderURL.path)[.type]) as? FileAttributeType == .typeDirectory,
+              let recorded = Self.folderMirrorExternalURL(at: localFolderURL, fileManager: fm),
+              recorded.resolvingSymlinksInPath() == externalFolderURL.resolvingSymlinksInPath(),
+              let externalEntries = try? fm.contentsOfDirectory(at: externalFolderURL,
+                  includingPropertiesForKeys: nil, options: .skipsHiddenFiles) else { return }
+        let externalNames = Set(externalEntries.map(\.lastPathComponent))
         var didChange = false
-
-        // 1. 新增 / 刷新外部存在的条目
         for entry in externalEntries {
-            let localEntry = localFolderURL.appendingPathComponent(entry.lastPathComponent)
-            if entry.pathExtension == "app" {
-                if fm.fileExists(atPath: localEntry.path),
-                   localPortalKind(at: localEntry, linkedTo: entry) == .stubPortal {
-                    // 现有内部 Stub：同步版本/图标
-                    refreshStubPortal(at: localEntry, from: entry)
-                } else {
-                    // 外部新增 app（或本地缺失/损坏）：重建 Stub
-                    try? fm.removeItem(at: localEntry)
-                    do {
-                        try createStubPortal(at: localEntry, pointingTo: entry)
-                        didChange = true
-                    } catch {
-                        try? fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
-                        didChange = true
-                    }
-                }
-            } else {
-                // 非 app：确保符号链接存在且指向当前外部条目
-                let needsLink: Bool
-                if let dest = resolveSymlinkDestination(at: localEntry) {
-                    needsLink = dest != entry.standardizedFileURL
-                } else {
-                    needsLink = !fm.fileExists(atPath: localEntry.path)
-                }
-                if needsLink {
-                    try? fm.removeItem(at: localEntry)
-                    try? fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
-                    didChange = true
-                }
+            let local = localFolderURL.appendingPathComponent(entry.lastPathComponent)
+            // Existing real files and official app replacements belong to the user.
+            if (try? fm.attributesOfItem(atPath: local.path)) != nil {
+                if entry.pathExtension == "app" { refreshStubPortal(at: local, from: entry) }
+                continue
             }
-        }
-
-        // 2. 移除外部已不存在的本地条目（标记与隐藏文件因 skipsHiddenFiles 不被遍历，自动保留）
-        if let localEntries = try? fm.contentsOfDirectory(
-            at: localFolderURL,
-            includingPropertiesForKeys: nil,
-            options: .skipsHiddenFiles
-        ) {
-            for localEntry in localEntries where !externalNames.contains(localEntry.lastPathComponent) {
-                try? fm.removeItem(at: localEntry)
+            do {
+                if entry.pathExtension == "app" { try createStubPortal(at: local, pointingTo: entry) }
+                else { try fm.createSymbolicLink(at: local, withDestinationURL: entry) }
                 didChange = true
+            } catch {
+                AppLogger.shared.logError("Folder Mirror：同步入口失败", error: error,
+                    relatedURLs: [("local", local), ("external", entry)])
             }
         }
-
+        if let entries = try? fm.contentsOfDirectory(at: localFolderURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) {
+            for local in entries where !externalNames.contains(local.lastPathComponent) {
+                let expected = externalFolderURL.appendingPathComponent(local.lastPathComponent)
+                guard localPortalKind(at: local, linkedTo: expected) != nil else { continue }
+                do { try fm.removeItem(at: local); didChange = true }
+                catch { AppLogger.shared.logError("Folder Mirror：清理旧入口失败", error: error) }
+            }
+        }
         if didChange {
             try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: localFolderURL.path)
             refreshLaunchServicesRecursive(for: localFolderURL)
-            AppLogger.shared.log("已同步 Folder Mirror: \(localFolderURL.lastPathComponent) -> \(externalFolderURL.path)")
         }
     }
 
@@ -1852,6 +1844,10 @@ struct AppMigrationService {
     /// 当外置 app 更新后，FolderMonitor 触发 rescan 时调用。
     /// 对比本地 Stub Portal 与外置 app 的版本号，如有变化则更新 plist、图标并刷新 Launch Services。
     func refreshStubPortal(at localURL: URL, from externalURL: URL) {
+        guard hasRealStubStorage(at: localURL),
+              localPortalKind(at: localURL, linkedTo: externalURL) == .stubPortal,
+              let resolved = try? CodeSigner.resolveAppURL(at: localURL),
+              resolved.resolvingSymlinksInPath() == externalURL.resolvingSymlinksInPath() else { return }
         let fm = fileManager
         let localContents = localURL.appendingPathComponent("Contents")
         let externalContents = externalURL.appendingPathComponent("Contents")

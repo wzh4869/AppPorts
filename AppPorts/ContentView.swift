@@ -1292,7 +1292,7 @@ struct ContentView: View {
                     if localApp.usesFolderOperation {
                         // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
                         service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
-                    } else if localApp.version != externalApp.version {
+                    } else {
                         service.refreshStubPortal(at: localApp.path, from: externalApp.path)
                     }
                 }
@@ -2822,7 +2822,7 @@ struct ContentView: View {
                 if localApp.usesFolderOperation {
                     // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
                     service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
-                } else if localApp.version != externalApp.version {
+                } else {
                     service.refreshStubPortal(at: localApp.path, from: externalApp.path)
                 }
             }

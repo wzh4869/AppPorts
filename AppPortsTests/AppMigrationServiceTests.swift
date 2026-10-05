@@ -985,6 +985,38 @@ final class AppMigrationServiceTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: target.appendingPathComponent("Contents/Resources/payload.txt")), "unrelated-original")
     }
 
+    func testRefreshNeverWritesThroughLegacyPortalOrUsesDifferentTarget() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let real = w.externalRootURL.appendingPathComponent("Foo.app")
+        let other = w.rootURL.appendingPathComponent("Other/Foo.app")
+        let local = w.localAppsURL.appendingPathComponent("Foo.app")
+        try createAppBundle(at: real)
+        try createAppBundle(at: other)
+        try updateReviewPlist(other, values: ["CFBundleShortVersionString": "2.0"])
+        let original = try Data(contentsOf: real.appendingPathComponent("Contents/Info.plist"))
+        try fileManager.createSymbolicLink(at: local, withDestinationURL: real)
+        AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).refreshStubPortal(at: local, from: other)
+        XCTAssertEqual(try Data(contentsOf: real.appendingPathComponent("Contents/Info.plist")), original)
+    }
+
+    func testFolderRefreshPreservesLocalRealFilesAndReplacementApps() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let local = w.localAppsURL.appendingPathComponent("Suite")
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        try createAppBundle(at: local.appendingPathComponent("Foo.app"), payload: "local-official-update")
+        try createAppBundle(at: external.appendingPathComponent("Foo.app"))
+        let marker: [String: Any] = ["externalPath": external.path, "createdBy": "AppPorts", "kind": "folderMirror", "version": 1]
+        try PropertyListSerialization.data(fromPropertyList: marker, format: .xml, options: 0)
+            .write(to: local.appendingPathComponent(AppMigrationService.folderPortalMarkerName))
+        let note = local.appendingPathComponent("my-notes.txt")
+        try Data("keep me".utf8).write(to: note)
+        AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).refreshFolderMirror(at: local, from: external)
+        XCTAssertTrue(fileManager.fileExists(atPath: note.path))
+        XCTAssertEqual(try String(contentsOf: local.appendingPathComponent("Foo.app/Contents/Resources/payload.txt")), "local-official-update")
+    }
+
     func testRestoreRejectsRunningAppBeforeChangingEitherCopy() async throws {
         let w = try makeWorkspace()
         defer { cleanupWorkspace(w.rootURL) }
