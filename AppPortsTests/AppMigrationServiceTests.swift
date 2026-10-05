@@ -967,6 +967,44 @@ final class AppMigrationServiceTests: XCTestCase {
         XCTAssertFalse(fileManager.fileExists(atPath: externalAppURL.path))
     }
 
+    func testRestoreRejectsRunningAppBeforeChangingEitherCopy() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Live.app")
+        let local = w.localAppsURL.appendingPathComponent("Live.app")
+        try createAppBundle(at: external, payload: "live-app")
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 },
+            runningApplications: { [.init(bundleURL: external, bundleIdentifier: nil)] })
+        do {
+            _ = try await service.moveBack(app: AppItem(name: "Live.app", path: external, status: "外部"),
+                                          localDestinationURL: local, progressHandler: nil)
+            XCTFail("Running source must be rejected")
+        } catch AppMoverError.appIsRunning {} catch { XCTFail("Unexpected error: \(error)") }
+        XCTAssertEqual(try String(contentsOf: external.appendingPathComponent("Contents/Resources/payload.txt")), "live-app")
+        XCTAssertFalse(fileManager.fileExists(atPath: local.path))
+    }
+
+    func testRestoreRetainsSourceWhenAppStartsDuringCopy() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Live.app")
+        let local = w.localAppsURL.appendingPathComponent("Live.app")
+        try createAppBundle(at: external, payload: "live-app")
+        var calls = 0
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 }, runningApplications: {
+            calls += 1
+            return calls > 1 ? [.init(bundleURL: external, bundleIdentifier: nil)] : []
+        })
+        do {
+            _ = try await service.moveBack(app: AppItem(name: "Live.app", path: external, status: "外部"),
+                                          localDestinationURL: local, progressHandler: nil)
+            XCTFail("Late start must preserve the source")
+        } catch AppMoverError.appIsRunning {} catch { XCTFail("Unexpected error: \(error)") }
+        for app in [external, local] {
+            XCTAssertEqual(try String(contentsOf: app.appendingPathComponent("Contents/Resources/payload.txt")), "live-app")
+        }
+    }
+
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {
         let rootURL = fileManager.temporaryDirectory.appendingPathComponent("AppPortsTests-\(UUID().uuidString)")
         let localAppsURL = rootURL.appendingPathComponent("Applications")

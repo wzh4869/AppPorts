@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AppKit
 
 struct AppMigrationService {
     typealias FinderRemover = (URL) throws -> Void
@@ -43,17 +44,24 @@ struct AppMigrationService {
     private let fileManager: FileManager
     private let portalCreationOverride: PortalCreationOverride?
     private let dockShortcutUpdater: DockShortcutUpdater
+    private let runningApplications: () -> [AppRunningState.RunningApplication]
 
     init(
         fileManager: FileManager = .default,
         portalCreationOverride: PortalCreationOverride? = nil,
         dockShortcutUpdater: @escaping DockShortcutUpdater = { source, destination in
             try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
+        },
+        runningApplications: @escaping () -> [AppRunningState.RunningApplication] = {
+            NSWorkspace.shared.runningApplications.map {
+                .init(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
+            }
         }
     ) {
         self.fileManager = fileManager
         self.portalCreationOverride = portalCreationOverride
         self.dockShortcutUpdater = dockShortcutUpdater
+        self.runningApplications = runningApplications
     }
 
     static func checkWritePermission(at localURL: URL, fileManager: FileManager = .default) throws {
@@ -626,6 +634,7 @@ struct AppMigrationService {
         localDestinationURL: URL,
         progressHandler: FileCopier.ProgressHandler?
     ) async throws -> RestoreResult {
+        try requireNotRunning(app)
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-restore")
         let startedAt = Date()
         var operationResult = "failed"
@@ -793,6 +802,10 @@ struct AppMigrationService {
             sourcePath: app.path.path,
             destPath: localDestinationURL.path
         )
+
+        // A process may have started while the copy was in progress. Keep both
+        // complete copies if so; never delete resources from a live application.
+        try requireNotRunning(app)
 
         // 本地副本完整后即可切回；外部副本清理失败也不应让 Dock 继续打开旧副本。
         var dockSynchronized = synchronizeDockShortcuts(
@@ -1189,6 +1202,18 @@ struct AppMigrationService {
         }
 
         return URL(fileURLWithPath: rawPath, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
+    }
+
+    private func requireNotRunning(_ app: AppItem) throws {
+        var urls = [app.path]
+        if app.usesFolderOperation {
+            urls += try fileManager.contentsOfDirectory(at: app.path, includingPropertiesForKeys: nil)
+                .filter { $0.pathExtension.lowercased() == "app" }
+        }
+        let snapshot = runningApplications()
+        guard !urls.contains(where: { AppRunningState.isRunning(appURL: $0, applications: snapshot) }) else {
+            throw AppMoverError.appIsRunning
+        }
     }
 
     private func externalTargetReplacementReason(for appToMove: AppItem, destinationURL: URL) -> String? {
