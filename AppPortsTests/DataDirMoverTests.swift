@@ -22,6 +22,22 @@ final class DataDirMoverTests: XCTestCase {
         try super.tearDownWithError()
     }
 
+    func testCustomDirectoryTypeSurvivesDisconnectAndRelink() async throws {
+        for path in [".review-custom", "Library/Application Support/ReviewCustom"] {
+            let w = try makeWorkspace()
+            defer { cleanupWorkspace(w.rootURL) }
+            let local = w.homeURL.appendingPathComponent(path)
+            try createDirectoryWithPayload(at: local, payload: "custom-data")
+            let item = DataDirItem(name: "Custom", path: local, type: .custom, priority: .optional, description: "")
+            let mover = makeMover(homeDir: w.homeURL)
+            try await mover.migrate(item: item, to: w.externalRootURL, progressHandler: nil)
+            let external = local.resolvingSymlinksInPath()
+            try await mover.deleteLink(localPath: local)
+            try await mover.createLink(localPath: local, externalPath: external)
+            try assertSymlink(local, pointsTo: external)
+        }
+    }
+
     func testMigrateAndRestoreRoundTripForApplicationSupportDirectory() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

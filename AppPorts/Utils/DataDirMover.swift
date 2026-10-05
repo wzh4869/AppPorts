@@ -182,7 +182,7 @@ actor DataDirMover {
             guard try !entryExists(local) else { throw DataDirError.destinationExists(local) }
             adoptedEntry = nil
         }
-        let type = inferType(for: local) ?? .custom
+        let type = try managedType(for: local, external: external, indexedType: old?.dataDirType)
         try requireMarker(at: external, for: local, type: type, allowOwned: true)
         let history = try store.transfers()
         let owned = old.map { transferAncestors(of: $0.operationID, transfers: history) } ?? []
@@ -234,8 +234,9 @@ actor DataDirMover {
         guard isSymbolicLink(at: local), DataPathTopology.relationship(local.path, source.path) == .same else { throw DataDirError.invalidSymlink(local) }
         if DataPathTopology.relationship(source.path, destination.path) == .same { return }
         guard try !entryExists(destination) else { throw DataDirError.destinationExists(destination) }
-        try requireMarker(at: source, for: local, type: inferType(for: local) ?? .custom, allowOwned: true)
         let old = try store.managedLink(forOriginalPath: local.path)
+        let type = try managedType(for: local, external: source, indexedType: old?.dataDirType)
+        try requireMarker(at: source, for: local, type: type, allowOwned: true)
         let sourceIdentity = try DataPathIdentity.capture(source)
         if let old { try requireIdentity(source, old.destinationIdentity) }
         let history = try store.transfers()
@@ -249,7 +250,6 @@ actor DataDirMover {
         let id = UUID()
         let staging = local.deletingLastPathComponent().appendingPathComponent(".appports-normalize-\(id)")
         let linkIdentity = try DataPathIdentity.capture(local)
-        let type = inferType(for: local) ?? .custom
         var transfer = DataTransferRecord(operationID: id, mode: .symlink, direction: .migrate, sourceID: local.path,
             appName: old?.appName ?? local.lastPathComponent, bundleIdentifier: old?.bundleIdentifier ?? inferredBundleIdentifier(local),
             dataDirType: type.rawValue, originalPath: local.path, activePath: source.path, destinationPath: destination.path,
@@ -541,6 +541,23 @@ actor DataDirMover {
         return standardizedURL
             .deletingLastPathComponent()
             .appendingPathComponent(".\(standardizedURL.lastPathComponent)\(managedLinkMetadataSidecarSuffix)")
+    }
+
+    /// Type is part of a validated historical record, not a classification of its path.
+    private func managedType(for local: URL, external: URL, indexedType: String?) throws -> DataDirType {
+        if let indexedType, let type = DataDirType(rawValue: indexedType) { return type }
+        let marker = markerURL(for: external)
+        if try entryExists(marker) {
+            guard !isSymbolicLink(at: marker),
+                  let data = try? Data(contentsOf: marker),
+                  let metadata = try? PropertyListDecoder().decode(ManagedLinkMetadata.self, from: data),
+                  let type = DataDirType(rawValue: metadata.dataDirType) else {
+                throw DataDirError.metadataWriteFailed(DataOperationSafety.Failure.conflict(marker.path))
+            }
+            try requireMarker(at: external, for: local, type: type, allowOwned: true)
+            return type
+        }
+        return inferType(for: local) ?? .custom
     }
 
     private func inferType(for localPath: URL) -> DataDirType? {
