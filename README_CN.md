@@ -173,8 +173,9 @@ AppPorts 完全免费、开源、无广告，项目由个人在业余时间维�
 感谢以下赞助者（此列表与仓库根目录的 `sponsors.json` 同步）：
 
 - **师杀** · [space.bilibili.com/396481888](https://space.bilibili.com/396481888)
-- **符华**
+- **zed**
 - **VC**
+- **符华**
  
 ## 🔗 进阶存储管理
 

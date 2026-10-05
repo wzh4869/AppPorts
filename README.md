@@ -3,7 +3,7 @@
 <img src="assets/appports-banner-en.png" alt="AppPorts — macOS App & Data Migration" width="100%">
 
 **Move big apps out. Make room for what matters.**
-
+   
 Move apps and data to an external drive. Open them as usual.
 
 
@@ -173,8 +173,10 @@ AppPorts is completely free, open source and free of ads. It is maintained by a 
 Thanks to the following sponsors (this list is kept in sync with `sponsors.json` in the repository root):
 
 - **师杀** · [space.bilibili.com/396481888](https://space.bilibili.com/396481888)
-- **符华**
+- **zed**
 - **VC**
+- **符华**
+
 
 ## Advanced Storage Management
 
