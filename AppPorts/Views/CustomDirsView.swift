@@ -26,7 +26,8 @@ enum CustomDirRecoveryEligibility {
 @MainActor
 struct CustomDirsView: View {
     @ObservedObject private var operationState = AppOperationState.shared
-    @State private var configs: [CustomDirConfig] = CustomDirConfigStore.load()
+    @ObservedObject private var configStore = CustomDirConfigStore.shared
+    private var configs: [CustomDirConfig] { configStore.configs }
     @State private var pairs: [CustomDirPair] = []
     @State private var selectedLocalIDs: Set<String> = []
     @State private var selectedExternalIDs: Set<String> = []
@@ -121,6 +122,7 @@ struct CustomDirsView: View {
             isVisible = true
             refresh()
         }
+        .onChange(of: configStore.configs) { _ in refresh() }
         .onDisappear {
             isVisible = false
             invalidateRefresh()
@@ -271,23 +273,8 @@ struct CustomDirsView: View {
     }
 
     private func addConfig(_ config: CustomDirConfig) -> String? {
-        guard !configs.contains(where: { $0.localURL == config.localURL }) else {
-            return "该目录已在目录迁移列表中".localized
-        }
-
-        do {
-            try CustomDirValidator.validate(
-                localURL: config.localURL,
-                externalBaseURL: config.externalBaseURL,
-                existingConfigs: configs
-            )
-        } catch {
-            return error.localizedDescription
-        }
-
-        configs.append(config)
-        saveConfigs()
-        return nil
+        do { try configStore.insert(config); return nil }
+        catch { return error.localizedDescription }
     }
 
     private func addAndMigrateConfig(_ config: CustomDirConfig) -> String? {
@@ -311,16 +298,12 @@ struct CustomDirsView: View {
 
     private func removeConfig(_ config: CustomDirConfig) {
         guard !operationState.isBusy else { return }
-        configs.removeAll { $0.id == config.id }
+        do { try configStore.remove(id: config.id) }
+        catch { errorMessage = error.localizedDescription; showError = true; return }
         pairs.removeAll { $0.config.id == config.id }
         selectedLocalIDs.remove("\(config.id.uuidString)-\(CustomDirEntryKind.local.rawValue)")
         selectedExternalIDs.remove("\(config.id.uuidString)-\(CustomDirEntryKind.external.rawValue)")
-        saveConfigs()
         refresh()
-    }
-
-    private func saveConfigs() {
-        CustomDirConfigStore.save(configs)
     }
 
     private func refresh() {
@@ -547,20 +530,41 @@ private final class CustomDirLocalOpenPanelDelegate: NSObject, NSOpenSavePanelDe
     }
 }
 
-private enum CustomDirConfigStore {
+/// All windows share one published snapshot. Mutations reload the persisted state,
+/// so even a second client cannot overwrite another client's completed edit.
+@MainActor
+final class CustomDirConfigStore: ObservableObject {
+    static let shared = CustomDirConfigStore()
     private static let key = "customDirConfigs"
+    private let defaults: UserDefaults
+    @Published private(set) var configs: [CustomDirConfig]
 
-    static func load() -> [CustomDirConfig] {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let configs = try? JSONDecoder().decode([CustomDirConfig].self, from: data) else {
-            return []
-        }
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        configs = Self.load(defaults)
+    }
+
+    private static func load(_ defaults: UserDefaults) -> [CustomDirConfig] {
+        guard let data = defaults.data(forKey: key),
+              let configs = try? JSONDecoder().decode([CustomDirConfig].self, from: data) else { return [] }
         return configs
     }
 
-    static func save(_ configs: [CustomDirConfig]) {
-        guard let data = try? JSONEncoder().encode(configs) else { return }
-        UserDefaults.standard.set(data, forKey: key)
+    func insert(_ config: CustomDirConfig, homeURL: URL = FileManager.default.homeDirectoryForCurrentUser) throws {
+        var current = Self.load(defaults)
+        try CustomDirValidator.validate(localURL: config.localURL, externalBaseURL: config.externalBaseURL,
+                                        existingConfigs: current, homeURL: homeURL)
+        current.append(config)
+        try save(current)
+    }
+
+    func remove(id: UUID) throws {
+        try save(Self.load(defaults).filter { $0.id != id })
+    }
+
+    private func save(_ current: [CustomDirConfig]) throws {
+        defaults.set(try JSONEncoder().encode(current), forKey: Self.key)
+        configs = current
     }
 }
 

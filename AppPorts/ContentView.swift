@@ -372,6 +372,13 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+            let latest = UserDefaults.standard.stringArray(forKey: "customLocalScanPaths") ?? []
+            guard isVisible, latest != customLocalScanPaths else { return }
+            customLocalScanPaths = latest
+            startMonitoringLocal()
+            scanBothAppsAtomic()
+        }
         .onDisappear {
             monitorRescanDebouncer.cancel()
             isVisible = false
@@ -1592,6 +1599,7 @@ struct ContentView: View {
         panel.message = "选择要额外扫描的应用目录".localized
         guard panel.runModal() == .OK, let url = panel.url else { return }
         let path = url.path
+        customLocalScanPaths = UserDefaults.standard.stringArray(forKey: "customLocalScanPaths") ?? []
         guard !customLocalScanPaths.contains(path) else { return }
         customLocalScanPaths.append(path)
         UserDefaults.standard.set(customLocalScanPaths, forKey: "customLocalScanPaths")
@@ -1600,6 +1608,7 @@ struct ContentView: View {
     }
 
     func removeCustomLocalScanPath(_ path: String) {
+        customLocalScanPaths = UserDefaults.standard.stringArray(forKey: "customLocalScanPaths") ?? []
         customLocalScanPaths.removeAll { $0 == path }
         UserDefaults.standard.set(customLocalScanPaths, forKey: "customLocalScanPaths")
         startMonitoringLocal()
