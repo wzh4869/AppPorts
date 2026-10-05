@@ -4,6 +4,58 @@ import Testing
 
 @Suite("Process command completion")
 struct ProcessCommandRunnerTests {
+    @Test("Deadline includes ignored termination and inherited pipes", arguments: [
+        "trap '' TERM; /bin/sleep 2", "(/bin/sleep 2; printf tail) & exit 7"
+    ])
+    func boundedDeadline(command: String) async throws {
+        let start = Date()
+        let result = try await ProcessCommandRunner().run(executable: "/bin/sh", arguments: ["-c", command], timeout: 0.1)
+        #expect(result.timedOut)
+        #expect(Date().timeIntervalSince(start) < 1.5)
+    }
+
+    @Test("Concurrent deadlines remain bounded while children retain pipe writers")
+    func concurrentDeadlines() async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for index in 0..<16 {
+                group.addTask {
+                    let command = index.isMultiple(of: 2)
+                        ? "trap '' TERM; /bin/sleep 2"
+                        : "(/bin/sleep 2; printf tail) & exit 7"
+                    let start = ProcessInfo.processInfo.systemUptime
+                    let result = try await ProcessCommandRunner().run(
+                        executable: "/bin/sh", arguments: ["-c", command], timeout: 0.1)
+                    #expect(result.timedOut)
+                    #expect(ProcessInfo.processInfo.systemUptime - start < 1.5)
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    @Test("An expired deadline does not launch the command")
+    func expiredDeadlineSkipsLaunch() async throws {
+        let marker = FileManager.default.temporaryDirectory.appendingPathComponent("process-deadline-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: marker) }
+        let result = try await ProcessCommandRunner().run(executable: "/bin/sh",
+            arguments: ["-c", "printf launched > \"$1\"", "runner-test", marker.path], timeout: 0)
+        #expect(result.timedOut)
+        #expect(!FileManager.default.fileExists(atPath: marker.path))
+    }
+
+    @Test("Cancellation interrupts a child that ignores termination")
+    func cancellationIsBounded() async throws {
+        let task = Task {
+            try await ProcessCommandRunner().run(executable: "/bin/sh",
+                arguments: ["-c", "trap '' TERM; /bin/sleep 2"], timeout: 10)
+        }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let start = ProcessInfo.processInfo.systemUptime
+        task.cancel()
+        await #expect(throws: CancellationError.self) { try await task.value }
+        #expect(ProcessInfo.processInfo.systemUptime - start < 1.5)
+    }
+
     @Test("Keeps stdout, stderr and the original exit status", arguments: [0, 23])
     func preservesOutputAndStatus(status: Int) async throws {
         let result = try await ProcessCommandRunner().run(

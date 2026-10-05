@@ -29,81 +29,95 @@ protocol ShellCommandRunning: Sendable {
 /// 用 Process 执行外部命令。超时后终止进程，避免 diskutil 挂死时整个操作卡住。
 struct ProcessCommandRunner: ShellCommandRunning {
     func run(executable: String, arguments: [String], timeout: TimeInterval) async throws -> ShellCommandResult {
-        try await withCheckedThrowingContinuation { continuation in
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: executable)
-            process.arguments = arguments
-            process.standardInput = FileHandle.nullDevice
-            let outputPipe = Pipe()
-            let errorPipe = Pipe()
-            process.standardOutput = outputPipe
-            process.standardError = errorPipe
-
-            let collector = OutputCollector()
-            let readers = DispatchGroup()
-            readers.enter()
-            DispatchQueue.global(qos: .utility).async {
-                collector.setStandardOutput(outputPipe.fileHandleForReading.readDataToEndOfFile())
-                readers.leave()
-            }
-            readers.enter()
-            DispatchQueue.global(qos: .utility).async {
-                collector.setStandardError(errorPipe.fileHandleForReading.readDataToEndOfFile())
-                readers.leave()
-            }
-
-            process.terminationHandler = { finished in
-                // 等两个管道读完再返回结果，但不阻塞系统的高优先级退出回调线程。
-                let status = finished.terminationStatus
-                readers.notify(queue: .global(qos: .utility)) {
-                    continuation.resume(returning: collector.result(status: status))
+        // Include dispatch queueing and process launch in the caller's time budget.
+        let deadline = ProcessInfo.processInfo.systemUptime + max(0, timeout)
+        let cancellation = CancellationState()
+        return try await withTaskCancellationHandler(operation: {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                DispatchQueue.global(qos: .utility).async {
+                    do { continuation.resume(returning: try Self.execute(executable: executable,
+                        arguments: arguments, deadline: deadline, cancellation: cancellation)) }
+                    catch { continuation.resume(throwing: error) }
                 }
             }
-
-            do {
-                try process.run()
-            } catch {
-                process.terminationHandler = nil
-                // 释放写端，让两个读取任务立即结束。
-                try? outputPipe.fileHandleForWriting.close()
-                try? errorPipe.fileHandleForWriting.close()
-                continuation.resume(throwing: error)
-                return
-            }
-
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + timeout) {
-                guard process.isRunning else { return }
-                collector.markTimedOut()
-                process.terminate()
-            }
-        }
+        }, onCancel: { cancellation.cancel() })
     }
 
-    private final class OutputCollector: @unchecked Sendable {
+    /// Nonblocking pipe reads let one deadline cover the child AND inherited pipes.
+    /// This worker never blocks Foundation's process termination callback queue.
+    private static func execute(executable: String, arguments: [String], deadline: TimeInterval,
+                                cancellation: CancellationState) throws -> ShellCommandResult {
+        if cancellation.isCancelled { throw CancellationError() }
+        guard ProcessInfo.processInfo.systemUptime < deadline else {
+            return ShellCommandResult(status: -1, standardOutput: Data(), standardError: Data(), timedOut: true)
+        }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
+        process.standardInput = FileHandle.nullDevice
+        let output = Pipe(), error = Pipe()
+        process.standardOutput = output
+        process.standardError = error
+        let handles = [output.fileHandleForReading, error.fileHandleForReading]
+        defer { handles.forEach { try? $0.close() } }
+        let fds = handles.map(\.fileDescriptor)
+        // A blocking read would bypass the deadline. Validate this before spawning a child.
+        for fd in fds {
+            let flags = fcntl(fd, F_GETFL)
+            guard flags >= 0, fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0 else {
+                throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+            }
+        }
+        try process.run()
+        try? output.fileHandleForWriting.close()
+        try? error.fileHandleForWriting.close()
+        var streams = [Data(), Data()]
+        var ended = [false, false]
+        var buffer = [UInt8](repeating: 0, count: 65_536)
+        var stoppingAt: TimeInterval?
+        var timedOut = false
+        while true {
+            // Bound each drain so an endlessly writing child cannot hide the deadline.
+            for index in fds.indices where !ended[index] {
+                for _ in 0..<16 {
+                    let count = Darwin.read(fds[index], &buffer, buffer.count)
+                    if count > 0 { streams[index].append(contentsOf: buffer.prefix(count)) }
+                    else if count == 0 { ended[index] = true; break }
+                    else if errno == EINTR { continue }
+                    else { break }
+                }
+            }
+            let now = ProcessInfo.processInfo.systemUptime
+            // Check the full budget even when a slow launch has already exited by this poll.
+            if stoppingAt == nil, now >= deadline || cancellation.isCancelled {
+                timedOut = now >= deadline
+                stoppingAt = now
+                if process.isRunning { process.terminate() }
+            }
+            if !process.isRunning && ended.allSatisfy({ $0 }) { break }
+            if let stoppingAt {
+                if !process.isRunning { break }
+                if now - stoppingAt >= 0.25 { _ = kill(process.processIdentifier, SIGKILL) }
+                if now - stoppingAt >= 1 { break }
+            }
+            var descriptors = fds.enumerated().map { index, fd in
+                pollfd(fd: ended[index] ? -1 : fd, events: Int16(POLLIN), revents: 0)
+            }
+            _ = poll(&descriptors, nfds_t(descriptors.count), 20)
+            // EOF pipes report immediately even while the child is still alive.
+            if ended.contains(true) { Thread.sleep(forTimeInterval: 0.005) }
+        }
+        if cancellation.isCancelled { throw CancellationError() }
+        return ShellCommandResult(status: process.isRunning ? -1 : process.terminationStatus,
+            standardOutput: streams[0], standardError: streams[1], timedOut: timedOut)
+    }
+
+    private final class CancellationState: @unchecked Sendable {
         private let lock = NSLock()
-        private var standardOutput = Data()
-        private var standardError = Data()
-        private var timedOut = false
-
-        func setStandardOutput(_ data: Data) {
-            lock.lock(); defer { lock.unlock() }
-            standardOutput = data
-        }
-
-        func setStandardError(_ data: Data) {
-            lock.lock(); defer { lock.unlock() }
-            standardError = data
-        }
-
-        func markTimedOut() {
-            lock.lock(); defer { lock.unlock() }
-            timedOut = true
-        }
-
-        func result(status: Int32) -> ShellCommandResult {
-            lock.lock(); defer { lock.unlock() }
-            return ShellCommandResult(status: status, standardOutput: standardOutput, standardError: standardError, timedOut: timedOut)
-        }
+        private var cancelled = false
+        var isCancelled: Bool { lock.lock(); defer { lock.unlock() }; return cancelled }
+        func cancel() { lock.lock(); defer { lock.unlock() }; cancelled = true }
     }
 }
 
