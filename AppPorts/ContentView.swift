@@ -270,7 +270,7 @@ struct ContentView: View {
     @State private var externalMonitor: FolderMonitor?
 
     // Monitor 防抖：合并两个 monitor 的扫描请求
-    private static let monitorRescanDebouncer = RescanDebouncer()
+    @State private var monitorRescanDebouncer = RescanDebouncer()
 
     // Track previous external drive URL for logging
     @State private var previousExternalDriveURL: URL?
@@ -373,6 +373,7 @@ struct ContentView: View {
             }
         }
         .onDisappear {
+            monitorRescanDebouncer.cancel()
             isVisible = false
             localScanState.invalidate()
             externalScanState.invalidate()
@@ -2752,7 +2753,7 @@ struct ContentView: View {
 
     /// 统一防抖：合并两个 monitor 的扫描请求，避免列表连续跳两下
     private func scheduleMonitorRescan(local: Bool) {
-        Self.monitorRescanDebouncer.schedule { [self] in
+        monitorRescanDebouncer.schedule { [self] in
             Task { @MainActor in
                 AppLogger.shared.logContext("Monitor 防抖触发扫描", details: [("trigger", local ? "local" : "external")], level: "TRACE")
                 self.scanBothAppsAtomic()
@@ -3052,9 +3053,13 @@ struct ContentView: View {
 }
 
 /// 统一防抖器：合并 FolderMonitor 的扫描请求，避免列表连续跳动
-private class RescanDebouncer {
+final class RescanDebouncer {
     private var work: DispatchWorkItem?
     private let queue = DispatchQueue(label: "com.shimoko.AppPorts.rescanDebounce")
+
+    func cancel() {
+        queue.async { self.work?.cancel(); self.work = nil }
+    }
 
     func schedule(action: @escaping () -> Void) {
         queue.async {
