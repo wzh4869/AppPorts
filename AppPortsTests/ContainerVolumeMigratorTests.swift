@@ -590,6 +590,72 @@ struct ContainerVolumeMigratorTests {
             sourceIdentity: DataPathIdentity(volumeUUID: record.volumeUUID), phase: .needsRecovery)
     }
 
+    @Test("A failed offline mount can be retried after reloading its durable intent")
+    func failedOfflineRestoreCanRetry() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "OfflineRetry")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.hideContentsOnUnmount()
+        defer { runner.stashedVolumeContents.forEach { try? FileManager.default.removeItem(at: $0) } }
+        // Materialize a fake volume so unmount/remount keeps its payload, just as APFS does.
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        try await workspace.makeMigrator(runner: runner).mount(record: record)
+        try Data("payload".utf8).write(to: source.appendingPathComponent("payload.txt"))
+        try await workspace.makeMigrator(runner: runner).unmount(record: record)
+        runner.failWhen(prefix: ["mount"])
+        await #expect(throws: (any Error).self) {
+            try await workspace.makeMigrator(runner: runner).restore(record: record, estimatedTotalBytes: 0, progressHandler: nil)
+        }
+        let pending = try #require(try workspace.store.transfers().first)
+        runner.clearFailure()
+        let cold = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("container-mounts.plist"))
+        _ = try await workspace.makeMigrator(runner: runner, storeOverride: cold)
+            .restore(record: record, estimatedTotalBytes: 0, progressHandler: nil)
+        let completed = try #require(try cold.transfers().first)
+        #expect(completed.operationID == pending.operationID)
+        #expect(completed.phase == .awaitingUserVerification)
+        #expect(try String(contentsOf: source.appendingPathComponent("payload.txt")) == "payload")
+    }
+
+    @Test("An already mounted recovery volume survives a cold restore retry")
+    func mountedOfflineRestoreCanRetry() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "MountedOfflineRetry")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.hideContentsOnUnmount()
+        defer { runner.stashedVolumeContents.forEach { try? FileManager.default.removeItem(at: $0) } }
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        try await workspace.makeMigrator(runner: runner).mount(record: record)
+        try Data("payload".utf8).write(to: source.appendingPathComponent("payload.txt"))
+        try await workspace.makeMigrator(runner: runner).unmount(record: record)
+        // The mount succeeds, but its ownership postcheck fails before source identity is saved.
+        let failing = workspace.makeMigrator(runner: runner,
+            mountFlags: { _ in UInt32(MNT_IGNORE_OWNERSHIP) })
+        await #expect(throws: (any Error).self) {
+            try await failing.restore(record: record, estimatedTotalBytes: 0, progressHandler: nil)
+        }
+        let pending = try #require(try workspace.store.transfers().first)
+        #expect(pending.isUnstartedMountRestore)
+        let recovery = URL(fileURLWithPath: try #require(pending.backupPath))
+        #expect(runner.isMounted(recovery))
+        #expect(try String(contentsOf: recovery.appendingPathComponent("payload.txt")) == "payload")
+        let mountCount = runner.commands(prefix: ["mount"]).count
+        let cold = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("container-mounts.plist"))
+        _ = try await workspace.makeMigrator(runner: runner, storeOverride: cold)
+            .restore(record: record, estimatedTotalBytes: 0, progressHandler: nil)
+        let completed = try #require(try cold.transfers().first)
+        #expect(completed.operationID == pending.operationID)
+        #expect(completed.phase == .awaitingUserVerification)
+        #expect(runner.commands(prefix: ["mount"]).count == mountCount)
+        #expect(try String(contentsOf: source.appendingPathComponent("payload.txt")) == "payload")
+    }
+
     @Test("An unstarted restore reuses its operation ID without discarding evidence")
     func restoreResumesUnstartedIntent() async throws {
         let workspace = try Workspace()

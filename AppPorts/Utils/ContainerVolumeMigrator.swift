@@ -529,7 +529,7 @@ actor ContainerVolumeMigrator {
                 && $0.priorOperationID == prior?.operationID
         }
         guard resumable.count <= 1 else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
-        if let pending = resumable.first { try validateUnstartedRestorePaths(pending, record: record) }
+        if let pending = resumable.first { try await validateUnstartedRestorePaths(pending, record: record) }
         var ownedIDs = Set(prior.map { [$0.operationID] } ?? [])
         if let pending = resumable.first { ownedIDs.insert(pending.operationID) }
         try safety.requireNoOverlap(at: mountPoint, ownedMount: record, ownedTransferIDs: ownedIDs)
@@ -598,7 +598,20 @@ actor ContainerVolumeMigrator {
                     try await safety.requireNoKnownWriters(at: current, bundleIdentifier: record.bundleIdentifier)
                 }
                 try fileManager.createDirectory(at: recovery.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try await mountVolume(record.volumeUUID, at: recovery, operationID: operationID, knownMountPoint: hint)
+                if transfer.recoveryMountPointIdentity == nil {
+                    // Creation must be exclusive; a pre-existing directory is not our intent.
+                    try fileManager.createDirectory(at: recovery, withIntermediateDirectories: false)
+                    transfer.recoveryMountPointIdentity = try DataPathIdentity.capture(recovery)
+                    try store.updateTransfer(transfer)
+                }
+                if isMountPoint(recovery) {
+                    // A prior attempt may have mounted successfully before its postcheck failed.
+                    // Inspect the retained volume directly; a new lease would inspect its payload.
+                    try await requireExpectedVolume(record.volumeUUID, at: recovery)
+                    try await safety.requireNoKnownWriters(at: recovery, bundleIdentifier: record.bundleIdentifier)
+                } else {
+                    try await mountVolume(record.volumeUUID, at: recovery, operationID: operationID, knownMountPoint: hint)
+                }
                 source = recovery
             }
             try requireOwners(at: source)
@@ -944,7 +957,7 @@ actor ContainerVolumeMigrator {
         return (DiskUtility.pathsMatch(current, mountPoint.path) ? .reportedByDiskUtil : .notMounted, info)
     }
 
-    private func validateUnstartedRestorePaths(_ transfer: DataTransferRecord, record: ContainerMountRecord) throws {
+    private func validateUnstartedRestorePaths(_ transfer: DataTransferRecord, record: ContainerMountRecord) async throws {
         let root = record.mountPointURL
         let staging = root.deletingLastPathComponent().appendingPathComponent(".appports-restore-staging-\(transfer.operationID.uuidString)")
         let recovery = stagingMountRootURL.appendingPathComponent("recovery-\(transfer.operationID.uuidString)")
@@ -953,10 +966,23 @@ actor ContainerVolumeMigrator {
               transfer.stagingPath == staging.path, transfer.backupPath == recovery.path else {
             throw DataOperationSafety.Failure.conflict(root.path)
         }
-        for path in [staging, recovery] {
-            var info = stat()
-            guard lstat(path.path, &info) != 0, errno == ENOENT else {
-                throw DataOperationSafety.Failure.conflict(path.path)
+        var info = stat()
+        guard lstat(staging.path, &info) != 0, errno == ENOENT else {
+            throw DataOperationSafety.Failure.conflict(staging.path)
+        }
+        if let expected = transfer.recoveryMountPointIdentity {
+            if isMountPoint(recovery) {
+                try await requireExpectedVolume(record.volumeUUID, at: recovery)
+            } else {
+                guard lstat(recovery.path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR,
+                      try DataPathIdentity.capture(recovery).matchesFilesystemObject(expected) else {
+                    throw DataOperationSafety.Failure.conflict(recovery.path)
+                }
+                // mountVolume's descriptor-backed lease checks emptiness before any mount.
+            }
+        } else {
+            guard lstat(recovery.path, &info) != 0, errno == ENOENT else {
+                throw DataOperationSafety.Failure.conflict(recovery.path)
             }
         }
     }

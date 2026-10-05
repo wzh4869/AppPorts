@@ -498,6 +498,8 @@ final class ContainerMountStore: @unchecked Sendable {
               old.destinationIdentity == nil || old.destinationIdentity == transfer.destinationIdentity,
               old.backupIdentity == nil || old.backupIdentity == transfer.backupIdentity,
               old.baseline == nil || old.baseline == transfer.baseline,
+              old.recoveryMountPointIdentity == transfer.recoveryMountPointIdentity
+                || (old.isUnstartedMountRestore && transfer.isUnstartedMountRestore && old.recoveryMountPointIdentity == nil),
               old.legacyRootOwnership == transfer.legacyRootOwnership
                 || (old.isUnstartedMountRestore && transfer.isUnstartedMountRestore && old.legacyRootOwnership == nil),
               old.legacyMountFlags == transfer.legacyMountFlags

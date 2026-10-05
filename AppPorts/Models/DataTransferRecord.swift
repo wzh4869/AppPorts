@@ -86,6 +86,8 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
     var legacyRootOwnership: TreeCopySnapshot.Ownership? = nil
     /// Original noowners flags; absent if the source already uses owners or is restored offline.
     var legacyMountFlags: UInt32? = nil
+    /// Identity of our private empty mount point, recorded before the mount attempt.
+    var recoveryMountPointIdentity: DataPathIdentity? = nil
     var recoverableReason: String?
 
     init(operationID: UUID = UUID(), mode: Mode, direction: Direction, sourceID: String? = nil,
