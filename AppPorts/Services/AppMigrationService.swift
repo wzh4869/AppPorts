@@ -1216,9 +1216,36 @@ struct AppMigrationService {
         }
     }
 
+    private func applicationMetadata(at url: URL) -> [String: Any]? {
+        guard case .success(let identity) = AppIdentityResolver.resolve(at: url) else { return nil }
+        for path in ["Contents/Info.plist", "Info.plist"] {
+            if let data = try? Data(contentsOf: identity.identityBundleURL.appendingPathComponent(path)),
+               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
+                return plist
+            }
+        }
+        return nil
+    }
+
     private func externalTargetReplacementReason(for appToMove: AppItem, destinationURL: URL) -> String? {
         if appToMove.status == AppStatus.pendingMoveOut {
-            return "pending_move_out"
+            // A scanner status is not authority to delete the name-based destination.
+            guard let source = applicationMetadata(at: appToMove.path),
+                  let target = applicationMetadata(at: destinationURL),
+                  let sourceID = source["CFBundleIdentifier"] as? String,
+                  let targetID = target["CFBundleIdentifier"] as? String,
+                  !sourceID.isEmpty, sourceID == targetID else { return nil }
+            for key in ["CFBundleShortVersionString", "CFBundleVersion"] {
+                guard let newer = source[key] as? String, let older = target[key] as? String,
+                      !newer.isEmpty, !older.isEmpty,
+                      newer.allSatisfy({ $0.isNumber || $0 == "." }),
+                      older.allSatisfy({ $0.isNumber || $0 == "." }) else { return nil }
+                let comparison = newer.compare(older, options: .numeric)
+                if comparison != .orderedSame {
+                    return comparison == .orderedDescending ? "pending_move_out" : nil
+                }
+            }
+            return nil
         }
 
         guard let portalKind = localPortalKind(at: destinationURL) else {

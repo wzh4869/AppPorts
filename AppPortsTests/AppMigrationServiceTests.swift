@@ -339,6 +339,7 @@ final class AppMigrationServiceTests: XCTestCase {
         let externalAppURL = workspace.externalRootURL.appendingPathComponent("Replace.app")
         try createAppBundle(at: localAppURL, payload: "new-local")
         try createAppBundle(at: externalAppURL, payload: "old-external")
+        try updateReviewPlist(localAppURL, values: ["CFBundleShortVersionString": "2.0"])
 
         try await AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).moveAndLink(
             appToMove: AppItem(name: "Replace.app", path: localAppURL, status: AppStatus.pendingMoveOut),
@@ -967,6 +968,23 @@ final class AppMigrationServiceTests: XCTestCase {
         XCTAssertFalse(fileManager.fileExists(atPath: externalAppURL.path))
     }
 
+    func testPendingMoveOutRejectsDifferentDestinationIdentity() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let local = w.localAppsURL.appendingPathComponent("Foo.app")
+        let target = w.externalRootURL.appendingPathComponent("Foo.app")
+        try createAppBundle(at: local, payload: "new-local")
+        try createAppBundle(at: target, payload: "unrelated-original")
+        try updateReviewPlist(target, values: ["CFBundleIdentifier": "com.other.app"])
+        do {
+            try await AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).moveAndLink(
+                appToMove: AppItem(name: "Foo.app", path: local, status: AppStatus.pendingMoveOut),
+                destinationURL: target, isRunning: false, progressHandler: nil)
+            XCTFail("A display status must not authorize replacing a different application")
+        } catch {}
+        XCTAssertEqual(try String(contentsOf: target.appendingPathComponent("Contents/Resources/payload.txt")), "unrelated-original")
+    }
+
     func testRestoreRejectsRunningAppBeforeChangingEitherCopy() async throws {
         let w = try makeWorkspace()
         defer { cleanupWorkspace(w.rootURL) }
@@ -1003,6 +1021,13 @@ final class AppMigrationServiceTests: XCTestCase {
         for app in [external, local] {
             XCTAssertEqual(try String(contentsOf: app.appendingPathComponent("Contents/Resources/payload.txt")), "live-app")
         }
+    }
+
+    private func updateReviewPlist(_ app: URL, values: [String: String]) throws {
+        let url = app.appendingPathComponent("Contents/Info.plist")
+        var plist = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: url), format: nil) as? [String: Any])
+        for (key, value) in values { plist[key] = value }
+        try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: url)
     }
 
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {
