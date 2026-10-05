@@ -263,6 +263,8 @@ final class AppMigrationServiceTests: XCTestCase {
         )
 
         try assertStubPortal(localAppURL, pointsTo: externalAppURL)
+        let info = localAppURL.appendingPathComponent("Contents/Info.plist")
+        XCTAssertTrue(fileManager.fileExists(atPath: info.path), "A successful iOS portal must have metadata")
     }
 
     func testDeleteLinkRejectsRealLocalAppBundle() throws {

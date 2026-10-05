@@ -1658,10 +1658,15 @@ struct AppMigrationService {
 
         // 4. 从 iTunesMetadata.plist 生成 Info.plist（位于 Wrapper/ 目录内）
         let iTunesPlist = wrapperDir.appendingPathComponent("iTunesMetadata.plist")
-        if let metadata = NSDictionary(contentsOf: iTunesPlist) as? [String: Any] {
-            let bundleID = metadata["softwareVersionBundleId"] as? String ?? "com.appports.stub"
+        let metadata = (NSDictionary(contentsOf: iTunesPlist) as? [String: Any]) ?? [:]
+        let identityMetadata = applicationMetadata(at: externalURL)
+        guard let bundleID = (identityMetadata?["CFBundleIdentifier"] as? String)
+                ?? (metadata["softwareVersionBundleId"] as? String), !bundleID.isEmpty else {
+            throw AppMoverError.generalError(CocoaError(.fileReadCorruptFile))
+        }
+        do {
             let appName = metadata["title"] as? String ?? localURL.deletingPathExtension().lastPathComponent
-            let version = metadata["bundleShortVersionString"] as? String ?? "1.0"
+            let version = identityMetadata?["CFBundleShortVersionString"] as? String ?? metadata["bundleShortVersionString"] as? String ?? "1.0"
 
             let plist: [String: Any] = [
                 "CFBundleExecutable": "launcher",
@@ -1675,9 +1680,8 @@ struct AppMigrationService {
                 "CFBundleIconFile": "AppIcon",
                 "LSMinimumSystemVersion": "12.0"
             ]
-            if let newData = try? PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0) {
-                try newData.write(to: localContents.appendingPathComponent("Info.plist"))
-            }
+            let newData = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+            try newData.write(to: localContents.appendingPathComponent("Info.plist"))
         }
 
         // 5. 写入 PkgInfo
