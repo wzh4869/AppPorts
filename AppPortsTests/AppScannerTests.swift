@@ -110,6 +110,123 @@ final class AppScannerTests: XCTestCase {
         XCTAssertEqual(item.displayURL.standardizedFileURL, nestedAppURL.standardizedFileURL)
     }
 
+    func testFilePathScanKeepsSameIdentityCopiesForExclusionInspection() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let root = workspace.rootURL.resolvingSymlinksInPath()
+        let externalRoot = workspace.externalRootURL.resolvingSymlinksInPath()
+        let localDirectory = workspace.localAppsURL.resolvingSymlinksInPath()
+        let original = externalRoot.appendingPathComponent("Example.app")
+        let excluded = AppSearchExclusionService.library(in: externalRoot).appendingPathComponent("Example.app")
+        let originalPath = original.standardizedFileURL.path
+        let excludedPath = excluded.standardizedFileURL.path
+        let local = localDirectory.appendingPathComponent("Example.app")
+        let identifier = "org.appports.scanner.duplicate"
+        try createAppBundle(at: original, payloadSize: 16, bundleID: identifier, version: "1")
+        try createAppBundle(at: excluded, payloadSize: 32, bundleID: identifier, version: "2")
+        try createScannerStub(at: local, pointingTo: excluded, bundleID: identifier)
+        let before = try scannerFixtureSnapshot(at: root)
+        let recordsURL = root.appendingPathComponent("state/records.json")
+        let store = AppSearchRecordStore(fileURL: recordsURL)
+        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("signature-backups"), adHocProbe: { _ in false })
+
+        let defaultItems = await scanner.scanExternalApps(at: externalRoot, localAppsDir: localDirectory)
+        XCTAssertEqual(defaultItems.map { $0.path.standardizedFileURL.path }, [excludedPath])
+        XCTAssertEqual(defaultItems.first?.status, AppStatus.linked)
+
+        let copies = await scanner.scanExternalApps(at: externalRoot, localAppsDir: localDirectory, grouping: .filePath)
+        XCTAssertEqual(copies.count, 2)
+        XCTAssertEqual(Set(copies.map { $0.path.standardizedFileURL.path }), Set([originalPath, excludedPath]))
+        let originalItem = try XCTUnwrap(copies.first { $0.path.standardizedFileURL.path == originalPath })
+        let excludedItem = try XCTUnwrap(copies.first { $0.path.standardizedFileURL.path == excludedPath })
+        let localEntries = AppPortalMaintenance.entries(at: local)
+        XCTAssertEqual(localEntries.count, 1)
+        var inspectedDockTargets: [String] = []
+        let report = AppSearchExclusionService.inspect(
+            apps: copies, externalRoot: externalRoot, localEntries: localEntries, store: store,
+            dockNeedsRedirect: { source, target in
+                // The root path is still occupied; only the excluded copy's own pins may be checked.
+                XCTAssertEqual(source.standardizedFileURL.path, excludedPath)
+                XCTAssertEqual(target.standardizedFileURL.path, excludedPath)
+                inspectedDockTargets.append(target.standardizedFileURL.path)
+                return false
+            }
+        )
+
+        XCTAssertNil(report.operationError)
+        XCTAssertEqual(report.entries.count, 2)
+        XCTAssertEqual(report.entries.first { $0.id == originalItem.id }?.outcome, .failed)
+        XCTAssertEqual(report.entries.first { $0.id == excludedItem.id }?.outcome, .completed)
+        XCTAssertEqual(inspectedDockTargets, [excludedPath])
+        XCTAssertTrue(try store.records().isEmpty)
+        XCTAssertFalse(fileManager.fileExists(atPath: recordsURL.path))
+        XCTAssertEqual(try scannerFixtureSnapshot(at: root), before)
+    }
+
+    func testFilePathScanRetainsDifferentNamesWithoutCreatingLibraryOrRecords() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let root = workspace.rootURL.resolvingSymlinksInPath()
+        let externalRoot = workspace.externalRootURL.resolvingSymlinksInPath()
+        let first = externalRoot.appendingPathComponent("Example.app")
+        let second = externalRoot.appendingPathComponent("Example Preview.app")
+        for app in [first, second] {
+            try createAppBundle(at: app, payloadSize: 16, bundleID: "org.appports.scanner.duplicate")
+        }
+        let before = try scannerFixtureSnapshot(at: root)
+        let recordsURL = root.appendingPathComponent("state/records.json")
+        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("signature-backups"), adHocProbe: { _ in false })
+        let copies = await scanner.scanExternalApps(
+            at: externalRoot, localAppsDir: workspace.localAppsURL.resolvingSymlinksInPath(), grouping: .filePath
+        )
+        let report = AppSearchExclusionService.inspect(
+            apps: copies, externalRoot: externalRoot, store: AppSearchRecordStore(fileURL: recordsURL),
+            dockNeedsRedirect: { _, _ in
+                XCTFail("Pending copies must not inspect or update Dock")
+                return false
+            }
+        )
+
+        XCTAssertEqual(copies.count, 2)
+        XCTAssertEqual(Set(copies.map { $0.path.standardizedFileURL.path }), Set([first.path, second.path]))
+        XCTAssertNil(report.operationError)
+        XCTAssertEqual(report.entries.map(\.outcome), [.pending, .pending])
+        XCTAssertFalse(fileManager.fileExists(atPath: AppSearchExclusionService.library(in: externalRoot).path))
+        XCTAssertFalse(fileManager.fileExists(atPath: recordsURL.path))
+        XCTAssertEqual(try scannerFixtureSnapshot(at: root), before)
+    }
+
+    @MainActor
+    func testFilePathScansMergeRepeatedLocalDiscoveriesOncePerStoredPath() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let root = workspace.rootURL.resolvingSymlinksInPath()
+        let externalRoot = workspace.externalRootURL.resolvingSymlinksInPath()
+        let firstLocal = workspace.localAppsURL.resolvingSymlinksInPath()
+        let secondLocal = root.appendingPathComponent("CustomApplications")
+        let original = externalRoot.appendingPathComponent("Example.app")
+        let excluded = AppSearchExclusionService.library(in: externalRoot).appendingPathComponent("Example.app")
+        let identifier = "org.appports.scanner.duplicate"
+        for app in [original, excluded] { try createAppBundle(at: app, payloadSize: 16, bundleID: identifier) }
+        try createScannerStub(at: firstLocal.appendingPathComponent("Original Shortcut.app"), pointingTo: original, bundleID: identifier)
+        try createScannerStub(at: secondLocal.appendingPathComponent("Excluded Shortcut.app"), pointingTo: excluded, bundleID: identifier)
+        let before = try scannerFixtureSnapshot(at: root)
+        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("signature-backups"), adHocProbe: { _ in false })
+        let view = ContentView()
+        var merged: [AppItem] = []
+
+        for localDirectory in [firstLocal, secondLocal, firstLocal, secondLocal] {
+            let copies = await scanner.scanExternalApps(at: externalRoot, localAppsDir: localDirectory, grouping: .filePath)
+            XCTAssertEqual(copies.count, 2, "Direct discovery and a local stub must collapse only their shared path")
+            merged = view.mergeExternalApps(merged, with: copies)
+        }
+
+        XCTAssertEqual(merged.count, 2)
+        XCTAssertEqual(Set(merged.map { $0.path.standardizedFileURL.path }), Set([original.path, excluded.path]))
+        XCTAssertTrue(merged.allSatisfy { $0.status == AppStatus.linked })
+        XCTAssertEqual(try scannerFixtureSnapshot(at: root), before)
+    }
+
     func testLocalScanDetectsLinkedSingleAppContainerSymlink() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
@@ -336,6 +453,37 @@ final class AppScannerTests: XCTestCase {
         for child in children {
             try fileManager.createSymbolicLink(at: local.appendingPathComponent(child), withDestinationURL: external.appendingPathComponent(child))
         }
+    }
+
+    private func createScannerStub(at local: URL, pointingTo target: URL, bundleID: String) throws {
+        let contents = local.appendingPathComponent("Contents")
+        let resources = contents.appendingPathComponent("Resources")
+        let macos = contents.appendingPathComponent("MacOS")
+        try fileManager.createDirectory(at: resources, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: macos, withIntermediateDirectories: true)
+        try PropertyListSerialization.data(fromPropertyList: [
+            "CFBundleIdentifier": bundleID + ".appports.stub", "CFBundleExecutable": "launcher",
+            "AppPortsTargetBundleIdentifier": bundleID
+        ], format: .xml, options: 0).write(to: contents.appendingPathComponent("Info.plist"))
+        try Data("test launcher".utf8).write(to: macos.appendingPathComponent("launcher"))
+        try target.path.write(to: resources.appendingPathComponent("real_app_path.txt"), atomically: true, encoding: .utf8)
+    }
+
+    private struct ScannerFixtureFile: Equatable {
+        let identity: AppSearchExclusionService.FileIdentity
+        let contents: Data?
+    }
+
+    private func scannerFixtureSnapshot(at root: URL) throws -> [String: ScannerFixtureFile] {
+        let enumerator = try XCTUnwrap(fileManager.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey]))
+        let urls = [root] + enumerator.allObjects.compactMap { $0 as? URL }
+        var result: [String: ScannerFixtureFile] = [:]
+        for url in urls {
+            let identity = try AppSearchExclusionService.FileIdentity.read(url)
+            let isDirectory = try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true
+            result[url.path] = ScannerFixtureFile(identity: identity, contents: isDirectory ? nil : try Data(contentsOf: url))
+        }
+        return result
     }
 
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {

@@ -1694,7 +1694,9 @@ struct ContentView: View {
         var apps: [AppItem] = []
         var entries: [AppPortalMaintenance.Entry] = []
         for directory in localDirectories {
-            apps = mergeExternalApps(apps, with: await scanner.scanExternalApps(at: root, localAppsDir: directory))
+            apps = mergeExternalApps(apps, with: await scanner.scanExternalApps(
+                at: root, localAppsDir: directory, grouping: .filePath
+            ))
             let children = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil,
                                                                          options: .skipsHiddenFiles)) ?? []
             entries += children.flatMap { AppPortalMaintenance.entries(at: $0) }

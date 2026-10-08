@@ -86,6 +86,13 @@ actor AppScanner {
         /// 保留本地入口结构，仅统计 symlink 或 wrapper 自身占用。
         case localPortal
     }
+
+    enum ExternalGrouping: Sendable {
+        /// The main list shows one preferred candidate for each application identity.
+        case applicationIdentity
+        /// Storage checks must see each copy, including copies with the same bundle identifier.
+        case filePath
+    }
     
     // MARK: - 公共 API
     
@@ -908,11 +915,12 @@ actor AppScanner {
     /// - Parameters:
     ///   - dir: 外部存储目录 URL
     ///   - localAppsDir: 本地应用目录 URL（通常是 /Applications）
+    ///   - grouping: 按应用身份或实际存储路径合并重复发现的候选项
     ///
     /// - Returns: 应用列表，按链接状态和名称排序
     ///
     /// - Note: 通过检查本地是否存在同名符号链接来判断应用是否已链接
-    func scanExternalApps(at dir: URL, localAppsDir: URL) -> [AppItem] {
+    func scanExternalApps(at dir: URL, localAppsDir: URL, grouping: ExternalGrouping = .applicationIdentity) -> [AppItem] {
         let scanID = AppLogger.shared.makeOperationID(prefix: "app-scanner-external")
         AppLogger.shared.logContext(
             "AppScanner 开始扫描外部应用",
@@ -1144,7 +1152,7 @@ actor AppScanner {
             }
         }
 
-        let sortedApps = sortApps(deduplicate(candidates))
+        let sortedApps = sortApps(deduplicate(candidates, grouping: grouping))
         AppLogger.shared.logContext(
             "AppScanner 完成外部应用扫描",
             details: [
@@ -1187,20 +1195,25 @@ actor AppScanner {
         )
     }
 
-    private func deduplicate(_ candidates: [ScanCandidate]) -> [AppItem] {
+    private func deduplicate(_ candidates: [ScanCandidate], grouping: ExternalGrouping = .applicationIdentity) -> [AppItem] {
         var selectedByKey: [String: ScanCandidate] = [:]
         var orderedKeys: [String] = []
 
         for candidate in candidates {
-            if let existing = selectedByKey[candidate.dedupeKey] {
+            let key: String
+            switch grouping {
+            case .applicationIdentity: key = candidate.dedupeKey
+            case .filePath: key = candidate.app.path.standardizedFileURL.path
+            }
+            if let existing = selectedByKey[key] {
                 if shouldReplace(existing: existing, with: candidate) {
-                    selectedByKey[candidate.dedupeKey] = candidate
+                    selectedByKey[key] = candidate
                 }
                 continue
             }
 
-            selectedByKey[candidate.dedupeKey] = candidate
-            orderedKeys.append(candidate.dedupeKey)
+            selectedByKey[key] = candidate
+            orderedKeys.append(key)
         }
 
         return orderedKeys.compactMap { selectedByKey[$0]?.app }
