@@ -341,6 +341,89 @@ struct ContainerVolumeMigratorTests {
         #expect(runner.commands(prefix: ["-u"]).isEmpty)
     }
 
+    @Test("A cold remount recovers an unstarted restore without discarding its history", arguments: [false, true])
+    func remountAfterUnstartedRestore(intervention: Bool) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Interrupted")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let pending = unstartedRestore(workspace, record)
+        try seedUnstartedRestore(pending, store: workspace.store)
+        if intervention { try workspace.store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: "Old overlap failure") }
+        let saved = try workspace.store.transfers()
+        let cold = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("container-mounts.plist"))
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let outcomes = await workspace.makeMigrator(runner: runner, storeOverride: cold).remountAvailableRecords()
+        #expect(outcomes.map(\.state) == [.mounted])
+        #expect(runner.isMounted(source))
+        #expect(try cold.transfers() == saved)
+        #expect(try cold.remountIntervention(forVolumeUUID: record.volumeUUID) == nil)
+    }
+
+    @Test("A mounted-volume intervention is never cleared by an unstarted restore")
+    func remountPreservesMountedIntervention() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Conflict")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        try seedUnstartedRestore(unstartedRestore(workspace, record), store: workspace.store)
+        try workspace.store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: "Underlying directory changed during mount")
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.markVolumeMounted(record.volumeUUID, at: source.path)
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        #expect(outcomes.map(\.state) == [.requiresIntervention("Underlying directory changed during mount")])
+        #expect(try workspace.store.remountIntervention(forVolumeUUID: record.volumeUUID) != nil)
+        #expect(runner.commands(prefix: ["unmount"]).isEmpty)
+    }
+
+    @Test("Remount rejects restore intents that have saved identity or nonstandard paths", arguments: ["identity", "path"])
+    func remountRefusesAdvancedRestore(kind: String) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Interrupted")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        var pending = unstartedRestore(workspace, record)
+        if kind == "identity" { pending.recoveryMountPointIdentity = try DataPathIdentity.capture(workspace.rootURL) }
+        if kind == "path" { pending.stagingPath = workspace.rootURL.appendingPathComponent("unexpected-staging").path }
+        try seedUnstartedRestore(pending, store: workspace.store)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let saved = try workspace.store.transfers()
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        guard case .requiresIntervention = outcomes.first?.state else { Issue.record("Must not relax advanced restore intent"); return }
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(try workspace.store.transfers() == saved)
+    }
+
+    @Test("Automatic recovery preserves conflicting restore artifacts", arguments: ["staging", "recovery", "symlink", "local"])
+    func remountRefusesRestoreArtifacts(kind: String) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Interrupted")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let pending = unstartedRestore(workspace, record)
+        try seedUnstartedRestore(pending, store: workspace.store)
+        try workspace.store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: "Old overlap failure")
+        let path = kind == "local" ? source.appendingPathComponent("new-local-data").path :
+            (kind == "recovery" ? pending.backupPath! : pending.stagingPath!)
+        try FileManager.default.createDirectory(at: URL(fileURLWithPath: path).deletingLastPathComponent(), withIntermediateDirectories: true)
+        if kind == "symlink" { try FileManager.default.createSymbolicLink(atPath: path, withDestinationPath: "absent-target") }
+        else { try Data("keep".utf8).write(to: URL(fileURLWithPath: path)) }
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let saved = try workspace.store.transfers()
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        guard case .requiresIntervention = outcomes.first?.state else { Issue.record("Must keep conflicting data blocked"); return }
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(try workspace.store.transfers() == saved)
+        if kind != "symlink" { #expect(try Data(contentsOf: URL(fileURLWithPath: path)) == Data("keep".utf8)) }
+    }
+
     @Test("Verified older migration keeps its owners policy after transfer cleanup and stale writes")
     func ownershipSurvivesTransferCleanup() async throws {
         let workspace = try Workspace()
