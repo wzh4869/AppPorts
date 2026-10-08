@@ -305,7 +305,7 @@ struct DiskUtility: Sendable {
     }
 
     func mount(volume: String, at mountPoint: URL, requireOwnership: Bool = false) async throws {
-        let options = requireOwnership ? ["-mountOptions", "owners"] : []
+        let options = ["-mountOptions", requireOwnership ? "owners" : "noowners"]
         _ = try await run(["mount", "nobrowse", "-mountPoint", mountPoint.path] + options + [volume])
     }
 
