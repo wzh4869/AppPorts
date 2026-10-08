@@ -130,6 +130,25 @@ final class DockShortcutService: @unchecked Sendable {
         self.reload = reload
     }
 
+    /// Inspects existing pins without creating bookmarks, saving preferences, or reloading Dock.
+    func needsRedirect(from sourceRootURL: URL, to destinationRootURL: URL, requiringBundleIdentity: Bool = true) throws -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        let source = try LocalPath(sourceRootURL)
+        let destination = try LocalPath(destinationRootURL)
+        let snapshot = try readSnapshot()
+        let candidates = try matchingTiles(in: snapshot, source: source, destination: destination)
+        var needsUpdate = false
+        for candidate in candidates {
+            let data = snapshot[candidate.index]["tile-data"] as! [String: Any]
+            let target = candidate.destination.url
+            let identifier = try validatedIdentifier(for: data, at: target, requiringBundleIdentity: requiringBundleIdentity)
+            // Inspect every candidate so an earlier incomplete pin cannot hide an identity conflict.
+            if !isCurrent(data, at: target, identifier: identifier) { needsUpdate = true }
+        }
+        return needsUpdate
+    }
+
     @discardableResult
     func redirectShortcuts(from sourceRootURL: URL, to destinationRootURL: URL, requiringBundleIdentity: Bool = false) throws -> Int {
         do {

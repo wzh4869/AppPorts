@@ -4,6 +4,132 @@ import Testing
 
 @Suite("Existing Dock shortcut repair")
 struct DockShortcutServiceTests {
+    @Test("Inspection reports old-path pins without mutating even managed preferences", arguments: [false, true])
+    func inspectsOldPathWithoutEffects(managed: Bool) throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.url("Local/Pages.app")
+        let target = try fixture.makeApp("External/Pages.app")
+        let original = [tile(url: source), tile(url: source, identifier: "com.appports.tests.target", guid: 2)]
+        let store = MemoryStore(original)
+        store.managed = managed
+        let effects = Effects()
+
+        #expect(try makeInspectionService(store, effects).needsRedirect(from: source, to: target))
+        #expect((try #require(store.tiles) as NSArray).isEqual(original as NSArray))
+        #expect(store.writes == 0)
+        #expect(effects.bookmarkCreations == 0)
+        #expect(effects.reloads == 0)
+    }
+
+    enum ExistingPinState: CaseIterable { case complete, missingBookmark, invalidBookmark, unrelatedBookmark, stubIdentifier, legacyURL }
+
+    @Test("Inspection reports only destination pins that the same repair call can update", arguments: ExistingPinState.allCases)
+    func inspectsDestinationPin(state: ExistingPinState) throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.url("Local/Pages.app")
+        let target = try fixture.makeApp("External/Pages.app")
+        var entry = state == .legacyURL ? legacyTile(url: target) : tile(url: target)
+        var data = entry["tile-data"] as! [String: Any]
+        data["bundle-identifier"] = "com.appports.tests.target"
+        data["book"] = try DockShortcutService.Bookmarks.fileSystem.create(target)
+        switch state {
+        case .complete, .legacyURL: break
+        case .missingBookmark: data.removeValue(forKey: "book")
+        case .invalidBookmark: data["book"] = Data("invalid bookmark".utf8)
+        case .unrelatedBookmark:
+            let other = try fixture.makeApp("Other/Pages.app")
+            data["book"] = try DockShortcutService.Bookmarks.fileSystem.create(other)
+        case .stubIdentifier: data["bundle-identifier"] = "com.appports.tests.target.appports.stub"
+        }
+        entry["tile-data"] = data
+        let store = MemoryStore([entry])
+        let effects = Effects()
+        let service = makeInspectionService(store, effects)
+
+        #expect(try service.needsRedirect(from: source, to: target) == (state == .stubIdentifier))
+        // The caller uses this form when the former source path is occupied by another app.
+        #expect(try service.needsRedirect(from: target, to: target) == (state != .complete))
+        #expect(equal(try #require(store.tiles?.first), entry))
+        #expect(store.writes == 0)
+        #expect(effects.bookmarkCreations == 0)
+        #expect(effects.reloads == 0)
+
+        let repairStore = MemoryStore([entry])
+        #expect(try makeService(repairStore, Effects()).redirectShortcuts(
+            from: source, to: target, requiringBundleIdentity: true
+        ) == (state == .stubIdentifier ? 1 : 0))
+        #expect(try !makeInspectionService(repairStore, Effects()).needsRedirect(from: source, to: target))
+    }
+
+    @Test("Inspection never considers unrelated same-name pins or nested helper apps", arguments: [false, true])
+    func inspectionIgnoresUnrelatedPins(absentList: Bool) throws {
+        let source = URL(fileURLWithPath: "/Applications/Pages.app")
+        let store = MemoryStore(absentList ? nil : [
+            tile(url: URL(fileURLWithPath: "/Elsewhere/Pages.app")),
+            tile(url: source.appendingPathComponent("Contents/Helper.app"), guid: 2)
+        ])
+        let effects = Effects()
+        let service = makeInspectionService(store, effects, identifier: { _ in
+            effects.inspections += 1
+            throw DockShortcutService.ShortcutError.destinationUnavailable
+        })
+
+        #expect(try !service.needsRedirect(from: source, to: URL(fileURLWithPath: "/Missing/Pages.app")))
+        #expect(effects.inspections == 0)
+        #expect(store.writes == 0)
+        #expect(effects.bookmarkCreations == 0)
+        #expect(effects.reloads == 0)
+    }
+
+    @Test("Inspection requires matching bundle identities by default, including after a pending pin", arguments: [false, true])
+    func inspectionValidatesEveryIdentity(missingIdentity: Bool) throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.url("Local/Pages.app")
+        let target = try fixture.makeApp("External/Pages.app")
+        var conflicting = tile(
+            url: missingIdentity ? source : target,
+            identifier: "com.other.pages.appports.stub", guid: 2
+        )
+        if missingIdentity {
+            var data = conflicting["tile-data"] as! [String: Any]
+            data.removeValue(forKey: "bundle-identifier")
+            conflicting["tile-data"] = data
+        }
+        let original = [tile(url: source), conflicting]
+        let store = MemoryStore(original)
+        let effects = Effects()
+        let service = makeInspectionService(store, effects)
+
+        #expect(throws: DockShortcutService.ShortcutError.invalidBundleIdentifier) {
+            try service.needsRedirect(from: source, to: target)
+        }
+        #expect(try service.needsRedirect(from: source, to: target, requiringBundleIdentity: false))
+        #expect((try #require(store.tiles) as NSArray).isEqual(original as NSArray))
+        #expect(store.writes == 0)
+        #expect(effects.bookmarkCreations == 0)
+        #expect(effects.reloads == 0)
+    }
+
+    @Test("Inspection propagates unavailable preferences without side effects", arguments: [false, true])
+    func inspectionPropagatesPreferenceErrors(malformed: Bool) throws {
+        let source = URL(fileURLWithPath: "/Applications/Pages.app")
+        let store = MemoryStore([tile(url: source)])
+        store.readFailure = !malformed
+        if malformed { store.preferences["persistent-apps"] = ["invalid": true] }
+        let effects = Effects()
+        let service = makeInspectionService(store, effects)
+
+        #expect(throws: malformed ? DockShortcutService.ShortcutError.malformedPreferences : .preferencesReadFailed) {
+            try service.needsRedirect(from: source, to: URL(fileURLWithPath: "/Missing/Pages.app"))
+        }
+        #expect(store.writes == 0)
+        #expect(effects.bookmarkCreations == 0)
+        #expect(effects.reloads == 0)
+    }
+
     @Test("Pages switches from its local stub to the real application without changing tile identity")
     func pagesPreservesTileIdentityAndUnrelatedFields() throws {
         let fixture = try Fixture()
@@ -590,6 +716,20 @@ struct DockShortcutServiceTests {
         DockShortcutService(store: store.adapter, applicationIdentifier: identifier, reload: { effects.reloads += 1 })
     }
 
+    private func makeInspectionService(
+        _ store: MemoryStore, _ effects: Effects,
+        identifier: ((URL) throws -> String)? = nil
+    ) -> DockShortcutService {
+        let bookmarks = DockShortcutService.Bookmarks(create: { _ in
+            effects.bookmarkCreations += 1
+            throw DockShortcutService.ShortcutError.bookmarkMismatch
+        }, resolve: DockShortcutService.Bookmarks.fileSystem.resolve)
+        return DockShortcutService(
+            store: store.adapter, bookmarks: bookmarks, applicationIdentifier: identifier,
+            reload: { effects.reloads += 1 }
+        )
+    }
+
     private func savedURL(_ store: MemoryStore, index: Int = 0) throws -> URL {
         let data = try #require(store.tiles?[index]["tile-data"] as? [String: Any])
         let file = try #require(data["file-data"] as? [String: Any])
@@ -603,6 +743,7 @@ struct DockShortcutServiceTests {
 
     private final class Effects {
         var inspections = 0
+        var bookmarkCreations = 0
         var reloads = 0
     }
 
