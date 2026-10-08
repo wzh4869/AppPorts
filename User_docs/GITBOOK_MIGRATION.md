@@ -2,6 +2,8 @@
 
 迁移目标是现有 [AppPorts Docs](https://app.gitbook.com/o/EVCRCIIkGN9ucEMGTbom/sites/site_02JAH)。站点 Git Sync 已连接 `wzh4869/AppPorts` 的 `main` 分支，Project directory 为 `./User_docs`；`gitbook-docs.yaml` 将八种语言映射到 `gitbook/` 下各目录。
 
+2026 年 10 月 9 日已完成初次导入：8 个 Space 全部同步成功，259 个页面的 Git blob 与迁移文件逐一一致。`space-ids.json` 保存此次导入返回的真实页面地址，迁移文件中的 90 处跨语言引用据此解析；`anchor-ids.json` 保存被引用标题的实际渲染 ID，用于修正 43 处段落链接。
+
 ## 内容和导航
 
 保留原有 219 篇正文：简体中文 32 篇、英文 31 篇，繁体中文、日文、韩文、德文、法文、西班牙文各 26 篇。40 个新增目录页承接 VitePress 的原有折叠分组，目录名称与顺序来自 `docs/.vitepress/config.mts`。原来指向其他语言的实验记录和隐私政策继续使用对应语言的现有内容。
@@ -9,7 +11,7 @@
 - 每种语言的 `README.md` 保留原首页标题、标语、操作入口、Logo 和三项功能说明。
 - VitePress 提示块转换为 GitBook hints，折叠块转换为 details；代码块与 Mermaid 源码保留。
 - 隐私政策、开源许可和赞助名单从现有 Vue 组件数据展开。赞助名单保留仓库根 `sponsors.json` 的排序和金额格式。
-- 自定义标题锚点转换为 GitBook 的 `<a href="#id" id="id"></a>` 形式。普通标题也保留原 VitePress 锚点。
+- 自定义标题锚点转换为 GitBook 的 `<a href="#id" id="id"></a>` 形式，64 个显式 ASCII 锚点保持不变。GitBook 会规范化非 ASCII 标题 ID，并为重复结果添加序号；指向这些标题的段落链接使用导入后实际的 `heading.meta.id`。
 - 每个 Space 的 `.gitbook.yaml` 将旧 `.html` 路径重定向到对应 Markdown 页面。
 
 ## 本地维护
@@ -28,14 +30,16 @@ npm run docs:gitbook:check
 node scripts/migrate-gitbook.mjs export --output /tmp/appports-gitbook-review
 ```
 
-`gitbook/migration-manifest.json` 记录原文件到迁移文件的映射。初次同步创建语言 Space 后，通过 GitBook CLI 获取各 Space 的页面树，将真实 Space ID 与 `page.git.path` / `page.path` 对应关系写入 `gitbook/space-ids.json`，再执行：
+`gitbook/migration-manifest.json` 记录原文件到迁移文件的映射。初次同步创建语言 Space 后，通过 GitBook CLI 获取各 Space 的页面树，将真实 Space ID 与 `page.git.path` / `page.path` 对应关系写入 `gitbook/space-ids.json`。对段落链接涉及的页面，读取 `spaces content page get <spaceId> <pageId> --format document --json`，按标题的文字、层级和顺序将原 ID 与 `heading.meta.id` 对齐，写入 `gitbook/anchor-ids.json`。不能使用 `heading.data.id` 代替：日文、韩文标题规范化后可能重名，只有 `meta.id` 包含实际渲染的去重序号。随后执行：
 
 ```sh
 node scripts/migrate-gitbook.mjs resolve-links
 npm run docs:gitbook:check
 ```
 
-跨语言链接必须使用导入后的真实 `page.path`。GitBook 的发布地址受导航层级影响，不能直接从文件名猜测。
+跨语言链接必须使用导入后的真实 `page.path`。GitBook 的发布地址受导航层级影响，不能直接从文件名猜测。校验会拒绝未解析的跨 Space 占位符与不匹配实际标题 ID 的片段；解析过程保留代码块、行内代码和标题定义。
+
+预览已核对中英文首页与语言切换、快速开始图片与提示块、Mermaid、隐私政策、开源许可、赞助名单，以及中英文旧 `.html` 地址的重定向。Mermaid 在滚动到图表后延迟加载；未发布站点的预览需有效的临时授权，可用 CLI 的站点 publishing preview get 重新打开预览。
 
 Git Sync 双向同步 `gitbook/` 中的内容；VitePress 的 `docs/` 保留为现有网站的源文件。两份正文不会自动互相转换。开始在 GitBook 编辑后，以 `gitbook/` 作为新站点内容源，避免运行批量覆盖。
 

@@ -31,7 +31,7 @@ codesign -d --entitlements - --xml /Applications/WeChat.app 2>/dev/null | grep -
 | Enlace simbólico y nueva firma Ad-hoc | Funciona hasta macOS 26; en 27 puede cerrarse tras el doble clic, confirmado en WeChat aunque QQ Music sigue abriéndose | El enlace «funciona» porque se elimina la identidad aislada. También se borra la relación de pertenencia entre app y contenedor, que 27 comprueba |
 | Montar un volumen APFS externo en el directorio original | Funciona y conserva la firma | La ruta sigue dentro del contenedor y supera el control. El almacenamiento externo provoca un permiso del sistema que se acepta una vez |
 
-Las tres opciones se han comprobado en macOS 27. Los registros originales están en los experimentos de [enlaces simbólicos](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink) y [puntos de montaje](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint).
+Las tres opciones se han comprobado en macOS 27. Los registros originales están en los experimentos de [enlaces simbólicos](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-symlink) y [puntos de montaje](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-mountpoint).
 
 ## Qué cambia realmente al volver a firmar <a href="#que-cambia-realmente-al-volver-a-firmar" id="que-cambia-realmente-al-volver-a-firmar"></a>
 

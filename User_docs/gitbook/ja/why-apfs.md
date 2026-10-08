@@ -146,6 +146,6 @@ GUID パーティションマップでない場合は、上記のパーティシ
 ## 関連ドキュメント <a href="#関連ドキュメント" id="関連ドキュメント"></a>
 
 - [マウント移行](datamigrae/mount-migration.md)：新しい方式の使い方
-- [実験記録：ドライブの取り外しテスト](https://app.gitbook.com/s/XSPACE_EN/research/unplug-test)：このページの実験の元データ
+- [実験記録：ドライブの取り外しテスト](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/unplug-test)：このページの実験の元データ
 - [macOS 27 へのアップグレード](macos-27.md)：旧方式が macOS 27 で動作しなくなる理由
 - [外部ストレージガイド](storage-guide.md)：接続方式、容量、ファイルシステムの一般的な推奨事項

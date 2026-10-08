@@ -146,6 +146,6 @@ GUID 파티션 맵이 아니라면 위의 새 파티션 추가 절차를 그대�
 ## 관련 문서 <a href="#관련-문서" id="관련-문서"></a>
 
 - [마운트 마이그레이션](datamigrae/mount-migration.md): 새 방식 사용법
-- [실험 기록: 드라이브 분리 시험](https://app.gitbook.com/s/XSPACE_EN/research/unplug-test): 이 문서의 원본 실험 데이터
+- [실험 기록: 드라이브 분리 시험](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/unplug-test): 이 문서의 원본 실험 데이터
 - [macOS 27 업그레이드 안내](macos-27.md): 기존 방식이 27에서 실패하는 이유
 - [외장 저장 장치 안내](storage-guide.md): 연결 방식, 용량, 파일 시스템에 대한 일반 권장 사항

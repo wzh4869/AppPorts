@@ -31,7 +31,7 @@ Leicht übersehen wird: **Eine Haupt-App ohne Sandbox bedeutet nicht, dass ihre 
 | Symbolischer Link plus Ad-hoc-Neusignierung | Unter macOS 26 und älter nutzbar; unter 27 kann die App direkt nach dem Doppelklick schließen. Für WeChat bestätigt, QQ Music öffnet sich noch | Erst die entfernte Sandbox-Identität macht den Link nutzbar. Gleichzeitig geht die Zuordnung zwischen App und Container verloren, die das System ab 27 prüft |
 | Ein externes APFS-Volume am ursprünglichen Ordner einbinden | Funktioniert, Signatur bleibt unverändert | Der Pfad bleibt im Container, also erlaubt die Sandbox den Zugriff. Für die externen Daten erscheint einmal eine Systemabfrage, die du erlauben musst |
 
-Alle drei Wege wurden unter macOS 27 getestet. Die Originalprotokolle stehen in den [Versuchen mit symbolischen Links](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink) und [Mountpunkten](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint).
+Alle drei Wege wurden unter macOS 27 getestet. Die Originalprotokolle stehen in den [Versuchen mit symbolischen Links](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-symlink) und [Mountpunkten](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-mountpoint).
 
 ## Was ändert erneutes Signieren genau? <a href="#was-andert-erneutes-signieren-genau" id="was-andert-erneutes-signieren-genau"></a>
 
