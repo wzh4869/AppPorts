@@ -217,7 +217,7 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
             return success(text: "Removed APFS Volume \(target)\n")
         case "mount":
             guard [5, 7].contains(arguments.count), arguments[1] == "nobrowse", arguments[2] == "-mountPoint" else { return failure("bad mount arguments") }
-            if arguments.count == 7, Array(arguments[4...5]) != ["-mountOptions", "owners"] { return failure("bad ownership arguments") }
+            if arguments.count == 7, (arguments[4] != "-mountOptions" || !["owners", "noowners"].contains(arguments[5])) { return failure("bad ownership arguments") }
             let volume = arguments.last!
             guard onlineVolumes.contains(volume) else { return failure("Volume \(volume) not found") }
             mountCommandCount += 1
@@ -317,7 +317,7 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
 
 @Suite("Container volume migration", .serialized)
 struct ContainerVolumeMigratorTests {
-    @Test("Legacy remount follows the volume setting; modern remount requires owners", arguments: [false, true])
+    @Test("Legacy remount explicitly ignores ownership; modern remount requires owners", arguments: [false, true])
     func remountOwnershipPolicy(modern: Bool) async throws {
         let workspace = try Workspace()
         defer { workspace.cleanup() }
@@ -329,7 +329,7 @@ struct ContainerVolumeMigratorTests {
         try workspace.store.upsert(record)
         let migrator = workspace.makeMigrator(runner: runner)
         try await migrator.mount(record: record)
-        let options = modern ? ["-mountOptions", "owners"] : []
+        let options = ["-mountOptions", modern ? "owners" : "noowners"]
         #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", source.path] + options + [record.volumeUUID]])
 
         let noowners = workspace.makeMigrator(runner: runner, mountFlags: { _ in UInt32(MNT_IGNORE_OWNERSHIP) })
@@ -339,6 +339,89 @@ struct ContainerVolumeMigratorTests {
             try await noowners.mount(record: record)
         }
         #expect(runner.commands(prefix: ["-u"]).isEmpty)
+    }
+
+    @Test("A cold remount recovers an unstarted restore without discarding its history", arguments: [false, true])
+    func remountAfterUnstartedRestore(intervention: Bool) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Interrupted")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let pending = unstartedRestore(workspace, record)
+        try seedUnstartedRestore(pending, store: workspace.store)
+        if intervention { try workspace.store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: "Old overlap failure") }
+        let saved = try workspace.store.transfers()
+        let cold = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("container-mounts.plist"))
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let outcomes = await workspace.makeMigrator(runner: runner, storeOverride: cold).remountAvailableRecords()
+        #expect(outcomes.map(\.state) == [.mounted])
+        #expect(runner.isMounted(source))
+        #expect(try cold.transfers() == saved)
+        #expect(try cold.remountIntervention(forVolumeUUID: record.volumeUUID) == nil)
+    }
+
+    @Test("A mounted-volume intervention is never cleared by an unstarted restore")
+    func remountPreservesMountedIntervention() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Conflict")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        try seedUnstartedRestore(unstartedRestore(workspace, record), store: workspace.store)
+        try workspace.store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: "Underlying directory changed during mount")
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.markVolumeMounted(record.volumeUUID, at: source.path)
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        #expect(outcomes.map(\.state) == [.requiresIntervention("Underlying directory changed during mount")])
+        #expect(try workspace.store.remountIntervention(forVolumeUUID: record.volumeUUID) != nil)
+        #expect(runner.commands(prefix: ["unmount"]).isEmpty)
+    }
+
+    @Test("Remount rejects restore intents that have saved identity or nonstandard paths", arguments: ["identity", "path"])
+    func remountRefusesAdvancedRestore(kind: String) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Interrupted")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        var pending = unstartedRestore(workspace, record)
+        if kind == "identity" { pending.recoveryMountPointIdentity = try DataPathIdentity.capture(workspace.rootURL) }
+        if kind == "path" { pending.stagingPath = workspace.rootURL.appendingPathComponent("unexpected-staging").path }
+        try seedUnstartedRestore(pending, store: workspace.store)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let saved = try workspace.store.transfers()
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        guard case .requiresIntervention = outcomes.first?.state else { Issue.record("Must not relax advanced restore intent"); return }
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(try workspace.store.transfers() == saved)
+    }
+
+    @Test("Automatic recovery preserves conflicting restore artifacts", arguments: ["staging", "recovery", "symlink", "local"])
+    func remountRefusesRestoreArtifacts(kind: String) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "Interrupted")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let pending = unstartedRestore(workspace, record)
+        try seedUnstartedRestore(pending, store: workspace.store)
+        try workspace.store.setRemountIntervention(volumeUUID: record.volumeUUID, reason: "Old overlap failure")
+        let path = kind == "local" ? source.appendingPathComponent("new-local-data").path :
+            (kind == "recovery" ? pending.backupPath! : pending.stagingPath!)
+        try FileManager.default.createDirectory(at: URL(fileURLWithPath: path).deletingLastPathComponent(), withIntermediateDirectories: true)
+        if kind == "symlink" { try FileManager.default.createSymbolicLink(atPath: path, withDestinationPath: "absent-target") }
+        else { try Data("keep".utf8).write(to: URL(fileURLWithPath: path)) }
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let saved = try workspace.store.transfers()
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        guard case .requiresIntervention = outcomes.first?.state else { Issue.record("Must keep conflicting data blocked"); return }
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(try workspace.store.transfers() == saved)
+        if kind != "symlink" { #expect(try Data(contentsOf: URL(fileURLWithPath: path)) == Data("keep".utf8)) }
     }
 
     @Test("Verified older migration keeps its owners policy after transfer cleanup and stale writes")
@@ -1274,7 +1357,7 @@ struct ContainerVolumeMigratorTests {
         #expect(states["ONLINE-UUID"] == .mounted)
         #expect(states["OFFLINE-UUID"] == .unavailable)
         #expect(states["MOUNTED-UUID"] == .alreadyMounted)
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", online.path, "ONLINE-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", online.path, "-mountOptions", "noowners", "ONLINE-UUID"]])
         // 每个记录只查一次 diskutil（在线 + 挂载点合并）；离线的那个查一次就放弃。
         #expect(runner.commands(prefix: ["info"]).count == 2)
         #expect(runner.commands(prefix: ["info"]).allSatisfy { $0.last != "MOUNTED-UUID" })
@@ -1332,8 +1415,8 @@ struct ContainerVolumeMigratorTests {
         #expect(runner.isMounted(mountPoint))
         #expect(runner.commands(prefix: ["unmount"]) == [["unmount", "/Volumes/AppPorts-auto"]])
         #expect(runner.commands(prefix: ["mount"]) == [
-            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "RACE-UUID"],
-            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "RACE-UUID"]
+            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "noowners", "RACE-UUID"],
+            ["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "noowners", "RACE-UUID"]
         ])
     }
 
@@ -1381,7 +1464,7 @@ struct ContainerVolumeMigratorTests {
         // 关键：一次 diskutil 查询都不该发出去（开机时那次查询实测要 9 秒）
         #expect(runner.commands(prefix: ["info"]).isEmpty)
         #expect(runner.commands(prefix: ["unmount"]) == [["unmount", autoMountPoint]])
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "AUTO-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "noowners", "AUTO-UUID"]])
     }
 
     @Test("自动挂载点上不是我们的卷时退回 diskutil 查询")
@@ -1420,7 +1503,7 @@ struct ContainerVolumeMigratorTests {
 
         #expect(outcomes.first?.state == .mounted)
         #expect(runner.commands(prefix: ["info"]).count == 1)
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "FREE-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "noowners", "FREE-UUID"]])
     }
 
     private func makeRecord(
@@ -1571,7 +1654,7 @@ struct ContainerVolumeMigratorTests {
 
         // 必须先把卷从系统挂载点卸下来，再挂到容器路径。
         #expect(runner.commands(prefix: ["unmount"]) == [["unmount", systemMountPoint]])
-        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "AUTO-UUID"]])
+        #expect(runner.commands(prefix: ["mount"]) == [["mount", "nobrowse", "-mountPoint", mountPoint.path, "-mountOptions", "noowners", "AUTO-UUID"]])
         // 在线检查和「当前挂在哪」共用同一次 diskutil：开机时一次查询要一秒上下，别退化成两次。
         #expect(runner.commands(prefix: ["info"]).count == 1)
         #expect(runner.isMounted(mountPoint))

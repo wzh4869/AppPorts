@@ -7,8 +7,12 @@
 
 import Foundation
 import AppKit
+import Darwin
 
 struct AppMigrationService {
+    private static let mutationCoordinator = PortalMutationCoordinator()
+    static var maintenanceGeneration: UInt64 { mutationCoordinator.generation }
+
     typealias FinderRemover = (URL) throws -> Void
     typealias PortalCreationOverride = (AppItem, URL) throws -> Void
     typealias DockShortcutUpdater = (URL, URL) throws -> Int
@@ -39,19 +43,21 @@ struct AppMigrationService {
         let localURL: URL
         let externalURL: URL
         let kind: LocalPortalKind
+        let inode: NSNumber
+        let device: NSNumber
     }
 
     private let fileManager: FileManager
     private let portalCreationOverride: PortalCreationOverride?
     private let dockShortcutUpdater: DockShortcutUpdater
+    private let dockShortcutRetryUpdater: DockShortcutUpdater
     private let runningApplications: () -> [AppRunningState.RunningApplication]
 
     init(
         fileManager: FileManager = .default,
         portalCreationOverride: PortalCreationOverride? = nil,
-        dockShortcutUpdater: @escaping DockShortcutUpdater = { source, destination in
-            try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
-        },
+        dockShortcutUpdater: DockShortcutUpdater? = nil,
+        dockShortcutRetryUpdater: DockShortcutUpdater? = nil,
         runningApplications: @escaping () -> [AppRunningState.RunningApplication] = {
             NSWorkspace.shared.runningApplications.map {
                 .init(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
@@ -60,7 +66,13 @@ struct AppMigrationService {
     ) {
         self.fileManager = fileManager
         self.portalCreationOverride = portalCreationOverride
-        self.dockShortcutUpdater = dockShortcutUpdater
+        self.dockShortcutUpdater = dockShortcutUpdater ?? { source, destination in
+            try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
+        }
+        // Preserve injected effects in tests; production retries enforce the original bundle identity.
+        self.dockShortcutRetryUpdater = dockShortcutRetryUpdater ?? dockShortcutUpdater ?? { source, destination in
+            try DockShortcutService.shared.redirectShortcuts(from: source, to: destination, requiringBundleIdentity: true)
+        }
         self.runningApplications = runningApplications
     }
 
@@ -147,6 +159,225 @@ struct AppMigrationService {
         }
     }
 
+    /// Convert an existing standalone copy on the same volume. No missing local entry is recreated.
+    func excludeFromSearch(app: AppItem, externalRoot: URL, localEntries: [URL],
+                           store: AppSearchRecordStore = .shared) async throws -> AppSearchExclusionService.Result {
+        try await Self.mutationCoordinator.begin()
+        defer { Self.mutationCoordinator.end() }
+        typealias Exclusion = AppSearchExclusionService
+        if let reason = Exclusion.unsupportedReason(for: app) { throw Exclusion.failure(reason) }
+        let source = app.path.standardizedFileURL
+        guard source.deletingLastPathComponent() == externalRoot.standardizedFileURL
+                || source.deletingLastPathComponent() == Exclusion.library(in: externalRoot).standardizedFileURL,
+              source.resolvingSymlinksInPath() == source else {
+            throw Exclusion.failure("套件目录可能包含文档，暂不自动排除。".localized)
+        }
+        let library = Exclusion.library(in: externalRoot)
+        try Exclusion.prepareLibrary(library, fileManager: fileManager)
+        let destination = library.appendingPathComponent(source.lastPathComponent)
+        let records = try store.records().filter { $0.externalPath == source.path }
+        let localURLs = Set(localEntries.map { $0.standardizedFileURL.path }
+            + records.filter { !$0.isRestored }.map(\.localPath)).map { URL(fileURLWithPath: $0) }
+        if let pending = try Exclusion.blockingJournal(in: library, affecting: [source, destination] + localURLs,
+                                                      fileManager: fileManager) {
+            throw Exclusion.failure(String(format: "转换未完成，已保留应用和恢复记录：%@".localized, pending.path))
+        }
+        if Exclusion.isExcluded(source) {
+            // A previous relocation may have finished while Dock synchronization failed.
+            // Retry only existing pins. If the old path has been reused, preserve that new app's pins.
+            let previous = library.deletingLastPathComponent().appendingPathComponent(source.lastPathComponent)
+            let dockSource = (try? fileManager.attributesOfItem(atPath: previous.path)) == nil ? previous : source
+            let dockOK = synchronizeDockShortcuts(from: dockSource, to: source,
+                operationID: AppLogger.shared.makeOperationID(prefix: "search-exclusion-retry"), using: dockShortcutRetryUpdater)
+            return .init(destination: source, dockSynchronized: dockOK)
+        }
+        // Only relocation requires quitting. Running an already excluded app does not undo completion.
+        try requireNotRunning(app)
+        guard (try? fileManager.attributesOfItem(atPath: destination.path)) == nil else {
+            throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+        }
+        guard let volume = try source.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString else {
+            throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
+        }
+        let sourceIdentity = try Exclusion.FileIdentity.read(source, fileManager: fileManager)
+        let sourcePlist = NSDictionary(contentsOf: source.appendingPathComponent("Contents/Info.plist"))
+        let bundleID = sourcePlist?["CFBundleIdentifier"] as? String
+        guard records.allSatisfy({ ($0.volumeUUID == nil || $0.volumeUUID == volume)
+            && ($0.targetBundleIdentifier == nil || $0.targetBundleIdentifier == bundleID) }) else {
+            throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
+        }
+        var portals: [Exclusion.Journal.Portal] = []
+        var kinds: [URL: LocalPortalKind] = [:]
+        for local in localURLs.sorted(by: { $0.path < $1.path }) {
+            guard let present = AppSearchRecordStore.observedLocalPresence(at: local) else {
+                throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
+            }
+            if !present { continue }
+            guard let kind = localPortalKind(at: local, linkedTo: source),
+                  AppPortalMaintenance.matchesRememberedTarget(.init(localURL: local, externalURL: source), store: store),
+                  kind != .stubPortal || AppPortalMaintenance.targetIdentityMatches(localURL: local, externalURL: source) else {
+                throw Exclusion.failure("本地入口并未指向当前外部应用，无法自动覆盖".localized)
+            }
+            let stageRoot = local.deletingLastPathComponent().appendingPathComponent(".appports-exclusion-\(UUID().uuidString)")
+            let backup = stageRoot.appendingPathComponent("original")
+            let stage = stageRoot.appendingPathComponent(local.lastPathComponent)
+            portals.append(.init(local: local, backup: backup, stage: stage,
+                                 identity: try Exclusion.FileIdentity.read(local, fileManager: fileManager)))
+            kinds[local] = kind
+        }
+        let journalURL = library.appendingPathComponent(".appports-exclusion-\(UUID().uuidString).json")
+        var journal = Exclusion.Journal(source: source, destination: destination, sourceIdentity: sourceIdentity,
+                                       volumeUUID: volume, portals: portals)
+        try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+        let wasImmutable = (try fileManager.attributesOfItem(atPath: source.path)[.immutable] as? Bool) == true
+        var moved = false
+        var backedUp: [Exclusion.Journal.Portal] = []
+        var installed: [URL: Exclusion.FileIdentity] = [:]
+        var ownedStageRoots: [URL] = []
+        var stagedIdentities: [URL: Exclusion.FileIdentity] = [:]
+        do {
+            try requireNotRunning(app)
+            guard try Exclusion.FileIdentity.read(source, fileManager: fileManager) == sourceIdentity else {
+                throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+            }
+            if wasImmutable { try fileManager.setAttributes([.immutable: false], ofItemAtPath: source.path) }
+            try fileManager.moveItem(at: source, to: destination)
+            moved = true
+            journal.phase = "external-moved"
+            try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+            for portal in portals {
+                try fileManager.createDirectory(at: portal.stage.deletingLastPathComponent(), withIntermediateDirectories: false)
+                ownedStageRoots.append(portal.stage.deletingLastPathComponent())
+                if kinds[portal.local] == .stubPortal {
+                    try createStubPortal(at: portal.stage, pointingTo: destination, register: false)
+                } else {
+                    try createLocalPortal(at: portal.stage, pointingTo: destination, portalKind: kinds[portal.local])
+                }
+                stagedIdentities[portal.stage] = try Exclusion.FileIdentity.read(portal.stage, fileManager: fileManager)
+            }
+            var relocated = app
+            relocated.path = destination
+            relocated.bundleURL = destination
+            try requireNotRunning(relocated)
+            for portal in portals {
+                var coordinationError: NSError?
+                var mutationError: Error?
+                NSFileCoordinator().coordinate(writingItemAt: portal.local, options: .forReplacing, error: &coordinationError) { url in
+                    do {
+                        // Recheck inside coordination and after the rename. A replacement is never ours to delete.
+                        guard try Exclusion.FileIdentity.read(url, fileManager: fileManager) == portal.identity,
+                              localPortalKind(at: url, linkedTo: source) != nil else {
+                            throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                        }
+                        try fileManager.moveItem(at: url, to: portal.backup)
+                        backedUp.append(portal)
+                        guard try Exclusion.FileIdentity.read(portal.backup, fileManager: fileManager) == portal.identity else {
+                            throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                        }
+                        let newIdentity = try Exclusion.FileIdentity.read(portal.stage, fileManager: fileManager)
+                        try fileManager.moveItem(at: portal.stage, to: url)
+                        installed[portal.local] = newIdentity
+                        stagedIdentities.removeValue(forKey: portal.stage)
+                    } catch { mutationError = error }
+                }
+                if let error = mutationError ?? coordinationError { throw error }
+            }
+            guard try Exclusion.FileIdentity.read(destination, fileManager: fileManager) == sourceIdentity else {
+                throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+            }
+            if wasImmutable { try fileManager.setAttributes([.immutable: true], ofItemAtPath: destination.path) }
+            journal.phase = "portals-installed"
+            try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+            try store.retarget(from: source, to: destination, snapshots: records)
+        } catch {
+            AppLogger.shared.logError("应用索引排除转换失败，开始回滚", error: error,
+                                      relatedURLs: [("source", source), ("journal", journalURL)])
+            var recoveryFailed = false
+            // Undo only files whose device/inode still matches our snapshot.
+            for portal in backedUp.reversed() {
+                do {
+                    if let identity = installed[portal.local] {
+                        try removeExclusionOwnedItem(at: portal.local, identity: identity)
+                    }
+                    try fileManager.moveItem(at: portal.backup, to: portal.local)
+                } catch {
+                    recoveryFailed = true
+                    AppLogger.shared.logError("恢复原应用入口失败，保留恢复记录", error: error, relatedURLs: [("backup", portal.backup)])
+                }
+            }
+            if moved {
+                do {
+                    guard (try? Exclusion.FileIdentity.read(destination, fileManager: fileManager)) == sourceIdentity else {
+                        throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                    }
+                    if wasImmutable { try fileManager.setAttributes([.immutable: false], ofItemAtPath: destination.path) }
+                    try fileManager.moveItem(at: destination, to: source)
+                } catch {
+                    recoveryFailed = true
+                    AppLogger.shared.logError("恢复外部应用位置失败，保留恢复记录", error: error, relatedURLs: [("journal", journalURL)])
+                }
+            }
+            if wasImmutable, (try? Exclusion.FileIdentity.read(source, fileManager: fileManager)) == sourceIdentity {
+                do { try fileManager.setAttributes([.immutable: true], ofItemAtPath: source.path) }
+                catch { recoveryFailed = true }
+            }
+            if !recoveryFailed {
+                for (stage, identity) in stagedIdentities {
+                    do { try removeExclusionOwnedItem(at: stage, identity: identity) }
+                    catch { recoveryFailed = true }
+                }
+                for stageRoot in ownedStageRoots {
+                    // Never recursively remove a staging directory: it may contain a new user file.
+                    if rmdir(stageRoot.path) != 0 { recoveryFailed = true }
+                }
+                if !recoveryFailed { try? fileManager.removeItem(at: journalURL) }
+            }
+            if recoveryFailed {
+                throw Exclusion.failure(String(format: "转换未完成，已保留应用和恢复记录：%@".localized, journalURL.path))
+            }
+            throw error
+        }
+        // The record write is the commit point. Cleanup/Dock failures must not roll back a committed path.
+        for portal in portals {
+            do { try removeExclusionOwnedItem(at: portal.backup, identity: portal.identity) }
+            catch { AppLogger.shared.logError("已完成转换，入口备份清理失败", error: error, relatedURLs: [("backup", portal.backup)]) }
+            _ = rmdir(portal.stage.deletingLastPathComponent().path)
+            refreshLaunchServices(for: portal.local)
+            NotificationCenter.default.post(name: .appPortalPresentationDidChange, object: portal.local)
+        }
+        try? fileManager.removeItem(at: journalURL)
+        let dockOK = synchronizeDockShortcuts(from: source, to: destination,
+                                              operationID: AppLogger.shared.makeOperationID(prefix: "search-exclusion"))
+        return .init(destination: destination, dockSynchronized: dockOK)
+    }
+
+    /// Isolate the actual object before deletion; a concurrent replacement is restored or preserved.
+    private func removeExclusionOwnedItem(at url: URL, identity: AppSearchExclusionService.FileIdentity) throws {
+        typealias Exclusion = AppSearchExclusionService
+        let quarantine = url.deletingLastPathComponent().appendingPathComponent(".appports-cleanup-\(UUID().uuidString)")
+        var coordinationError: NSError?
+        var removalError: Error?
+        NSFileCoordinator().coordinate(writingItemAt: url, options: .forDeleting, error: &coordinationError) { coordinated in
+            do {
+                guard try Exclusion.FileIdentity.read(coordinated, fileManager: fileManager) == identity else {
+                    throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                }
+                try fileManager.moveItem(at: coordinated, to: quarantine)
+                guard try Exclusion.FileIdentity.read(quarantine, fileManager: fileManager) == identity else {
+                    // moveItem refuses to overwrite a file that appeared at the original path.
+                    try fileManager.moveItem(at: quarantine, to: coordinated)
+                    throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                }
+                try fileManager.removeItem(at: quarantine)
+            } catch {
+                removalError = error
+                AppLogger.shared.logError("清理入口时身份改变或删除失败，保留文件", error: error,
+                                          relatedURLs: [("original", url), ("quarantine", quarantine)])
+            }
+        }
+        if let error = removalError ?? coordinationError { throw error }
+    }
+
     func moveAndLink(
         appToMove: AppItem,
         destinationURL: URL,
@@ -155,6 +386,14 @@ struct AppMigrationService {
         deleteSourceFallback: FinderRemover? = nil,
         progressHandler: FileCopier.ProgressHandler?
     ) async throws {
+        try await Self.mutationCoordinator.begin()
+        defer { Self.mutationCoordinator.end() }
+        if AppSearchExclusionService.isExcluded(destinationURL) {
+            if let reason = AppSearchExclusionService.unsupportedReason(for: appToMove) {
+                throw AppSearchExclusionService.failure(reason)
+            }
+            try AppSearchExclusionService.prepareLibrary(destinationURL.deletingLastPathComponent(), fileManager: fileManager)
+        }
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-move")
         let startedAt = Date()
         var operationResult = "failed"
@@ -404,6 +643,8 @@ struct AppMigrationService {
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) throws {
+        try Self.mutationCoordinator.beginSynchronously()
+        defer { Self.mutationCoordinator.end() }
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-link")
         let startedAt = Date()
         var operationResult = "failed"
@@ -452,55 +693,24 @@ struct AppMigrationService {
             throw error
         }
 
-        if fileManager.fileExists(atPath: destinationURL.path) {
-            let resourceValues = try? destinationURL.resourceValues(forKeys: [.isSymbolicLinkKey, .isDirectoryKey])
-            AppLogger.shared.logPathState("链接冲突-本地目标[\(operationID)]", url: destinationURL)
+        if appToLink.usesFolderOperation,
+           localPortalKind(at: destinationURL, linkedTo: appToLink.path) == .folderMirror {
+            try addMissingFolderEntries(at: destinationURL, from: appToLink.path)
+            operationResult = "success"
+            return
+        }
 
-            if resourceValues?.isSymbolicLink == true {
-                try fileManager.removeItem(at: destinationURL)
-            } else if resourceValues?.isDirectory == true {
-                let contentsURL = destinationURL.appendingPathComponent("Contents")
-                let contentsResourceValues = try? contentsURL.resourceValues(forKeys: [.isSymbolicLinkKey])
-
-                // stub portal: 有 AppPorts launcher 的假壳
-                let launcherURL = contentsURL.appendingPathComponent("MacOS/launcher")
-                let isStubPortal: Bool = {
-                    if !fileManager.fileExists(atPath: launcherURL.path) { return false }
-                    let pathFile = contentsURL.appendingPathComponent("Resources/real_app_path.txt")
-                    if let raw = try? String(contentsOf: pathFile, encoding: .utf8),
-                       !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        return true
-                    }
-                    if let script = try? String(contentsOf: launcherURL, encoding: .utf8),
-                       script.contains("REAL_APP=") {
-                        return true
-                    }
-                    return false
-                }()
-                if isStubPortal {
-                    try fileManager.removeItem(at: destinationURL)
-                } else if contentsResourceValues?.isSymbolicLink == true {
-                    try fileManager.removeItem(at: destinationURL)
-                } else {
-                    operationErrorCode = "APP-LINK-DESTINATION-CONFLICT"
-                    throw AppMoverError.generalError(
-                        NSError(
-                            domain: "AppMover",
-                            code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "本地已存在同名真实应用".localized]
-                        )
-                    )
-                }
-            } else {
-                operationErrorCode = "APP-LINK-DESTINATION-CONFLICT"
-                throw AppMoverError.generalError(
-                    NSError(
-                        domain: "AppMover",
-                        code: 1,
-                        userInfo: [NSLocalizedDescriptionKey: "本地已存在同名文件".localized]
-                    )
-                )
+        var originalPortalBackup: URL?
+        if (try? fileManager.attributesOfItem(atPath: destinationURL.path)) != nil {
+            guard let existingKind = localPortalKind(at: destinationURL, linkedTo: appToLink.path),
+                  existingKind != .folderMirror else {
+                throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6,
+                    userInfo: [NSLocalizedDescriptionKey: "本地已有其他应用或入口，无法自动覆盖".localized]))
             }
+            let backup = destinationURL.deletingLastPathComponent()
+                .appendingPathComponent(".appports-link-backup-\(UUID().uuidString)")
+            try fileManager.moveItem(at: destinationURL, to: backup)
+            originalPortalBackup = backup
         }
 
         let portalKind: LocalPortalKind = appToLink.usesFolderOperation ? .folderMirror : preferredPortalKind(for: appToLink.path)
@@ -525,6 +735,20 @@ struct AppMigrationService {
         do {
             try createLocalPortal(at: destinationURL, pointingTo: appToLink.path, portalKind: portalKind, operationID: operationID)
         } catch {
+            var recoveryError: Error?
+            if let backup = originalPortalBackup {
+                do {
+                    // Exclusive move preserves any file that appeared during preparation.
+                    try fileManager.moveItem(at: backup, to: destinationURL)
+                } catch {
+                    recoveryError = NSError(domain: "AppPorts.PortalRecovery", code: 3, userInfo: [
+                        NSLocalizedDescriptionKey: String(format: "重新添加入口失败，原入口备份位于：%@".localized, backup.path),
+                        NSFilePathErrorKey: backup.path, NSUnderlyingErrorKey: error
+                    ])
+                    AppLogger.shared.logError("重新添加入口失败，原入口保留在备份位置", error: error,
+                        relatedURLs: [("backup", backup), ("destination", destinationURL)])
+                }
+            }
             operationErrorCode = "APP-LINK-PORTAL-CREATE-FAILED"
             AppLogger.shared.logError(
                 "创建应用入口失败",
@@ -533,8 +757,9 @@ struct AppMigrationService {
                 context: [("operation_id", operationID), ("portal_kind", portalKindDescription(portalKind))],
                 relatedURLs: [("source", appToLink.path), ("destination", destinationURL)]
             )
-            throw error
+            throw recoveryError ?? error
         }
+        if let backup = originalPortalBackup { try? fileManager.removeItem(at: backup) }
         try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: destinationURL.path)
         AppLogger.shared.logPathState("链接完成-本地目标[\(operationID)]", url: destinationURL)
         if synchronizeDockShortcuts(from: destinationURL, to: appToLink.path, operationID: operationID) {
@@ -546,6 +771,8 @@ struct AppMigrationService {
     }
 
     func deleteLink(app: AppItem) throws {
+        try Self.mutationCoordinator.beginSynchronously()
+        defer { Self.mutationCoordinator.end() }
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-unlink")
         let startedAt = Date()
         var operationResult = "failed"
@@ -634,6 +861,8 @@ struct AppMigrationService {
         localDestinationURL: URL,
         progressHandler: FileCopier.ProgressHandler?
     ) async throws -> RestoreResult {
+        try await Self.mutationCoordinator.begin()
+        defer { Self.mutationCoordinator.end() }
         try requireNotRunning(app)
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-restore")
         let startedAt = Date()
@@ -701,12 +930,16 @@ struct AppMigrationService {
             level: "TRACE"
         )
 
+        var originalPortalBackup: URL?
         if fileManager.fileExists(atPath: localDestinationURL.path) {
             AppLogger.shared.log("本地存在同名项目，正在清理...")
 
             if let existingPortalKind {
-                try fileManager.removeItem(at: localDestinationURL)
-                AppLogger.shared.log("已清理本地 AppPorts 入口: \(portalKindDescription(existingPortalKind))")
+                let backup = localDestinationURL.deletingLastPathComponent()
+                    .appendingPathComponent(".appports-restore-backup-\(UUID().uuidString)")
+                try fileManager.moveItem(at: localDestinationURL, to: backup)
+                originalPortalBackup = backup
+                AppLogger.shared.log("已暂存本地 AppPorts 入口: \(portalKindDescription(existingPortalKind))")
             } else if resolveSymlinkDestination(at: localDestinationURL) != nil {
                 let error = NSError(
                     domain: "AppMover",
@@ -728,13 +961,6 @@ struct AppMigrationService {
             }
         }
 
-        if app.usesFolderOperation, !suitePortalSnapshots.isEmpty {
-            for snapshot in suitePortalSnapshots {
-                try fileManager.removeItem(at: snapshot.localURL)
-                AppLogger.shared.log("已清理套件入口: \(snapshot.localURL.lastPathComponent)")
-                AppLogger.shared.logPathState("已清理套件入口[\(operationID)]", url: snapshot.localURL, level: "TRACE")
-            }
-        }
 
         AppLogger.shared.log("步骤1: 开始复制应用回本地...")
         let startTime = Date()
@@ -747,39 +973,42 @@ struct AppMigrationService {
             AppLogger.shared.log("外部 app 解锁未完全成功，后续复制/删除可能受影响", level: "WARN")
         }
 
+        let copyOwnership = CopyDestinationOwnership()
         do {
             try await copier.copyDirectory(
                 from: app.path,
                 to: localDestinationURL,
                 estimatedTotalBytes: app.sizeBytes,
-                progressHandler: progressHandler
+                progressHandler: { progress in
+                    if progress.copiedBytes > 0 { await copyOwnership.observe(localDestinationURL) }
+                    await progressHandler?(progress)
+                }
             )
         } catch {
-            if fileManager.fileExists(atPath: localDestinationURL.path) {
-                try? FileCopier.removeCopy(at: localDestinationURL)
+            if let identity = await copyOwnership.recorded() {
+                var coordinationError: NSError?
+                NSFileCoordinator().coordinate(writingItemAt: localDestinationURL, options: .forDeleting, error: &coordinationError) { url in
+                    guard CopyDestinationOwnership.identity(at: url) == identity else { return }
+                    try? FileCopier.removeCopy(at: url)
+                }
             }
+            var recoveryError: Error?
 
-            if let existingPortalKind {
+            if let backup = originalPortalBackup {
                 do {
-                    try createLocalPortal(
-                        at: localDestinationURL,
-                        pointingTo: app.path,
-                        portalKind: existingPortalKind,
-                        operationID: operationID
-                    )
+                    try fileManager.moveItem(at: backup, to: localDestinationURL)
+                    originalPortalBackup = nil
                 } catch let portalError {
-                    AppLogger.shared.logError(
-                        "还原失败后恢复单应用入口失败",
-                        error: portalError,
-                        context: [("operation_id", operationID)],
-                        relatedURLs: [("source", app.path), ("destination", localDestinationURL)]
-                    )
+                    recoveryError = NSError(domain: "AppPorts.PortalRecovery", code: 1, userInfo: [
+                        NSLocalizedDescriptionKey: String(format: "还原失败，当前本地文件已保留。原入口备份位于：%@".localized, backup.path),
+                        NSFilePathErrorKey: backup.path, NSUnderlyingErrorKey: portalError
+                    ])
+                    // Leave the backup recoverable if restoring it encounters a new conflict.
+                    AppLogger.shared.logError("还原失败后恢复原入口失败，保留备份", error: portalError,
+                        relatedURLs: [("backup", backup), ("destination", localDestinationURL)])
                 }
             }
 
-            if app.usesFolderOperation, !suitePortalSnapshots.isEmpty {
-                recreatePortals(from: suitePortalSnapshots, operationID: operationID)
-            }
 
             AppLogger.shared.logError(
                 "复制外部应用回本地失败",
@@ -789,7 +1018,28 @@ struct AppMigrationService {
                 relatedURLs: [("source", app.path), ("destination", localDestinationURL)]
             )
             operationErrorCode = "APP-RESTORE-COPY-FAILED"
-            throw error
+            if recoveryError == nil, originalPortalBackup != nil || (existingPortalKind == nil && (try? fileManager.attributesOfItem(atPath: localDestinationURL.path)) != nil) {
+                recoveryError = NSError(domain: "AppPorts.PortalRecovery", code: 2, userInfo: [
+                    NSLocalizedDescriptionKey: String(format: "还原失败，未能确认本地文件归属，已保留：%@".localized, localDestinationURL.path),
+                    NSUnderlyingErrorKey: error
+                ])
+            }
+            throw recoveryError ?? error
+        }
+        var retiredLocalPortalURLs: [URL] = []
+        for snapshot in suitePortalSnapshots {
+            do {
+                if try retirePortal(snapshot) { retiredLocalPortalURLs.append(snapshot.localURL) }
+            } catch {
+                operationResult = "success_with_warning"
+                operationErrorCode = "APP-RESTORE-PORTAL-CLEANUP-FAILED"
+                AppLogger.shared.logError("旧套件入口待清理", error: error,
+                    relatedURLs: [("local", snapshot.localURL)])
+            }
+        }
+
+        if let backup = originalPortalBackup {
+            try? fileManager.removeItem(at: backup)
         }
         let duration = Date().timeIntervalSince(startTime)
         AppLogger.shared.log("步骤1: 复制成功")
@@ -811,7 +1061,7 @@ struct AppMigrationService {
         var dockSynchronized = synchronizeDockShortcuts(
             from: app.path, to: localDestinationURL, operationID: operationID
         )
-        for snapshot in suitePortalSnapshots {
+        for snapshot in suitePortalSnapshots where retiredLocalPortalURLs.contains(snapshot.localURL) {
             // 兼容旧版本把套件内部应用展开到本地根目录的入口。
             let restoredAppURL = localDestinationURL.appendingPathComponent(snapshot.externalURL.lastPathComponent)
             if !synchronizeDockShortcuts(from: snapshot.localURL, to: restoredAppURL, operationID: operationID) {
@@ -846,8 +1096,10 @@ struct AppMigrationService {
         if operationResult != "success_with_warning" {
             operationResult = "success"
         }
+        if app.usesFolderOperation { refreshLaunchServicesRecursive(for: localDestinationURL) }
+        else { refreshLaunchServices(for: localDestinationURL) }
         return RestoreResult(
-            retiredLocalPortalURLs: suitePortalSnapshots.map(\.localURL),
+            retiredLocalPortalURLs: retiredLocalPortalURLs,
             externalSourceRemains: fileManager.fileExists(atPath: app.path.path)
         )
     }
@@ -929,9 +1181,10 @@ struct AppMigrationService {
 
     /// Dock 属于迁移后的附加同步：失败应可重试，不能回滚已经完整迁移的应用。
     @discardableResult
-    private func synchronizeDockShortcuts(from sourceURL: URL, to destinationURL: URL, operationID: String) -> Bool {
+    private func synchronizeDockShortcuts(from sourceURL: URL, to destinationURL: URL, operationID: String,
+                                          using updater: DockShortcutUpdater? = nil) -> Bool {
         do {
-            let updatedCount = try dockShortcutUpdater(sourceURL, destinationURL)
+            let updatedCount = try (updater ?? dockShortcutUpdater)(sourceURL, destinationURL)
             if updatedCount > 0 {
                 AppLogger.shared.logContext(
                     "已同步 Dock 固定项",
@@ -1286,6 +1539,10 @@ struct AppMigrationService {
         }
     }
 
+    func isManagedPortal(at localURL: URL) -> Bool {
+        localPortalKind(at: localURL) != nil
+    }
+
     private func localPortalKind(at localURL: URL) -> LocalPortalKind? {
         if let rootDestination = resolveSymlinkDestination(at: localURL) {
             return localPortalKind(at: localURL, linkedTo: rootDestination)
@@ -1467,12 +1724,8 @@ struct AppMigrationService {
     private func createFolderMirrorPortal(at localFolderURL: URL, pointingTo externalFolderURL: URL) throws {
         let fm = fileManager
 
-        // 确保是一个全新的真实目录（覆盖残留的旧入口）
-        if fm.fileExists(atPath: localFolderURL.path) {
-            unlockImmutableRecursive(at: localFolderURL)
-            try fm.removeItem(at: localFolderURL)
-        }
-        try fm.createDirectory(at: localFolderURL, withIntermediateDirectories: true, attributes: nil)
+        // Existing entries, including concurrently installed real folders, must not be overwritten.
+        try fm.createDirectory(at: localFolderURL, withIntermediateDirectories: false, attributes: nil)
 
         let entries = (try? fm.contentsOfDirectory(
             at: externalFolderURL,
@@ -1495,7 +1748,7 @@ struct AppMigrationService {
                         errorCode: "FOLDER-MIRROR-STUB-FAILED",
                         relatedURLs: [("local", localEntry), ("external", entry)]
                     )
-                    try? fm.removeItem(at: localEntry)
+                    // Exclusive creation must fail if a real app appeared while staging.
                     try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
                     linkCount += 1
                 }
@@ -1512,6 +1765,69 @@ struct AppMigrationService {
             "已创建 Folder Mirror: \(localFolderURL.lastPathComponent) (stubs=\(stubCount), links=\(linkCount)) -> \(externalFolderURL.path)"
         )
         refreshLaunchServicesRecursive(for: localFolderURL)
+    }
+
+    /// Explicit additive relink only. Rescans never call this method.
+    private func addMissingFolderEntries(at localFolder: URL, from externalFolder: URL) throws {
+        let fm = fileManager
+        let originalIdentity = try fm.attributesOfItem(atPath: localFolder.path)[.systemFileNumber] as? NSNumber
+        let entries = try fm.contentsOfDirectory(at: externalFolder, includingPropertiesForKeys: nil,
+                                                options: .skipsHiddenFiles).sorted { $0.path < $1.path }
+        var missing: [URL] = []
+        for external in entries {
+            let local = localFolder.appendingPathComponent(external.lastPathComponent)
+            if (try? fm.attributesOfItem(atPath: local.path)) != nil {
+                if external.pathExtension == "app", localPortalKind(at: local, linkedTo: external) == nil {
+                    throw AppMoverError.generalError(NSError(domain: "AppMover", code: 6,
+                        userInfo: [NSLocalizedDescriptionKey: "本地已有其他应用或入口，无法自动覆盖".localized]))
+                }
+                continue // Preserve personal files and every surviving entry byte-for-byte.
+            }
+            missing.append(external)
+        }
+        let stage = localFolder.deletingLastPathComponent()
+            .appendingPathComponent(".appports-suite-add-\(UUID().uuidString)")
+        try fm.createDirectory(at: stage, withIntermediateDirectories: false)
+        defer { try? fm.removeItem(at: stage) }
+        // Prepare every entry before installing any of them. Invalid resources or
+        // signing failures leave the original folder completely unchanged.
+        for external in missing {
+            let staged = stage.appendingPathComponent(external.lastPathComponent)
+            if external.pathExtension == "app" {
+                try createStubPortal(at: staged, pointingTo: external, register: false)
+            } else {
+                try fm.createSymbolicLink(at: staged, withDestinationURL: external)
+            }
+        }
+        var installed: [(URL, NSNumber?)] = []
+        do {
+            for external in missing {
+                guard localPortalKind(at: localFolder, linkedTo: externalFolder) == .folderMirror,
+                      (try fm.attributesOfItem(atPath: localFolder.path)[.systemFileNumber] as? NSNumber) == originalIdentity else {
+                    throw CocoaError(.fileWriteFileExists)
+                }
+                let staged = stage.appendingPathComponent(external.lastPathComponent)
+                let local = localFolder.appendingPathComponent(external.lastPathComponent)
+                let identity = try fm.attributesOfItem(atPath: staged.path)[.systemFileNumber] as? NSNumber
+                guard renameatx_np(AT_FDCWD, staged.path, AT_FDCWD, local.path, UInt32(RENAME_EXCL)) == 0 else {
+                    throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+                }
+                installed.append((local, identity))
+            }
+        } catch {
+            for (local, identity) in installed.reversed() {
+                if let current = try? fm.attributesOfItem(atPath: local.path)[.systemFileNumber] as? NSNumber,
+                   current == identity {
+                    do { try fm.removeItem(at: local) }
+                    catch { AppLogger.shared.logError("添加套件入口回滚失败", error: error, relatedURLs: [("local", local)]) }
+                }
+            }
+            throw error
+        }
+        if !installed.isEmpty {
+            try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: localFolder.path)
+            refreshLaunchServicesRecursive(for: localFolder)
+        }
     }
 
     /// 写入 Folder Mirror 标记文件。
@@ -1571,54 +1887,24 @@ struct AppMigrationService {
         return URL(fileURLWithPath: path).standardizedFileURL
     }
 
-    /// 重新同步 Folder Mirror，使本地镜像与外部套件文件夹保持一致。
-    ///
-    /// 在 rescan 时调用（外部套件被 App Store / 自更新器更新后内容可能变化）：
-    /// - 现有内部 Stub → 调用 `refreshStubPortal` 同步版本/图标
-    /// - 外部新增的 `.app` → 新建 Stub；新增的其他文件/目录 → 新建符号链接
-    /// - 本地多余的项（外部已删除）→ 移除
-    /// 仅对带标记文件的真实镜像文件夹生效，旧版整体符号链接文件夹会被安全跳过。
-    func refreshFolderMirror(at localFolderURL: URL, from externalFolderURL: URL) {
+    /// A rescan updates only surviving managed entries. Missing entries express user intent;
+    /// unavailable targets may merely be in the middle of an updater transaction.
+    func refreshFolderMirror(at localFolderURL: URL, from externalFolderURL: URL, expectedGeneration: UInt64? = nil) {
+        guard Self.mutationCoordinator.tryBeginMaintenance(expectedGeneration: expectedGeneration) else { return }
+        defer { Self.mutationCoordinator.end() }
         let fm = fileManager
         guard (try? fm.attributesOfItem(atPath: localFolderURL.path)[.type]) as? FileAttributeType == .typeDirectory,
               let recorded = Self.folderMirrorExternalURL(at: localFolderURL, fileManager: fm),
               recorded.resolvingSymlinksInPath() == externalFolderURL.resolvingSymlinksInPath(),
-              let externalEntries = try? fm.contentsOfDirectory(at: externalFolderURL,
+              let entries = try? fm.contentsOfDirectory(at: localFolderURL,
                   includingPropertiesForKeys: nil, options: .skipsHiddenFiles) else { return }
-        let externalNames = Set(externalEntries.map(\.lastPathComponent))
-        var didChange = false
-        for entry in externalEntries {
-            let local = localFolderURL.appendingPathComponent(entry.lastPathComponent)
-            // Existing real files and official app replacements belong to the user.
-            if (try? fm.attributesOfItem(atPath: local.path)) != nil {
-                if entry.pathExtension == "app" { refreshStubPortal(at: local, from: entry) }
-                continue
-            }
-            do {
-                if entry.pathExtension == "app" { try createStubPortal(at: local, pointingTo: entry) }
-                else { try fm.createSymbolicLink(at: local, withDestinationURL: entry) }
-                didChange = true
-            } catch {
-                AppLogger.shared.logError("Folder Mirror：同步入口失败", error: error,
-                    relatedURLs: [("local", local), ("external", entry)])
-            }
-        }
-        if let entries = try? fm.contentsOfDirectory(at: localFolderURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) {
-            for local in entries where !externalNames.contains(local.lastPathComponent) {
-                let expected = externalFolderURL.appendingPathComponent(local.lastPathComponent)
-                guard localPortalKind(at: local, linkedTo: expected) != nil else { continue }
-                do { try fm.removeItem(at: local); didChange = true }
-                catch { AppLogger.shared.logError("Folder Mirror：清理旧入口失败", error: error) }
-            }
-        }
-        if didChange {
-            try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: localFolderURL.path)
-            refreshLaunchServicesRecursive(for: localFolderURL)
+        for local in entries where local.pathExtension == "app" {
+            refreshExistingStubPortal(at: local, from: externalFolderURL.appendingPathComponent(local.lastPathComponent))
         }
     }
 
     /// 创建 Stub Portal：极小的假 .app，含 launcher 脚本启动外部真实 app
-    private func createStubPortal(at localURL: URL, pointingTo externalURL: URL) throws {
+    private func createStubPortal(at localURL: URL, pointingTo externalURL: URL, register: Bool = true) throws {
         let fm = fileManager
 
         // 检测是否为 iOS 应用（有 Wrapper/ 或 WrappedBundle/ 目录）
@@ -1629,7 +1915,7 @@ struct AppMigrationService {
         if isIOSApp {
             try createIOSStubPortal(at: localURL, pointingTo: externalURL)
         } else {
-            try createMacOSStubPortal(at: localURL, pointingTo: externalURL)
+            try createMacOSStubPortal(at: localURL, pointingTo: externalURL, register: register)
         }
     }
 
@@ -1699,64 +1985,51 @@ struct AppMigrationService {
         AppLogger.shared.log("已创建 iOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
 
-    /// macOS 应用的 Stub Portal
-    private func createMacOSStubPortal(at localURL: URL, pointingTo externalURL: URL) throws {
-        let fm = fileManager
-        let localContents = localURL.appendingPathComponent("Contents")
-        let localMacOS = localContents.appendingPathComponent("MacOS")
-        let externalContents = externalURL.appendingPathComponent("Contents")
-        let externalResources = externalContents.appendingPathComponent("Resources")
+    /// macOS 应用的 Stub Portal. The private workspace owns only newly created files.
+    private func createMacOSStubPortal(at destinationURL: URL, pointingTo externalURL: URL, register: Bool = true) throws {
+        let localURL = destinationURL.deletingLastPathComponent()
+            .appendingPathComponent(".appports-create-\(UUID().uuidString).app")
+        let stage = try PortalStaging(at: localURL)
+        defer { stage.cleanup() }
+        do {
+            let localContents = localURL.appendingPathComponent("Contents")
+            let localMacOS = localContents.appendingPathComponent("MacOS")
+            let localResources = localContents.appendingPathComponent("Resources")
+            try stage.createDirectory("Contents")
+            try stage.createDirectory("Contents/MacOS")
+            try stage.createDirectory("Contents/Resources")
+            try copyNativeLauncher(to: localMacOS, resourcesDir: localResources, externalURL: externalURL)
+            try stage.recordGeneratedFiles(replacing: ["Contents/MacOS/launcher", "Contents/Resources/real_app_path.txt"])
 
-        // 1. 创建目录结构
-        try fm.createDirectory(at: localMacOS, withIntermediateDirectories: true, attributes: nil)
+            let externalContents = externalURL.appendingPathComponent("Contents")
+            let pkgInfo = externalContents.appendingPathComponent("PkgInfo")
+            var info = stat()
+            if lstat(pkgInfo.path, &info) == 0 {
+                let resolved = pkgInfo.resolvingSymlinksInPath()
+                guard resolved.path.hasPrefix(externalURL.resolvingSymlinksInPath().path + "/"),
+                      try PortalStaging.info(resolved).st_mode & S_IFMT == S_IFREG else {
+                    throw CocoaError(.fileReadInvalidFileName)
+                }
+                try stage.copyFile(from: resolved, relativePath: "Contents/PkgInfo")
+            } else if errno != ENOENT { throw PortalStaging.posixError(pkgInfo) }
 
-        // 2. 复制原生 launcher 二进制
-        let localResources = localContents.appendingPathComponent("Resources")
-        try fm.createDirectory(at: localResources, withIntermediateDirectories: true, attributes: nil)
-        try copyNativeLauncher(to: localMacOS, resourcesDir: localResources, externalURL: externalURL)
-
-        // 3. 复制 PkgInfo
-        let externalPkgInfo = externalContents.appendingPathComponent("PkgInfo")
-        if fm.fileExists(atPath: externalPkgInfo.path) {
-            try fm.copyItem(at: externalPkgInfo, to: localContents.appendingPathComponent("PkgInfo"))
-        }
-
-        // 4. 仅复制图标文件
-        if let plistData = try? Data(contentsOf: externalContents.appendingPathComponent("Info.plist")),
-           let plist = try? PropertyListSerialization.propertyList(from: plistData, format: nil) as? [String: Any],
-           let iconName = plist["CFBundleIconFile"] as? String {
-            let iconNameURL = URL(fileURLWithPath: iconName)
-            let iconExt = iconNameURL.pathExtension.isEmpty ? "icns" : iconNameURL.pathExtension
-            let iconBase = iconNameURL.pathExtension.isEmpty ? iconName : iconNameURL.deletingPathExtension().lastPathComponent
-            let externalIcon = externalResources.appendingPathComponent("\(iconBase).\(iconExt)")
-            if fm.fileExists(atPath: externalIcon.path) {
-                try fm.copyItem(at: externalIcon, to: localResources.appendingPathComponent("\(iconBase).\(iconExt)"))
+            for warning in try PortalPresentation.write(from: externalContents, to: localContents) {
+                AppLogger.shared.log(warning, level: "WARN")
             }
-        }
-
-        // 5. 生成 Info.plist
-        let externalInfoPlist = externalContents.appendingPathComponent("Info.plist")
-        if let plistData = try? Data(contentsOf: externalInfoPlist),
-           var plist = try? PropertyListSerialization.propertyList(from: plistData, format: nil) as? [String: Any] {
-            plist["CFBundleExecutable"] = "launcher"
-            plist["LSUIElement"] = true  // 后台运行，不在 Dock 显示图标
-            if let bundleID = plist["CFBundleIdentifier"] as? String {
-                plist["CFBundleIdentifier"] = "\(bundleID).appports.stub"
+            try stage.recordPresentationFiles()
+            try signAndVerifyPortal(at: localURL)
+            try stage.recordGeneratedFiles(replacing: ["Contents/_CodeSignature", "Contents/MacOS/launcher"])
+            try stage.prepareForInstall()
+            guard renameatx_np(AT_FDCWD, localURL.path, AT_FDCWD, destinationURL.path, UInt32(RENAME_EXCL)) == 0 else {
+                throw PortalStaging.posixError(destinationURL)
             }
-            let updateKeys = ["SUFeedURL", "SUPublicDSAKeyFile", "SUPublicEDKey",
-                              "SUScheduledCheckInterval", "SUAllowsAutomaticUpdates",
-                              "ElectronDefaultApp", "electron"]
-            for key in updateKeys { plist.removeValue(forKey: key) }
-
-            if let newData = try? PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0) {
-                try newData.write(to: localContents.appendingPathComponent("Info.plist"))
-            }
+            stage.relinquish()
+            if register { refreshLaunchServices(for: destinationURL) }
+            AppLogger.shared.log("已创建 macOS Stub Portal: \(destinationURL.lastPathComponent) -> \(externalURL.path)")
+        } catch {
+            AppLogger.shared.logError("创建应用入口失败", error: error, relatedURLs: [("stage", localURL), ("external", externalURL)])
+            throw error
         }
-
-        // 6. Ad-hoc 签名
-        resignAppBundle(at: localURL)
-
-        AppLogger.shared.log("已创建 macOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
 
     /// 创建透明混合入口（Transparent Hybrid，原型）。
@@ -1847,12 +2120,20 @@ struct AppMigrationService {
     ///
     /// 当外置 app 更新后，FolderMonitor 触发 rescan 时调用。
     /// 对比本地 Stub Portal 与外置 app 的版本号，如有变化则更新 plist、图标并刷新 Launch Services。
-    func refreshStubPortal(at localURL: URL, from externalURL: URL) {
-        guard hasRealStubStorage(at: localURL),
+    @discardableResult
+    func refreshStubPortal(at localURL: URL, from externalURL: URL, force: Bool = false, expectedGeneration: UInt64? = nil) -> Bool {
+        guard Self.mutationCoordinator.tryBeginMaintenance(expectedGeneration: expectedGeneration) else { return false }
+        defer { Self.mutationCoordinator.end() }
+        return refreshExistingStubPortal(at: localURL, from: externalURL, force: force)
+    }
+
+    @discardableResult
+    private func refreshExistingStubPortal(at localURL: URL, from externalURL: URL, force: Bool = false) -> Bool {
+        guard AppPortalMaintenance.targetIdentityMatches(localURL: localURL, externalURL: externalURL),
+              hasRealStubStorage(at: localURL),
               localPortalKind(at: localURL, linkedTo: externalURL) == .stubPortal,
               let resolved = try? CodeSigner.resolveAppURL(at: localURL),
-              resolved.resolvingSymlinksInPath() == externalURL.resolvingSymlinksInPath() else { return }
-        let fm = fileManager
+              resolved.resolvingSymlinksInPath() == externalURL.resolvingSymlinksInPath() else { return false }
         let localContents = localURL.appendingPathComponent("Contents")
         let externalContents = externalURL.appendingPathComponent("Contents")
         let localInfoPlist = localContents.appendingPathComponent("Info.plist")
@@ -1860,73 +2141,96 @@ struct AppMigrationService {
 
         // 读取外置 app 的 Info.plist
         guard let extData = try? Data(contentsOf: externalInfoPlist),
-              var extPlist = try? PropertyListSerialization.propertyList(from: extData, format: nil) as? [String: Any] else {
-            return
+              let extPlist = try? PropertyListSerialization.propertyList(from: extData, format: nil) as? [String: Any] else {
+            return false
         }
 
         // 读取本地 Stub Portal 的 Info.plist
         guard let localData = try? Data(contentsOf: localInfoPlist),
               let localPlist = try? PropertyListSerialization.propertyList(from: localData, format: nil) as? [String: Any] else {
-            return
+            return false
         }
 
-        // 对比版本号
-        let localVersion = localPlist["CFBundleShortVersionString"] as? String
-        let externalVersion = extPlist["CFBundleShortVersionString"] as? String
-        let localBuild = localPlist["CFBundleVersion"] as? String
-        let externalBuild = extPlist["CFBundleVersion"] as? String
-
-        guard localVersion != externalVersion || localBuild != externalBuild else { return }
-
-        AppLogger.shared.logContext(
-            "Stub Portal 版本变化，刷新中",
-            details: [
-                ("app", localURL.lastPathComponent),
-                ("old_version", localVersion ?? "nil"),
-                ("new_version", externalVersion ?? "nil"),
-                ("old_build", localBuild ?? "nil"),
-                ("new_build", externalBuild ?? "nil")
-            ]
-        )
-
-        // 用外置 app 的 plist 重新生成 Stub Portal 的 plist（与 createMacOSStubPortal 相同逻辑）
-        extPlist["CFBundleExecutable"] = "launcher"
-        extPlist["LSUIElement"] = true
-        if let bundleID = extPlist["CFBundleIdentifier"] as? String {
-            extPlist["CFBundleIdentifier"] = "\(bundleID).appports.stub"
+        guard force || PortalPresentation.needsRefresh(local: localPlist, external: extPlist) else { return false }
+        let stageURL = localURL.deletingLastPathComponent()
+            .appendingPathComponent(".appports-refresh-\(UUID().uuidString).app")
+        do {
+            let original = try PortalStaging.snapshot(localURL)
+            let stage = try PortalStaging(at: stageURL)
+            defer { stage.cleanup() }
+            // Copy bytes into independent files. Never inherit uchg or hard links from the old portal.
+            try stage.copyContents(from: localURL, snapshot: original)
+            for warning in try PortalPresentation.write(from: externalContents, to: stageURL.appendingPathComponent("Contents")) {
+                AppLogger.shared.log(warning, level: "WARN")
+            }
+            try stage.recordPresentationFiles()
+            try signAndVerifyPortal(at: stageURL)
+            try stage.recordGeneratedFiles(replacing: ["Contents/_CodeSignature", "Contents/MacOS/launcher"])
+            try stage.prepareForInstall()
+            var coordinationError: NSError?
+            var commitError: Error?
+            var committed = false
+            NSFileCoordinator().coordinate(writingItemAt: localURL, options: .forReplacing, error: &coordinationError) { coordinatedURL in
+                do {
+                    guard AppPortalMaintenance.targetIdentityMatches(localURL: coordinatedURL, externalURL: externalURL),
+                          hasRealStubStorage(at: coordinatedURL),
+                          localPortalKind(at: coordinatedURL, linkedTo: externalURL) == .stubPortal else { return }
+                    // Check the entire old tree, not just its root inode, before replacing it.
+                    guard try PortalStaging.snapshot(coordinatedURL) == original else { return }
+                    try stage.validate()
+                    if renameatx_np(AT_FDCWD, stageURL.path, AT_FDCWD, coordinatedURL.path, UInt32(RENAME_SWAP)) != 0 {
+                        throw PortalStaging.posixError(coordinatedURL)
+                    }
+                    stage.adoptExchangedTree(original)
+                    committed = true
+                } catch { commitError = error }
+            }
+            if let error = coordinationError ?? commitError as NSError? { throw error }
+            if committed { refreshLaunchServices(for: localURL) }
+            return committed
+        } catch {
+            AppLogger.shared.logError("入口显示资料修复失败，保留原入口", error: error,
+                                      relatedURLs: [("local", localURL), ("external", externalURL)])
+            return false
         }
-        let updateKeys = ["SUFeedURL", "SUPublicDSAKeyFile", "SUPublicEDKey",
-                          "SUScheduledCheckInterval", "SUAllowsAutomaticUpdates",
-                          "ElectronDefaultApp", "electron"]
-        for key in updateKeys { extPlist.removeValue(forKey: key) }
+    }
 
-        if let newData = try? PropertyListSerialization.data(fromPropertyList: extPlist, format: .xml, options: 0) {
-            try? newData.write(to: localInfoPlist)
+    /// Signing failures are fatal before a staged portal is installed.
+    private func signAndVerifyPortal(at appURL: URL) throws {
+        // codesign may write into _CodeSignature; it must never be a mirrored directory.
+        let signature = appURL.appendingPathComponent("Contents/_CodeSignature")
+        var signatureInfo = stat()
+        if lstat(signature.path, &signatureInfo) == 0, signatureInfo.st_mode & S_IFMT != S_IFDIR {
+            throw CocoaError(.fileWriteInvalidFileName)
         }
-
-        // 刷新图标
-        let localResources = localContents.appendingPathComponent("Resources")
-        let externalResources = externalContents.appendingPathComponent("Resources")
-        if let iconName = extPlist["CFBundleIconFile"] as? String {
-            let iconNameURL = URL(fileURLWithPath: iconName)
-            let iconExt = iconNameURL.pathExtension.isEmpty ? "icns" : iconNameURL.pathExtension
-            let iconBase = iconNameURL.pathExtension.isEmpty ? iconName : iconNameURL.deletingPathExtension().lastPathComponent
-            let iconFileName = "\(iconBase).\(iconExt)"
-            let externalIcon = externalResources.appendingPathComponent(iconFileName)
-            let localIcon = localResources.appendingPathComponent(iconFileName)
-            if fm.fileExists(atPath: externalIcon.path) {
-                try? fm.removeItem(at: localIcon)
-                try? fm.copyItem(at: externalIcon, to: localIcon)
+        for entry in try PortalStaging.snapshot(appURL).values where entry.kind == S_IFREG {
+            guard entry.links == 1 else { throw CocoaError(.fileWriteNoPermission) }
+        }
+        // Only staged portal resources are cleaned; the external original is never modified.
+        let attributes = Process()
+        attributes.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
+        attributes.arguments = ["-crs", appURL.path]
+        attributes.standardOutput = FileHandle.nullDevice
+        attributes.standardError = FileHandle.nullDevice
+        try attributes.run()
+        attributes.waitUntilExit()
+        guard attributes.terminationStatus == 0 else {
+            throw NSError(domain: "AppPorts.PortalSigning", code: Int(attributes.terminationStatus),
+                          userInfo: [NSLocalizedDescriptionKey: "无法准备入口签名资料".localized])
+        }
+        for arguments in [["--force", "--sign", "-", appURL.path], ["--verify", "--strict", appURL.path]] {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
+            process.arguments = arguments
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            try process.run()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else {
+                throw NSError(domain: "AppPorts.PortalSigning", code: Int(process.terminationStatus),
+                              userInfo: [NSLocalizedDescriptionKey: "入口签名验证失败".localized])
             }
         }
-
-        // 重新 ad-hoc 签名
-        resignAppBundle(at: localURL)
-
-        // 刷新 Launch Services
-        refreshLaunchServices(for: localURL)
-
-        AppLogger.shared.log("已刷新 Stub Portal: \(localURL.lastPathComponent) (\(localVersion ?? "?") → \(externalVersion ?? "?"))")
     }
 
     private func refreshLaunchServices(for appURL: URL) {
@@ -1937,6 +2241,9 @@ struct AppMigrationService {
         do {
             try process.run()
             process.waitUntilExit()
+            if process.terminationStatus != 0 {
+                AppLogger.shared.log("lsregister 退出码: \(process.terminationStatus)", level: "WARN")
+            }
         } catch {
             AppLogger.shared.log("lsregister 刷新失败: \(appURL.lastPathComponent)", level: "WARN")
         }
@@ -1951,6 +2258,9 @@ struct AppMigrationService {
         do {
             try process.run()
             process.waitUntilExit()
+            if process.terminationStatus != 0 {
+                AppLogger.shared.log("lsregister 退出码: \(process.terminationStatus)", level: "WARN")
+            }
         } catch {
             AppLogger.shared.log("lsregister 递归刷新失败: \(folderURL.lastPathComponent)", level: "WARN")
         }
@@ -2084,9 +2394,28 @@ struct AppMigrationService {
 
         return appsInFolder.compactMap { appURL in
             let localAppURL = localAppsDir.appendingPathComponent(appURL.lastPathComponent)
-            guard let kind = localPortalKind(at: localAppURL, linkedTo: appURL) else { return nil }
-            return LocalPortalSnapshot(localURL: localAppURL, externalURL: appURL, kind: kind)
+            guard let kind = localPortalKind(at: localAppURL, linkedTo: appURL),
+                  let attributes = try? fileManager.attributesOfItem(atPath: localAppURL.path),
+                  let inode = attributes[.systemFileNumber] as? NSNumber,
+                  let device = attributes[.systemNumber] as? NSNumber else { return nil }
+            return LocalPortalSnapshot(localURL: localAppURL, externalURL: appURL, kind: kind, inode: inode, device: device)
         }
+    }
+
+    private func retirePortal(_ snapshot: LocalPortalSnapshot) throws -> Bool {
+        var coordinationError: NSError?
+        var removalError: Error?
+        var removed = false
+        NSFileCoordinator().coordinate(writingItemAt: snapshot.localURL, options: .forDeleting, error: &coordinationError) { url in
+            guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
+                  attributes[.systemFileNumber] as? NSNumber == snapshot.inode,
+                  attributes[.systemNumber] as? NSNumber == snapshot.device,
+                  localPortalKind(at: url, linkedTo: snapshot.externalURL) == snapshot.kind else { return }
+            do { try fileManager.removeItem(at: url); removed = true }
+            catch { removalError = error }
+        }
+        if let error = coordinationError ?? removalError as NSError? { throw error }
+        return removed
     }
 
     private func recreatePortals(from snapshots: [LocalPortalSnapshot], operationID: String) {
@@ -2122,8 +2451,14 @@ struct AppMigrationService {
             level: "WARN"
         )
 
-        if fileManager.fileExists(atPath: appToMove.path.path) {
-            try? fileManager.removeItem(at: appToMove.path)
+        if let attributes = try? fileManager.attributesOfItem(atPath: appToMove.path.path) {
+            guard let kind = localPortalKind(at: appToMove.path, linkedTo: destinationURL),
+                  let inode = attributes[.systemFileNumber] as? NSNumber,
+                  let device = attributes[.systemNumber] as? NSNumber,
+                  try retirePortal(LocalPortalSnapshot(localURL: appToMove.path, externalURL: destinationURL,
+                      kind: kind, inode: inode, device: device)) else {
+                throw CocoaError(.fileWriteFileExists)
+            }
         }
 
         let copier = FileCopier()
@@ -2149,5 +2484,310 @@ struct AppMigrationService {
         case .transparentHybrid:
             return "transparent_hybrid"
         }
+    }
+}
+
+/// One process-wide lease across service instances. Async operations suspend while waiting;
+/// synchronous UI actions fail promptly rather than blocking the main thread behind a copy.
+final class PortalMutationCoordinator {
+    private let lock = NSLock()
+    private var occupied = false
+    private var currentGeneration: UInt64 = 0
+
+    var generation: UInt64 {
+        lock.lock()
+        defer { lock.unlock() }
+        return currentGeneration
+    }
+
+    func tryBegin() -> Bool {
+        claim(isMutation: true, expectedGeneration: nil)
+    }
+
+    func tryBeginMaintenance(expectedGeneration: UInt64?) -> Bool {
+        claim(isMutation: false, expectedGeneration: expectedGeneration)
+    }
+
+    private func claim(isMutation: Bool, expectedGeneration: UInt64?) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !occupied, expectedGeneration == nil || expectedGeneration == currentGeneration else { return false }
+        occupied = true
+        if isMutation { currentGeneration &+= 1 }
+        return true
+    }
+
+    func beginSynchronously() throws {
+        guard tryBegin() else {
+            throw NSError(domain: "AppPorts.PortalMutation", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "应用操作正在进行，请稍后重试。".localized])
+        }
+    }
+
+    func begin() async throws {
+        while !tryBegin() { try await Task.sleep(nanoseconds: 10_000_000) }
+        do { try Task.checkCancellation() }
+        catch { end(); throw error }
+    }
+
+    func end() {
+        lock.lock()
+        occupied = false
+        lock.unlock()
+    }
+}
+
+/// Records ownership before a progress consumer can replace the destination.
+private actor CopyDestinationOwnership {
+    struct Identity: Equatable, Sendable {
+        let inode: UInt64
+        let device: UInt64
+    }
+    private var captured: Identity?
+
+    nonisolated static func identity(at url: URL) -> Identity? {
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let inode = attributes[.systemFileNumber] as? NSNumber,
+              let device = attributes[.systemNumber] as? NSNumber else { return nil }
+        return Identity(inode: inode.uint64Value, device: device.uint64Value)
+    }
+
+    func observe(_ url: URL) {
+        if captured == nil { captured = Self.identity(at: url) }
+    }
+
+    func recorded() -> Identity? { captured }
+}
+
+
+/// Tracks the files of one portal workspace. Source flags and hard links never enter new files.
+private final class PortalStaging {
+    struct Entry: Equatable {
+        let device: dev_t
+        let inode: ino_t
+        let kind: mode_t
+        let links: nlink_t
+        let flags: UInt32
+        let size: off_t
+        let modifiedSeconds: Int
+        let modifiedNanoseconds: Int
+        init(_ value: stat) {
+            device = value.st_dev; inode = value.st_ino; kind = value.st_mode & S_IFMT
+            links = value.st_nlink; flags = value.st_flags; size = value.st_size
+            modifiedSeconds = value.st_mtimespec.tv_sec; modifiedNanoseconds = value.st_mtimespec.tv_nsec
+        }
+        func sameIdentity(_ other: Entry) -> Bool { device == other.device && inode == other.inode && kind == other.kind }
+    }
+    let url: URL
+    private var owned: [String: Entry] = [:]
+    private var active = true
+
+    init(at url: URL) throws {
+        self.url = url
+        guard mkdir(url.path, 0o700) == 0 else { throw Self.posixError(url) }
+        owned[""] = Entry(try Self.info(url))
+    }
+
+    static func posixError(_ url: URL) -> NSError {
+        NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: [NSFilePathErrorKey: url.path])
+    }
+    static func info(_ url: URL) throws -> stat {
+        var value = stat()
+        guard lstat(url.path, &value) == 0 else { throw posixError(url) }
+        return value
+    }
+    static func snapshot(_ root: URL) throws -> [String: Entry] {
+        var entries: [String: Entry] = [:]
+        func visit(_ relative: String) throws {
+            let path = relative.isEmpty ? root : root.appendingPathComponent(relative)
+            let value = try info(path)
+            entries[relative] = Entry(value)
+            if value.st_mode & S_IFMT == S_IFDIR {
+                for name in try FileManager.default.contentsOfDirectory(atPath: path.path).sorted() {
+                    try visit(relative.isEmpty ? name : relative + "/" + name)
+                }
+            }
+        }
+        try visit("")
+        return entries
+    }
+
+    private func verifyParents(of relative: String) throws {
+        var parts = relative.split(separator: "/").map(String.init)
+        parts.removeLast()
+        for count in 0...parts.count {
+            let key = parts.prefix(count).joined(separator: "/")
+            let path = key.isEmpty ? url : url.appendingPathComponent(key)
+            guard let expected = owned[key], expected.kind == S_IFDIR,
+                  expected.sameIdentity(Entry(try Self.info(path))),
+                  path.resolvingSymlinksInPath().standardizedFileURL.path == path.standardizedFileURL.path else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+        }
+    }
+
+    func createDirectory(_ relative: String) throws {
+        try verifyParents(of: relative)
+        let path = url.appendingPathComponent(relative)
+        guard mkdir(path.path, 0o755) == 0 else { throw Self.posixError(path) }
+        owned[relative] = Entry(try Self.info(path))
+    }
+
+    func copyFile(from source: URL, relativePath: String, expected: Entry? = nil) throws {
+        try verifyParents(of: relativePath)
+        let input = open(source.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
+        guard input >= 0 else { throw Self.posixError(source) }
+        let reader = FileHandle(fileDescriptor: input, closeOnDealloc: true)
+        defer { try? reader.close() }
+        var before = stat()
+        guard fstat(input, &before) == 0, before.st_mode & S_IFMT == S_IFREG,
+              expected == nil || expected == Entry(before) else { throw CocoaError(.fileReadInvalidFileName) }
+        let target = url.appendingPathComponent(relativePath)
+        let output = open(target.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
+        guard output >= 0 else { throw Self.posixError(target) }
+        let writer = FileHandle(fileDescriptor: output, closeOnDealloc: true)
+        var created = stat()
+        guard fstat(output, &created) == 0 else { try? writer.close(); throw Self.posixError(target) }
+        owned[relativePath] = Entry(created)
+        defer {
+            // Record the same open file, including a partial write, without adopting a path replacement.
+            var current = stat()
+            if fstat(output, &current) == 0 { owned[relativePath] = Entry(current) }
+            try? writer.close()
+        }
+        while let bytes = try reader.read(upToCount: 1_048_576), !bytes.isEmpty { try writer.write(contentsOf: bytes) }
+        var after = stat()
+        guard fstat(input, &after) == 0, Entry(after) == Entry(before) else { throw CocoaError(.fileReadCorruptFile) }
+        guard fchmod(output, before.st_mode & 0o777) == 0 else { throw Self.posixError(target) }
+    }
+
+    func copyContents(from source: URL, snapshot: [String: Entry]) throws {
+        for relative in snapshot.keys.sorted() where !relative.isEmpty {
+            // A new signature is generated; no old signature path can redirect codesign.
+            if relative == "Contents/_CodeSignature" || relative.hasPrefix("Contents/_CodeSignature/") { continue }
+            let sourcePath = source.appendingPathComponent(relative)
+            let expected = snapshot[relative]!
+            guard Entry(try Self.info(sourcePath)) == expected else { throw CocoaError(.fileReadCorruptFile) }
+            switch expected.kind {
+            case S_IFDIR: try createDirectory(relative)
+            case S_IFREG: try copyFile(from: sourcePath, relativePath: relative, expected: expected)
+            case S_IFLNK:
+                try verifyParents(of: relative)
+                let target = url.appendingPathComponent(relative)
+                let link = try FileManager.default.destinationOfSymbolicLink(atPath: sourcePath.path)
+                guard symlink(link, target.path) == 0 else { throw Self.posixError(target) }
+                owned[relative] = Entry(try Self.info(target))
+            default: throw CocoaError(.fileReadUnsupportedScheme)
+            }
+        }
+    }
+
+    func recordPresentationFiles() throws {
+        // The presentation writer may rebuild .icon/lproj directories, but it cannot
+        // replace the Resources root or the launcher's target marker.
+        try recordGeneratedFiles(replacing: ["Contents/Info.plist", "Contents/Resources"],
+                                 preserving: ["Contents/Resources", "Contents/Resources/real_app_path.txt"])
+    }
+
+    /// Admit changes only in the current writer's output paths. Core directories
+    /// and unrelated files must still be the objects that this workspace created.
+    func recordGeneratedFiles(replacing paths: Set<String>, preserving: Set<String> = []) throws {
+        let updated = try Self.snapshot(url)
+        for path in Set(owned.keys).union(updated.keys) {
+            if !preserving.contains(path), paths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) { continue }
+            guard let previous = owned[path], let current = updated[path],
+                  previous.kind == S_IFDIR ? previous.sameIdentity(current) : previous == current else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+        }
+        owned = updated
+    }
+    func validate() throws {
+        guard try Self.snapshot(url) == owned else { throw CocoaError(.fileWriteInvalidFileName) }
+    }
+    func prepareForInstall() throws {
+        try validate()
+        let fd = open(url.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+        guard fd >= 0 else { throw Self.posixError(url) }
+        defer { close(fd) }
+        var value = stat()
+        guard fstat(fd, &value) == 0, owned[""] == Entry(value) else { throw CocoaError(.fileWriteInvalidFileName) }
+        guard fchmod(fd, 0o755) == 0 else { throw Self.posixError(url) }
+    }
+    func relinquish() { active = false }
+    func adoptExchangedTree(_ snapshot: [String: Entry]) { owned = snapshot }
+
+    func cleanup() {
+        guard active else { return }
+        let isolated = url.deletingLastPathComponent().appendingPathComponent(".appports-cleanup-\(UUID().uuidString).app")
+        var coordinationError: NSError?
+        var cleanupError: Error?
+        NSFileCoordinator().coordinate(writingItemAt: url, options: .forDeleting, error: &coordinationError) { path in
+            do {
+                // Directory timestamps change as children are created; ownership is device/inode/type.
+                let current = try Self.snapshot(path)
+                guard current.keys.sorted() == owned.keys.sorted(), current.allSatisfy({ key, entry in
+                    guard let expected = owned[key] else { return false }
+                    return expected.kind == S_IFDIR ? expected.sameIdentity(entry) : expected == entry
+                }) else { throw CocoaError(.fileWriteInvalidFileName) }
+                guard renameatx_np(AT_FDCWD, path.path, AT_FDCWD, isolated.path, UInt32(RENAME_EXCL)) == 0 else {
+                    throw Self.posixError(path)
+                }
+                let moved = try Self.snapshot(isolated)
+                guard moved == current else { throw CocoaError(.fileWriteInvalidFileName) }
+                try removeContents(isolated, snapshot: current)
+            } catch { cleanupError = error }
+        }
+        if let error = cleanupError ?? coordinationError {
+            AppLogger.shared.logError("应用入口临时副本清理失败，保留文件", error: error,
+                                      relatedURLs: [("stage", url), ("preserved", isolated)])
+        }
+    }
+
+    private func removeContents(_ root: URL, snapshot: [String: Entry]) throws {
+        // Bind every operation to its parent directory descriptor. Replacing an
+        // ancestor with a symlink cannot redirect a flag change into the real app.
+        let parent = open(root.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+        guard parent >= 0 else { throw Self.posixError(root) }
+        defer { close(parent) }
+        func current(_ parentFD: Int32, name: String) throws -> stat {
+            var value = stat()
+            guard fstatat(parentFD, name, &value, AT_SYMLINK_NOFOLLOW) == 0 else { throw Self.posixError(root) }
+            return value
+        }
+        func remove(_ parentFD: Int32, name: String, relative: String) throws {
+            guard let expected = snapshot[relative] else { throw CocoaError(.fileWriteInvalidFileName) }
+            let observed = Entry(try current(parentFD, name: name))
+            guard expected.kind == S_IFDIR ? expected.sameIdentity(observed) : expected == observed else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+            if expected.kind == S_IFLNK {
+                guard unlinkat(parentFD, name, 0) == 0 else { throw Self.posixError(root) }
+                return
+            }
+            guard expected.kind == S_IFREG || expected.kind == S_IFDIR else { throw CocoaError(.fileWriteInvalidFileName) }
+            let fd = openat(parentFD, name, O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
+            guard fd >= 0 else { throw Self.posixError(root) }
+            defer { close(fd) }
+            var value = stat()
+            guard fstat(fd, &value) == 0, expected.sameIdentity(Entry(value)) else { throw CocoaError(.fileWriteInvalidFileName) }
+            if expected.kind == S_IFREG, Entry(value) != expected { throw CocoaError(.fileWriteInvalidFileName) }
+            if value.st_flags & UInt32(UF_IMMUTABLE) != 0 {
+                // Removing a link is safe, but changing flags on a shared inode would change its other owner.
+                guard expected.kind != S_IFREG || value.st_nlink == 1 else { throw CocoaError(.fileWriteNoPermission) }
+                guard fchflags(fd, value.st_flags & ~UInt32(UF_IMMUTABLE)) == 0 else { throw Self.posixError(root) }
+            }
+            if expected.kind == S_IFDIR {
+                let prefix = relative.isEmpty ? "" : relative + "/"
+                for child in snapshot.keys.sorted() where child.hasPrefix(prefix) && child != relative {
+                    let suffix = String(child.dropFirst(prefix.count))
+                    if !suffix.contains("/") { try remove(fd, name: suffix, relative: child) }
+                }
+            }
+            guard expected.sameIdentity(Entry(try current(parentFD, name: name))) else { throw CocoaError(.fileWriteInvalidFileName) }
+            // AT_REMOVEDIR refuses untracked children instead of recursively deleting them.
+            guard unlinkat(parentFD, name, expected.kind == S_IFDIR ? AT_REMOVEDIR : 0) == 0 else { throw Self.posixError(root) }
+        }
+        try remove(parent, name: root.lastPathComponent, relative: "")
     }
 }

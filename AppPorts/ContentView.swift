@@ -257,6 +257,7 @@ struct ContentView: View {
 
     // 设置页面
     @State private var showAppStoreSettings = false
+    @State private var showSearchExclusion = false
     
     // 单应用复制进度
     @State private var progressBytes: Int64 = 0
@@ -268,6 +269,7 @@ struct ContentView: View {
     // Monitors
     @State private var localMonitor: FolderMonitor?
     @State private var externalMonitor: FolderMonitor?
+    @State private var externalLibraryMonitor: FolderMonitor?
 
     // Monitor 防抖：合并两个 monitor 的扫描请求
     @State private var monitorRescanDebouncer = RescanDebouncer()
@@ -444,6 +446,9 @@ struct ContentView: View {
         // App Store 外部安装引导弹窗
         .warningSheet($masGuidanceRequest)
         // App Store 设置页面
+        .sheet(isPresented: $showSearchExclusion) {
+            AppSearchExclusionView(load: loadExternalAppSearchStatus, process: excludeExternalAppsFromSearch)
+        }
         .sheet(isPresented: $showAppStoreSettings) {
             AppStoreSettingsView()
         }
@@ -831,6 +836,16 @@ struct ContentView: View {
             dataDirsToolbarControls
         }
 
+        if mainTab == .apps {
+            Button {
+                showSearchExclusion = true
+            } label: {
+                Label("排除外盘应用索引".localized, systemImage: "magnifyingglass.circle")
+            }
+            .buttonStyle(.borderless)
+            .disabled(operationState.isBusy || externalDriveURL == nil)
+        }
+
         // App Store Settings Button（始终显示）
         Button(action: { showAppStoreSettings = true }) {
             Label("设置".localized, systemImage: "gearshape")
@@ -1182,7 +1197,7 @@ struct ContentView: View {
         // 至少有一个可链接的应用
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external }
+        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
         
         return !validApps.isEmpty
     }
@@ -1190,7 +1205,7 @@ struct ContentView: View {
     func getLinkButtonTitle() -> String {
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external }
+        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
         
         if selectedExternalApps.isEmpty || validApps.isEmpty {
             return "链接回本地".localized
@@ -1257,6 +1272,7 @@ struct ContentView: View {
             details: [("scan_id", scanID), ("directory", localAppsURL.path)]
         )
         // Run on background task to avoid blocking Main Thread
+        let maintenanceGeneration = AppMigrationService.maintenanceGeneration
         Task.detached(priority: .userInitiated) {
             // Gather data needed for scanning
             let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
@@ -1288,23 +1304,15 @@ struct ContentView: View {
 
             guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: true) }) else { return }
 
-            // 检测外置 app 版本变化，刷新本地 Stub Portal
-            if let externalDir = externalAppsDir {
-                let externalApps = await scanner.scanExternalApps(at: externalDir, localAppsDir: URL(fileURLWithPath: "/Applications"))
-                let service = AppMigrationService()
-                for localApp in finalApps where localApp.status == AppStatus.linked {
-                    guard await MainActor.run(body: {
-                        self.isCurrentScan(request, isLocal: true) && !self.operationState.isBusy
-                    }) else { break }
-                    guard let externalApp = externalApps.first(where: { $0.name == localApp.name }) else { continue }
-                    if localApp.usesFolderOperation {
-                        // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
-                        service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
-                    } else {
-                        service.refreshStubPortal(at: localApp.path, from: externalApp.path)
-                    }
-                }
+            // Follow each surviving portal's recorded target, not a same-named app.
+            for localApp in finalApps {
+                guard await MainActor.run(body: {
+                    self.isCurrentScan(request, isLocal: true) && !self.operationState.isBusy
+                }) else { break }
+                _ = AppPortalMaintenance.refreshEntries(at: localApp.path, expectedGeneration: maintenanceGeneration)
             }
+            do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
+            catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
 
             AppLogger.shared.logContext(
                 "本地应用扫描完成",
@@ -1678,9 +1686,82 @@ struct ContentView: View {
         return false
     }
 
-    /// 先发布已完成的迁移状态，再安排完整扫描；迁移前启动的旧扫描不可覆盖此结果。
+    /// Fresh discovery for the board must not depend on the main pane's scan finishing.
+    /// AppScanner and entries(at:) only read; portal maintenance is intentionally absent.
+    private func searchExclusionSnapshot(root: URL, localDirectories: [URL]) async
+        -> (apps: [AppItem], entries: [AppPortalMaintenance.Entry]) {
+        let scanner = AppScanner()
+        var apps: [AppItem] = []
+        var entries: [AppPortalMaintenance.Entry] = []
+        for directory in localDirectories {
+            apps = mergeExternalApps(apps, with: await scanner.scanExternalApps(
+                at: root, localAppsDir: directory, grouping: .filePath
+            ))
+            let children = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil,
+                                                                         options: .skipsHiddenFiles)) ?? []
+            entries += children.flatMap { AppPortalMaintenance.entries(at: $0) }
+        }
+        return (apps, entries)
+    }
+
+    @MainActor
+    private func loadExternalAppSearchStatus() async -> AppSearchExclusionReport {
+        guard let root = externalDriveURL else { return AppSearchExclusionReport() }
+        let directories = [localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) }
+        return await Task.detached(priority: .userInitiated) {
+            let snapshot = await searchExclusionSnapshot(root: root, localDirectories: directories)
+            return AppSearchExclusionService.inspect(apps: snapshot.apps, externalRoot: root, localEntries: snapshot.entries)
+        }.value
+    }
+
+    @MainActor
+    private func excludeExternalAppsFromSearch() async -> AppSearchExclusionReport {
+        guard let root = externalDriveURL, let token = operationState.begin() else {
+            return AppSearchExclusionReport(operationError: "正在执行其他应用操作，请稍后重试。".localized)
+        }
+        localScanState.invalidate()
+        externalScanState.invalidate()
+        defer {
+            operationState.finish(token)
+            startMonitoringExternal(url: root)
+            scanBothAppsAtomic()
+        }
+        let directories = [localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) }
+        return await Task.detached(priority: .userInitiated) {
+            let snapshot = await searchExclusionSnapshot(root: root, localDirectories: directories)
+            let current = AppSearchExclusionService.inspect(apps: snapshot.apps, externalRoot: root, localEntries: snapshot.entries)
+            if current.operationError != nil { return current }
+            var report = AppSearchExclusionReport()
+            for app in snapshot.apps {
+                if let observed = current.entries.first(where: { $0.id == app.id }),
+                   observed.outcome != .pending && observed.outcome != .dockWarning {
+                    report.entries.append(observed)
+                    continue
+                }
+                do {
+                    let localURLs = snapshot.entries.filter { $0.externalURL.path == app.path.standardizedFileURL.path }.map(\.localURL)
+                    let result = try await AppMigrationService().excludeFromSearch(
+                        app: app, externalRoot: root, localEntries: localURLs)
+                    let message = result.dockSynchronized
+                        ? "应用存储位置已排除索引。".localized
+                        : "应用存储位置已排除索引，Dock 快捷方式同步失败。".localized
+                    report.entries.append(.init(id: app.id, name: app.displayName, iconURL: result.destination,
+                        outcome: result.dockSynchronized ? .completed : .dockWarning, message: message))
+                } catch {
+                    report.entries.append(.init(id: app.id, name: app.displayName, iconURL: app.displayURL,
+                                                outcome: .failed, message: error.localizedDescription))
+                    AppLogger.shared.logError("排除外盘应用索引失败", error: error, relatedURLs: [("app", app.path)])
+                }
+            }
+            return report
+        }.value
+    }
+
+    /// Publish completed operations before scheduling a fresh scan.
     @MainActor
     private func recordCompletedTransfer(_ transfer: AppListTransfer) {
+        do { try AppPortalMaintenance.recordCompletedTransfer(transfer) }
+        catch { AppLogger.shared.logError("保存应用搜索记录失败", error: error) }
         localScanState.invalidate()
         externalScanState.invalidate()
         let changedIDs = transfer.apply(localApps: &localApps, externalApps: &externalApps)
@@ -1704,7 +1785,7 @@ struct ContentView: View {
 
     func performMoveOutWholeSymlink(_ app: AppItem) {
         guard let dest = externalDriveURL else { return }
-        let destURL = dest.appendingPathComponent(app.name)
+        let destURL = AppSearchExclusionService.destination(for: app, in: dest)
         AppLogger.shared.logContext(
             "用户请求传统链接迁移",
             details: [("app_name", app.displayName), ("destination", destURL.path)]
@@ -1760,7 +1841,12 @@ struct ContentView: View {
     }
     
     func deleteLink(app: AppItem) throws {
+        // Capture targets while the entry still exists. Search exclusion outlives deletion.
+        do { try AppPortalMaintenance.rememberEntries(at: app.path) }
+        catch { AppLogger.shared.logError("保存删除前的应用搜索记录失败", error: error) }
         try AppMigrationService().deleteLink(app: app)
+        do { try AppPortalMaintenance.recordDeletion(at: app.path) }
+        catch { AppLogger.shared.logError("保存入口删除后的搜索状态失败", error: error) }
     }
     
     @discardableResult
@@ -2054,14 +2140,9 @@ struct ContentView: View {
                     progressFileName = ""
                 }
                 
-                // App Store 应用 + macOS >= 15.1 → 迁移到外部磁盘的 Applications 目录
-                let destURL: URL
+                let destURL = AppSearchExclusionService.destination(for: app, in: destination)
                 if app.isAppStoreApp && AppMigrationService.isMASExternalInstallSupported {
-                    let masDir = AppMigrationService.masApplicationsURL(for: destination)
-                    try? fileManager.createDirectory(at: masDir, withIntermediateDirectories: true)
-                    destURL = masDir.appendingPathComponent(app.name)
-                } else {
-                    destURL = destination.appendingPathComponent(app.name)
+                    try? fileManager.createDirectory(at: destURL.deletingLastPathComponent(), withIntermediateDirectories: true)
                 }
                 AppLogger.shared.logContext(
                     "批量迁移单项开始",
@@ -2751,6 +2832,8 @@ struct ContentView: View {
 
     func startMonitoringExternal(url: URL) {
         externalMonitor?.stopMonitoring()
+        externalLibraryMonitor?.stopMonitoring()
+        externalLibraryMonitor = nil
         AppLogger.shared.logContext("启动外部目录监控", details: [("path", url.path)])
 
         let monitor = FolderMonitor(url: url)
@@ -2758,6 +2841,12 @@ struct ContentView: View {
             scheduleMonitorRescan(local: false)
         }
         self.externalMonitor = monitor
+        let library = AppSearchExclusionService.library(in: url)
+        if library != url, FileManager.default.fileExists(atPath: library.path) {
+            let libraryMonitor = FolderMonitor(url: library)
+            libraryMonitor.startMonitoring { [self] in scheduleMonitorRescan(local: false) }
+            externalLibraryMonitor = libraryMonitor
+        }
     }
 
     /// 统一防抖：合并两个 monitor 的扫描请求，避免列表连续跳两下
@@ -2765,6 +2854,7 @@ struct ContentView: View {
         monitorRescanDebouncer.schedule { [self] in
             Task { @MainActor in
                 AppLogger.shared.logContext("Monitor 防抖触发扫描", details: [("trigger", local ? "local" : "external")], level: "TRACE")
+                if let root = self.externalDriveURL { self.startMonitoringExternal(url: root) }
                 self.scanBothAppsAtomic()
             }
         }
@@ -2782,6 +2872,7 @@ struct ContentView: View {
         guard let localRequest = localScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths),
               let externalRequest = externalScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths) else { return }
         let externalDir = localRequest.externalDirectory
+        let maintenanceGeneration = AppMigrationService.maintenanceGeneration
         Task.detached(priority: .userInitiated) {
             let scanner = AppScanner()
             let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
@@ -2821,21 +2912,14 @@ struct ContentView: View {
                 self.isCurrentScan(localRequest, isLocal: true) || self.isCurrentScan(externalRequest, isLocal: false)
             }) else { return }
 
-            // 检测外置 app 版本变化，刷新本地 Stub Portal
-            let service = AppMigrationService()
-            for localApp in newLocalApps where localApp.status == AppStatus.linked {
+            for localApp in newLocalApps {
                 guard await MainActor.run(body: {
-                    self.isCurrentScan(localRequest, isLocal: true)
-                        && !self.operationState.isBusy
+                    self.isCurrentScan(localRequest, isLocal: true) && !self.operationState.isBusy
                 }) else { break }
-                guard let externalApp = newExternalApps.first(where: { $0.name == localApp.name }) else { continue }
-                if localApp.usesFolderOperation {
-                    // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
-                    service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
-                } else {
-                    service.refreshStubPortal(at: localApp.path, from: externalApp.path)
-                }
+                _ = AppPortalMaintenance.refreshEntries(at: localApp.path, expectedGeneration: maintenanceGeneration)
             }
+            do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
+            catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
 
             // 会话缓存填充后一次性原子赋值，避免列表跳动与“计算中”闪烁；缺失项后台计算
             let cache = await MainActor.run { self.sizeCache }
@@ -2873,6 +2957,8 @@ struct ContentView: View {
     func stopMonitoringExternal() {
         AppLogger.shared.log("停止外部目录监控", level: "TRACE")
         externalMonitor?.stopMonitoring()
+        externalLibraryMonitor?.stopMonitoring()
+        externalLibraryMonitor = nil
         externalMonitor = nil
     }
 

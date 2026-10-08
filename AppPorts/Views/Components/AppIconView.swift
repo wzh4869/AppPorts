@@ -28,6 +28,12 @@ struct AppIconView: View {
         .frame(width: size, height: size)
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         .accessibilityHidden(true)
+        .onReceive(NotificationCenter.default.publisher(for: .appPortalPresentationDidChange)
+            .receive(on: DispatchQueue.main)) { notification in
+            guard let changedURL = notification.object as? URL,
+                  changedURL.standardizedFileURL.path == url.standardizedFileURL.path else { return }
+            icon = Self.loadIcon(from: url)
+        }
         .task(id: url) {
             let loaded = Self.loadIcon(from: url)
             icon = loaded

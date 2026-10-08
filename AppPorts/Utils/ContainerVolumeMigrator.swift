@@ -369,6 +369,7 @@ actor ContainerVolumeMigrator {
             $0.mode == .mount && $0.direction == .migrate && $0.createdVolumeUUID == record.volumeUUID
                 && $0.originalPath == record.mountPointPath && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
         }
+        let compatibleRestores = try await remountCompatibleRestoreIDs(record: record)
         let requiresOwnership = record.ownershipPolicy == .owners || related.contains { $0.baseline != nil }
         if isMountPoint(mountPoint) {
             try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
@@ -376,10 +377,14 @@ actor ContainerVolumeMigrator {
                 throw DataOperationSafety.Failure.conflict(mountPoint.path)
             }
             if requiresOwnership { try requireOwners(at: mountPoint) }
+            if !compatibleRestores.isEmpty {
+                try safety.requireNoOverlap(at: mountPoint, ownedMount: record,
+                    ownedTransferIDs: Set(related.map(\.operationID)).union(compatibleRestores))
+            }
             return
         }
         try safety.requireNoOverlap(at: mountPoint, ownedMount: record,
-                                    ownedTransferIDs: Set(related.map(\.operationID)))
+                                    ownedTransferIDs: Set(related.map(\.operationID)).union(compatibleRestores))
         try safety.requireNoManagedFileSystemAncestor(at: mountPoint)
         let operationID = AppLogger.shared.makeOperationID(prefix: "container-mount")
         let hint = try await knownMountPoint(for: record, operationID: operationID)
@@ -484,8 +489,16 @@ actor ContainerVolumeMigrator {
         for record in records {
             do {
                 if let reason = try store.remountIntervention(forVolumeUUID: record.volumeUUID) {
-                    outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(reason)))
-                    continue
+                    // A mounted volume may have failed the post-mount lease check.
+                    // Never clear that evidence without inspecting its hidden directory.
+                    if isMountPoint(record.mountPointURL) {
+                        outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(reason)))
+                        continue
+                    }
+                    if try await remountCompatibleRestoreIDs(record: record).isEmpty {
+                        outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(reason)))
+                        continue
+                    }
                 }
                 let alreadyMounted = isMountPoint(record.mountPointURL)
                 // 在线检查放在 mount(record:) 里，和「当前挂载点」共用同一次 diskutil 查询。
@@ -955,6 +968,30 @@ actor ContainerVolumeMigrator {
             return (.notMounted, info)
         }
         return (DiskUtility.pathsMatch(current, mountPoint.path) ? .reportedByDiskUtil : .notMounted, info)
+    }
+
+    /// An intent saved before any copy or switch must not strand the application.
+    /// Retain its history for explicit restore retry; only exempt the exact intent
+    /// after proving that none of its temporary paths or saved copies exist.
+    private func remountCompatibleRestoreIDs(record: ContainerMountRecord) async throws -> Set<UUID> {
+        let transfers = try store.transfers()
+        let pending = transfers.filter {
+            $0.isUnstartedMountRestore && $0.originalPath == record.mountPointPath
+                && $0.sourceIdentity.volumeUUID?.caseInsensitiveCompare(record.volumeUUID) == .orderedSame
+        }
+        guard pending.count <= 1 else { throw DataOperationSafety.Failure.conflict(record.mountPointPath) }
+        guard let intent = pending.first else { return [] }
+        let prior = transfers.first {
+            $0.mode == .mount && $0.direction == .migrate && $0.originalPath == record.mountPointPath
+                && $0.createdVolumeUUID == record.volumeUUID
+                && [.awaitingUserVerification, .cleanupRequested].contains($0.phase)
+        }
+        guard intent.priorOperationID == prior?.operationID,
+              intent.recoveryMountPointIdentity == nil else {
+            throw DataOperationSafety.Failure.conflict(record.mountPointPath)
+        }
+        try await validateUnstartedRestorePaths(intent, record: record)
+        return [intent.operationID]
     }
 
     private func validateUnstartedRestorePaths(_ transfer: DataTransferRecord, record: ContainerMountRecord) async throws {
