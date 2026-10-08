@@ -256,6 +256,88 @@ final class AppScannerTests: XCTestCase {
         XCTAssertEqual(item.status, AppStatus.local)
     }
 
+    func testExternalFolderMirrorTracksDeletedChildrenWithoutTreatingLocalFolderAsMovable() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let external = workspace.externalRootURL.appendingPathComponent("Suite")
+        let local = workspace.localAppsURL.appendingPathComponent("Suite")
+        try createAppBundle(at: external.appendingPathComponent("One.app"), payloadSize: 16)
+        try createAppBundle(at: external.appendingPathComponent("Two.app"), payloadSize: 16)
+        try makeFolderMirror(at: local, pointingTo: external, children: ["One.app", "Two.app"])
+        let scanner = AppScanner()
+        var items = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.linked)
+
+        try fileManager.removeItem(at: local.appendingPathComponent("Two.app"))
+        items = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.partialLinked)
+        let localItems = await scanner.scanLocalApps(at: workspace.localAppsURL, runningAppURLs: [])
+        let localItem = try XCTUnwrap(localItems.first(where: { $0.name == "Suite" }))
+        XCTAssertNotEqual(localItem.status, AppStatus.local)
+        XCTAssertNotEqual(localItem.status, AppStatus.pendingMoveOut)
+
+        try fileManager.removeItem(at: local.appendingPathComponent("One.app"))
+        items = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.unlinked)
+        XCTAssertTrue(fileManager.fileExists(atPath: local.path))
+    }
+
+    func testExternalFolderMirrorNewChildIsPartialAndIndependentSameNameChildDoesNotCount() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let external = workspace.externalRootURL.appendingPathComponent("Suite")
+        let local = workspace.localAppsURL.appendingPathComponent("Suite")
+        try createAppBundle(at: external.appendingPathComponent("One.app"), payloadSize: 16)
+        try makeFolderMirror(at: local, pointingTo: external, children: ["One.app"])
+        try createAppBundle(at: external.appendingPathComponent("Two.app"), payloadSize: 16)
+        let scanner = AppScanner()
+        var items = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.partialLinked)
+        try createAppBundle(at: local.appendingPathComponent("Two.app"), payloadSize: 16, bundleID: "org.unrelated.two")
+        items = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.partialLinked)
+    }
+
+    func testExternalWholeSuiteSymlinkRemainsLinked() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let external = workspace.externalRootURL.appendingPathComponent("Suite")
+        let local = workspace.localAppsURL.appendingPathComponent("Suite")
+        try createAppBundle(at: external.appendingPathComponent("One.app"), payloadSize: 16)
+        try createAppBundle(at: external.appendingPathComponent("Two.app"), payloadSize: 16)
+        try fileManager.createSymbolicLink(at: local, withDestinationURL: external)
+        let items = await AppScanner().scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.linked)
+    }
+
+    func testServiceCreatedMirrorResolvesCanonicalTargetPaths() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let external = workspace.externalRootURL.appendingPathComponent("Suite")
+        let local = workspace.localAppsURL.appendingPathComponent("Suite")
+        try createAppBundle(at: external.appendingPathComponent("One.app"), payloadSize: 16)
+        try createAppBundle(at: external.appendingPathComponent("Two.app"), payloadSize: 16)
+        try AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).linkApp(
+            appToLink: AppItem(name: "Suite", path: external, status: AppStatus.unlinked, isFolder: true, appCount: 2),
+            destinationURL: local)
+        let scanner = AppScanner()
+        let items = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(items.first(where: { $0.name == "Suite" })).status, AppStatus.linked)
+        try fileManager.removeItem(at: local.appendingPathComponent("One.app"))
+        let afterDeletion = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        XCTAssertEqual(try XCTUnwrap(afterDeletion.first(where: { $0.name == "Suite" })).status, AppStatus.partialLinked)
+    }
+
+    private func makeFolderMirror(at local: URL, pointingTo external: URL, children: [String]) throws {
+        try fileManager.createDirectory(at: local, withIntermediateDirectories: true)
+        let marker: [String: Any] = ["externalPath": external.standardizedFileURL.path, "createdBy": "AppPorts", "kind": "folderMirror", "version": 1]
+        try PropertyListSerialization.data(fromPropertyList: marker, format: .xml, options: 0)
+            .write(to: local.appendingPathComponent(AppMigrationService.folderPortalMarkerName))
+        for child in children {
+            try fileManager.createSymbolicLink(at: local.appendingPathComponent(child), withDestinationURL: external.appendingPathComponent(child))
+        }
+    }
+
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {
         let rootURL = fileManager.temporaryDirectory.appendingPathComponent("AppScannerTests-\(UUID().uuidString)")
         let localAppsURL = rootURL.appendingPathComponent("Applications")

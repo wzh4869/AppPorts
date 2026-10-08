@@ -1182,7 +1182,7 @@ struct ContentView: View {
         // 至少有一个可链接的应用
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external }
+        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
         
         return !validApps.isEmpty
     }
@@ -1190,7 +1190,7 @@ struct ContentView: View {
     func getLinkButtonTitle() -> String {
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external }
+        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
         
         if selectedExternalApps.isEmpty || validApps.isEmpty {
             return "链接回本地".localized

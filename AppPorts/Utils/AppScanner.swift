@@ -466,34 +466,42 @@ actor AppScanner {
         return URL(fileURLWithPath: rawPath, relativeTo: parent).standardizedFileURL
     }
 
+    /// A stored target and an enumerated URL can spell the same location using
+    /// different ancestor symlinks (for example /var and /private/var). Compare
+    /// their resolved full paths, never just the app or folder name.
+    private func sameResolvedTarget(_ first: URL, _ second: URL) -> Bool {
+        first.resolvingSymlinksInPath().standardizedFileURL.path
+            == second.resolvingSymlinksInPath().standardizedFileURL.path
+    }
+
     private func isLocalApp(_ localAppURL: URL, linkedTo externalAppURL: URL) -> Bool {
         let standardizedExternalAppURL = externalAppURL.standardizedFileURL
 
         if let linkDestination = resolveSymlinkDestination(of: localAppURL),
-           linkDestination == standardizedExternalAppURL {
+           sameResolvedTarget(linkDestination, standardizedExternalAppURL) {
             return true
         }
 
         let localContentsURL = localAppURL.appendingPathComponent("Contents")
         if let contentsDestination = resolveSymlinkDestination(of: localContentsURL),
-           contentsDestination == standardizedExternalAppURL.appendingPathComponent("Contents").standardizedFileURL {
+           sameResolvedTarget(contentsDestination, standardizedExternalAppURL.appendingPathComponent("Contents")) {
             return true
         }
 
         // 旧版混合入口：MacOS/Resources/Frameworks 是符号链接
         let localMacOS = localContentsURL.appendingPathComponent("MacOS")
         if let macOSDestination = resolveSymlinkDestination(of: localMacOS),
-           macOSDestination == standardizedExternalAppURL.appendingPathComponent("Contents/MacOS").standardizedFileURL {
+           sameResolvedTarget(macOSDestination, standardizedExternalAppURL.appendingPathComponent("Contents/MacOS")) {
             return true
         }
         let localResources = localContentsURL.appendingPathComponent("Resources")
         if let resourcesDestination = resolveSymlinkDestination(of: localResources),
-           resourcesDestination == standardizedExternalAppURL.appendingPathComponent("Contents/Resources").standardizedFileURL {
+           sameResolvedTarget(resourcesDestination, standardizedExternalAppURL.appendingPathComponent("Contents/Resources")) {
             return true
         }
         let localFrameworks = localContentsURL.appendingPathComponent("Frameworks")
         if let frameworksDestination = resolveSymlinkDestination(of: localFrameworks),
-           frameworksDestination == standardizedExternalAppURL.appendingPathComponent("Contents/Frameworks").standardizedFileURL {
+           sameResolvedTarget(frameworksDestination, standardizedExternalAppURL.appendingPathComponent("Contents/Frameworks")) {
             return true
         }
 
@@ -504,7 +512,7 @@ actor AppScanner {
             let pathFile = localContentsURL.appendingPathComponent("Resources/real_app_path.txt")
             if let raw = try? String(contentsOf: pathFile, encoding: .utf8) {
                 let realPath = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !realPath.isEmpty && realPath == standardizedExternalAppURL.path {
+                if !realPath.isEmpty && sameResolvedTarget(URL(fileURLWithPath: realPath), standardizedExternalAppURL) {
                     return true
                 }
             }
@@ -518,19 +526,24 @@ actor AppScanner {
         return false
     }
 
-    private func isLocalFolder(_ localFolderURL: URL, linkedTo externalFolderURL: URL) -> Bool {
-        // Folder Mirror：真实文件夹 + 标记文件，标记记录的外部路径匹配即视为已链接
-        if let mirrorExternal = AppMigrationService.folderMirrorExternalURL(at: localFolderURL),
-           mirrorExternal == externalFolderURL.standardizedFileURL {
-            return true
+    /// A mirror marker establishes ownership, not completeness. Only surviving
+    /// child portals count, so deleting an entry or adding a new external app
+    /// leaves explicit relinking available without recreating anything on scan.
+    private func localFolderLinkStatus(_ localFolderURL: URL, linkedTo externalFolderURL: URL,
+                                       externalApps: [URL]) -> String? {
+        // Whole-folder symlinks expose every current external child automatically.
+        if let linkDestination = resolveSymlinkDestination(of: localFolderURL) {
+            return sameResolvedTarget(linkDestination, externalFolderURL) ? AppStatus.linked : nil
         }
-
-        // 旧版整体符号链接文件夹
-        guard let linkDestination = resolveSymlinkDestination(of: localFolderURL) else {
-            return false
-        }
-
-        return linkDestination == externalFolderURL.standardizedFileURL
+        guard let mirrorExternal = AppMigrationService.folderMirrorExternalURL(at: localFolderURL),
+              sameResolvedTarget(mirrorExternal, externalFolderURL) else { return nil }
+        let linkedCount = externalApps.filter { externalApp in
+            let localApp = localFolderURL.appendingPathComponent(externalApp.lastPathComponent)
+            return FileManager.default.fileExists(atPath: localApp.path)
+                && isLocalApp(localApp, linkedTo: externalApp)
+        }.count
+        if linkedCount == 0 { return AppStatus.unlinked }
+        return linkedCount == externalApps.count ? AppStatus.linked : AppStatus.partialLinked
     }
 
     private func appBundlesInsideFolderPortal(at folderURL: URL) -> [URL] {
@@ -962,9 +975,8 @@ actor AppScanner {
 
                     if appCount == 1, let bundleURL = appsInFolder.first {
                         var status = AppStatus.unlinked
-                        if fileManager.fileExists(atPath: localFolderURL.path),
-                           isLocalFolder(localFolderURL, linkedTo: itemURL) {
-                            status = AppStatus.linked
+                        if let folderStatus = localFolderLinkStatus(localFolderURL, linkedTo: itemURL, externalApps: appsInFolder) {
+                            status = folderStatus
                         } else {
                             let localAppURL = localAppsDir.appendingPathComponent(bundleURL.lastPathComponent)
                             if fileManager.fileExists(atPath: localAppURL.path),
@@ -993,9 +1005,8 @@ actor AppScanner {
                         candidates.append(makeCandidate(for: app, bundleURL: bundleURL, priority: 30))
                     } else {
                         let status: String
-                        if fileManager.fileExists(atPath: localFolderURL.path),
-                           isLocalFolder(localFolderURL, linkedTo: itemURL) {
-                                status = AppStatus.linked
+                        if let folderStatus = localFolderLinkStatus(localFolderURL, linkedTo: itemURL, externalApps: appsInFolder) {
+                            status = folderStatus
                         } else {
                             var linkedCount = 0
                             for appURL in appsInFolder {
