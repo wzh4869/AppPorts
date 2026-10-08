@@ -1,6 +1,965 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "还原失败，当前本地文件已保留。原入口备份位于：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فشلت الاستعادة. تم الاحتفاظ بالملفات المحلية الحالية. النسخة الاحتياطية للمدخل الأصلي: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠑ ⠋⠁⠊⠇⠑⠙⠲ ⠠⠞⠓⠑ ⠉⠥⠗⠗⠑⠝⠞ ⠇⠕⠉⠁⠇ ⠋⠊⠇⠑⠎ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠲ ⠠⠕⠗⠊⠛⠊⠝⠁⠇ ⠑⠝⠞⠗⠽ ⠃⠁⠉⠅⠥⠏⠒ %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung fehlgeschlagen. Die aktuellen lokalen Dateien wurden erhalten. Sicherung des ursprünglichen Eintrags: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore failed. The current local files were preserved. Original entry backup: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarigo malsukcesis. La nunaj lokaj dosieroj estas konservitaj. Sekurkopio de la origina lanĉilo: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauración falló. Se conservaron los archivos locales actuales. Copia de la entrada original: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration a échoué. Les fichiers locaux actuels ont été conservés. Sauvegarde de l’entrée d’origine : %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बहाली विफल हुई। मौजूदा स्थानीय फ़ाइलें सुरक्षित रखी गई हैं। मूल प्रवेश बिंदु का बैकअप: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan gagal. File lokal saat ini dipertahankan. Cadangan entri asli: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino non riuscito. I file locali attuali sono stati conservati. Backup della voce originale: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復元に失敗しました。現在のローカルファイルは保持されています。元の入口のバックアップ：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복원에 실패했습니다. 현재 로컬 파일은 보존되었습니다. 원래 진입점 백업 위치: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstellen mislukt. De huidige lokale bestanden zijn behouden. Reservekopie van de oorspronkelijke ingang: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywracanie nie powiodło się. Zachowano bieżące pliki lokalne. Kopia zapasowa pierwotnego skrótu: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A restauração falhou. Os arquivos locais atuais foram preservados. Backup da entrada original: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление не удалось. Текущие локальные файлы сохранены. Резервная копия исходного ярлыка: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กู้คืนไม่สำเร็จ เก็บไฟล์ปัจจุบันในเครื่องไว้แล้ว สำเนาสำรองของทางเข้าแอปเดิมอยู่ที่: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geri yükleme başarısız. Mevcut yerel dosyalar korundu. Asıl girişin yedeği: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục thất bại. Các tệp cục bộ hiện tại được giữ lại. Bản sao lưu lối mở gốc: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还原失败，当前本地文件已保留。原入口备份位于：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還原失敗，目前的本機檔案已保留。原入口備份位於：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還原失敗，目前の本機檔案巳葆畱。原入口備份位於：%@"
+          }
+        }
+      }
+    },
+    "还原失败，未能确认本地文件归属，已保留：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فشلت الاستعادة. تعذّر التأكد من تبعية الملفات المحلية، لذا تم الاحتفاظ بها: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠑ ⠋⠁⠊⠇⠑⠙⠲ ⠠⠕⠺⠝⠑⠗⠎⠓⠊⠏ ⠕⠋ ⠞⠓⠑ ⠇⠕⠉⠁⠇ ⠋⠊⠇⠑⠎ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠉⠕⠝⠋⠊⠗⠍⠑⠙⠆ ⠞⠓⠑⠽ ⠺⠑⠗⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung fehlgeschlagen. Die Zugehörigkeit der lokalen Dateien konnte nicht bestätigt werden; sie wurden erhalten: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore failed. Ownership of the local files could not be confirmed; they were preserved: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarigo malsukcesis. La aparteno de la lokaj dosieroj ne povis esti konfirmita; ili estas konservitaj: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauración falló. No se pudo confirmar a quién pertenecen los archivos locales; se conservaron: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration a échoué. L’appartenance des fichiers locaux n’a pas pu être confirmée ; ils ont été conservés : %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बहाली विफल हुई। स्थानीय फ़ाइलों का स्वामित्व सत्यापित नहीं हो सका; उन्हें सुरक्षित रखा गया है: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan gagal. Kepemilikan file lokal tidak dapat dipastikan; file dipertahankan: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino non riuscito. Non è stato possibile confermare l’appartenenza dei file locali; sono stati conservati: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復元に失敗しました。ローカルファイルの帰属を確認できなかったため、保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복원에 실패했습니다. 로컬 파일의 소유 관계를 확인할 수 없어 보존했습니다: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstellen mislukt. De herkomst van de lokale bestanden kon niet worden bevestigd; ze zijn behouden: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywracanie nie powiodło się. Nie można potwierdzić przynależności plików lokalnych; zostały zachowane: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A restauração falhou. Não foi possível confirmar a quem pertencem os arquivos locais; eles foram preservados: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление не удалось. Не удалось подтвердить принадлежность локальных файлов; они сохранены: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กู้คืนไม่สำเร็จ ไม่สามารถยืนยันได้ว่าไฟล์ในเครื่องเป็นของใคร จึงเก็บไว้ที่: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geri yükleme başarısız. Yerel dosyaların aidiyeti doğrulanamadığından korundular: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục thất bại. Không thể xác nhận các tệp cục bộ thuộc về đâu nên đã giữ lại: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还原失败，未能确认本地文件归属，已保留：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還原失敗，無法確認本機檔案歸屬，已保留：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還原失敗，無灋確認本機檔案歸屬，巳葆畱：%@"
+          }
+        }
+      }
+    },
+    "重新添加入口失败，原入口备份位于：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّرت إعادة إضافة المدخل. النسخة الاحتياطية للمدخل الأصلي: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠙⠙⠊⠝⠛ ⠞⠓⠑ ⠑⠝⠞⠗⠽ ⠁⠛⠁⠊⠝ ⠋⠁⠊⠇⠑⠙⠲ ⠠⠕⠗⠊⠛⠊⠝⠁⠇ ⠑⠝⠞⠗⠽ ⠃⠁⠉⠅⠥⠏⠒ %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eintrag konnte nicht erneut hinzugefügt werden. Sicherung des ursprünglichen Eintrags: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adding the entry again failed. Original entry backup: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Realdono de la lanĉilo malsukcesis. Sekurkopio de la origina lanĉilo: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo volver a añadir la entrada. Copia de la entrada original: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’ajouter à nouveau l’entrée. Sauvegarde de l’entrée d’origine : %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रवेश बिंदु दोबारा जोड़ना विफल हुआ। मूल प्रवेश बिंदु का बैकअप: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gagal menambahkan entri kembali. Cadangan entri asli: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile aggiungere nuovamente la voce. Backup della voce originale: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入口の再追加に失敗しました。元の入口のバックアップ：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "진입점 다시 추가에 실패했습니다. 원래 진입점 백업 위치: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De ingang kon niet opnieuw worden toegevoegd. Reservekopie van de oorspronkelijke ingang: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się ponownie dodać skrótu. Kopia zapasowa pierwotnego skrótu: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível adicionar a entrada novamente. Backup da entrada original: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось добавить ярлык повторно. Резервная копия исходного ярлыка: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มทางเข้าแอปอีกครั้งไม่สำเร็จ สำเนาสำรองของทางเข้าแอปเดิมอยู่ที่: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giriş yeniden eklenemedi. Asıl girişin yedeği: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm lại lối mở thất bại. Bản sao lưu lối mở gốc: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新添加入口失败，原入口备份位于：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新加入入口失敗，原入口備份位於：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "喠噺加入入口失敗，原入口備份位於：%@"
+          }
+        }
+      }
+    },
+    "本地已有其他应用或入口，无法自动覆盖" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يوجد تطبيق أو مدخل آخر محليًا ولا يمكن استبداله تلقائيًا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠝⠕⠞⠓⠑⠗ ⠁⠏⠏ ⠕⠗ ⠑⠝⠞⠗⠽ ⠁⠇⠗⠑⠁⠙⠽ ⠑⠭⠊⠎⠞⠎ ⠇⠕⠉⠁⠇⠇⠽ ⠁⠝⠙ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠕⠧⠑⠗⠺⠗⠊⠞⠞⠑⠝ ⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokal ist bereits eine andere App oder ein anderer Eintrag vorhanden und kann nicht automatisch überschrieben werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another app or entry already exists locally and cannot be overwritten automatically"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alia aplikaĵo aŭ lanĉilo jam ekzistas loke kaj ne povas esti aŭtomate anstataŭigita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe otra aplicación o entrada local y no se puede sobrescribir automáticamente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autre application ou entrée existe déjà localement et ne peut pas être remplacée automatiquement"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्थानीय रूप से कोई दूसरा ऐप या प्रवेश बिंदु मौजूद है; उसे अपने आप बदला नहीं जा सकता"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi atau entri lain sudah ada secara lokal dan tidak dapat ditimpa otomatis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esiste già un’altra app o voce locale che non può essere sovrascritta automaticamente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルに別のアプリまたは入口が存在するため、自動で上書きできません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬에 다른 앱 또는 진입점이 있어 자동으로 덮어쓸 수 없습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er bestaat lokaal al een andere app of ingang die niet automatisch kan worden overschreven"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokalnie istnieje już inna aplikacja lub skrót i nie można ich automatycznie nadpisać"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já existe outro aplicativo ou entrada local e não é possível sobrescrevê-lo automaticamente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Локально уже есть другое приложение или ярлык; автоматическая перезапись невозможна"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มีแอปหรือทางเข้าแอปอื่นในเครื่องอยู่แล้ว จึงไม่สามารถเขียนทับอัตโนมัติได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yerelde başka bir uygulama veya giriş var; otomatik olarak üzerine yazılamaz"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã có ứng dụng hoặc lối mở khác trên máy, không thể tự động ghi đè"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地已有其他应用或入口，无法自动覆盖"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機已有其他應用程式或入口，無法自動覆寫"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機已冇其他應甪程式或入口，無灋洎動覆寫"
+          }
+        }
+      }
+    },
+    "无法准备入口签名资料" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر تجهيز بيانات توقيع المدخل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠝⠁⠃⠇⠑ ⠞⠕ ⠏⠗⠑⠏⠁⠗⠑ ⠑⠝⠞⠗⠽ ⠎⠊⠛⠝⠊⠝⠛ ⠙⠁⠞⠁"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaturdaten des Eintrags konnten nicht vorbereitet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to prepare entry signing data"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis prepari la subskribajn datumojn de la lanĉilo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pueden preparar los datos de firma de la entrada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de préparer les données de signature de l’entrée"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रवेश बिंदु के हस्ताक्षर डेटा तैयार नहीं किए जा सके"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat menyiapkan data tanda tangan entri"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile preparare i dati della firma della voce"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入口の署名データを準備できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "진입점 서명 데이터를 준비할 수 없습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ondertekeningsgegevens van de ingang konden niet worden voorbereid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można przygotować danych podpisu skrótu"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível preparar os dados de assinatura da entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось подготовить данные подписи ярлыка"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถเตรียมข้อมูลลายเซ็นของทางเข้าแอปได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girişin imza verileri hazırlanamadı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể chuẩn bị dữ liệu chữ ký của lối mở"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法准备入口签名资料"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法準備入口簽章資料"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無灋準備入口簽章資料"
+          }
+        }
+      }
+    },
+    "入口签名验证失败" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فشل التحقق من توقيع المدخل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠝⠞⠗⠽ ⠎⠊⠛⠝⠁⠞⠥⠗⠑ ⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝ ⠋⠁⠊⠇⠑⠙"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaturprüfung des Starters fehlgeschlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entry signature verification failed"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrolo de la lanĉila subskribo malsukcesis"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la firma del acceso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de vérification de la signature du lanceur"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रवेश बिंदु के हस्ताक्षर का सत्यापन विफल"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifikasi tanda tangan entri gagal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica della firma del collegamento non riuscita"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入口の署名検証に失敗しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "진입점 서명 검증 실패"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handtekening van snelkoppeling kon niet worden geverifieerd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weryfikacja podpisu skrótu nie powiodła się"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha ao verificar a assinatura do atalho"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось проверить подпись ярлыка"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบลายเซ็นทางเข้าแอปไม่สำเร็จ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kısayol imzası doğrulanamadı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác minh chữ ký lối mở thất bại"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入口签名验证失败"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入口簽章驗證失敗"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入口簽章驗證失敗"
+          }
+        }
+      }
+    },
+    "应用操作正在进行，请稍后重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هناك عملية على التطبيقات قيد التنفيذ. حاول لاحقًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠝ ⠁⠏⠏ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠊⠎ ⠊⠝ ⠏⠗⠕⠛⠗⠑⠎⠎⠲ ⠠⠞⠗⠽ ⠁⠛⠁⠊⠝ ⠇⠁⠞⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein App-Vorgang läuft. Bitte später erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An app operation is in progress. Try again later."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikaĵa operacio okazas. Reprovu poste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hay una operación de aplicaciones en curso. Inténtalo de nuevo más tarde."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une opération sur les apps est en cours. Réessayez plus tard."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप पर कार्रवाई जारी है। बाद में फिर प्रयास करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operasi aplikasi sedang berjalan. Coba lagi nanti."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È in corso un’operazione sulle app. Riprova più tardi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ操作を実行中です。後で再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 작업이 진행 중입니다. 나중에 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er wordt een app-bewerking uitgevoerd. Probeer het later opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trwa operacja na aplikacjach. Spróbuj ponownie później."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma operação de apps está em curso. Tente novamente mais tarde."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выполняется операция с приложениями. Повторите позже."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังดำเนินการกับแอป โปรดลองอีกครั้งภายหลัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir uygulama işlemi sürüyor. Lütfen daha sonra yeniden deneyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thao tác ứng dụng đang chạy. Hãy thử lại sau."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用操作正在进行，请稍后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用程式操作正在進行，請稍後重試。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應甪程式操作正茬進行，請稍後喠試。"
+          }
+        }
+      }
+    },
     "无法完整识别应用数据" : {
       "extractionState" : "manual",
       "localizations" : {

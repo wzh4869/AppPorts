@@ -199,7 +199,7 @@ final class AppMigrationServiceTests: XCTestCase {
         try assertRealAppBundle(externalSuiteURL.appendingPathComponent("Excel.app"))
     }
 
-    func testRefreshFolderMirrorSyncsAddedAndRemovedEntries() async throws {
+    func testRefreshFolderMirrorPreservesUserDeletionAndUnavailableTargets() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
 
@@ -218,19 +218,96 @@ final class AppMigrationServiceTests: XCTestCase {
         )
         try assertFolderMirror(localSuiteURL, stubAppNames: ["Word.app", "Excel.app"], externalURL: externalSuiteURL)
 
-        // 模拟外部套件被更新：新增 PowerPoint.app 与 ReadMe.txt，删除 Excel.app
+        try fileManager.removeItem(at: localSuiteURL.appendingPathComponent("Word.app"))
+        // External updates must not undo user deletion or remove temporarily unavailable targets.
         try createAppBundle(at: externalSuiteURL.appendingPathComponent("PowerPoint.app"))
         try "read me".write(to: externalSuiteURL.appendingPathComponent("ReadMe.txt"), atomically: true, encoding: .utf8)
         try fileManager.removeItem(at: externalSuiteURL.appendingPathComponent("Excel.app"))
 
         service.refreshFolderMirror(at: localSuiteURL, from: externalSuiteURL)
 
-        // 新增项被镜像，删除项被清理，保留项不变，标记仍在
+        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("Word.app").path))
+        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("PowerPoint.app").path))
+        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("ReadMe.txt").path))
+        XCTAssertTrue(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("Excel.app").path))
+        XCTAssertTrue(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName).path))
+        // Only the user's explicit add command may restore missing/new entries.
+        try service.linkApp(appToLink: AppItem(name: "Office", path: externalSuiteURL, status: AppStatus.unlinked, isFolder: true, appCount: 2), destinationURL: localSuiteURL)
         try assertStubPortal(localSuiteURL.appendingPathComponent("Word.app"), pointsTo: externalSuiteURL.appendingPathComponent("Word.app"))
         try assertStubPortal(localSuiteURL.appendingPathComponent("PowerPoint.app"), pointsTo: externalSuiteURL.appendingPathComponent("PowerPoint.app"))
-        try assertSymlink(localSuiteURL.appendingPathComponent("ReadMe.txt"), pointsTo: externalSuiteURL.appendingPathComponent("ReadMe.txt"))
-        XCTAssertFalse(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("Excel.app").path))
-        XCTAssertTrue(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent(AppMigrationService.folderPortalMarkerName).path))
+        XCTAssertTrue(fileManager.fileExists(atPath: localSuiteURL.appendingPathComponent("Excel.app").path))
+
+    }
+
+    func testExplicitSuiteAddFailurePreservesExistingEntriesAndPersonalFiles() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let local = w.localAppsURL.appendingPathComponent("Suite")
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        for name in ["A.app", "B.app", "C.app"] { try createAppBundle(at: external.appendingPathComponent(name)) }
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 })
+        let app = AppItem(name: "Suite", path: external, status: AppStatus.unlinked, isFolder: true, appCount: 3)
+        try service.linkApp(appToLink: app, destinationURL: local)
+        for name in ["B.app", "C.app"] { try fileManager.removeItem(at: local.appendingPathComponent(name)) }
+        let original = try Data(contentsOf: local.appendingPathComponent("A.app/Contents/Info.plist"))
+        let note = local.appendingPathComponent("my-notes.txt")
+        try Data("keep".utf8).write(to: note)
+        try fileManager.removeItem(at: external.appendingPathComponent("C.app/Contents/Info.plist"))
+        XCTAssertThrowsError(try service.linkApp(appToLink: app, destinationURL: local))
+        XCTAssertFalse(fileManager.fileExists(atPath: local.appendingPathComponent("B.app").path))
+        XCTAssertFalse(fileManager.fileExists(atPath: local.appendingPathComponent("C.app").path))
+        XCTAssertEqual(try Data(contentsOf: local.appendingPathComponent("A.app/Contents/Info.plist")), original)
+        XCTAssertEqual(try String(contentsOf: note), "keep")
+    }
+
+    func testExplicitSuiteAddRollsBackInstalledEntriesWhenCommitFails() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let local = w.localAppsURL.appendingPathComponent("Suite")
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        for name in ["A.app", "B.app", "C.app"] { try createAppBundle(at: external.appendingPathComponent(name)) }
+        let app = AppItem(name: "Suite", path: external, status: AppStatus.unlinked, isFolder: true, appCount: 3)
+        try AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).linkApp(appToLink: app, destinationURL: local)
+        for name in ["B.app", "C.app"] { try fileManager.removeItem(at: local.appendingPathComponent(name)) }
+        let fm = SuiteCommitFailingFileManager(folder: local, installedChild: local.appendingPathComponent("B.app"))
+        XCTAssertThrowsError(try AppMigrationService(fileManager: fm, dockShortcutUpdater: { _, _ in 0 }).linkApp(appToLink: app, destinationURL: local))
+        XCTAssertTrue(fm.didFail, "Exercise a failure after the first entry was installed")
+        XCTAssertFalse(fileManager.fileExists(atPath: local.appendingPathComponent("B.app").path))
+        XCTAssertFalse(fileManager.fileExists(atPath: local.appendingPathComponent("C.app").path))
+        try assertStubPortal(local.appendingPathComponent("A.app"), pointsTo: external.appendingPathComponent("A.app"))
+    }
+
+    private final class SuiteCommitFailingFileManager: FileManager {
+        let folder: URL
+        let installedChild: URL
+        var didFail = false
+        init(folder: URL, installedChild: URL) { self.folder = folder; self.installedChild = installedChild }
+        override func attributesOfItem(atPath path: String) throws -> [FileAttributeKey: Any] {
+            if path == folder.path, FileManager.default.fileExists(atPath: installedChild.path) {
+                didFail = true
+                throw CocoaError(.fileReadNoPermission)
+            }
+            return try super.attributesOfItem(atPath: path)
+        }
+    }
+
+    func testExplicitSuiteAddRejectsUnrelatedExistingChildBeforeAddingMissingOnes() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let local = w.localAppsURL.appendingPathComponent("Suite")
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        for name in ["A.app", "B.app"] { try createAppBundle(at: external.appendingPathComponent(name)) }
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 })
+        let app = AppItem(name: "Suite", path: external, status: AppStatus.unlinked, isFolder: true, appCount: 2)
+        try service.linkApp(appToLink: app, destinationURL: local)
+        for name in ["A.app", "B.app"] { try fileManager.removeItem(at: local.appendingPathComponent(name)) }
+        try createAppBundle(at: local.appendingPathComponent("A.app"), payload: "user installed")
+        XCTAssertThrowsError(try service.linkApp(appToLink: app, destinationURL: local))
+        XCTAssertFalse(fileManager.fileExists(atPath: local.appendingPathComponent("B.app").path))
+        XCTAssertEqual(try String(contentsOf: local.appendingPathComponent("A.app/Contents/Resources/payload.txt")), "user installed")
+        let other = w.rootURL.appendingPathComponent("Other/Suite")
+        try createAppBundle(at: other.appendingPathComponent("B.app"))
+        XCTAssertThrowsError(try service.linkApp(appToLink: AppItem(name: "Suite", path: other, status: AppStatus.unlinked, isFolder: true, appCount: 1), destinationURL: local))
     }
 
     func testRefreshFolderMirrorIgnoresLegacySymlinkFolder() throws {
@@ -615,6 +692,113 @@ final class AppMigrationServiceTests: XCTestCase {
         )
     }
 
+    func testCancelledRestorePreservesConcurrentReplacementAndReportsBackupPath() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("One.app")
+        let local = w.localAppsURL.appendingPathComponent("One.app")
+        try createAppBundle(at: external)
+        try Data(repeating: 7, count: 6 * 1024 * 1024).write(to: external.appendingPathComponent("Contents/Resources/large.dat"))
+        try fileManager.createSymbolicLink(at: local, withDestinationURL: external)
+        let task = Task {
+            try await AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).moveBack(
+                app: AppItem(name: "One.app", path: external, status: AppStatus.linked), localDestinationURL: local) { progress in
+                    guard progress.copiedBytes > 0 else { return }
+                    do {
+                        try self.fileManager.removeItem(at: local)
+                        try self.createAppBundle(at: local, payload: "user replacement")
+                        withUnsafeCurrentTask { $0?.cancel() }
+                    } catch { XCTFail("Could not prepare replacement: \(error)") }
+                }
+        }
+        do { _ = try await task.value; XCTFail("Expected cancelled restore") }
+        catch {
+            XCTAssertTrue(error.localizedDescription.contains(".appports-restore-backup-"), "User must receive recoverable backup location: \(error)")
+        }
+        XCTAssertEqual(try String(contentsOf: local.appendingPathComponent("Contents/Resources/payload.txt")), "user replacement")
+        let backup = try XCTUnwrap(fileManager.contentsOfDirectory(at: w.localAppsURL, includingPropertiesForKeys: nil)
+            .first { $0.lastPathComponent.hasPrefix(".appports-restore-backup-") })
+        try assertWholeAppSymlink(backup, pointsTo: external)
+    }
+
+    func testRestorePreservesExpandedPortalReplacedByRealAppDuringCopy() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        let destination = w.localAppsURL.appendingPathComponent("Suite")
+        let expanded = w.localAppsURL.appendingPathComponent("One.app")
+        try createAppBundle(at: external.appendingPathComponent("One.app"))
+        try Data(repeating: 7, count: 6 * 1024 * 1024).write(to: external.appendingPathComponent("large.dat"))
+        try fileManager.createSymbolicLink(at: expanded, withDestinationURL: external.appendingPathComponent("One.app"))
+        var replaced = false
+        let result = try await AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).moveBack(
+            app: AppItem(name: "Suite", path: external, status: AppStatus.linked, isFolder: true, appCount: 1),
+            localDestinationURL: destination) { progress in
+                guard progress.copiedBytes > 0, !replaced else { return }
+                replaced = true
+                do {
+                    try self.fileManager.removeItem(at: expanded)
+                    try self.createAppBundle(at: expanded, payload: "user replacement")
+                } catch { XCTFail("Could not create concurrent replacement: \(error)") }
+            }
+        XCTAssertTrue(replaced)
+        XCTAssertEqual(try String(contentsOf: expanded.appendingPathComponent("Contents/Resources/payload.txt")), "user replacement")
+        XCTAssertFalse(result.retiredLocalPortalURLs.contains(expanded))
+    }
+
+    func testFolderCreationFallbackDoesNotDeleteRacingRealApp() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        let local = w.localAppsURL.appendingPathComponent("Suite")
+        try createAppBundle(at: external.appendingPathComponent("One.app"))
+        let fm = PortalCreationRacingFileManager {
+            try self.createAppBundle(at: local.appendingPathComponent("One.app"), payload: "user replacement")
+        }
+        XCTAssertThrowsError(try AppMigrationService(fileManager: fm, dockShortcutUpdater: { _, _ in 0 }).linkApp(
+            appToLink: AppItem(name: "Suite", path: external, status: AppStatus.unlinked, isFolder: true, appCount: 1), destinationURL: local))
+        XCTAssertTrue(fm.didReplace)
+        XCTAssertEqual(try String(contentsOf: local.appendingPathComponent("One.app/Contents/Resources/payload.txt")), "user replacement")
+    }
+
+    private final class PortalCreationRacingFileManager: FileManager {
+        let replace: () throws -> Void
+        var didReplace = false
+        init(replace: @escaping () throws -> Void) { self.replace = replace }
+        override func createDirectory(at url: URL, withIntermediateDirectories createIntermediates: Bool, attributes: [FileAttributeKey: Any]? = nil) throws {
+            try super.createDirectory(at: url, withIntermediateDirectories: createIntermediates, attributes: attributes)
+            if !didReplace, url.path.contains(".appports-create-") {
+                didReplace = true
+                try replace()
+            }
+        }
+    }
+
+    func testCancelledFolderRestorePreservesDeletedChildAndCustomFiles() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Suite")
+        let local = w.localAppsURL.appendingPathComponent("Suite")
+        try createAppBundle(at: external.appendingPathComponent("One.app"))
+        try createAppBundle(at: external.appendingPathComponent("Two.app"))
+        try Data(repeating: 7, count: 6 * 1024 * 1024).write(to: external.appendingPathComponent("large.dat"))
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 })
+        try service.linkApp(appToLink: AppItem(name: "Suite", path: external, status: AppStatus.unlinked, isFolder: true, appCount: 2), destinationURL: local)
+        try fileManager.removeItem(at: local.appendingPathComponent("Two.app"))
+        let note = local.appendingPathComponent("personal.txt")
+        try Data("keep note".utf8).write(to: note)
+        let task = Task {
+            try await service.moveBack(app: AppItem(name: "Suite", path: external, status: AppStatus.linked, isFolder: true, appCount: 2), localDestinationURL: local) { progress in
+                if progress.copiedBytes > 0 { withUnsafeCurrentTask { $0?.cancel() } }
+            }
+        }
+        do { try await task.value; XCTFail("Restore should be cancelled") }
+        catch is CancellationError {}
+        XCTAssertFalse(fileManager.fileExists(atPath: local.appendingPathComponent("Two.app").path))
+        XCTAssertEqual(try String(contentsOf: note), "keep note")
+        try assertStubPortal(local.appendingPathComponent("One.app"), pointsTo: external.appendingPathComponent("One.app"))
+    }
+
     func testDockSyncFailureDoesNotUndoCompletedMigrationOrRestore() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
@@ -968,6 +1152,88 @@ final class AppMigrationServiceTests: XCTestCase {
         try await service.moveBack(app: resolved, localDestinationURL: destination, progressHandler: nil)
         try assertRealAppBundle(localAppURL)
         XCTAssertFalse(fileManager.fileExists(atPath: externalAppURL.path))
+    }
+
+    func testRefreshRepairsSameVersionLegacyPortalAndDoesNotRecreateDeletedPortal() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Example.app")
+        let local = w.localAppsURL.appendingPathComponent("Example.app")
+        try createAppBundle(at: external)
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 })
+        try service.linkApp(appToLink: AppItem(name: "Example.app", path: external, status: AppStatus.unlinked), destinationURL: local)
+        let plistURL = local.appendingPathComponent("Contents/Info.plist")
+        var legacy = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: plistURL), format: nil) as? [String: Any])
+        legacy.removeValue(forKey: PortalPresentation.versionKey)
+        try PropertyListSerialization.data(fromPropertyList: legacy, format: .xml, options: 0).write(to: plistURL)
+        service.refreshStubPortal(at: local, from: external)
+        let repaired = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: plistURL), format: nil) as? [String: Any])
+        XCTAssertEqual(repaired[PortalPresentation.versionKey] as? Int, PortalPresentation.formatVersion)
+        try assertStubPortal(local, pointsTo: external)
+        try fileManager.removeItem(at: local)
+        service.refreshStubPortal(at: local, from: external)
+        XCTAssertFalse(fileManager.fileExists(atPath: local.path))
+    }
+
+    func testOldScanCannotRefreshAfterDeleteAndRelinkOfSamePath() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Example.app")
+        let local = w.localAppsURL.appendingPathComponent("Example.app")
+        try createAppBundle(at: external)
+        let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 })
+        let app = AppItem(name: "Example.app", path: external, status: AppStatus.unlinked)
+        try service.linkApp(appToLink: app, destinationURL: local)
+        let oldScan = AppMigrationService.maintenanceGeneration
+        try service.deleteLink(app: AppItem(name: "Example.app", path: local, status: AppStatus.linked))
+        try service.linkApp(appToLink: app, destinationURL: local)
+        XCTAssertFalse(service.refreshStubPortal(at: local, from: external, force: true, expectedGeneration: oldScan))
+        let currentScan = AppMigrationService.maintenanceGeneration
+        XCTAssertTrue(service.refreshStubPortal(at: local, from: external, force: true, expectedGeneration: currentScan))
+        XCTAssertEqual(AppMigrationService.maintenanceGeneration, currentScan, "Maintenance itself must not invalidate the remaining scan")
+    }
+
+    func testMutationLeaseRejectsSynchronousOverlapAndReleasesAfterCancellation() async throws {
+        let coordinator = PortalMutationCoordinator()
+        XCTAssertTrue(coordinator.tryBegin())
+        XCTAssertThrowsError(try coordinator.beginSynchronously())
+        let waiter = Task { try await coordinator.begin() }
+        waiter.cancel()
+        do { try await waiter.value; XCTFail("Cancelled waiter must not acquire lease") }
+        catch is CancellationError {} catch { XCTFail("Unexpected error: \(error)") }
+        XCTAssertFalse(coordinator.tryBegin())
+        coordinator.end()
+        try coordinator.beginSynchronously()
+        coordinator.end()
+        try await coordinator.begin()
+        coordinator.end()
+    }
+
+    func testFailedRelinkRestoresOriginalEntry() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Example.app")
+        let local = w.localAppsURL.appendingPathComponent("Example.app")
+        try createAppBundle(at: external)
+        try fileManager.createSymbolicLink(at: local, withDestinationURL: external)
+        try fileManager.removeItem(at: external.appendingPathComponent("Contents/Info.plist"))
+        XCTAssertThrowsError(try AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).linkApp(
+            appToLink: AppItem(name: "Example.app", path: external, status: AppStatus.unlinked), destinationURL: local))
+        try assertWholeAppSymlink(local, pointsTo: external)
+    }
+
+    func testLinkRejectsEntryPointingToAnotherApplication() throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let external = w.externalRootURL.appendingPathComponent("Example.app")
+        let other = w.rootURL.appendingPathComponent("Other/Example.app")
+        let local = w.localAppsURL.appendingPathComponent("Example.app")
+        try createAppBundle(at: external)
+        try createAppBundle(at: other)
+        try fileManager.createSymbolicLink(at: local, withDestinationURL: other)
+        XCTAssertThrowsError(try AppMigrationService(dockShortcutUpdater: { _, _ in 0 }).linkApp(
+            appToLink: AppItem(name: "Example.app", path: external, status: AppStatus.unlinked), destinationURL: local))
+        try assertWholeAppSymlink(local, pointsTo: other)
     }
 
     func testPendingMoveOutRejectsDifferentDestinationIdentity() async throws {

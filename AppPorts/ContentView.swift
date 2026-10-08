@@ -1257,6 +1257,7 @@ struct ContentView: View {
             details: [("scan_id", scanID), ("directory", localAppsURL.path)]
         )
         // Run on background task to avoid blocking Main Thread
+        let maintenanceGeneration = AppMigrationService.maintenanceGeneration
         Task.detached(priority: .userInitiated) {
             // Gather data needed for scanning
             let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
@@ -1288,23 +1289,15 @@ struct ContentView: View {
 
             guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: true) }) else { return }
 
-            // 检测外置 app 版本变化，刷新本地 Stub Portal
-            if let externalDir = externalAppsDir {
-                let externalApps = await scanner.scanExternalApps(at: externalDir, localAppsDir: URL(fileURLWithPath: "/Applications"))
-                let service = AppMigrationService()
-                for localApp in finalApps where localApp.status == AppStatus.linked {
-                    guard await MainActor.run(body: {
-                        self.isCurrentScan(request, isLocal: true) && !self.operationState.isBusy
-                    }) else { break }
-                    guard let externalApp = externalApps.first(where: { $0.name == localApp.name }) else { continue }
-                    if localApp.usesFolderOperation {
-                        // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
-                        service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
-                    } else {
-                        service.refreshStubPortal(at: localApp.path, from: externalApp.path)
-                    }
-                }
+            // Follow each surviving portal's recorded target, not a same-named app.
+            for localApp in finalApps {
+                guard await MainActor.run(body: {
+                    self.isCurrentScan(request, isLocal: true) && !self.operationState.isBusy
+                }) else { break }
+                _ = AppPortalMaintenance.refreshEntries(at: localApp.path, expectedGeneration: maintenanceGeneration)
             }
+            do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
+            catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
 
             AppLogger.shared.logContext(
                 "本地应用扫描完成",
@@ -1681,6 +1674,8 @@ struct ContentView: View {
     /// 先发布已完成的迁移状态，再安排完整扫描；迁移前启动的旧扫描不可覆盖此结果。
     @MainActor
     private func recordCompletedTransfer(_ transfer: AppListTransfer) {
+        do { try AppPortalMaintenance.recordCompletedTransfer(transfer) }
+        catch { AppLogger.shared.logError("保存应用搜索记录失败", error: error) }
         localScanState.invalidate()
         externalScanState.invalidate()
         let changedIDs = transfer.apply(localApps: &localApps, externalApps: &externalApps)
@@ -1760,7 +1755,12 @@ struct ContentView: View {
     }
     
     func deleteLink(app: AppItem) throws {
+        // Capture targets while the entry still exists. Search exclusion outlives deletion.
+        do { try AppPortalMaintenance.rememberEntries(at: app.path) }
+        catch { AppLogger.shared.logError("保存删除前的应用搜索记录失败", error: error) }
         try AppMigrationService().deleteLink(app: app)
+        do { try AppPortalMaintenance.recordDeletion(at: app.path) }
+        catch { AppLogger.shared.logError("保存入口删除后的搜索状态失败", error: error) }
     }
     
     @discardableResult
@@ -2782,6 +2782,7 @@ struct ContentView: View {
         guard let localRequest = localScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths),
               let externalRequest = externalScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths) else { return }
         let externalDir = localRequest.externalDirectory
+        let maintenanceGeneration = AppMigrationService.maintenanceGeneration
         Task.detached(priority: .userInitiated) {
             let scanner = AppScanner()
             let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
@@ -2821,21 +2822,14 @@ struct ContentView: View {
                 self.isCurrentScan(localRequest, isLocal: true) || self.isCurrentScan(externalRequest, isLocal: false)
             }) else { return }
 
-            // 检测外置 app 版本变化，刷新本地 Stub Portal
-            let service = AppMigrationService()
-            for localApp in newLocalApps where localApp.status == AppStatus.linked {
+            for localApp in newLocalApps {
                 guard await MainActor.run(body: {
-                    self.isCurrentScan(localRequest, isLocal: true)
-                        && !self.operationState.isBusy
+                    self.isCurrentScan(localRequest, isLocal: true) && !self.operationState.isBusy
                 }) else { break }
-                guard let externalApp = newExternalApps.first(where: { $0.name == localApp.name }) else { continue }
-                if localApp.usesFolderOperation {
-                    // 文件夹镜像：重新同步内部 Stub 与符号链接（旧版整体 symlink 文件夹会被安全跳过）
-                    service.refreshFolderMirror(at: localApp.path, from: externalApp.path)
-                } else {
-                    service.refreshStubPortal(at: localApp.path, from: externalApp.path)
-                }
+                _ = AppPortalMaintenance.refreshEntries(at: localApp.path, expectedGeneration: maintenanceGeneration)
             }
+            do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
+            catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
 
             // 会话缓存填充后一次性原子赋值，避免列表跳动与“计算中”闪烁；缺失项后台计算
             let cache = await MainActor.run { self.sizeCache }
