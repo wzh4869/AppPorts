@@ -3,71 +3,117 @@ name: Post-merge Validation
 on:
   push:
     branches: [ "main", "develop" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
 jobs:
   post-merge-validation:
     name: Post-merge Validation
     runs-on: macos-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Repository
+        id: checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Set up Xcode version
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
-      - name: Run Data Directory Tests
+      - name: Prepare CI Environment
+        id: environment
         run: |
-          xcodebuild test \
-            -scheme "AppPorts" \
-            -configuration Debug \
-            -destination 'platform=macOS' \
-            -derivedDataPath build \
-            -only-testing:"AppPortsTests/DataDirMoverTests" \
-            -only-testing:"AppPortsTests/DataDirScannerTests" \
-            -only-testing:"AppPortsTests/AppIdentityResolverTests" \
-            -only-testing:"AppPortsTests/AppIdentityScannerTests" \
-            -only-testing:"AppPortsTests/DataDirSpaceSummaryTests" \
-            -only-testing:"AppPortsTests/ProcessCommandRunnerTests" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_ALLOWED=NO
+          mkdir -p "$RUNNER_TEMP/appports-ci-results"
+          printf 'CI_DERIVED_DATA_PATH=%s\nCI_RESULTS_DIR=%s\n' \
+            "$RUNNER_TEMP/appports-derived-data" \
+            "$RUNNER_TEMP/appports-ci-results" >> "$GITHUB_ENV"
+          {
+            sw_vers
+            xcodebuild -version
+            uname -m
+          } 2>&1 | tee "$RUNNER_TEMP/appports-ci-results/environment.log"
+
+      - name: Prepare Test Bundle
+        id: prepare_tests
+        run: bash .github/scripts/run-xcode-check.sh prepare-tests
+
+      - name: Run Regression Tests
+        id: regression_tests
+        run: bash .github/scripts/run-xcode-check.sh regression
 
       - name: Run Localization Audit (Advisory)
+        id: localization_audit
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
         continue-on-error: true
-        run: |
-          xcodebuild test \
-            -scheme "AppPorts" \
-            -configuration Debug \
-            -destination 'platform=macOS' \
-            -derivedDataPath build \
-            -only-testing:"AppPortsTests/LocalizationAuditTests" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_ALLOWED=NO
+        run: bash .github/scripts/run-xcode-check.sh localization
 
       - name: Build App
-        run: |
-          xcodebuild clean build \
-            -scheme "AppPorts" \
-            -configuration Release \
-            -destination 'platform=macOS' \
-            -derivedDataPath build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_ALLOWED=NO
+        id: release_build
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' && steps.regression_tests.outcome == 'success' }}
+        run: bash .github/scripts/run-xcode-check.sh release
 
-      - name: Zip Application
+      - name: Validate and Zip Application
+        id: package_app
         run: |
-          cd build/Build/Products/Release
-          zip -r ../../../../AppPorts.zip AppPorts.app
+          app_path="$CI_DERIVED_DATA_PATH/Build/Products/Release/AppPorts.app"
+          plist_path="$app_path/Contents/Info.plist"
+          archive_path="$RUNNER_TEMP/AppPorts.zip"
+          {
+            /usr/bin/plutil -lint "$plist_path"
+            app_executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist_path")"
+            if [[ -z "$app_executable" || "$app_executable" == */* \
+              || ! -f "$app_path/Contents/MacOS/$app_executable" \
+              || ! -x "$app_path/Contents/MacOS/$app_executable" ]]; then
+              echo '::error::The built application is missing a valid executable.'
+              exit 1
+            fi
+            printf 'Verified executable: %s\n' "$app_executable"
+            /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$app_path" "$archive_path"
+            /usr/bin/unzip -tq "$archive_path"
+            /usr/bin/shasum -a 256 "$archive_path"
+          } 2>&1 | tee "$CI_RESULTS_DIR/package.log"
 
-      - name: Upload Artifact
+      - name: Upload Application
+        id: upload_app
         uses: actions/upload-artifact@v4
         with:
           name: AppPorts-Unsigned
-          path: AppPorts.zip
+          path: ${{ runner.temp }}/AppPorts.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 5
+
+      - name: Publish Validation Summary
+        if: ${{ always() && !cancelled() }}
+        run: |
+          if [[ ! -f .github/scripts/summarize-checks.sh ]]; then
+            printf 'Check summary unavailable: checkout did not provide the summary script (checkout: %s).\n' \
+              '${{ steps.checkout.outcome }}' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          bash .github/scripts/summarize-checks.sh \
+            'Repository checkout' '${{ steps.checkout.outcome }}' \
+            'Build environment' '${{ steps.environment.outcome }}' \
+            'Prepare test bundle' '${{ steps.prepare_tests.outcome }}' \
+            'Regression tests' '${{ steps.regression_tests.outcome }}' \
+            'Localization audit (advisory)' '${{ steps.localization_audit.outcome }}' \
+            'Release build' '${{ steps.release_build.outcome }}' \
+            'Application validation and ZIP' '${{ steps.package_app.outcome }}' \
+            'Application artifact upload' '${{ steps.upload_app.outcome }}'
+
+      - name: Upload Validation Diagnostics
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Post-Merge-Diagnostics
+          path: ${{ runner.temp }}/appports-ci-results/
+          if-no-files-found: ignore
           retention-days: 5
