@@ -1437,7 +1437,8 @@ struct ContainerVolumeMigratorTests {
             Issue.record("期望失败状态，实际 \(String(describing: outcomes.first?.state))")
             return
         }
-        #expect(message.contains("挂载后校验失败"))
+        let expectedMessage = String(format: "挂载后校验失败，该路径不是挂载点：%@".localized, mountPoint.path)
+        #expect(message == expectedMessage)
         #expect(runner.commands(prefix: ["mount"]).count == ContainerVolumeMigrator.maximumMountAttempts)
         #expect(runner.isMounted(mountPoint) == false)
     }
@@ -1602,8 +1603,15 @@ struct ContainerVolumeMigratorTests {
                 progressHandler: nil
             )
             Issue.record("A privileged mount without a prompt must fail")
-        } catch ContainerVolumeMigrator.MigrationError.mountFailed(_, let message) {
-            #expect(message.contains("管理员权限"))
+        } catch ContainerVolumeMigrator.MigrationError.mountFailed(let mountPoint, let message) {
+            let mountArguments = ["mount", "nobrowse", "-mountPoint", mountPoint.path,
+                                  "-mountOptions", "owners", "VOLUME-UUID-disk7s9"]
+            #expect(runner.commands(prefix: ["mount"]) == [mountArguments])
+            let expectedMessage = String(
+                format: "此系统版本要求管理员权限才能执行磁盘命令，当前环境无法弹出授权框（%@）".localized,
+                "diskutil " + mountArguments.joined(separator: " ")
+            )
+            #expect(message == expectedMessage)
         }
         #expect(try String(contentsOf: source.appendingPathComponent("payload.txt"), encoding: .utf8) == "payload")
         #expect(runner.commands(prefix: ["apfs", "deleteVolume"]).isEmpty)

@@ -43,7 +43,7 @@ struct LaunchReadinessCheckerTests {
         let item = try #require(items.first { $0.id == LaunchReadinessChecker.ItemID.fullDiskAccess })
         #expect(item.level == .failed)
         #expect(item.action == .fullDiskAccess)
-        #expect(item.title == "完全磁盘访问权限")
+        #expect(item.title == "完全磁盘访问权限".localized)
     }
 
     @Test("检查不确定时提醒核对，不误报已授权或权限被拒绝")
@@ -98,12 +98,11 @@ struct LaunchReadinessCheckerTests {
     func externalDriveNotAPFS() {
         let item = driveItem(state: .notAPFS(filesystem: "ExFAT"))
         #expect(item?.level == .warning)
-        #expect(item?.detail.contains("ExFAT") == true)
-        #expect(item?.detail.contains("APFS") == true)
         // 经典模式会重签沙盒应用，在 macOS 27 上可能让应用打不开，不能作为默认退路推荐。
-        #expect(item?.detail.contains("经典") == false)
-        // 占位符必须被真实格式替换掉
-        #expect(item?.detail.contains("%@") == false)
+        #expect(item?.detail == String(
+            format: "当前格式：%@。应用和普通数据目录可以照常迁移到这里。只有沙盒应用的数据（如聊天记录）需要 APFS 格式；这部分留在本机也不影响使用，不需要为此改动这块盘。".localized,
+            "ExFAT"
+        ))
     }
 
     @Test("加密的 APFS 外部存储提醒沙盒应用数据会留在本机")
@@ -111,7 +110,7 @@ struct LaunchReadinessCheckerTests {
         let item = driveItem(state: .encryptedAPFS)
         #expect(item?.level == .warning)
         #expect(item?.action == nil)
-        #expect(item?.detail.contains("APFS") == true)
+        #expect(item?.detail == "格式为 APFS（已加密）。应用和普通数据目录可以迁移到这里；沙盒应用的数据（如聊天记录）不会迁移到加密的外部存储，会继续留在本机。".localized)
     }
 
     @Test("读不出文件系统类型时用「未知格式」兜底")

@@ -52,7 +52,7 @@ xcodebuild clean build \
 
 #### 按需运行：专项测试
 
-当 PR 涉及对应模块时，建议主动补跑专项测试。CI 会在独立的 macOS runner 上运行完整 `AppPortsTests` 回归测试，并单独运行本地化审计；两者共用一次 Debug 测试编译。PR 中这些结果仍为 Advisory，不阻塞合并。
+当 PR 涉及对应模块时，建议主动补跑专项测试。CI 会在独立的 macOS runner 上运行完整 `AppPortsTests`：应用回归、进程计时、本地化审计分三步执行，共用一次 Debug 测试编译。计时测试单独运行，避免大量并发的迁移测试干扰超时断言。PR 中这些结果仍为 Advisory，不阻塞合并。
 
 请查看 `Tests (Advisory)` 的步骤摘要：它会分别显示通过、失败、取消或未运行；任务显示绿色不代表所有 Advisory 测试通过。日志和 `.xcresult` 诊断产物保存 5 天。新提交会取消同一 PR 的旧检查。
 
@@ -158,7 +158,7 @@ xcodebuild clean build \
 
 #### Recommended: Focused Tests
 
-When a PR touches the relevant module, it is recommended to run focused tests. CI runs the full `AppPortsTests` regression suite and a separate localization audit on a disposable macOS runner, sharing one Debug test build. Both remain Advisory for PRs and do not block merging.
+When a PR touches the relevant module, it is recommended to run focused tests. CI runs the full `AppPortsTests` target on a disposable macOS runner in three steps: app regression, process timing, and localization. They share one Debug test build. Timing tests run separately to avoid contention from process-heavy migration suites. All remain Advisory for PRs and do not block merging.
 
 Read the `Tests (Advisory)` step summary for passed, failed, cancelled, or not-run results; a green advisory job does not mean every test passed. Logs and `.xcresult` diagnostic artifacts are retained for five days. A new commit cancels older checks for the same PR.
 

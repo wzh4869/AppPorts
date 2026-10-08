@@ -13,14 +13,21 @@ case "$check" in
     ;;
   regression)
     arguments=(test-without-building -configuration Debug
-      -skip-testing:AppPortsTests/LocalizationAuditTests)
+      -skip-testing:AppPortsTests/LocalizationAuditTests
+      -skip-testing:AppPortsTests/ProcessCommandRunnerTests)
+    ;;
+  process)
+    # Timing assertions should not compete with hundreds of migration tests
+    # that launch child processes. Keep the assertions and run every case.
+    arguments=(test-without-building -configuration Debug
+      -only-testing:AppPortsTests/ProcessCommandRunnerTests)
     ;;
   localization)
     arguments=(test-without-building -configuration Debug
       -only-testing:AppPortsTests/LocalizationAuditTests)
     ;;
   *)
-    echo "Usage: $0 {release|prepare-tests|regression|localization}" >&2
+    echo "Usage: $0 {release|prepare-tests|regression|process|localization}" >&2
     exit 2
     ;;
 esac

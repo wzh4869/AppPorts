@@ -49,6 +49,11 @@ jobs:
         id: regression_tests
         run: bash .github/scripts/run-xcode-check.sh regression
 
+      - name: Run Process Timing Tests
+        id: process_tests
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
+        run: bash .github/scripts/run-xcode-check.sh process
+
       - name: Run Localization Audit (Advisory)
         id: localization_audit
         if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
@@ -57,7 +62,7 @@ jobs:
 
       - name: Build App
         id: release_build
-        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' && steps.regression_tests.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' && steps.regression_tests.outcome == 'success' && steps.process_tests.outcome == 'success' }}
         run: bash .github/scripts/run-xcode-check.sh release
 
       - name: Validate and Zip Application
@@ -104,6 +109,7 @@ jobs:
             'Build environment' '${{ steps.environment.outcome }}' \
             'Prepare test bundle' '${{ steps.prepare_tests.outcome }}' \
             'Regression tests' '${{ steps.regression_tests.outcome }}' \
+            'Process timing tests' '${{ steps.process_tests.outcome }}' \
             'Localization audit (advisory)' '${{ steps.localization_audit.outcome }}' \
             'Release build' '${{ steps.release_build.outcome }}' \
             'Application validation and ZIP' '${{ steps.package_app.outcome }}' \

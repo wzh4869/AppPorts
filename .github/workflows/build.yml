@@ -107,6 +107,12 @@ jobs:
         continue-on-error: true
         run: bash .github/scripts/run-xcode-check.sh regression
 
+      - name: Run Process Timing Tests
+        id: process_tests
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
+        continue-on-error: true
+        run: bash .github/scripts/run-xcode-check.sh process
+
       - name: Run Localization Audit
         id: localization_audit
         if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
@@ -126,6 +132,7 @@ jobs:
             'Build environment' '${{ steps.environment.outcome }}' \
             'Prepare test bundle (advisory)' '${{ steps.prepare_tests.outcome }}' \
             'Regression tests (advisory)' '${{ steps.regression_tests.outcome }}' \
+            'Process timing tests (advisory)' '${{ steps.process_tests.outcome }}' \
             'Localization audit (advisory)' '${{ steps.localization_audit.outcome }}'
 
       - name: Upload Test Diagnostics
