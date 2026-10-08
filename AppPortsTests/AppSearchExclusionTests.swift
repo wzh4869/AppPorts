@@ -185,6 +185,59 @@ final class AppSearchExclusionTests: XCTestCase {
         XCTAssertEqual(data["bundle-identifier"] as? String, "org.example.exclusion")
     }
 
+    func testDockWarningOnlyCompletesAfterRealRetrySucceeds() async throws {
+        try link()
+        var tiles: [[String: Any]] = [["GUID": 42, "tile-type": "file-tile", "tile-data": [
+            "file-data": ["_CFURLString": external.absoluteString, "_CFURLStringType": 15],
+            "bundle-identifier": "org.example.exclusion", "file-label": "Example"
+        ]]]
+        var writesAllowed = false
+        let dock = DockShortcutService(store: .init(read: { tiles }, write: {
+            guard writesAllowed else { throw NSError(domain: "DockRetryTest", code: 1) }
+            tiles = $0
+        }, isManaged: { false }), reload: {})
+        let mover = AppMigrationService(dockShortcutUpdater: { try dock.redirectShortcuts(from: $0, to: $1) },
+            dockShortcutRetryUpdater: { try dock.redirectShortcuts(from: $0, to: $1, requiringBundleIdentity: true) }, runningApplications: { [] })
+        let first = try await mover.excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [local], store: store)
+        XCTAssertFalse(first.dockSynchronized)
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.linked)
+        let second = try await mover.excludeFromSearch(app: moved, externalRoot: externalRoot, localEntries: [local], store: store)
+        XCTAssertFalse(second.dockSynchronized, "Being in .noindex does not prove the Dock update succeeded")
+        writesAllowed = true
+        let third = try await mover.excludeFromSearch(app: moved, externalRoot: externalRoot, localEntries: [local], store: store)
+        XCTAssertTrue(third.dockSynchronized)
+        let data = try XCTUnwrap(tiles.first?["tile-data"] as? [String: Any])
+        let file = try XCTUnwrap(data["file-data"] as? [String: Any])
+        XCTAssertEqual(URL(string: try XCTUnwrap(file["_CFURLString"] as? String))?.path, destination.path)
+    }
+
+    func testDockRetryPreservesReusedOriginalPath() async throws {
+        _ = try await service().excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [], store: store)
+        try makeApp(external, identifier: "org.user.new-application")
+        var redirects: [(URL, URL)] = []
+        let mover = AppMigrationService(dockShortcutUpdater: { redirects.append(($0, $1)); return 0 }, runningApplications: { [] })
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.unlinked)
+        _ = try await mover.excludeFromSearch(app: moved, externalRoot: externalRoot, localEntries: [], store: store)
+        XCTAssertEqual(redirects.map { $0.0.path }, [destination.path])
+        XCTAssertEqual(redirects.map { $0.1.path }, [destination.path])
+    }
+
+    func testDockRetryNeverClaimsUnrelatedSameNamedStalePin() async throws {
+        _ = try await service().excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [], store: store)
+        let original: [[String: Any]] = [["GUID": 99, "tile-type": "file-tile", "tile-data": [
+            "file-data": ["_CFURLString": external.absoluteString, "_CFURLStringType": 15],
+            "bundle-identifier": "org.other.deleted-application", "file-label": "Example"
+        ]]]
+        var writes = 0
+        let dock = DockShortcutService(store: .init(read: { original }, write: { _ in writes += 1 }, isManaged: { false }), reload: {})
+        let mover = AppMigrationService(dockShortcutUpdater: { _, _ in XCTFail("Retry must use identity-checked updater"); return 0 },
+            dockShortcutRetryUpdater: { try dock.redirectShortcuts(from: $0, to: $1, requiringBundleIdentity: true) }, runningApplications: { [] })
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.unlinked)
+        let result = try await mover.excludeFromSearch(app: moved, externalRoot: externalRoot, localEntries: [], store: store)
+        XCTAssertFalse(result.dockSynchronized)
+        XCTAssertEqual(writes, 0)
+    }
+
     func testPendingJournalBlocksAlreadyMovedCopy() async throws {
         try fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.moveItem(at: external, to: destination)

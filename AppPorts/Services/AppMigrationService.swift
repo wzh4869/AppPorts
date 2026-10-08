@@ -50,14 +50,14 @@ struct AppMigrationService {
     private let fileManager: FileManager
     private let portalCreationOverride: PortalCreationOverride?
     private let dockShortcutUpdater: DockShortcutUpdater
+    private let dockShortcutRetryUpdater: DockShortcutUpdater
     private let runningApplications: () -> [AppRunningState.RunningApplication]
 
     init(
         fileManager: FileManager = .default,
         portalCreationOverride: PortalCreationOverride? = nil,
-        dockShortcutUpdater: @escaping DockShortcutUpdater = { source, destination in
-            try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
-        },
+        dockShortcutUpdater: DockShortcutUpdater? = nil,
+        dockShortcutRetryUpdater: DockShortcutUpdater? = nil,
         runningApplications: @escaping () -> [AppRunningState.RunningApplication] = {
             NSWorkspace.shared.runningApplications.map {
                 .init(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
@@ -66,7 +66,13 @@ struct AppMigrationService {
     ) {
         self.fileManager = fileManager
         self.portalCreationOverride = portalCreationOverride
-        self.dockShortcutUpdater = dockShortcutUpdater
+        self.dockShortcutUpdater = dockShortcutUpdater ?? { source, destination in
+            try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
+        }
+        // Preserve injected effects in tests; production retries enforce the original bundle identity.
+        self.dockShortcutRetryUpdater = dockShortcutRetryUpdater ?? dockShortcutUpdater ?? { source, destination in
+            try DockShortcutService.shared.redirectShortcuts(from: source, to: destination, requiringBundleIdentity: true)
+        }
         self.runningApplications = runningApplications
     }
 
@@ -175,7 +181,15 @@ struct AppMigrationService {
         guard pending.isEmpty else {
             throw Exclusion.failure("存在未完成的存储转换，请先检查应用库中的恢复记录。".localized)
         }
-        if Exclusion.isExcluded(source) { return .init(destination: source, dockSynchronized: true) }
+        if Exclusion.isExcluded(source) {
+            // A previous relocation may have finished while Dock synchronization failed.
+            // Retry only existing pins. If the old path has been reused, preserve that new app's pins.
+            let previous = library.deletingLastPathComponent().appendingPathComponent(source.lastPathComponent)
+            let dockSource = (try? fileManager.attributesOfItem(atPath: previous.path)) == nil ? previous : source
+            let dockOK = synchronizeDockShortcuts(from: dockSource, to: source,
+                operationID: AppLogger.shared.makeOperationID(prefix: "search-exclusion-retry"), using: dockShortcutRetryUpdater)
+            return .init(destination: source, dockSynchronized: dockOK)
+        }
         guard (try? fileManager.attributesOfItem(atPath: destination.path)) == nil else {
             throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
         }
@@ -1165,9 +1179,10 @@ struct AppMigrationService {
 
     /// Dock 属于迁移后的附加同步：失败应可重试，不能回滚已经完整迁移的应用。
     @discardableResult
-    private func synchronizeDockShortcuts(from sourceURL: URL, to destinationURL: URL, operationID: String) -> Bool {
+    private func synchronizeDockShortcuts(from sourceURL: URL, to destinationURL: URL, operationID: String,
+                                          using updater: DockShortcutUpdater? = nil) -> Bool {
         do {
-            let updatedCount = try dockShortcutUpdater(sourceURL, destinationURL)
+            let updatedCount = try (updater ?? dockShortcutUpdater)(sourceURL, destinationURL)
             if updatedCount > 0 {
                 AppLogger.shared.logContext(
                     "已同步 Dock 固定项",

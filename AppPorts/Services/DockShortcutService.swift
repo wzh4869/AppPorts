@@ -131,9 +131,9 @@ final class DockShortcutService: @unchecked Sendable {
     }
 
     @discardableResult
-    func redirectShortcuts(from sourceRootURL: URL, to destinationRootURL: URL) throws -> Int {
+    func redirectShortcuts(from sourceRootURL: URL, to destinationRootURL: URL, requiringBundleIdentity: Bool = false) throws -> Int {
         do {
-            let count = try redirectWhileLocked(from: sourceRootURL, to: destinationRootURL)
+            let count = try redirectWhileLocked(from: sourceRootURL, to: destinationRootURL, requiringBundleIdentity: requiringBundleIdentity)
             if count > 0 {
                 AppLogger.shared.logContext("已更新 Dock 固定项", details: [
                     ("source", sourceRootURL.path), ("destination", destinationRootURL.path),
@@ -150,7 +150,7 @@ final class DockShortcutService: @unchecked Sendable {
         }
     }
 
-    private func redirectWhileLocked(from sourceURL: URL, to destinationURL: URL) throws -> Int {
+    private func redirectWhileLocked(from sourceURL: URL, to destinationURL: URL, requiringBundleIdentity: Bool) throws -> Int {
         lock.lock()
         defer { lock.unlock() }
         let source = try LocalPath(sourceURL)
@@ -167,18 +167,12 @@ final class DockShortcutService: @unchecked Sendable {
             var count = 0
             for candidate in candidates {
                 let target = candidate.destination.url
-                let identifier = try applicationIdentifier(target)
-                guard Self.isOriginalIdentifier(identifier) else { throw ShortcutError.invalidBundleIdentifier }
                 var tile = updated[candidate.index]
                 var data = tile["tile-data"] as! [String: Any]
                 var file = data["file-data"] as! [String: Any]
+                let identifier = try validatedIdentifier(for: data, at: target, requiringBundleIdentity: requiringBundleIdentity)
 
-                if file["_CFURLString"] as? String == target.absoluteString,
-                   file["_CFURLStringType"] as? Int == 15,
-                   data["bundle-identifier"] as? String == identifier,
-                   let book = data["book"] as? Data,
-                   let resolved = try? bookmarks.resolve(book),
-                   Self.sameDestination(resolved, target) {
+                if isCurrent(data, at: target, identifier: identifier) {
                     continue
                 }
 
@@ -209,6 +203,30 @@ final class DockShortcutService: @unchecked Sendable {
             return count
         }
         throw ShortcutError.concurrentModification
+    }
+
+    private func validatedIdentifier(for data: [String: Any], at target: URL, requiringBundleIdentity: Bool) throws -> String {
+        let identifier = try applicationIdentifier(target)
+        guard Self.isOriginalIdentifier(identifier) else { throw ShortcutError.invalidBundleIdentifier }
+        // A retry inferred from storage layout has no authoritative old-path record.
+        // Require the existing pin's identity before changing it; a name match is insufficient.
+        if requiringBundleIdentity {
+            let previousID = data["bundle-identifier"] as? String
+            guard previousID == identifier || previousID == identifier + ".appports.stub" else {
+                throw ShortcutError.invalidBundleIdentifier
+            }
+        }
+        return identifier
+    }
+
+    private func isCurrent(_ data: [String: Any], at target: URL, identifier: String) -> Bool {
+        let file = data["file-data"] as! [String: Any]
+        guard file["_CFURLString"] as? String == target.absoluteString,
+              file["_CFURLStringType"] as? Int == 15,
+              data["bundle-identifier"] as? String == identifier,
+              let book = data["book"] as? Data,
+              let resolved = try? bookmarks.resolve(book) else { return false }
+        return Self.sameDestination(resolved, target)
     }
 
     private struct Candidate {
