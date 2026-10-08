@@ -3,104 +3,136 @@ name: PR Checks
 on:
   pull_request:
     branches: [ "main", "develop" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
 jobs:
   pr-smoke:
     name: PR Smoke Check
     runs-on: macos-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Repository
+        id: checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Set up Xcode version
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      - name: Prepare CI Environment
+        id: environment
+        run: |
+          mkdir -p "$RUNNER_TEMP/appports-ci-results"
+          printf 'CI_DERIVED_DATA_PATH=%s\nCI_RESULTS_DIR=%s\n' \
+            "$RUNNER_TEMP/appports-derived-data" \
+            "$RUNNER_TEMP/appports-ci-results" >> "$GITHUB_ENV"
+          {
+            sw_vers
+            xcodebuild -version
+            uname -m
+          } 2>&1 | tee "$RUNNER_TEMP/appports-ci-results/environment.log"
 
       - name: Build App
+        id: release_build
+        run: bash .github/scripts/run-xcode-check.sh release
+
+      - name: Publish Check Summary
+        if: ${{ always() && !cancelled() }}
         run: |
-          xcodebuild clean build \
-            -scheme "AppPorts" \
-            -configuration Release \
-            -destination 'platform=macOS' \
-            -derivedDataPath build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_ALLOWED=NO
-
-  data-directory-advisory:
-    name: Data Directory Tests (Advisory)
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Xcode version
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-
-      - name: Run Data Directory Tests
-        id: data_dir_tests
-        continue-on-error: true
-        run: |
-          xcodebuild test \
-            -scheme "AppPorts" \
-            -configuration Debug \
-            -destination 'platform=macOS' \
-            -derivedDataPath build \
-            -only-testing:"AppPortsTests/DataDirMoverTests" \
-            -only-testing:"AppPortsTests/DataDirScannerTests" \
-            -only-testing:"AppPortsTests/AppIdentityResolverTests" \
-            -only-testing:"AppPortsTests/AppIdentityScannerTests" \
-            -only-testing:"AppPortsTests/DataDirSpaceSummaryTests" \
-            -only-testing:"AppPortsTests/ProcessCommandRunnerTests" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Publish Advisory Summary
-        if: always()
-        run: |
-          if [ "${{ steps.data_dir_tests.outcome }}" = "failure" ]; then
-            echo "Data directory advisory tests failed. Review this check before merge." >> "$GITHUB_STEP_SUMMARY"
-            echo "::warning::Data directory advisory tests failed. Review this check before merge."
-          else
-            echo "Data directory advisory tests passed." >> "$GITHUB_STEP_SUMMARY"
+          if [[ ! -f .github/scripts/summarize-checks.sh ]]; then
+            printf 'Check summary unavailable: checkout did not provide the summary script (checkout: %s).\n' \
+              '${{ steps.checkout.outcome }}' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+          bash .github/scripts/summarize-checks.sh \
+            'Repository checkout' '${{ steps.checkout.outcome }}' \
+            'Build environment' '${{ steps.environment.outcome }}' \
+            'Release build' '${{ steps.release_build.outcome }}'
 
-  localization-audit-advisory:
-    name: Localization Audit (Advisory)
+      - name: Upload Build Diagnostics
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: PR-Smoke-Diagnostics
+          path: ${{ runner.temp }}/appports-ci-results/
+          if-no-files-found: ignore
+          retention-days: 5
+
+  tests-advisory:
+    name: Tests (Advisory)
     runs-on: macos-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Repository
+        id: checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Set up Xcode version
-        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      - name: Prepare CI Environment
+        id: environment
+        run: |
+          mkdir -p "$RUNNER_TEMP/appports-ci-results"
+          printf 'CI_DERIVED_DATA_PATH=%s\nCI_RESULTS_DIR=%s\n' \
+            "$RUNNER_TEMP/appports-derived-data" \
+            "$RUNNER_TEMP/appports-ci-results" >> "$GITHUB_ENV"
+          {
+            sw_vers
+            xcodebuild -version
+            uname -m
+          } 2>&1 | tee "$RUNNER_TEMP/appports-ci-results/environment.log"
+
+      - name: Prepare Test Bundle
+        id: prepare_tests
+        continue-on-error: true
+        run: bash .github/scripts/run-xcode-check.sh prepare-tests
+
+      - name: Run Regression Tests
+        id: regression_tests
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
+        continue-on-error: true
+        run: bash .github/scripts/run-xcode-check.sh regression
 
       - name: Run Localization Audit
         id: localization_audit
+        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' }}
         continue-on-error: true
-        run: |
-          xcodebuild test \
-            -scheme "AppPorts" \
-            -configuration Debug \
-            -destination 'platform=macOS' \
-            -derivedDataPath build \
-            -only-testing:"AppPortsTests/LocalizationAuditTests" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_ENTITLEMENTS="" \
-            CODE_SIGNING_ALLOWED=NO
+        run: bash .github/scripts/run-xcode-check.sh localization
 
       - name: Publish Advisory Summary
-        if: always()
+        if: ${{ always() && !cancelled() }}
         run: |
-          if [ "${{ steps.localization_audit.outcome }}" = "failure" ]; then
-            echo "Localization audit failed. Review this check before merge." >> "$GITHUB_STEP_SUMMARY"
-            echo "::warning::Localization audit failed. Review this check before merge."
-          else
-            echo "Localization audit passed." >> "$GITHUB_STEP_SUMMARY"
+          if [[ ! -f .github/scripts/summarize-checks.sh ]]; then
+            printf 'Check summary unavailable: checkout did not provide the summary script (checkout: %s).\n' \
+              '${{ steps.checkout.outcome }}' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+          bash .github/scripts/summarize-checks.sh \
+            'Repository checkout' '${{ steps.checkout.outcome }}' \
+            'Build environment' '${{ steps.environment.outcome }}' \
+            'Prepare test bundle (advisory)' '${{ steps.prepare_tests.outcome }}' \
+            'Regression tests (advisory)' '${{ steps.regression_tests.outcome }}' \
+            'Localization audit (advisory)' '${{ steps.localization_audit.outcome }}'
+
+      - name: Upload Test Diagnostics
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: PR-Test-Diagnostics
+          path: ${{ runner.temp }}/appports-ci-results/
+          if-no-files-found: ignore
+          retention-days: 5

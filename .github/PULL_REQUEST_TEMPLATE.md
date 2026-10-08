@@ -15,6 +15,10 @@
 > PR 默认只要求通过编译烟雾检查。专项测试更适合在改动确实触及对应模块时主动补跑，而不是把所有创新型改动都挡在门外。  
 > PRs are only required to pass the smoke build by default. Focused tests are encouraged when the PR touches the relevant module, instead of blocking all exploratory changes.
 
+> CI 会自动运行完整回归测试和本地化审计，结果见 `Tests (Advisory)` 的摘要；绿色任务可能包含 Advisory 失败，请结合摘要和诊断产物检查。
+>
+> CI runs the full regression suite and localization audit. Read the `Tests (Advisory)` summary and diagnostic artifacts: a green job can include advisory failures.
+
 ## 🌐 本地化影响 | Localization Impact
 > 如本次 PR 涉及任何用户可见文案、菜单、弹窗、设置项、错误提示、日志导出文案或状态文案，欢迎同步完成本地化适配；当然可以暂时不做，也可以在 PR 说明里写清原因或后续计划。  
 > Localization is recommended for user-facing copy changes, but it is not mandatory for every PR. If you are not doing it in this PR, please briefly explain why or note a follow-up plan.
