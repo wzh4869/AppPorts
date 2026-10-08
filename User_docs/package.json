@@ -6,7 +6,9 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:gitbook": "node scripts/migrate-gitbook.mjs export",
+    "docs:gitbook:check": "node scripts/migrate-gitbook.mjs check"
   },
   "dependencies": {
     "sass": "^1.99.0",

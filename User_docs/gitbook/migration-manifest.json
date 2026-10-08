@@ -1,0 +1,2197 @@
+{
+  "source": "docs",
+  "site": "site_02JAH",
+  "organization": "EVCRCIIkGN9ucEMGTbom",
+  "locales": [
+    {
+      "directory": "zh-Hans",
+      "label": "简体中文",
+      "language": "zh"
+    },
+    {
+      "directory": "en",
+      "label": "English",
+      "language": "en"
+    },
+    {
+      "directory": "zh-Hant",
+      "label": "繁體中文",
+      "language": "zh-tw"
+    },
+    {
+      "directory": "ja",
+      "label": "日本語",
+      "language": "ja"
+    },
+    {
+      "directory": "ko",
+      "label": "한국어",
+      "language": "ko"
+    },
+    {
+      "directory": "de",
+      "label": "Deutsch",
+      "language": "de"
+    },
+    {
+      "directory": "fr",
+      "label": "Français",
+      "language": "fr"
+    },
+    {
+      "directory": "es",
+      "label": "Español",
+      "language": "es"
+    }
+  ],
+  "pages": [
+    {
+      "source": "AppPorts.md",
+      "locale": "zh-Hans",
+      "target": "AppPorts.md",
+      "sourceHash": "2f274da4057e7929fac0995234d86eb31a7e2c33fdf6c68c3cb85bad4471578f"
+    },
+    {
+      "source": "badges.md",
+      "locale": "zh-Hans",
+      "target": "badges.md",
+      "sourceHash": "992270b49d8ee6d4cb62e89bd426f46bb508d1b1236bd06459b5e2a7f49ee06d"
+    },
+    {
+      "source": "changelog.md",
+      "locale": "zh-Hans",
+      "target": "changelog.md",
+      "sourceHash": "60af612f65d6e686a3205673b6275f512af430ac2a54aa390b990f172a6508ba"
+    },
+    {
+      "source": "contributing.md",
+      "locale": "zh-Hans",
+      "target": "contributing.md",
+      "sourceHash": "d7eb2c7041ca51bc2c326279479d5040f9d28b9fe13e2dd8c5d4247c6792257f"
+    },
+    {
+      "source": "core.md",
+      "locale": "zh-Hans",
+      "target": "core.md",
+      "sourceHash": "1095e732e95170b630ffb868c18abcbd0629a2667e85888dd2e90c7408ec5df7"
+    },
+    {
+      "source": "datamigrae/baseinfo.md",
+      "locale": "zh-Hans",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "e4163f0073e33aead95a906fce464efe2dd3003c5fa9211b9cd7369a901e4c98"
+    },
+    {
+      "source": "datamigrae/container-identity.md",
+      "locale": "zh-Hans",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "888cb38e751946a10fefc873eca625de14cc57e0063870fa2ef09fbf3234daa9"
+    },
+    {
+      "source": "datamigrae/mount-migration.md",
+      "locale": "zh-Hans",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "6bc374c6cef662bc7cb5930e06d54b5821604dbe1655a9a2706e82bdef4ee79d"
+    },
+    {
+      "source": "datamigrae/operation.md",
+      "locale": "zh-Hans",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "069cd21c9f88bb51458134dca4cae4abafebb6d4ea7091dc59710b7c1b6a95f1"
+    },
+    {
+      "source": "datamigrae/resign.md",
+      "locale": "zh-Hans",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "ceeb9c0f615844190763057bb0abe26a3225f808f1a88661f54798c21a17c8d7"
+    },
+    {
+      "source": "datamigrae/tools.md",
+      "locale": "zh-Hans",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "3f60e311db3f2824dc19776e116cfee9ac972219f4e561ce58b606a6775461c4"
+    },
+    {
+      "source": "de/AppPorts.md",
+      "locale": "de",
+      "target": "AppPorts.md",
+      "sourceHash": "476d3476da3f7b6d2b910e48fc78631bd171fb78bf2dae8e4bade44f57e64f03"
+    },
+    {
+      "source": "de/badges.md",
+      "locale": "de",
+      "target": "badges.md",
+      "sourceHash": "bc9145e2cab408449da39c92f7efc5aacd56368bbccad5688eeb44e5658a62f4"
+    },
+    {
+      "source": "de/changelog.md",
+      "locale": "de",
+      "target": "changelog.md",
+      "sourceHash": "143e516adbe7485c9447198afcff087c37fdc0d55fb776d569e7dc90a4431417"
+    },
+    {
+      "source": "de/contributing.md",
+      "locale": "de",
+      "target": "contributing.md",
+      "sourceHash": "d061a99abb1cd06fcbdc55a8d25dda04f8bb1dd26e45f3bdc7fccf250c0d0a46"
+    },
+    {
+      "source": "de/core.md",
+      "locale": "de",
+      "target": "core.md",
+      "sourceHash": "5af139641addc243e185b7f6b76f67d52017a73111c81ac8d2932ea18faccf7c"
+    },
+    {
+      "source": "de/datamigrae/baseinfo.md",
+      "locale": "de",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "1ded74f7b08a6e542531bb7291e3198c54a6d7dc91a4a5352946cfac8ac1b14c"
+    },
+    {
+      "source": "de/datamigrae/container-identity.md",
+      "locale": "de",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "dc6b36d23705e50528532b7f387cc263f46dc3fc53516767676e6558efb3e216"
+    },
+    {
+      "source": "de/datamigrae/mount-migration.md",
+      "locale": "de",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "76b5c23489765a1e329fca6c0d1f47fbd542c25c6ae15832a6b55df775921536"
+    },
+    {
+      "source": "de/datamigrae/operation.md",
+      "locale": "de",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "8bd0a66e22eafe60c2b0848029d147cf3f9b9187bf0d2c4c1030e9e77e9d7515"
+    },
+    {
+      "source": "de/datamigrae/resign.md",
+      "locale": "de",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "d7d72017f64c4a04f3a4d06b4b65007c68961347a1001388978e7aad84308631"
+    },
+    {
+      "source": "de/datamigrae/tools.md",
+      "locale": "de",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "bfa653153b4a7d0ac6d19a90c1429b08e7c0c0e1f5e9a64d2f5778e708739411"
+    },
+    {
+      "source": "de/faq.md",
+      "locale": "de",
+      "target": "faq.md",
+      "sourceHash": "69755f7f4774d608a82d642ba44ffbd32274249fa4dd5df66066f498eea25b02"
+    },
+    {
+      "source": "de/faststart.md",
+      "locale": "de",
+      "target": "faststart.md",
+      "sourceHash": "0b4d108a0e24b59ee2b83ec82e05eb07d99aeb1a667c0e7cd62a05dedfe9ef8e"
+    },
+    {
+      "source": "de/index.md",
+      "locale": "de",
+      "target": "README.md",
+      "sourceHash": "afded3995967441a81a91c7b42371b64b2aaa6b38d4521ccd728f0412aae7e04"
+    },
+    {
+      "source": "de/licenses.md",
+      "locale": "de",
+      "target": "licenses.md",
+      "sourceHash": "909c52e6a57fc31c1dae85c333902e2d65c59d6552e5cd46017f544f89eadd17"
+    },
+    {
+      "source": "de/limitations.md",
+      "locale": "de",
+      "target": "limitations.md",
+      "sourceHash": "d1213400f644656d067212914eb1976f007e9140356a70077b09cddee09cd02c"
+    },
+    {
+      "source": "de/logging.md",
+      "locale": "de",
+      "target": "logging.md",
+      "sourceHash": "9b31d4d1025af571156672f863b137ecd52627f3c1bacc8d767e1178cc12a7f0"
+    },
+    {
+      "source": "de/macos-27.md",
+      "locale": "de",
+      "target": "macos-27.md",
+      "sourceHash": "a1eefdd7b42048cd62bf338421aa5f81547e4500d7ddb729032d314727e67699"
+    },
+    {
+      "source": "de/migration-strategy/portal.md",
+      "locale": "de",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "3a6020965536cfd10860feda3a363719e71774199423f576dd441a8f7b5918ce"
+    },
+    {
+      "source": "de/migration-strategy/strategy-map.md",
+      "locale": "de",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "6009503c2eae9f1a66ca11a90eea21a1edf5b0ec9d6e906359e5f092d36cd2ca"
+    },
+    {
+      "source": "de/migration-strategy/updater-detection.md",
+      "locale": "de",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "78bc6ff7b592a03fb4ae1b337646e28bff5bc93172af9239d68768152a981449"
+    },
+    {
+      "source": "de/settings.md",
+      "locale": "de",
+      "target": "settings.md",
+      "sourceHash": "da6ed12bc35b459746ad25b38b8b26b200d5f4b4aa1daa5422f734fc0b09ed4d"
+    },
+    {
+      "source": "de/sponsor.md",
+      "locale": "de",
+      "target": "sponsor.md",
+      "sourceHash": "413cb48b48f9161e3264f61d8ac1946f1af66b179bd9a8f30daea4444f3dcaa3"
+    },
+    {
+      "source": "de/storage-guide.md",
+      "locale": "de",
+      "target": "storage-guide.md",
+      "sourceHash": "2ef260584f5d85207ff38619865827dd5cac91916675e44ec8f659266d3677eb"
+    },
+    {
+      "source": "de/troubleshooting.md",
+      "locale": "de",
+      "target": "troubleshooting.md",
+      "sourceHash": "4d3b34ffe1833fb6ced58b335617308e5ff91079d495238fdb61e4e1248a574f"
+    },
+    {
+      "source": "de/why-apfs.md",
+      "locale": "de",
+      "target": "why-apfs.md",
+      "sourceHash": "9c7e53619b9cad5d23da13d06c2c2085268a861a4de6525d6836390491ba6673"
+    },
+    {
+      "source": "en/AppPorts.md",
+      "locale": "en",
+      "target": "AppPorts.md",
+      "sourceHash": "b14a1ef161add7440a070eda6dfa92887519d8af4dc26ad031578f5954949f2f"
+    },
+    {
+      "source": "en/badges.md",
+      "locale": "en",
+      "target": "badges.md",
+      "sourceHash": "732c961dc46ea099ae20500bfa52c4fd28c414bce9270808f841e49cce6256e9"
+    },
+    {
+      "source": "en/changelog.md",
+      "locale": "en",
+      "target": "changelog.md",
+      "sourceHash": "1bf088dbd35fd9e576b5d7117842a030af4d7082206363cda23f2ae66726b9ee"
+    },
+    {
+      "source": "en/contributing.md",
+      "locale": "en",
+      "target": "contributing.md",
+      "sourceHash": "2d9d97fb1eb7024a434ee776fbfed9b80143659ace93d4cf240a4854e6d4d113"
+    },
+    {
+      "source": "en/core.md",
+      "locale": "en",
+      "target": "core.md",
+      "sourceHash": "a3f44c37f01a9294131ca8f699ce4162a23ea264e0f3ae277720d9a4bc813f07"
+    },
+    {
+      "source": "en/datamigrae/baseinfo.md",
+      "locale": "en",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "972aed47933af0d573e258811e9ff0063eef71f14735caa70b0732a126df0591"
+    },
+    {
+      "source": "en/datamigrae/container-identity.md",
+      "locale": "en",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "35ee5dd577b81f481ae236140fc89ff5fd86ca2964179c16be3aeda62a2810ae"
+    },
+    {
+      "source": "en/datamigrae/mount-migration.md",
+      "locale": "en",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "62a522b11f2a5ea4b1cab9d37cddba933fca8c257624420c624a244f1d5e1a9b"
+    },
+    {
+      "source": "en/datamigrae/operation.md",
+      "locale": "en",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "d6dbd1f747284677244f3860db8722c3a1dc49dd8f776fa9fba53dc4f23b0914"
+    },
+    {
+      "source": "en/datamigrae/resign.md",
+      "locale": "en",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "ff9f600818987bc6812f9061ad6b4fc7256b59ff131aa4d645d7e3eaccb6d276"
+    },
+    {
+      "source": "en/datamigrae/tools.md",
+      "locale": "en",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "1a260055cafe7c6deba015dec5aa267986eae5868eed66bd3233c3b59a2f55e1"
+    },
+    {
+      "source": "en/faq.md",
+      "locale": "en",
+      "target": "faq.md",
+      "sourceHash": "8c9c5f28a49d36e7721500d37c5d583307601b73cbe690551875b81aa893dfa3"
+    },
+    {
+      "source": "en/faststart.md",
+      "locale": "en",
+      "target": "faststart.md",
+      "sourceHash": "04d30578b748cc3a7de067a7bb730d5c968b97756f9978ab7caa9ec00eb260f3"
+    },
+    {
+      "source": "en/index.md",
+      "locale": "en",
+      "target": "README.md",
+      "sourceHash": "eaeafba9e5988c19d23fd89703bbbe7c64596d41f0c83e58e5d1b1dd5698c1c2"
+    },
+    {
+      "source": "en/licenses.md",
+      "locale": "en",
+      "target": "licenses.md",
+      "sourceHash": "4dccb1dc6d4d7d6eb1b546ddc80b61805dd63f7d50b5ac8e8cdf1feb266da137"
+    },
+    {
+      "source": "en/limitations.md",
+      "locale": "en",
+      "target": "limitations.md",
+      "sourceHash": "33143c0293549e664308e834912de0a7f95158d28937e658bb0aed2117f6d2fd"
+    },
+    {
+      "source": "en/logging.md",
+      "locale": "en",
+      "target": "logging.md",
+      "sourceHash": "18ea2f0a902c3441ba4db8a664ebbcdf1144a00c76f35911d42d0c524d1fc5c8"
+    },
+    {
+      "source": "en/macos-27.md",
+      "locale": "en",
+      "target": "macos-27.md",
+      "sourceHash": "74ce158c631e755ab53ecc25e49376bf406a804ea5ab55cc7d5a8138b3ce4481"
+    },
+    {
+      "source": "en/migration-strategy/portal.md",
+      "locale": "en",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "484121c3cea91f93d1679a714dc8d71b98ba8a985a469e1497f671110206a513"
+    },
+    {
+      "source": "en/migration-strategy/strategy-map.md",
+      "locale": "en",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "ce95016a069e079565325e82f931cac956e3cbfdab0d35b90b4b6ef17d1094c4"
+    },
+    {
+      "source": "en/migration-strategy/updater-detection.md",
+      "locale": "en",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "ecc14526cfe3632009bc6698401a3f7a3c3e5efac1610e15a8898210f4bbd800"
+    },
+    {
+      "source": "en/privacy.md",
+      "locale": "en",
+      "target": "privacy.md",
+      "sourceHash": "91f1453c620c40073ec36117e7ba441373c3b77521ceec321f85a589c61ef3ac"
+    },
+    {
+      "source": "en/research/prelogin-mount.md",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "sourceHash": "1c6f42b18779addb96618c043d5b32aa66054af7cded3a2cd33617879c7a7be4"
+    },
+    {
+      "source": "en/research/sandbox-mountpoint.md",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "sourceHash": "2c6b20a112f368aa19cfab50d9351f1f6e4463dc3ef11bebfd998a98721ca4eb"
+    },
+    {
+      "source": "en/research/sandbox-symlink.md",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "sourceHash": "2aae9177d146a603e64ab3fa6576a1858977b30037daeb7b6dae29bc2252a9ec"
+    },
+    {
+      "source": "en/research/unplug-test.md",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "sourceHash": "67bda2f76079b5317bbae70b66efa6d1509f91ae6768a01609ef94d047a5c710"
+    },
+    {
+      "source": "en/settings.md",
+      "locale": "en",
+      "target": "settings.md",
+      "sourceHash": "e2531be8ac7e11f8d013c57b9dac85c9f87bdc34595d57615070b16f470c654a"
+    },
+    {
+      "source": "en/sponsor.md",
+      "locale": "en",
+      "target": "sponsor.md",
+      "sourceHash": "851680f114833e674572d3116b8bc537e1c4e31ef6f8a0e08d3c61a344af6071"
+    },
+    {
+      "source": "en/storage-guide.md",
+      "locale": "en",
+      "target": "storage-guide.md",
+      "sourceHash": "206a5fe572869ec8dba6110979318f779df8d8ba2eb6284c86e4a25e193455cd"
+    },
+    {
+      "source": "en/troubleshooting.md",
+      "locale": "en",
+      "target": "troubleshooting.md",
+      "sourceHash": "b814984284571f55eb9308420e0b10e828e2bd65fc22f61b62f3a32d61feb6d1"
+    },
+    {
+      "source": "en/why-apfs.md",
+      "locale": "en",
+      "target": "why-apfs.md",
+      "sourceHash": "a88ca4ca71aa2a3f1f317add360070da143ee4db843e430420bf8fbde6b8c955"
+    },
+    {
+      "source": "es/AppPorts.md",
+      "locale": "es",
+      "target": "AppPorts.md",
+      "sourceHash": "2d77ec9869dda96203419d594a178a30d566e0f4e72f63687196094f11a36700"
+    },
+    {
+      "source": "es/badges.md",
+      "locale": "es",
+      "target": "badges.md",
+      "sourceHash": "a6275443fcad916780fee1a900c56d2b11da06ae02ce0398d6c23a6a95be5666"
+    },
+    {
+      "source": "es/changelog.md",
+      "locale": "es",
+      "target": "changelog.md",
+      "sourceHash": "52549db0def671c0e1b7eee872cf203ff67faa2a6ec2f9e9b9e250e4d140c747"
+    },
+    {
+      "source": "es/contributing.md",
+      "locale": "es",
+      "target": "contributing.md",
+      "sourceHash": "05d0fd833095c228d483d1a60a42d8df4b0aaa33e6048a0a66f1046b8e20ade0"
+    },
+    {
+      "source": "es/core.md",
+      "locale": "es",
+      "target": "core.md",
+      "sourceHash": "8aa742f76dbfc03b70a6d9e6cd52a7251db6588a984f03df5c28659f5d44a3f8"
+    },
+    {
+      "source": "es/datamigrae/baseinfo.md",
+      "locale": "es",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "f46d53b580e8e0770ea674d61dc5983741598d1a0f0f731eb43b20cb4b8abbdd"
+    },
+    {
+      "source": "es/datamigrae/container-identity.md",
+      "locale": "es",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "bbcc8c547beb83ebbe92ab387605ea3a973706df28e4f16080429361fbbf8d00"
+    },
+    {
+      "source": "es/datamigrae/mount-migration.md",
+      "locale": "es",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "9252087d7c848344a97bb8db17295598a40a57a2a29defa45de8573c278894d2"
+    },
+    {
+      "source": "es/datamigrae/operation.md",
+      "locale": "es",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "e71f9209c089697a36a2aa69dae316fa9a9d604eb6958f5e52c04663b4944c01"
+    },
+    {
+      "source": "es/datamigrae/resign.md",
+      "locale": "es",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "7c63d939279abd80149779cef1bccb02a5869c781a456fb09b0f907a4129fc06"
+    },
+    {
+      "source": "es/datamigrae/tools.md",
+      "locale": "es",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "8e67182a96e4f60db1508246732cb9445bed7d72c8764dfdc0d1d37d88f2edd7"
+    },
+    {
+      "source": "es/faq.md",
+      "locale": "es",
+      "target": "faq.md",
+      "sourceHash": "f51c96e0a1759492e3239c46cd789f8f66bc52710b0b921ce3e98a845ac05fce"
+    },
+    {
+      "source": "es/faststart.md",
+      "locale": "es",
+      "target": "faststart.md",
+      "sourceHash": "7ecb08d3cd198affb109c9edbec37c60cf5b663f3a474f90ff1ae2863914c1a9"
+    },
+    {
+      "source": "es/index.md",
+      "locale": "es",
+      "target": "README.md",
+      "sourceHash": "3946e56adcfce388cf48e56eb4ec2274db2cef8c8a1cd44f532d868d309bd609"
+    },
+    {
+      "source": "es/licenses.md",
+      "locale": "es",
+      "target": "licenses.md",
+      "sourceHash": "f383c526dadbf9e3f3b34e2fe75d59d93b0080196b7b80a97561bf34b6d2c2b0"
+    },
+    {
+      "source": "es/limitations.md",
+      "locale": "es",
+      "target": "limitations.md",
+      "sourceHash": "7af181d3360e135de03b16495b629be12941681534c82918db0e5e4c093ab7d0"
+    },
+    {
+      "source": "es/logging.md",
+      "locale": "es",
+      "target": "logging.md",
+      "sourceHash": "1874e6facf1f6b754fb6df6e41017e2b7ac7e79a97e6cf6a53d537f0f891b486"
+    },
+    {
+      "source": "es/macos-27.md",
+      "locale": "es",
+      "target": "macos-27.md",
+      "sourceHash": "855ea567c62499f9267a2f3c97baf0d1c94b076f778f8729aad729569499108d"
+    },
+    {
+      "source": "es/migration-strategy/portal.md",
+      "locale": "es",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "65698bb4e3caaf67ce4f01d578009765b3ac1bd8daa9c11da80c08529bd9944a"
+    },
+    {
+      "source": "es/migration-strategy/strategy-map.md",
+      "locale": "es",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "c95790ef419f4b95bc29df8b2d27e684d55777c68dfec3540c79affdcae31252"
+    },
+    {
+      "source": "es/migration-strategy/updater-detection.md",
+      "locale": "es",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "81dbcf7e2084dc7ee76c4fdae9dbf7c20b66c0d6322be7e3c485a5ed6e05232d"
+    },
+    {
+      "source": "es/settings.md",
+      "locale": "es",
+      "target": "settings.md",
+      "sourceHash": "8e1406cbbd1bb513f16edfba1a92dbeadc30f7a117aa2a4da2d60f33d504c783"
+    },
+    {
+      "source": "es/sponsor.md",
+      "locale": "es",
+      "target": "sponsor.md",
+      "sourceHash": "5770b9613726b9cbfe8b24a6aedea993ca61b052741e9d13916290d5a60dfa3a"
+    },
+    {
+      "source": "es/storage-guide.md",
+      "locale": "es",
+      "target": "storage-guide.md",
+      "sourceHash": "d39b26168e903b60b755f504e8ec5b838c4aae340ddadfbf93a16acd53cd8583"
+    },
+    {
+      "source": "es/troubleshooting.md",
+      "locale": "es",
+      "target": "troubleshooting.md",
+      "sourceHash": "80d116f5df0365463aeb37f1ea4475e0d3d5328e468eed4e1d279aac1cc6cd76"
+    },
+    {
+      "source": "es/why-apfs.md",
+      "locale": "es",
+      "target": "why-apfs.md",
+      "sourceHash": "03cda156bce8319f290bd654ce740558687c1a344e8aaaabfb327998a18656ba"
+    },
+    {
+      "source": "faq.md",
+      "locale": "zh-Hans",
+      "target": "faq.md",
+      "sourceHash": "9792eb1e4e50ba7b3d89df38051f105abcacd092a600efb4dc384913e4ca1121"
+    },
+    {
+      "source": "faststart.md",
+      "locale": "zh-Hans",
+      "target": "faststart.md",
+      "sourceHash": "7b6a747c1425f58c70e7c0496e402c430b404204c3ddc6786ba73567453eb4c9"
+    },
+    {
+      "source": "fr/AppPorts.md",
+      "locale": "fr",
+      "target": "AppPorts.md",
+      "sourceHash": "558f149ec00fb15e2b53c3bad73e05bf37b1e2e7865fd2e0e955c559fa90dde2"
+    },
+    {
+      "source": "fr/badges.md",
+      "locale": "fr",
+      "target": "badges.md",
+      "sourceHash": "879dd3aadefb106262f33f85ef6694410700fcb6573d25523423f17f02d198fe"
+    },
+    {
+      "source": "fr/changelog.md",
+      "locale": "fr",
+      "target": "changelog.md",
+      "sourceHash": "d6777451ceb8a71d883caed9282d7fdf67414251a1b2d6a36bd873d81c8bd610"
+    },
+    {
+      "source": "fr/contributing.md",
+      "locale": "fr",
+      "target": "contributing.md",
+      "sourceHash": "eac85694fd5688b3a408ba38a9656ecf72e1955bf56f5a4788c58c52c850492b"
+    },
+    {
+      "source": "fr/core.md",
+      "locale": "fr",
+      "target": "core.md",
+      "sourceHash": "53180788b20ec3ff5ae05dff0f4040effefce06e4c0597c6204c7973e87ebc25"
+    },
+    {
+      "source": "fr/datamigrae/baseinfo.md",
+      "locale": "fr",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "710a5e417fb7be6adef25f3deb64ccc252799f8cfa741b636c5ecb4993f2c17d"
+    },
+    {
+      "source": "fr/datamigrae/container-identity.md",
+      "locale": "fr",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "17ae6bd95065f766872b09e97c5657099ead105c41290d2dda6022c3fd3c619d"
+    },
+    {
+      "source": "fr/datamigrae/mount-migration.md",
+      "locale": "fr",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "8f2a3320564589ae0b5311312c1116e7d21a68f084a5d67b4712906806cd4fdf"
+    },
+    {
+      "source": "fr/datamigrae/operation.md",
+      "locale": "fr",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "8cf2765d851cade5225bfb5c1fb2adbe9e0ec2aefe0292f250c8a882c0d46c55"
+    },
+    {
+      "source": "fr/datamigrae/resign.md",
+      "locale": "fr",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "d3fa78cd966c1a3fe1bb97aee753a0041f95ed43083fd35953fc4206ee1eef15"
+    },
+    {
+      "source": "fr/datamigrae/tools.md",
+      "locale": "fr",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "efba506ab5ad4d64782c63373d1d4b8a0ac5fcdc5fefe8977984fcdd5fe2d0e8"
+    },
+    {
+      "source": "fr/faq.md",
+      "locale": "fr",
+      "target": "faq.md",
+      "sourceHash": "f07bb1891c69f8ef15a789f89e08233c8ff8931e76d2943a0b34eff168029a88"
+    },
+    {
+      "source": "fr/faststart.md",
+      "locale": "fr",
+      "target": "faststart.md",
+      "sourceHash": "cac4708de6b21a20ab8069d8cc15baae90fe3d882462d0dbf1d013cab4a31c87"
+    },
+    {
+      "source": "fr/index.md",
+      "locale": "fr",
+      "target": "README.md",
+      "sourceHash": "ea7287ac0c71b6c19aaf3a087fcebba0baffbb497e7ae880114c91b8f9d69602"
+    },
+    {
+      "source": "fr/licenses.md",
+      "locale": "fr",
+      "target": "licenses.md",
+      "sourceHash": "3a11043584c97f1d422da2073d4023d0016b4df069ee9aba3a04e450c6bada6e"
+    },
+    {
+      "source": "fr/limitations.md",
+      "locale": "fr",
+      "target": "limitations.md",
+      "sourceHash": "a3d10361740e46bb0d77c5109e9487250dc805bfb59dba46073c2038bb74d0b1"
+    },
+    {
+      "source": "fr/logging.md",
+      "locale": "fr",
+      "target": "logging.md",
+      "sourceHash": "a414287c9668adf675c30dd7b07a24b0a4891c2c99368560a63faa900480de31"
+    },
+    {
+      "source": "fr/macos-27.md",
+      "locale": "fr",
+      "target": "macos-27.md",
+      "sourceHash": "b3814e6813e2d7605fea2b699874f8a8c77d30a21a561ef933286fc6459ec8b8"
+    },
+    {
+      "source": "fr/migration-strategy/portal.md",
+      "locale": "fr",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "4d1b0c8d573048a51152be23b286cd427e67b09127f533ea38ead75fc561fa6b"
+    },
+    {
+      "source": "fr/migration-strategy/strategy-map.md",
+      "locale": "fr",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "0ff433b7a21fcab65b6f96409fed8a7597e68377feca09d2c7925442a6d142bd"
+    },
+    {
+      "source": "fr/migration-strategy/updater-detection.md",
+      "locale": "fr",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "f71878a04c67079aa444fe1880c78e07321d6b7e239759d3eb33e53e638a6595"
+    },
+    {
+      "source": "fr/settings.md",
+      "locale": "fr",
+      "target": "settings.md",
+      "sourceHash": "868eb42335f9adf9f688a0b125e474ae87e35dff4c76adbe6b157d3fc1c13d6d"
+    },
+    {
+      "source": "fr/sponsor.md",
+      "locale": "fr",
+      "target": "sponsor.md",
+      "sourceHash": "0a4e862627a4ba4766778e1bcb3a8c9eb0e7631627319764b7c6dcbe62f7b9d0"
+    },
+    {
+      "source": "fr/storage-guide.md",
+      "locale": "fr",
+      "target": "storage-guide.md",
+      "sourceHash": "ae995a8647e15a80ee8828920506f9d1c47f0fc6aaa2480a46d23ac622ee63f7"
+    },
+    {
+      "source": "fr/troubleshooting.md",
+      "locale": "fr",
+      "target": "troubleshooting.md",
+      "sourceHash": "3cf1c34a93f9349b54b57347bd55ba641d6d97d5c36e42ed93db0a07e6201f7c"
+    },
+    {
+      "source": "fr/why-apfs.md",
+      "locale": "fr",
+      "target": "why-apfs.md",
+      "sourceHash": "dc21075bfdaf1d287f916925f6a0f16b4ae4bcd5dcbf6dd645a9c2f713432d5d"
+    },
+    {
+      "source": "index.md",
+      "locale": "zh-Hans",
+      "target": "README.md",
+      "sourceHash": "605df6e422ad59c3dd890d5febc86825ea2a33ef44b7d90cd4adb3df4ac944db"
+    },
+    {
+      "source": "ja/AppPorts.md",
+      "locale": "ja",
+      "target": "AppPorts.md",
+      "sourceHash": "333e0e9a582276fa608deb7387dc9e16b58c387593816903b7e7ad2161904e0e"
+    },
+    {
+      "source": "ja/badges.md",
+      "locale": "ja",
+      "target": "badges.md",
+      "sourceHash": "75e5b03efa15ef9ec4d5d42ea972a01654a2c182add3aa3d2f9835c0f52298e0"
+    },
+    {
+      "source": "ja/changelog.md",
+      "locale": "ja",
+      "target": "changelog.md",
+      "sourceHash": "4d3d6424514a00ee8bfe5f2ee0b778491d4ca01d58b2ae27fa044ebd53507e15"
+    },
+    {
+      "source": "ja/contributing.md",
+      "locale": "ja",
+      "target": "contributing.md",
+      "sourceHash": "b6dc310f57b74c75d20c29f6f67662342eadfb3ef42df272714e76d6a96e6eb2"
+    },
+    {
+      "source": "ja/core.md",
+      "locale": "ja",
+      "target": "core.md",
+      "sourceHash": "de7bf093b80c5983c1abcd99e4d48fbc379596bc7e465f073c9d2297e1a4d1e2"
+    },
+    {
+      "source": "ja/datamigrae/baseinfo.md",
+      "locale": "ja",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "898c8865ed9e21b86ac4661e86324da54e7280b2a402d378effcdc722c335fb5"
+    },
+    {
+      "source": "ja/datamigrae/container-identity.md",
+      "locale": "ja",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "d17088d1a41340236191fc69ec5dc07789335102a2b2e89ba8782177548cd495"
+    },
+    {
+      "source": "ja/datamigrae/mount-migration.md",
+      "locale": "ja",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "cb5364871f3924f3194f6cb55ae8a9c1f3ac19786f3ed300dddf198677b01824"
+    },
+    {
+      "source": "ja/datamigrae/operation.md",
+      "locale": "ja",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "662850e9608e216e8fd1cffea4ba812d31e368e02935b67ecc81ec5b539fff2c"
+    },
+    {
+      "source": "ja/datamigrae/resign.md",
+      "locale": "ja",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "616f903c86d4dcdc5d09afe293608b4dad720a1b8363199ebcea7f5f8570f20c"
+    },
+    {
+      "source": "ja/datamigrae/tools.md",
+      "locale": "ja",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "98a4835a0ea82101d4aefdced7b598f4c32514e19c4f3534f221bd9779bd2997"
+    },
+    {
+      "source": "ja/faq.md",
+      "locale": "ja",
+      "target": "faq.md",
+      "sourceHash": "7667620f9dd7e40c88340f753461350e65fc6641604bc8785fb43ca4d15ef806"
+    },
+    {
+      "source": "ja/faststart.md",
+      "locale": "ja",
+      "target": "faststart.md",
+      "sourceHash": "46e33c66a8c1e68d9db2ae999ab4bab8b5250385353bd561844c02bdacf0b68f"
+    },
+    {
+      "source": "ja/index.md",
+      "locale": "ja",
+      "target": "README.md",
+      "sourceHash": "b520a22dadd381484f33ed0171b1fca6ed8459b804c8627b51fc318fc345f411"
+    },
+    {
+      "source": "ja/licenses.md",
+      "locale": "ja",
+      "target": "licenses.md",
+      "sourceHash": "e5de1ef1e9ca0e736ee20d69abbabb4f25512aac8e2372bbef18a9f610514cc4"
+    },
+    {
+      "source": "ja/limitations.md",
+      "locale": "ja",
+      "target": "limitations.md",
+      "sourceHash": "8d244da77f47bf5b3c104c9bc9fac26dcf1ce0f0fe673d7009ed6dce7ea6a8e2"
+    },
+    {
+      "source": "ja/logging.md",
+      "locale": "ja",
+      "target": "logging.md",
+      "sourceHash": "7cd17a3fef66f458f8aff5f7a486b09b1de6858b97be88e59eedc51b554436e0"
+    },
+    {
+      "source": "ja/macos-27.md",
+      "locale": "ja",
+      "target": "macos-27.md",
+      "sourceHash": "7d7ec34daf9986fb069028061624118098c80b27f21729e504cc5ee94fbee040"
+    },
+    {
+      "source": "ja/migration-strategy/portal.md",
+      "locale": "ja",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "f0f6e913fcf905301ebd3e00bc3c849c0aa331880a9ce865db39ea6f3f5831c2"
+    },
+    {
+      "source": "ja/migration-strategy/strategy-map.md",
+      "locale": "ja",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "c98eafdab5d2ac42251fdb124f92396562addb439c0d1e2b6517ef2fd8ab4256"
+    },
+    {
+      "source": "ja/migration-strategy/updater-detection.md",
+      "locale": "ja",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "46a170602742ad0256890e9d87bec6ebfd40d5714499ad9f4015647c6b06f62a"
+    },
+    {
+      "source": "ja/settings.md",
+      "locale": "ja",
+      "target": "settings.md",
+      "sourceHash": "a69fc507626c5b301fa8a08bfdfb43d8b8f2cfc9b6169350b2403860b099814e"
+    },
+    {
+      "source": "ja/sponsor.md",
+      "locale": "ja",
+      "target": "sponsor.md",
+      "sourceHash": "f8ac63d9fc342a05b92dc9882e0e1d7b0912928b290fcc0adfd15073211dced8"
+    },
+    {
+      "source": "ja/storage-guide.md",
+      "locale": "ja",
+      "target": "storage-guide.md",
+      "sourceHash": "b13ad953a662c4f4dc98bdb5439c2d78dbfed6972b1e4a5a162afba87445b3ce"
+    },
+    {
+      "source": "ja/troubleshooting.md",
+      "locale": "ja",
+      "target": "troubleshooting.md",
+      "sourceHash": "d8b1feeda28823bdade48a8c1760ad7a5e41b80497b71b218b20b2e81aab152a"
+    },
+    {
+      "source": "ja/why-apfs.md",
+      "locale": "ja",
+      "target": "why-apfs.md",
+      "sourceHash": "d8944322d361ebea15c56826260591fcc546ffbfacc6e2e5d83f8dde72bd8464"
+    },
+    {
+      "source": "ko/AppPorts.md",
+      "locale": "ko",
+      "target": "AppPorts.md",
+      "sourceHash": "4468eddcb8ee1d989ae310c53c33f838b434a6b1b13eda946619c821667f03cb"
+    },
+    {
+      "source": "ko/badges.md",
+      "locale": "ko",
+      "target": "badges.md",
+      "sourceHash": "0df916d0cc07b84ff6ce3ac3f9872bfb9bfded9ad6dd24a863ecd55696c6ae16"
+    },
+    {
+      "source": "ko/changelog.md",
+      "locale": "ko",
+      "target": "changelog.md",
+      "sourceHash": "9ba2556ffd3331be130c920d1a14b51fc6838e5b642eeb1c3dc639f9e079d2c2"
+    },
+    {
+      "source": "ko/contributing.md",
+      "locale": "ko",
+      "target": "contributing.md",
+      "sourceHash": "94a8a05dab3320c79780617083954290f1de7fb04474cb2d751e9e9fb540bcb9"
+    },
+    {
+      "source": "ko/core.md",
+      "locale": "ko",
+      "target": "core.md",
+      "sourceHash": "c7c473b51ef03fd637f958b70c2f611fe76248767107d0ad2bd246eae21d24ab"
+    },
+    {
+      "source": "ko/datamigrae/baseinfo.md",
+      "locale": "ko",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "3c2716bf13d11dd2358e1d20841464a6e570a3f894dcd6c390c0482a7bd6607e"
+    },
+    {
+      "source": "ko/datamigrae/container-identity.md",
+      "locale": "ko",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "cfa120831e1eaabcd1493ab1362309bb23c9c6709b72232982c711b1a504f34c"
+    },
+    {
+      "source": "ko/datamigrae/mount-migration.md",
+      "locale": "ko",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "9a118847e91fe8ce5e5072af73341b2b57062f7874ea6e5e26b0afd700075d98"
+    },
+    {
+      "source": "ko/datamigrae/operation.md",
+      "locale": "ko",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "a0d285be50644210550a3b9ebb09df5b17404a84fca7b37a7ac887168c1dd5bc"
+    },
+    {
+      "source": "ko/datamigrae/resign.md",
+      "locale": "ko",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "2ae75e6d1497b3d2f2d12645dca7a40e0b5352903a62b849401ae40a8cdd3777"
+    },
+    {
+      "source": "ko/datamigrae/tools.md",
+      "locale": "ko",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "5b7094a6ad450ba2d461cc4c44c9455daf3a59cced1847eb134e77c21e92411d"
+    },
+    {
+      "source": "ko/faq.md",
+      "locale": "ko",
+      "target": "faq.md",
+      "sourceHash": "d529a27734783a19650e7dcb695695ec4c2a00a051ab4bfb95fd7f77726fcdcd"
+    },
+    {
+      "source": "ko/faststart.md",
+      "locale": "ko",
+      "target": "faststart.md",
+      "sourceHash": "14bae85e418d73887d5e2b245bd694af0b9464b46d2cbae1b9e109f80c2783ca"
+    },
+    {
+      "source": "ko/index.md",
+      "locale": "ko",
+      "target": "README.md",
+      "sourceHash": "596a696efa0928d80001545393d7135bff331d1e57f87aaae80970b0e5b829f4"
+    },
+    {
+      "source": "ko/licenses.md",
+      "locale": "ko",
+      "target": "licenses.md",
+      "sourceHash": "1ade28e63ed344b4926f89e42c3176ae3bde9f390db7340afa4f1bf41f688a6b"
+    },
+    {
+      "source": "ko/limitations.md",
+      "locale": "ko",
+      "target": "limitations.md",
+      "sourceHash": "0731b110fb32ce107fd3fe9d50f3f841b320ff6ddc377b218197f91e8f1babf0"
+    },
+    {
+      "source": "ko/logging.md",
+      "locale": "ko",
+      "target": "logging.md",
+      "sourceHash": "5c29d4a24c4a317be3896e5bd08c4dbc6392c6609acb5558181b69de187ab55f"
+    },
+    {
+      "source": "ko/macos-27.md",
+      "locale": "ko",
+      "target": "macos-27.md",
+      "sourceHash": "18347766521784b4bc87a40ca5182cec65e8d82b2ab2a0f1bea9a508b9868cd1"
+    },
+    {
+      "source": "ko/migration-strategy/portal.md",
+      "locale": "ko",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "a42aa3fda47a9eca274dbc6a3a49106e048051ea4a8b5f5c55a2c2d389f1d105"
+    },
+    {
+      "source": "ko/migration-strategy/strategy-map.md",
+      "locale": "ko",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "c39b274d9d4260b13726e395e2cf80d0cb5edcfc06aca8256bd3dc668d5ee28b"
+    },
+    {
+      "source": "ko/migration-strategy/updater-detection.md",
+      "locale": "ko",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "4fb66c5af478954fd5ce553e0e054edcf27c0ca5bf8648f35e84bc395aa97bc7"
+    },
+    {
+      "source": "ko/settings.md",
+      "locale": "ko",
+      "target": "settings.md",
+      "sourceHash": "6302aac83156a59f69ddb407d13c5dd291454f66b14ade6dcacc01a0553a5c9d"
+    },
+    {
+      "source": "ko/sponsor.md",
+      "locale": "ko",
+      "target": "sponsor.md",
+      "sourceHash": "f3444f38bf77dcd22fef0df269e5b95ff23439795b374e9952da62c45516d144"
+    },
+    {
+      "source": "ko/storage-guide.md",
+      "locale": "ko",
+      "target": "storage-guide.md",
+      "sourceHash": "ce030cf0a1b62fb551fb2f152c7f7984d15c2d2866576b9d055e5b9432291ec2"
+    },
+    {
+      "source": "ko/troubleshooting.md",
+      "locale": "ko",
+      "target": "troubleshooting.md",
+      "sourceHash": "3a9aff903e15c3d90636567544439155f4b771221ffd67d2b90597cef5680556"
+    },
+    {
+      "source": "ko/why-apfs.md",
+      "locale": "ko",
+      "target": "why-apfs.md",
+      "sourceHash": "87e4959e2dad293e6234091a9e54986c455d3a3363805118dd6b42cefb71b8dc"
+    },
+    {
+      "source": "licenses.md",
+      "locale": "zh-Hans",
+      "target": "licenses.md",
+      "sourceHash": "6b09204c62182c052a392d9990ce98e82ff37165f6f8a6123cb27f1dcf1927da"
+    },
+    {
+      "source": "limitations.md",
+      "locale": "zh-Hans",
+      "target": "limitations.md",
+      "sourceHash": "9c604d8bb35f28fbbd65adb1bf6754dca0a519a6def1b8201ddcb154a3d6c59e"
+    },
+    {
+      "source": "logging.md",
+      "locale": "zh-Hans",
+      "target": "logging.md",
+      "sourceHash": "142e618d2b650aa48d0b556c0b89912eb336da0895964aaed5cbffb45efa9bca"
+    },
+    {
+      "source": "macos-27.md",
+      "locale": "zh-Hans",
+      "target": "macos-27.md",
+      "sourceHash": "da9ac74b59e6acb8b729904272dc6ac8780dc490b5c548935d4edddcdec55ab6"
+    },
+    {
+      "source": "migration-strategy/appstore-update.md",
+      "locale": "zh-Hans",
+      "target": "migration-strategy/appstore-update.md",
+      "sourceHash": "216325a99356660adac03fb02585107b2aa4ae10240f1dc3e47ca27ac28627dd"
+    },
+    {
+      "source": "migration-strategy/portal.md",
+      "locale": "zh-Hans",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "630a66b0d38f11cc551beac764847f198a227eeb4c7a6f70a503ad373fe0240d"
+    },
+    {
+      "source": "migration-strategy/strategy-map.md",
+      "locale": "zh-Hans",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "a12fed012f6c8cc5fb221d78cdd29f6c5537e516e655e0b7b63b0c9ea5c9a4fc"
+    },
+    {
+      "source": "migration-strategy/updater-detection.md",
+      "locale": "zh-Hans",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "54eed21a62e53918b1d9376c7d28851fd21344da481814c760101385e608c797"
+    },
+    {
+      "source": "privacy.md",
+      "locale": "zh-Hans",
+      "target": "privacy.md",
+      "sourceHash": "bb6cb3a55ce12994490b0401de28ad3d4cb8b9c1af92966ad54e084e6b877dfa"
+    },
+    {
+      "source": "research/prelogin-mount.md",
+      "locale": "zh-Hans",
+      "target": "research/prelogin-mount.md",
+      "sourceHash": "ab30b9fd59f8021304cb0572408f4a051fb2836b06dab8251b3353801b1e5b1d"
+    },
+    {
+      "source": "research/sandbox-mountpoint.md",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-mountpoint.md",
+      "sourceHash": "7b9bb3a5ce37057005f4dff042238b2946fa50ad00e4433a022dc70ff9ef53c6"
+    },
+    {
+      "source": "research/sandbox-symlink.md",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-symlink.md",
+      "sourceHash": "a28b71ed9ed49037f5b6274f5be9898e37c279f7953a4fe7390722cdfc16766c"
+    },
+    {
+      "source": "research/unplug-test.md",
+      "locale": "zh-Hans",
+      "target": "research/unplug-test.md",
+      "sourceHash": "f12dd1d1e98fb17b14aad3f6c9b647dda6012bbeb48f3cd65f6198bb33c2db66"
+    },
+    {
+      "source": "settings.md",
+      "locale": "zh-Hans",
+      "target": "settings.md",
+      "sourceHash": "8b26d68eb21043803bb69927a5c61dcd9753b7b4509eb1a587d9678429673bb2"
+    },
+    {
+      "source": "sponsor.md",
+      "locale": "zh-Hans",
+      "target": "sponsor.md",
+      "sourceHash": "a0a540d18983342c87d14a7d014b34678937bcbce4268c848d41b35cd30cd358"
+    },
+    {
+      "source": "storage-guide.md",
+      "locale": "zh-Hans",
+      "target": "storage-guide.md",
+      "sourceHash": "219085bf95704d8e2152bf1a279cd990869cebf5ce1ad80caef9e67550686f44"
+    },
+    {
+      "source": "troubleshooting.md",
+      "locale": "zh-Hans",
+      "target": "troubleshooting.md",
+      "sourceHash": "ca784420c356a828829ac013d119d63cc457bff565ce31f5209b342096538192"
+    },
+    {
+      "source": "why-apfs.md",
+      "locale": "zh-Hans",
+      "target": "why-apfs.md",
+      "sourceHash": "4376f31dd10fb8c6552d9d6ffe9ee788d74ee7649f282a097a3e21b4d40a7516"
+    },
+    {
+      "source": "zh-Hant/AppPorts.md",
+      "locale": "zh-Hant",
+      "target": "AppPorts.md",
+      "sourceHash": "4607ba2c5e53ec662f2e9ae901ca867f59ca013390524e40d45fa86e08e1e72f"
+    },
+    {
+      "source": "zh-Hant/badges.md",
+      "locale": "zh-Hant",
+      "target": "badges.md",
+      "sourceHash": "3e6b95da241b3fc0c8cb31ad8d93e14a88518af9b66557a2e31facb0dcc0a737"
+    },
+    {
+      "source": "zh-Hant/changelog.md",
+      "locale": "zh-Hant",
+      "target": "changelog.md",
+      "sourceHash": "234747fe84977f4dd81daf2414dd8877db36cda9999bfe010e1b472d39f7adbe"
+    },
+    {
+      "source": "zh-Hant/contributing.md",
+      "locale": "zh-Hant",
+      "target": "contributing.md",
+      "sourceHash": "399364706446ee3735467783964e3cb03c7e12fac8314c6379de98a75b55225d"
+    },
+    {
+      "source": "zh-Hant/core.md",
+      "locale": "zh-Hant",
+      "target": "core.md",
+      "sourceHash": "4de792aa5853896795d5c279b88877ff32859f968695ba93e3cf9ef8ebec5c74"
+    },
+    {
+      "source": "zh-Hant/datamigrae/baseinfo.md",
+      "locale": "zh-Hant",
+      "target": "datamigrae/baseinfo.md",
+      "sourceHash": "0084bc2c28e6afce99b9ae5976883fb65c109d7b934c81f0b6becee55b1e1f34"
+    },
+    {
+      "source": "zh-Hant/datamigrae/container-identity.md",
+      "locale": "zh-Hant",
+      "target": "datamigrae/container-identity.md",
+      "sourceHash": "310ad07031c681d7c3ea9e59fcc51c7be73e3095e6adbac2577b0a9073e04d35"
+    },
+    {
+      "source": "zh-Hant/datamigrae/mount-migration.md",
+      "locale": "zh-Hant",
+      "target": "datamigrae/mount-migration.md",
+      "sourceHash": "88f85069df65a9ca3debfa6ea0d702fe0088d4d5a556f9b54d2725f157f46afe"
+    },
+    {
+      "source": "zh-Hant/datamigrae/operation.md",
+      "locale": "zh-Hant",
+      "target": "datamigrae/operation.md",
+      "sourceHash": "10e59942abba7039ed644da75441b7341a89b73f1d8b6e3a9e9ba76b67b75d3f"
+    },
+    {
+      "source": "zh-Hant/datamigrae/resign.md",
+      "locale": "zh-Hant",
+      "target": "datamigrae/resign.md",
+      "sourceHash": "8fff0a4a92ae710594b08e160779f7ea29e190b317c02aecaa1312af9969aa57"
+    },
+    {
+      "source": "zh-Hant/datamigrae/tools.md",
+      "locale": "zh-Hant",
+      "target": "datamigrae/tools.md",
+      "sourceHash": "b82c965f1357e7c89a6d863e10bf3d828f2e1502c80f78497ee2ba1e17ccd543"
+    },
+    {
+      "source": "zh-Hant/faq.md",
+      "locale": "zh-Hant",
+      "target": "faq.md",
+      "sourceHash": "1fd86c563fb50894ae8766d8859cbd2182a67720ae62f316bf82d2d21b3b0952"
+    },
+    {
+      "source": "zh-Hant/faststart.md",
+      "locale": "zh-Hant",
+      "target": "faststart.md",
+      "sourceHash": "f8d74467d6bf1603c4cc7afb21a020a91ad7bdde53a2840941e3e9b7eddbb28d"
+    },
+    {
+      "source": "zh-Hant/index.md",
+      "locale": "zh-Hant",
+      "target": "README.md",
+      "sourceHash": "d0005fa7031cf2a1978dfc3496f3b8cc4f64a25dd16e72f41aaa0d3fda5186f4"
+    },
+    {
+      "source": "zh-Hant/licenses.md",
+      "locale": "zh-Hant",
+      "target": "licenses.md",
+      "sourceHash": "f7d0fed56b21e097abb5bcab3c355f52abceac267ff84649b6b316ac543ac3f3"
+    },
+    {
+      "source": "zh-Hant/limitations.md",
+      "locale": "zh-Hant",
+      "target": "limitations.md",
+      "sourceHash": "ec8e88a978162baea7de54e599a6f5d148d8a9816475b36ffb21631ed3dcc2d3"
+    },
+    {
+      "source": "zh-Hant/logging.md",
+      "locale": "zh-Hant",
+      "target": "logging.md",
+      "sourceHash": "edfc397654f38c635593b8eb6c6dd3b7c95816e26074b2cba895e805141fa49a"
+    },
+    {
+      "source": "zh-Hant/macos-27.md",
+      "locale": "zh-Hant",
+      "target": "macos-27.md",
+      "sourceHash": "9244b9b3fb9999b4ab87e37d78779504fa58d1ce10a4c440d6b0c38c596ad904"
+    },
+    {
+      "source": "zh-Hant/migration-strategy/portal.md",
+      "locale": "zh-Hant",
+      "target": "migration-strategy/portal.md",
+      "sourceHash": "ce07c6f089a333edbf8e153012217e5d2934d89d7e1fe87714c415f4e604c9ad"
+    },
+    {
+      "source": "zh-Hant/migration-strategy/strategy-map.md",
+      "locale": "zh-Hant",
+      "target": "migration-strategy/strategy-map.md",
+      "sourceHash": "797745bd9103536f88719ac62b598686c4a9de583c73f56688557a10d6db21e4"
+    },
+    {
+      "source": "zh-Hant/migration-strategy/updater-detection.md",
+      "locale": "zh-Hant",
+      "target": "migration-strategy/updater-detection.md",
+      "sourceHash": "ff49c72af38d2e4fcc5907bf3f67644700ac9533c737bd80c1c51fa736769601"
+    },
+    {
+      "source": "zh-Hant/settings.md",
+      "locale": "zh-Hant",
+      "target": "settings.md",
+      "sourceHash": "7fc4bdb5d89e5b0064bc91bc2df5f712d719ef7c4b587493c46b0e7df9e4e561"
+    },
+    {
+      "source": "zh-Hant/sponsor.md",
+      "locale": "zh-Hant",
+      "target": "sponsor.md",
+      "sourceHash": "faf03761b065549dee25c1bfe1c08db0b9bbf99a20c14991f896d58ccc9055f7"
+    },
+    {
+      "source": "zh-Hant/storage-guide.md",
+      "locale": "zh-Hant",
+      "target": "storage-guide.md",
+      "sourceHash": "f254ae2ef5b9b25133e9077f4d84785aec8226a3d2f90c8b7123c13013103412"
+    },
+    {
+      "source": "zh-Hant/troubleshooting.md",
+      "locale": "zh-Hant",
+      "target": "troubleshooting.md",
+      "sourceHash": "6f7dcf962dbb9fe0cd2bd53fbba184c41ff3e53639b8dba965cf6526f49b7ce6"
+    },
+    {
+      "source": "zh-Hant/why-apfs.md",
+      "locale": "zh-Hant",
+      "target": "why-apfs.md",
+      "sourceHash": "8f2a903a36dc18fe5788c3169f2a7d21ad2f001d85b60d700c8e1882802b0c0d"
+    }
+  ],
+  "navigationPages": [
+    {
+      "locale": "zh-Hans",
+      "target": "datamigrae/README.md",
+      "title": "数据迁移"
+    },
+    {
+      "locale": "zh-Hans",
+      "target": "migration-strategy/README.md",
+      "title": "App迁移策略"
+    },
+    {
+      "locale": "zh-Hans",
+      "target": "external-storage/README.md",
+      "title": "外部存储"
+    },
+    {
+      "locale": "zh-Hans",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "升级与修复"
+    },
+    {
+      "locale": "zh-Hans",
+      "target": "research/README.md",
+      "title": "实验记录"
+    },
+    {
+      "locale": "en",
+      "target": "datamigrae/README.md",
+      "title": "Data Migration"
+    },
+    {
+      "locale": "en",
+      "target": "migration-strategy/README.md",
+      "title": "App Migration Strategy"
+    },
+    {
+      "locale": "en",
+      "target": "external-storage/README.md",
+      "title": "External Storage"
+    },
+    {
+      "locale": "en",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "Upgrades and Repairs"
+    },
+    {
+      "locale": "en",
+      "target": "research/README.md",
+      "title": "Experiment Logs"
+    },
+    {
+      "locale": "zh-Hant",
+      "target": "datamigrae/README.md",
+      "title": "資料遷移"
+    },
+    {
+      "locale": "zh-Hant",
+      "target": "migration-strategy/README.md",
+      "title": "App遷移策略"
+    },
+    {
+      "locale": "zh-Hant",
+      "target": "external-storage/README.md",
+      "title": "外接儲存裝置"
+    },
+    {
+      "locale": "zh-Hant",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "升級與修復"
+    },
+    {
+      "locale": "zh-Hant",
+      "target": "research/README.md",
+      "title": "實驗紀錄"
+    },
+    {
+      "locale": "ja",
+      "target": "datamigrae/README.md",
+      "title": "データ移行"
+    },
+    {
+      "locale": "ja",
+      "target": "migration-strategy/README.md",
+      "title": "アプリ移行戦略"
+    },
+    {
+      "locale": "ja",
+      "target": "external-storage/README.md",
+      "title": "外部ストレージ"
+    },
+    {
+      "locale": "ja",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "アップグレードと修復"
+    },
+    {
+      "locale": "ja",
+      "target": "research/README.md",
+      "title": "実験記録"
+    },
+    {
+      "locale": "ko",
+      "target": "datamigrae/README.md",
+      "title": "데이터 마이그레이션"
+    },
+    {
+      "locale": "ko",
+      "target": "migration-strategy/README.md",
+      "title": "앱 마이그레이션 전략"
+    },
+    {
+      "locale": "ko",
+      "target": "external-storage/README.md",
+      "title": "외장 저장 장치"
+    },
+    {
+      "locale": "ko",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "업그레이드 및 복구"
+    },
+    {
+      "locale": "ko",
+      "target": "research/README.md",
+      "title": "실험 기록"
+    },
+    {
+      "locale": "de",
+      "target": "datamigrae/README.md",
+      "title": "Datenmigration"
+    },
+    {
+      "locale": "de",
+      "target": "migration-strategy/README.md",
+      "title": "Migrationsstrategie"
+    },
+    {
+      "locale": "de",
+      "target": "external-storage/README.md",
+      "title": "Externer Speicher"
+    },
+    {
+      "locale": "de",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "Upgrade und Reparatur"
+    },
+    {
+      "locale": "de",
+      "target": "research/README.md",
+      "title": "Versuchsprotokolle"
+    },
+    {
+      "locale": "fr",
+      "target": "datamigrae/README.md",
+      "title": "Migration de données"
+    },
+    {
+      "locale": "fr",
+      "target": "migration-strategy/README.md",
+      "title": "Stratégie de migration"
+    },
+    {
+      "locale": "fr",
+      "target": "external-storage/README.md",
+      "title": "Stockage externe"
+    },
+    {
+      "locale": "fr",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "Mise à niveau et réparation"
+    },
+    {
+      "locale": "fr",
+      "target": "research/README.md",
+      "title": "Expériences"
+    },
+    {
+      "locale": "es",
+      "target": "datamigrae/README.md",
+      "title": "Migración de datos"
+    },
+    {
+      "locale": "es",
+      "target": "migration-strategy/README.md",
+      "title": "Estrategia de migración"
+    },
+    {
+      "locale": "es",
+      "target": "external-storage/README.md",
+      "title": "Almacenamiento externo"
+    },
+    {
+      "locale": "es",
+      "target": "upgrades-and-repairs/README.md",
+      "title": "Actualización y reparación"
+    },
+    {
+      "locale": "es",
+      "target": "research/README.md",
+      "title": "Experimentos"
+    }
+  ],
+  "crossLinks": [
+    {
+      "file": "de/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/why-apfs.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/why-apfs.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/why-apfs.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/why-apfs.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/why-apfs.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-symlink",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/datamigrae/container-identity.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-mountpoint",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/unplug-test",
+      "locale": "zh-Hans",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/unplug-test",
+      "locale": "zh-Hans",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/prelogin-mount",
+      "locale": "zh-Hans",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/datamigrae/mount-migration.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-mountpoint",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/why-apfs.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/unplug-test",
+      "locale": "zh-Hans",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-symlink",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-symlink",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-mountpoint",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-mountpoint",
+      "locale": "zh-Hans",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/unplug-test",
+      "locale": "zh-Hans",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/unplug-test",
+      "locale": "zh-Hans",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/prelogin-mount",
+      "locale": "zh-Hans",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "zh-Hant/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_ZH_HANS/research/prelogin-mount",
+      "locale": "zh-Hans",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "ja/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "ko/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "de/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "fr/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink",
+      "locale": "en",
+      "target": "research/sandbox-symlink.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint",
+      "locale": "en",
+      "target": "research/sandbox-mountpoint.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/unplug-test",
+      "locale": "en",
+      "target": "research/unplug-test.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/SUMMARY.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    },
+    {
+      "file": "es/research/README.md",
+      "provisional": "https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount",
+      "locale": "en",
+      "target": "research/prelogin-mount.md",
+      "suffix": ""
+    }
+  ]
+}

@@ -4,8 +4,58 @@ site:
   structure:
     - type: space
       key: space-1
-      title: Untitled
+      title: 简体中文
       path: untitled
       default: true
       content:
-        directory: ./untitled
+        directory: ./gitbook/zh-Hans
+        language: zh
+    - type: space
+      key: appports-en
+      title: English
+      path: en
+      content:
+        directory: ./gitbook/en
+        language: en
+    - type: space
+      key: appports-zh-hant
+      title: 繁體中文
+      path: zh-Hant
+      content:
+        directory: ./gitbook/zh-Hant
+        language: zh-tw
+    - type: space
+      key: appports-ja
+      title: 日本語
+      path: ja
+      content:
+        directory: ./gitbook/ja
+        language: ja
+    - type: space
+      key: appports-ko
+      title: 한국어
+      path: ko
+      content:
+        directory: ./gitbook/ko
+        language: ko
+    - type: space
+      key: appports-de
+      title: Deutsch
+      path: de
+      content:
+        directory: ./gitbook/de
+        language: de
+    - type: space
+      key: appports-fr
+      title: Français
+      path: fr
+      content:
+        directory: ./gitbook/fr
+        language: fr
+    - type: space
+      key: appports-es
+      title: Español
+      path: es
+      content:
+        directory: ./gitbook/es
+        language: es

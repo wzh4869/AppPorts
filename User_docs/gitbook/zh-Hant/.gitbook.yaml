@@ -1,0 +1,31 @@
+root: ./
+structure:
+  readme: README.md
+  summary: SUMMARY.md
+redirects:
+  AppPorts.html: AppPorts.md
+  badges.html: badges.md
+  changelog.html: changelog.md
+  contributing.html: contributing.md
+  core.html: core.md
+  datamigrae/baseinfo.html: datamigrae/baseinfo.md
+  datamigrae/container-identity.html: datamigrae/container-identity.md
+  datamigrae/mount-migration.html: datamigrae/mount-migration.md
+  datamigrae/operation.html: datamigrae/operation.md
+  datamigrae/resign.html: datamigrae/resign.md
+  datamigrae/tools.html: datamigrae/tools.md
+  faq.html: faq.md
+  faststart.html: faststart.md
+  index.html: README.md
+  licenses.html: licenses.md
+  limitations.html: limitations.md
+  logging.html: logging.md
+  macos-27.html: macos-27.md
+  migration-strategy/portal.html: migration-strategy/portal.md
+  migration-strategy/strategy-map.html: migration-strategy/strategy-map.md
+  migration-strategy/updater-detection.html: migration-strategy/updater-detection.md
+  settings.html: settings.md
+  sponsor.html: sponsor.md
+  storage-guide.html: storage-guide.md
+  troubleshooting.html: troubleshooting.md
+  why-apfs.html: why-apfs.md
