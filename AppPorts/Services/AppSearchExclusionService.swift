@@ -80,6 +80,40 @@ enum AppSearchExclusionService {
         NSError(domain: "AppPorts.SearchExclusion", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
     }
 
+    /// A recovery record reserves only its app and portals. Unknown records remain blocking;
+    /// never infer completion from the .noindex path or discard recovery material here.
+    static func blockingJournal(in library: URL, affecting paths: [URL],
+                                fileManager fm: FileManager = .default) throws -> URL? {
+        let pending = try fm.contentsOfDirectory(at: library, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.hasPrefix(".appports-exclusion-") && $0.pathExtension == "json" }
+            .sorted { $0.path < $1.path }
+        guard !pending.isEmpty else { return nil }
+        let volume = try library.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString
+        let affectedPaths = paths.flatMap { [$0.standardizedFileURL, $0.resolvingSymlinksInPath().standardizedFileURL] }
+        let identities = affectedPaths.compactMap { try? FileIdentity.read($0, fileManager: fm) }
+        for url in pending {
+            guard let attributes = try? fm.attributesOfItem(atPath: url.path),
+                  attributes[.type] as? FileAttributeType == .typeRegular,
+                  let data = try? Data(contentsOf: url),
+                  let journal = try? JSONDecoder().decode(Journal.self, from: data),
+                  journal.hasValidScope(in: library, volumeUUID: volume) else { return url }
+            let reserved = [journal.source, journal.destination]
+                + journal.portals.flatMap { [$0.local, $0.backup, $0.stage, $0.stage.deletingLastPathComponent()] }
+            let reservedPaths = reserved.flatMap { [$0.standardizedFileURL, $0.resolvingSymlinksInPath().standardizedFileURL] }
+            if reservedPaths.contains(where: { reserved in
+                affectedPaths.contains { pathsOverlap(reserved, $0) }
+            }) || identities.contains(journal.sourceIdentity)
+                || journal.portals.contains(where: { identities.contains($0.identity) }) {
+                return url
+            }
+        }
+        return nil
+    }
+
+    private static func pathsOverlap(_ lhs: URL, _ rhs: URL) -> Bool {
+        lhs.path == rhs.path || lhs.path.hasPrefix(rhs.path + "/") || rhs.path.hasPrefix(lhs.path + "/")
+    }
+
     struct FileIdentity: Codable, Equatable {
         let device: UInt64
         let inode: UInt64
@@ -107,6 +141,33 @@ enum AppSearchExclusionService {
         let volumeUUID: String
         let portals: [Portal]
         var phase = "prepared"
+
+        /// Validate the format before treating a journal as unrelated to another app.
+        fileprivate func hasValidScope(in library: URL, volumeUUID currentVolume: String?) -> Bool {
+            let library = library.standardizedFileURL
+            let urls = [source, destination] + portals.flatMap { [$0.local, $0.backup, $0.stage] }
+            guard urls.allSatisfy({ $0.isFileURL && ($0.host == nil || $0.host == "" || $0.host == "localhost")
+                && $0.path == $0.standardizedFileURL.path }),
+                  currentVolume == volumeUUID, !volumeUUID.isEmpty,
+                  ["prepared", "external-moved", "portals-installed"].contains(phase),
+                  sourceIdentity.inode > 0,
+                  source.deletingLastPathComponent().standardizedFileURL == library.deletingLastPathComponent(),
+                  destination.deletingLastPathComponent().standardizedFileURL == library,
+                  source.pathExtension.lowercased() == "app",
+                  source.lastPathComponent == destination.lastPathComponent else { return false }
+            return portals.allSatisfy { portal in
+                let parent = portal.local.deletingLastPathComponent().standardizedFileURL
+                let stageRoot = portal.stage.deletingLastPathComponent().standardizedFileURL
+                let prefix = ".appports-exclusion-"
+                return portal.local.pathExtension.lowercased() == "app" && portal.identity.inode > 0
+                    && parent.resolvingSymlinksInPath().path == parent.path
+                    && stageRoot.deletingLastPathComponent() == parent
+                    && stageRoot.lastPathComponent.hasPrefix(prefix)
+                    && UUID(uuidString: String(stageRoot.lastPathComponent.dropFirst(prefix.count))) != nil
+                    && portal.stage.lastPathComponent == portal.local.lastPathComponent
+                    && portal.backup.standardizedFileURL == stageRoot.appendingPathComponent("original")
+            }
+        }
     }
 
     struct Result: Sendable {

@@ -172,14 +172,15 @@ struct AppMigrationService {
               source.resolvingSymlinksInPath() == source else {
             throw Exclusion.failure("套件目录可能包含文档，暂不自动排除。".localized)
         }
-        try requireNotRunning(app)
         let library = Exclusion.library(in: externalRoot)
         try Exclusion.prepareLibrary(library, fileManager: fileManager)
         let destination = library.appendingPathComponent(source.lastPathComponent)
-        let pending = try fileManager.contentsOfDirectory(at: library, includingPropertiesForKeys: nil)
-            .filter { $0.lastPathComponent.hasPrefix(".appports-exclusion-") && $0.pathExtension == "json" }
-        guard pending.isEmpty else {
-            throw Exclusion.failure("存在未完成的存储转换，请先检查应用库中的恢复记录。".localized)
+        let records = try store.records().filter { $0.externalPath == source.path }
+        let localURLs = Set(localEntries.map { $0.standardizedFileURL.path }
+            + records.filter { !$0.isRestored }.map(\.localPath)).map { URL(fileURLWithPath: $0) }
+        if let pending = try Exclusion.blockingJournal(in: library, affecting: [source, destination] + localURLs,
+                                                      fileManager: fileManager) {
+            throw Exclusion.failure(String(format: "转换未完成，已保留应用和恢复记录：%@".localized, pending.path))
         }
         if Exclusion.isExcluded(source) {
             // A previous relocation may have finished while Dock synchronization failed.
@@ -190,6 +191,8 @@ struct AppMigrationService {
                 operationID: AppLogger.shared.makeOperationID(prefix: "search-exclusion-retry"), using: dockShortcutRetryUpdater)
             return .init(destination: source, dockSynchronized: dockOK)
         }
+        // Only relocation requires quitting. Running an already excluded app does not undo completion.
+        try requireNotRunning(app)
         guard (try? fileManager.attributesOfItem(atPath: destination.path)) == nil else {
             throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
         }
@@ -199,13 +202,10 @@ struct AppMigrationService {
         let sourceIdentity = try Exclusion.FileIdentity.read(source, fileManager: fileManager)
         let sourcePlist = NSDictionary(contentsOf: source.appendingPathComponent("Contents/Info.plist"))
         let bundleID = sourcePlist?["CFBundleIdentifier"] as? String
-        let records = try store.records().filter { $0.externalPath == source.path }
         guard records.allSatisfy({ ($0.volumeUUID == nil || $0.volumeUUID == volume)
             && ($0.targetBundleIdentifier == nil || $0.targetBundleIdentifier == bundleID) }) else {
             throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
         }
-        let localURLs = Set(localEntries.map { $0.standardizedFileURL.path }
-            + records.filter { !$0.isRestored }.map(\.localPath)).map { URL(fileURLWithPath: $0) }
         var portals: [Exclusion.Journal.Portal] = []
         var kinds: [URL: LocalPortalKind] = [:]
         for local in localURLs.sorted(by: { $0.path < $1.path }) {

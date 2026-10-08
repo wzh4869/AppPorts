@@ -42,6 +42,27 @@ final class AppSearchExclusionTests: XCTestCase {
         try AppPortalMaintenance.rememberEntries(at: local, explicitOperation: true, store: store)
     }
 
+    private func writeJournal(source: URL, portals: [AppSearchExclusionService.Journal.Portal] = [],
+                              phase: String = "external-moved") throws -> URL {
+        let library = AppSearchExclusionService.library(in: externalRoot)
+        try AppSearchExclusionService.prepareLibrary(library)
+        let journal = AppSearchExclusionService.Journal(source: source,
+            destination: library.appendingPathComponent(source.lastPathComponent),
+            sourceIdentity: try AppSearchExclusionService.FileIdentity.read(source),
+            volumeUUID: try XCTUnwrap(source.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString),
+            portals: portals, phase: phase)
+        let url = library.appendingPathComponent(".appports-exclusion-\(UUID()).json")
+        try JSONEncoder().encode(journal).write(to: url)
+        return url
+    }
+
+    private func journalPortal(at url: URL) throws -> AppSearchExclusionService.Journal.Portal {
+        let stageRoot = url.deletingLastPathComponent().appendingPathComponent(".appports-exclusion-\(UUID())")
+        return .init(local: url, backup: stageRoot.appendingPathComponent("original"),
+                     stage: stageRoot.appendingPathComponent(url.lastPathComponent),
+                     identity: try AppSearchExclusionService.FileIdentity.read(url))
+    }
+
     func testConversionPreservesBundleAndDocumentAndRetargetsExistingPortal() async throws {
         try link()
         let data = try Data(contentsOf: external.appendingPathComponent("Contents/Info.plist"))
@@ -248,6 +269,143 @@ final class AppSearchExclusionTests: XCTestCase {
             XCTFail("Already moved is not equivalent to a finished transaction")
         } catch { }
         XCTAssertTrue(fm.fileExists(atPath: destination.path))
+    }
+
+    func testUnrelatedRecoveryDoesNotHidePreviouslyCompletedApp() async throws {
+        try link()
+        _ = try await service().excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [local], store: store)
+        let other = externalRoot.appendingPathComponent("Pending.app")
+        try makeApp(other, identifier: "org.example.pending")
+        let journal = try writeJournal(source: other)
+        let journalData = try Data(contentsOf: journal)
+        let records = try store.records()
+        let identity = try AppSearchExclusionService.FileIdentity.read(destination)
+        var retryCount = 0
+        let mover = AppMigrationService(dockShortcutUpdater: { _, _ in XCTFail("Must use retry updater"); return 0 },
+            dockShortcutRetryUpdater: { _, target in
+                XCTAssertEqual(target.path, self.destination.path)
+                retryCount += 1
+                return 0
+            }, runningApplications: { [] })
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.linked)
+        let result = try await mover.excludeFromSearch(app: moved, externalRoot: externalRoot, localEntries: [local], store: store)
+        XCTAssertTrue(result.dockSynchronized)
+        XCTAssertEqual(retryCount, 1)
+        XCTAssertEqual(result.destination.path, destination.path)
+        XCTAssertEqual(try AppSearchExclusionService.FileIdentity.read(destination), identity)
+        XCTAssertEqual(try CodeSigner.resolveAppURL(at: local).standardizedFileURL.path, destination.path)
+        XCTAssertEqual(try store.records(), records)
+        XCTAssertEqual(try Data(contentsOf: journal), journalData)
+    }
+
+    func testUnrelatedRecoveryAllowsConversionAndPreservesRecoveryMaterial() async throws {
+        try link()
+        let other = externalRoot.appendingPathComponent("Pending.app")
+        let otherLocal = local.deletingLastPathComponent().appendingPathComponent("Pending.app")
+        try makeApp(other, identifier: "org.example.pending")
+        try makeApp(otherLocal, identifier: "org.example.pending.portal")
+        let portal = try journalPortal(at: otherLocal)
+        try fm.createDirectory(at: portal.stage.deletingLastPathComponent(), withIntermediateDirectories: false)
+        try Data("recoverable backup".utf8).write(to: portal.backup)
+        let journal = try writeJournal(source: other, portals: [portal])
+        let journalData = try Data(contentsOf: journal)
+        let result = try await service().excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [local], store: store)
+        XCTAssertTrue(result.dockSynchronized)
+        XCTAssertEqual(try CodeSigner.resolveAppURL(at: local).standardizedFileURL.path, destination.path)
+        XCTAssertEqual(try store.records().first?.externalPath, destination.path)
+        XCTAssertTrue(fm.fileExists(atPath: other.path))
+        XCTAssertEqual(try Data(contentsOf: journal), journalData)
+        XCTAssertEqual(try String(contentsOf: portal.backup, encoding: .utf8), "recoverable backup")
+    }
+
+    func testAlreadyExcludedRunningAppKeepsCompletedStatus() async throws {
+        try link()
+        _ = try await service().excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [local], store: store)
+        let identity = try AppSearchExclusionService.FileIdentity.read(destination)
+        let mover = AppMigrationService(dockShortcutUpdater: { _, _ in 0 },
+            runningApplications: { [.init(bundleURL: self.destination, bundleIdentifier: "org.example.exclusion")] })
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.linked)
+        let result = try await mover.excludeFromSearch(app: moved, externalRoot: externalRoot, localEntries: [local], store: store)
+        XCTAssertTrue(result.dockSynchronized)
+        XCTAssertEqual(try AppSearchExclusionService.FileIdentity.read(destination), identity)
+        XCTAssertEqual(try CodeSigner.resolveAppURL(at: local).standardizedFileURL.path, destination.path)
+    }
+
+    func testRelatedValidJournalBlocksBeforeAndAfterExternalMove() async throws {
+        try link()
+        let journal = try writeJournal(source: external, portals: [journalPortal(at: local)])
+        let records = try store.records()
+        let mover = AppMigrationService(dockShortcutUpdater: { _, _ in XCTFail("No Dock write"); return 0 }, runningApplications: { [] })
+        for path in [external, destination] {
+            if path == destination { try fm.moveItem(at: external, to: destination) }
+            do {
+                _ = try await mover.excludeFromSearch(app: .init(name: "Example.app", path: path, status: AppStatus.linked),
+                    externalRoot: externalRoot, localEntries: [local], store: store)
+                XCTFail("A related journal must block regardless of the current app location")
+            } catch {
+                XCTAssertTrue(error.localizedDescription.contains(journal.path))
+            }
+            XCTAssertTrue(fm.fileExists(atPath: path.path))
+            XCTAssertTrue(fm.fileExists(atPath: journal.path))
+            XCTAssertEqual(try store.records(), records)
+        }
+    }
+
+    func testRecoveryReservesRememberedPortalEvenForDifferentAppName() async throws {
+        try link()
+        let other = externalRoot.appendingPathComponent("Pending.app")
+        try makeApp(other, identifier: "org.example.pending")
+        let journal = try writeJournal(source: other, portals: [journalPortal(at: local)])
+        do {
+            _ = try await service().excludeFromSearch(app: item, externalRoot: externalRoot, localEntries: [], store: store)
+            XCTFail("Remembered portals must also be checked for recovery conflicts")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains(journal.path))
+        }
+        XCTAssertTrue(fm.fileExists(atPath: external.path))
+        XCTAssertEqual(try CodeSigner.resolveAppURL(at: local).standardizedFileURL.path, external.path)
+    }
+
+    func testRecoveryFindsRenamedAppByFileIdentity() async throws {
+        let journal = try writeJournal(source: external)
+        let renamed = destination.deletingLastPathComponent().appendingPathComponent("Renamed.app")
+        try fm.moveItem(at: external, to: renamed)
+        do {
+            _ = try await service().excludeFromSearch(app: .init(name: "Renamed.app", path: renamed, status: AppStatus.unlinked),
+                externalRoot: externalRoot, localEntries: [], store: store)
+            XCTFail("A rename cannot turn an unfinished transaction into a completed one")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains(journal.path))
+        }
+        XCTAssertTrue(fm.fileExists(atPath: renamed.path))
+    }
+
+    func testInvalidJournalScopeIsNeverAssumedUnrelated() throws {
+        let other = externalRoot.appendingPathComponent("Pending.app")
+        try makeApp(other, identifier: "org.example.pending")
+        let journal = try writeJournal(source: other)
+        let original = try Data(contentsOf: journal)
+        let valid = try XCTUnwrap(JSONSerialization.jsonObject(with: original) as? [String: Any])
+        for (key, value) in [("source", "https://example.com/Pending.app"),
+                             ("destination", root.appendingPathComponent("Elsewhere/Pending.app").absoluteString),
+                             ("volumeUUID", "another-volume"), ("phase", "unknown")] {
+            var invalid = valid
+            invalid[key] = value
+            let bytes = try JSONSerialization.data(withJSONObject: invalid)
+            try bytes.write(to: journal)
+            XCTAssertEqual(try AppSearchExclusionService.blockingJournal(in: destination.deletingLastPathComponent(),
+                affecting: [external, destination])?.standardizedFileURL.path, journal.standardizedFileURL.path,
+                "Invalid \(key) must block")
+            XCTAssertEqual(try Data(contentsOf: journal), bytes)
+        }
+        try fm.removeItem(at: journal)
+        let realFile = root.appendingPathComponent("journal.json")
+        try original.write(to: realFile)
+        try fm.createSymbolicLink(at: journal, withDestinationURL: realFile)
+        XCTAssertEqual(try AppSearchExclusionService.blockingJournal(in: destination.deletingLastPathComponent(),
+            affecting: [external, destination])?.standardizedFileURL.path, journal.standardizedFileURL.path,
+            "A symlink journal must block")
+        XCTAssertEqual(try Data(contentsOf: realFile), original)
     }
 
     func testReplacementBetweenCheckAndBackupPreservesRealApplication() async throws {
