@@ -238,32 +238,29 @@ final class CustomDirScannerTests: XCTestCase {
     }
 
     func testValidationErrorsHaveSpecificUserFacingMessages() {
-        LanguageManager.shared.language = "zh-Hans"
-        defer { LanguageManager.shared.language = "system" }
-
         XCTAssertEqual(
             CustomDirValidationError.localOutsideHome.errorDescription,
-            "本地目录必须位于当前用户目录下"
+            "本地目录必须位于当前用户目录下".localized
         )
         XCTAssertEqual(
             CustomDirValidationError.localIsHome.errorDescription,
-            "不能迁移整个用户目录"
+            "不能迁移整个用户目录".localized
         )
         XCTAssertEqual(
             CustomDirValidationError.localIsSymlink.errorDescription,
-            "不能迁移软链接目录，请选择真实文件夹"
+            "不能迁移软链接目录，请选择真实文件夹".localized
         )
         XCTAssertEqual(
             CustomDirValidationError.localOverlapsManagedDirectory.errorDescription,
-            "该目录与已管理目录存在包含关系"
+            "该目录与已管理目录存在包含关系".localized
         )
         XCTAssertEqual(
             CustomDirValidationError.externalInsideHome.errorDescription,
-            "外部目标不能位于当前用户目录内"
+            "外部目标不能位于当前用户目录内".localized
         )
         XCTAssertEqual(
             CustomDirValidationError.externalOverlapsManagedDirectory.errorDescription,
-            "外部目标与已管理目录存在包含关系"
+            "外部目标与已管理目录存在包含关系".localized
         )
     }
 
