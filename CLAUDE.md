@@ -410,9 +410,12 @@ Missing targets, malformed portals, and cycles fail before signing or backing up
 ## CI Configuration
 
 - **PR smoke check** (`build.yml`): compilation-only build in Release mode. **Blocking.**
-- **Data directory tests** (`build.yml`): runs `DataDirMoverTests` + `DataDirScannerTests`. Advisory (non-blocking).
-- **Localization audit** (`build.yml`): runs `LocalizationAuditTests`. Advisory (non-blocking).
-- **Post-merge** (`post-merge-validation.yml`): `DataDirMoverTests` + `DataDirScannerTests` + localization audit + Release build. Runs on push to `main`/`develop`.
+- **Tests (Advisory)** (`build.yml`): builds the Debug test bundle once, then runs the entire `AppPortsTests` target except `LocalizationAuditTests`. Localization runs separately using the same test bundle. Both results are advisory (non-blocking), including test-build failures.
+- **Post-merge** (`post-merge-validation.yml`): full regression tests are mandatory; localization remains advisory. A successful Release build is checked for a valid app bundle and ZIP before uploading `AppPorts-Unsigned`. Runs on push to `main`/`develop`.
+- **Shared commands**: `.github/scripts/run-xcode-check.sh` defines the build and test invocations for both workflows. Test execution uses `test-without-building` after `prepare-tests`; keep the two steps on the same runner and DerivedData directory.
+- **Diagnostics**: step summaries distinguish passed, failed, cancelled, and not-run checks. Advisory jobs can be green after a test failure, so read their summary. Logs and `.xcresult` bundles are uploaded for five days.
+- **Run policy**: a newer commit cancels older checks for the same PR. Post-merge validation is retained for merged commits. Workflows use read-only repository permissions and can also be started manually.
+- Run the full suite on a disposable macOS runner. Some integration tests register temporary app bundles with Launch Services. Do not set `APPPORTS_TEST_EXTERNAL_ROOT` or `APPPORTS_RENDER_UI_OUTPUT` in CI, or run the test process with `sudo`.
 
 ## Branch Convention
 

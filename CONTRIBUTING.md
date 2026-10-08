@@ -52,7 +52,9 @@ xcodebuild clean build \
 
 #### 按需运行：专项测试
 
-当 PR 涉及对应模块时，建议主动补跑专项测试。CI 会以 Advisory 模式运行，结果不阻塞合并但会提供反馈。
+当 PR 涉及对应模块时，建议主动补跑专项测试。CI 会在独立的 macOS runner 上运行完整 `AppPortsTests` 回归测试，并单独运行本地化审计；两者共用一次 Debug 测试编译。PR 中这些结果仍为 Advisory，不阻塞合并。
+
+请查看 `Tests (Advisory)` 的步骤摘要：它会分别显示通过、失败、取消或未运行；任务显示绿色不代表所有 Advisory 测试通过。日志和 `.xcresult` 诊断产物保存 5 天。新提交会取消同一 PR 的旧检查。
 
 | 测试套件 | 涉及模块 | 运行时机 |
 |----------|----------|----------|
@@ -88,7 +90,7 @@ xcodebuild test \
 - 语言列表仍建议统一维护在 `AppLanguageCatalog`，不要在多个页面重复硬编码。
 - 如果 PR 变更了菜单、弹窗、设置项、日志导出、错误提示、状态文案或 onboarding 文案，建议至少检查一次 `zh-Hans` 和 `en` 的实际显示结果。
 - PR 的强制检查只保留编译烟雾检查；数据目录专项测试和本地化审计主要用于提供反馈，不再默认阻塞创新型改动。
-- `main` / `develop` 在合并后仍会继续跑数据目录专项测试，用来尽快发现主线回归。
+- `main` / `develop` 在合并后会运行完整回归测试，测试必须通过；本地化审计仍提供 Advisory 反馈。随后执行 Release 编译并校验、上传未签名应用包。
 
 更多规则见：[LOCALIZATION.md](LOCALIZATION.md)
 
@@ -156,7 +158,9 @@ xcodebuild clean build \
 
 #### Recommended: Focused Tests
 
-When a PR touches the relevant module, it is recommended to run focused tests. CI also runs these in Advisory mode — results do not block merging but provide feedback.
+When a PR touches the relevant module, it is recommended to run focused tests. CI runs the full `AppPortsTests` regression suite and a separate localization audit on a disposable macOS runner, sharing one Debug test build. Both remain Advisory for PRs and do not block merging.
+
+Read the `Tests (Advisory)` step summary for passed, failed, cancelled, or not-run results; a green advisory job does not mean every test passed. Logs and `.xcresult` diagnostic artifacts are retained for five days. A new commit cancels older checks for the same PR.
 
 | Test Suite | Module | When to Run |
 |------------|--------|-------------|
@@ -192,6 +196,7 @@ xcodebuild test \
 - The language list is still recommended to come from `AppLanguageCatalog`, not duplicated across views.
 - If a PR changes menus, alerts, settings, exported diagnostics, error messages, status copy, or onboarding text, it is recommended to verify the rendered result in at least `zh-Hans` and `en`.
 - CI still runs localization auditing for feedback, but localization results are no longer a blocking merge requirement for PRs.
+- After merging to `main` / `develop`, the full regression suite must pass; localization remains advisory. CI then builds Release, validates the app bundle and ZIP, and uploads the unsigned app.
 
 See [LOCALIZATION.md](LOCALIZATION.md) for the full workflow.
 
