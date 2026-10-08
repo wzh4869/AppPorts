@@ -257,6 +257,7 @@ struct ContentView: View {
 
     // 设置页面
     @State private var showAppStoreSettings = false
+    @State private var showSearchExclusion = false
     
     // 单应用复制进度
     @State private var progressBytes: Int64 = 0
@@ -445,6 +446,9 @@ struct ContentView: View {
         // App Store 外部安装引导弹窗
         .warningSheet($masGuidanceRequest)
         // App Store 设置页面
+        .sheet(isPresented: $showSearchExclusion) {
+            AppSearchExclusionView(load: loadExternalAppSearchStatus, process: excludeExternalAppsFromSearch)
+        }
         .sheet(isPresented: $showAppStoreSettings) {
             AppStoreSettingsView()
         }
@@ -830,6 +834,16 @@ struct ContentView: View {
 
         if mainTab == .dataDirs {
             dataDirsToolbarControls
+        }
+
+        if mainTab == .apps {
+            Button {
+                showSearchExclusion = true
+            } label: {
+                Label("排除外盘应用索引".localized, systemImage: "magnifyingglass.circle")
+            }
+            .buttonStyle(.borderless)
+            .disabled(operationState.isBusy || externalDriveURL == nil)
         }
 
         // App Store Settings Button（始终显示）
@@ -1672,7 +1686,76 @@ struct ContentView: View {
         return false
     }
 
-    /// 先发布已完成的迁移状态，再安排完整扫描；迁移前启动的旧扫描不可覆盖此结果。
+    /// Fresh discovery for the board must not depend on the main pane's scan finishing.
+    /// AppScanner and entries(at:) only read; portal maintenance is intentionally absent.
+    private func searchExclusionSnapshot(root: URL, localDirectories: [URL]) async
+        -> (apps: [AppItem], entries: [AppPortalMaintenance.Entry]) {
+        let scanner = AppScanner()
+        var apps: [AppItem] = []
+        var entries: [AppPortalMaintenance.Entry] = []
+        for directory in localDirectories {
+            apps = mergeExternalApps(apps, with: await scanner.scanExternalApps(at: root, localAppsDir: directory))
+            let children = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil,
+                                                                         options: .skipsHiddenFiles)) ?? []
+            entries += children.flatMap { AppPortalMaintenance.entries(at: $0) }
+        }
+        return (apps, entries)
+    }
+
+    @MainActor
+    private func loadExternalAppSearchStatus() async -> AppSearchExclusionReport {
+        guard let root = externalDriveURL else { return AppSearchExclusionReport() }
+        let directories = [localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) }
+        return await Task.detached(priority: .userInitiated) {
+            let snapshot = await searchExclusionSnapshot(root: root, localDirectories: directories)
+            return AppSearchExclusionService.inspect(apps: snapshot.apps, externalRoot: root, localEntries: snapshot.entries)
+        }.value
+    }
+
+    @MainActor
+    private func excludeExternalAppsFromSearch() async -> AppSearchExclusionReport {
+        guard let root = externalDriveURL, let token = operationState.begin() else {
+            return AppSearchExclusionReport(operationError: "正在执行其他应用操作，请稍后重试。".localized)
+        }
+        localScanState.invalidate()
+        externalScanState.invalidate()
+        defer {
+            operationState.finish(token)
+            startMonitoringExternal(url: root)
+            scanBothAppsAtomic()
+        }
+        let directories = [localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) }
+        return await Task.detached(priority: .userInitiated) {
+            let snapshot = await searchExclusionSnapshot(root: root, localDirectories: directories)
+            let current = AppSearchExclusionService.inspect(apps: snapshot.apps, externalRoot: root, localEntries: snapshot.entries)
+            if current.operationError != nil { return current }
+            var report = AppSearchExclusionReport()
+            for app in snapshot.apps {
+                if let observed = current.entries.first(where: { $0.id == app.id }),
+                   observed.outcome != .pending && observed.outcome != .dockWarning {
+                    report.entries.append(observed)
+                    continue
+                }
+                do {
+                    let localURLs = snapshot.entries.filter { $0.externalURL.path == app.path.standardizedFileURL.path }.map(\.localURL)
+                    let result = try await AppMigrationService().excludeFromSearch(
+                        app: app, externalRoot: root, localEntries: localURLs)
+                    let message = result.dockSynchronized
+                        ? "应用存储位置已排除索引。".localized
+                        : "应用存储位置已排除索引，Dock 快捷方式同步失败。".localized
+                    report.entries.append(.init(id: app.id, name: app.displayName, iconURL: result.destination,
+                        outcome: result.dockSynchronized ? .completed : .dockWarning, message: message))
+                } catch {
+                    report.entries.append(.init(id: app.id, name: app.displayName, iconURL: app.displayURL,
+                                                outcome: .failed, message: error.localizedDescription))
+                    AppLogger.shared.logError("排除外盘应用索引失败", error: error, relatedURLs: [("app", app.path)])
+                }
+            }
+            return report
+        }.value
+    }
+
+    /// Publish completed operations before scheduling a fresh scan.
     @MainActor
     private func recordCompletedTransfer(_ transfer: AppListTransfer) {
         do { try AppPortalMaintenance.recordCompletedTransfer(transfer) }

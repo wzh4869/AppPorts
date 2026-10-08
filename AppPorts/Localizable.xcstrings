@@ -823,6 +823,143 @@
         }
       }
     },
+    "正在执行其他应用操作，请稍后重试。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هناك عملية أخرى على التطبيقات قيد التنفيذ. حاول لاحقًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠝⠕⠞⠓⠑⠗ ⠁⠏⠏ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠊⠎ ⠗⠥⠝⠝⠊⠝⠛⠲ ⠠⠞⠗⠽ ⠁⠛⠁⠊⠝ ⠇⠁⠞⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein anderer App-Vorgang läuft. Bitte später erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another app operation is running. Try again later."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alia aplikaĵa operacio okazas. Reprovu poste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hay otra operación de aplicaciones en curso. Inténtalo de nuevo más tarde."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autre opération sur les apps est en cours. Réessayez plus tard."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप पर कोई दूसरी कार्रवाई जारी है। बाद में फिर प्रयास करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operasi aplikasi lain sedang berjalan. Coba lagi nanti."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È in corso un’altra operazione sulle app. Riprova più tardi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別のアプリ操作を実行中です。後で再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 앱 작업이 진행 중입니다. 나중에 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er wordt een andere app-bewerking uitgevoerd. Probeer het later opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trwa inna operacja na aplikacjach. Spróbuj ponownie później."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outra operação de apps está em curso. Tente novamente mais tarde."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выполняется другая операция с приложениями. Повторите позже."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังดำเนินการอื่นกับแอป โปรดลองอีกครั้งภายหลัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Başka bir uygulama işlemi sürüyor. Lütfen daha sonra yeniden deneyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một thao tác ứng dụng khác đang chạy. Hãy thử lại sau."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在执行其他应用操作，请稍后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在執行其他應用程式操作，請稍後重試。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正茬執行其他應甪程式操作，請稍後喠試。"
+          }
+        }
+      }
+    },
     "应用操作正在进行，请稍后重试。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -132202,6 +132339,834 @@
         }
       }
     },
+    "排除外盘应用索引" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "排除外盘应用索引"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "排除外接磁碟 App 索引"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude External Apps from Search"
+          }
+        }
+      }
+    },
+    "普通独立应用会移入专用应用库，本地入口仍可使用。外盘文档和照片的搜索不受影响。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "普通独立应用会移入专用应用库，本地入口仍可使用。外盘文档和照片的搜索不受影响。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般獨立 App 會移入專用資料庫，本機入口仍可使用。外接磁碟文件和照片的搜尋不受影響。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standalone apps will move into a dedicated library. Local launchers remain usable, and external documents and photos stay searchable."
+          }
+        }
+      }
+    },
+    "App Store、iOS 应用和套件目录暂不处理，以保留安装更新路径和文档搜索。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store、iOS 应用和套件目录暂不处理，以保留安装更新路径和文档搜索。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store、iOS App 和套件目錄暫不處理，以保留安裝更新路徑和文件搜尋。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store apps, iOS apps, and suite folders are left in place to preserve updates and document search."
+          }
+        }
+      }
+    },
+    "正在处理外盘应用…" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Processing external apps…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在处理外盘应用…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在處理外接磁碟 App…"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing external apps…"
+          }
+        }
+      }
+    },
+    "存储位置已排除后，Spotlight 仍可能需要时间更新结果。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "存储位置已排除后，Spotlight 仍可能需要时间更新结果。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存位置排除後，Spotlight 仍可能需要時間更新結果。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "After a location is excluded, Spotlight may still need time to update its results."
+          }
+        }
+      }
+    },
+    "自动处理" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Process Apps"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动处理"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動處理"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Process Apps"
+          }
+        }
+      }
+    },
     "应用存储位置已排除索引。" : {
       "extractionState" : "manual",
       "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
@@ -132478,6 +133443,696 @@
         }
       }
     },
+    "没有可处理的外盘应用。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No external apps to process."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有可处理的外盘应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有可處理的外接磁碟 App。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No external apps to process."
+          }
+        }
+      }
+    },
+    "共 %d 个应用" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total: %d apps"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共 %d 个应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共 %d 個 App"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Total: %d apps"
+          }
+        }
+      }
+    },
+    "避免 Spotlight 同时索引本地入口和外盘应用，导致搜索结果重复。" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "避免 Spotlight 同时索引本地入口和外盘应用，导致搜索结果重复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "避免 Spotlight 同時索引本機入口和外接磁碟上的 App，導致搜尋結果重複。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prevent duplicate Spotlight results caused by indexing both local launchers and external apps."
+          }
+        }
+      }
+    },
+    "已完成" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已完成"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已完成"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completed"
+          }
+        }
+      }
+    },
+    "未完成" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs attention"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未完成"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未完成"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Needs attention"
+          }
+        }
+      }
+    },
     "点击「自动处理」开始。" : {
       "extractionState" : "manual",
       "comment" : "Exclusion results board. English fallback for other locales, pending review.",
@@ -132612,6 +134267,1248 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Click “Process Apps” to start."
+          }
+        }
+      }
+    },
+    "正在整理结果…" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing results…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在整理结果…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在整理結果…"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparing results…"
+          }
+        }
+      }
+    },
+    "等待处理" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to start"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待处理"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待處理"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ready to start"
+          }
+        }
+      }
+    },
+    "暂无已完成应用" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No completed apps yet"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无已完成应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫無已完成 App"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No completed apps yet"
+          }
+        }
+      }
+    },
+    "全部处理完成" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All apps completed"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部处理完成"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部處理完成"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "All apps completed"
+          }
+        }
+      }
+    },
+    "暂无未完成应用" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No apps needing attention"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无未完成应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫無未完成 App"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No apps needing attention"
+          }
+        }
+      }
+    },
+    "已排除索引" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已排除索引"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已排除索引"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Excluded from indexing"
+          }
+        }
+      }
+    },
+    "暂不支持" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not supported yet"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂不支持"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫不支援"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Not supported yet"
+          }
+        }
+      }
+    },
+    "处理失败" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Processing failed"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "处理失败"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "處理失敗"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Processing failed"
+          }
+        }
+      }
+    },
+    "Dock 待同步" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock needs updating"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 待同步"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 待同步"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dock needs updating"
           }
         }
       }
