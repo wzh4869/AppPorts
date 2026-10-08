@@ -146,6 +146,6 @@ Pas directement pour la migration par montage. HFS+ n’offre pas le partage d�
 ## Documents associés <a href="#documents-associes" id="documents-associes"></a>
 
 - [Migration par montage](datamigrae/mount-migration.md) : utiliser la nouvelle méthode
-- [Expérience : débranchement](https://app.gitbook.com/s/XSPACE_EN/research/unplug-test) : données brutes des essais
+- [Expérience : débranchement](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/unplug-test) : données brutes des essais
 - [Guide de mise à niveau vers macOS 27](macos-27.md) : pourquoi l’ancienne méthode échoue sous 27
 - [Guide du stockage externe](storage-guide.md) : interfaces, capacité et systèmes de fichiers

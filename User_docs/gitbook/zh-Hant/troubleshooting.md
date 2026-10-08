@@ -11,7 +11,7 @@ codesign -dv --verbose=4 /Applications/<应用名>.app 2>&1 | grep -E "Signature
 # 出现 Signature=adhoc 和 TeamIdentifier=not set 即是
 ```
 
-修復：還原容器資料 → 從官方管道重新安裝 → 需要的話再掛載遷移。**不要**再點重簽名，也不要只還原資料就當修好。完整步驟見 [macOS 27 升級說明](macos-27.md#修復)。
+修復：還原容器資料 → 從官方管道重新安裝 → 需要的話再掛載遷移。**不要**再點重簽名，也不要只還原資料就當修好。完整步驟見 [macOS 27 升級說明](macos-27.md#xiu-fu)。
 
 ## 掛載遷移失敗 <a href="#掛載遷移失敗" id="掛載遷移失敗"></a>
 

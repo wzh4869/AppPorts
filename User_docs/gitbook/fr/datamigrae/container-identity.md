@@ -31,7 +31,7 @@ codesign -d --entitlements - --xml /Applications/WeChat.app 2>/dev/null | grep -
 | Lien symbolique et re-signature Ad-hoc | Fonctionne sous macOS 26 et antérieurs ; peut quitter immédiatement après double-clic sous 27, confirmé avec WeChat mais pas QQ Music | Le lien « fonctionne » parce que la signature retire l’identité de bac à sable. Elle supprime aussi le lien d’appartenance entre application et conteneur, vérifié à partir de 27 |
 | Monter un volume APFS externe sur le répertoire d’origine | Fonctionnement normal, signature inchangée | Le chemin reste dans le conteneur et passe le contrôle. Le stockage externe provoque une demande d’autorisation à accepter une fois |
 
-Les trois méthodes ont été vérifiées sous macOS 27. Les journaux originaux figurent dans les expériences sur les [liens symboliques](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink) et les [points de montage](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint).
+Les trois méthodes ont été vérifiées sous macOS 27. Les journaux originaux figurent dans les expériences sur les [liens symboliques](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-symlink) et les [points de montage](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-mountpoint).
 
 ## Ce que la re-signature modifie réellement <a href="#ce-que-la-re-signature-modifie-reellement" id="ce-que-la-re-signature-modifie-reellement"></a>
 

@@ -31,7 +31,7 @@ codesign -d --entitlements - --xml /Applications/WeChat.app 2>/dev/null | grep -
 | 符號連結 + Ad-hoc 重簽名 | macOS 26 及以下能用；升到 27 後可能按兩下秒退（微信已確認，QQ 音樂仍能開） | 重簽名把沙盒身分拆了，符號連結才"生效"。但它同時清除了應用程式和容器之間的歸屬關係，27 起系統要核對這層關係 |
 | 把外接磁碟上的一個 APFS 卷宗掛載到原目錄 | 正常，簽名不變更 | 路徑沒有離開容器，沙盒放行；資料在外接磁碟上會彈一次系統授權對話框，按一下允許即可 |
 
-前兩條已經在 macOS 27 上實測確認，第三條也是。原始日誌見[實驗紀錄：符號連結](https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-symlink)和[實驗紀錄：掛載點](https://app.gitbook.com/s/XSPACE_ZH_HANS/research/sandbox-mountpoint)。
+前兩條已經在 macOS 27 上實測確認，第三條也是。原始日誌見[實驗紀錄：符號連結](https://app.gitbook.com/s/ND8nWiaPokAkDK7Ae7Wg/zhi-nan/research/sandbox-symlink)和[實驗紀錄：掛載點](https://app.gitbook.com/s/ND8nWiaPokAkDK7Ae7Wg/zhi-nan/research/sandbox-mountpoint)。
 
 ## 重簽名到底動了什麼 <a href="#重簽名到底動了什麼" id="重簽名到底動了什麼"></a>
 
@@ -107,9 +107,9 @@ log show --last 1m --style compact 2>/dev/null | grep -iE "rejected approval req
 2. **重新安裝應用程式**：從官方管道覆蓋安裝，恢復原始簽名和沙盒。容器資料不會被重新安裝刪除。
 3. **需要的話再掛載遷移**：重新安裝後容器目錄會顯示「掛載遷移」，想繼續放到外接磁碟就再遷一次。
 
-新版 AppPorts 的「恢復原始簽名」可以從完整備份恢復原應用程式，無需開發者私鑰。舊版只有身分名稱的記錄需要選擇同版本官方原版，或從官方管道重新安裝；詳見[簽名備份與恢復](resign.md#簽名備份與恢復)。恢復簽名前仍需先還原經典模式遷移的容器目錄。
+新版 AppPorts 的「恢復原始簽名」可以從完整備份恢復原應用程式，無需開發者私鑰。舊版只有身分名稱的記錄需要選擇同版本官方原版，或從官方管道重新安裝；詳見[簽名備份與恢復](resign.md#qian-ming-bei-fen-yu-hui-fu)。恢復簽名前仍需先還原經典模式遷移的容器目錄。
 
-詳細步驟和已遷移到外接磁碟的應用程式怎麼處理，見 [macOS 27 升級說明](../macos-27.md#修復)。
+詳細步驟和已遷移到外接磁碟的應用程式怎麼處理，見 [macOS 27 升級說明](../macos-27.md#xiu-fu)。
 
 ## 真實案例 <a href="#真實案例" id="真實案例"></a>
 

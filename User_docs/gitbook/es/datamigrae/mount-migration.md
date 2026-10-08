@@ -72,7 +72,7 @@ Las apps del sistema de `/System/Applications` se rechazan silenciosamente, sin 
 
 **Estos volúmenes de datos normalmente no aparecen en Finder.** AppPorts usa `nobrowse` para ocultarlos de la barra lateral y el escritorio. Durante uno o dos segundos tras conectar, macOS puede montarlos primero en `/Volumes` y mostrar una imagen del disco; desaparece cuando AppPorts los coloca en su sitio. Los volúmenes antiguos aún visibles se ocultan sin desmontarlos al volver a abrir AppPorts o conectar el disco. Los volúmenes `AppPorts-…` siguen apareciendo en Utilidad de Discos. **No los borre ni los elimine: contienen los datos migrados.**
 
-**Antes de desconectar, cierre la app y pulse «Desmontar» en AppPorts, o expulse el disco desde Finder.** Desconectarlo directamente puede perder los últimos segundos de escritura y exigir reparar la base de datos. En nuestras pruebas, los volúmenes APFS solo perdieron las últimas transacciones; consulte el [experimento de desconexión](https://app.gitbook.com/s/XSPACE_EN/research/unplug-test).
+**Antes de desconectar, cierre la app y pulse «Desmontar» en AppPorts, o expulse el disco desde Finder.** Desconectarlo directamente puede perder los últimos segundos de escritura y exigir reparar la base de datos. En nuestras pruebas, los volúmenes APFS solo perdieron las últimas transacciones; consulte el [experimento de desconexión](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/unplug-test).
 
 **Cuándo se vuelve a conectar automáticamente:**
 
@@ -124,7 +124,7 @@ Si solo actualiza o mueve AppPorts, abra la nueva versión una vez: actualizará
 
 Para los usuarios de exFAT probamos seriamente guardar una imagen APFS sparsebundle en el disco y montarla. Evitaba el diálogo de permisos, rendía de forma similar y podía guardarse en cualquier formato.
 
-Después desconectamos la memoria USB durante una escritura. El volumen APFS solo perdió las últimas transacciones y su base de datos se pudo reparar. En las dos pruebas, **la imagen de disco dejó de abrirse por completo** y todos sus datos quedaron inaccesibles. Su propio «catálogo» se reescribe cada pocos segundos; interrumpir esa escritura deja fragmentos sin catálogo. Consulte los [datos del experimento](https://app.gitbook.com/s/XSPACE_EN/research/unplug-test) y la explicación [Por qué el disco externo debe ser APFS](../why-apfs.md).
+Después desconectamos la memoria USB durante una escritura. El volumen APFS solo perdió las últimas transacciones y su base de datos se pudo reparar. En las dos pruebas, **la imagen de disco dejó de abrirse por completo** y todos sus datos quedaron inaccesibles. Su propio «catálogo» se reescribe cada pocos segundos; interrumpir esa escritura deja fragmentos sin catálogo. Consulte los [datos del experimento](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/unplug-test) y la explicación [Por qué el disco externo debe ser APFS](../why-apfs.md).
 
 Por eso solo se admiten volúmenes APFS.
 
@@ -132,7 +132,7 @@ Por eso solo se admiten volúmenes APFS.
 
 ### Secuencia del montaje automático <a href="#secuencia-del-montaje-automatico" id="secuencia-del-montaje-automatico"></a>
 
-- El agente `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` ejecuta `AppPorts --mount-agent`. También vigila `/Volumes` y vuelve a ejecutarse cuando aparece un disco. En el arranque medido el 2026-09-22: inicio de sesión terminado → agente tras 4.6 segundos → dos volúmenes montados en los contenedores tras 18 segundos. Fue unos 19 segundos más rápido que antes, pero las apps de inicio arrancaban en unos 3 segundos. Consulte la secuencia en el [experimento de montaje antes del inicio de sesión](https://app.gitbook.com/s/XSPACE_EN/research/prelogin-mount).
+- El agente `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` ejecuta `AppPorts --mount-agent`. También vigila `/Volumes` y vuelve a ejecutarse cuando aparece un disco. En el arranque medido el 2026-09-22: inicio de sesión terminado → agente tras 4.6 segundos → dos volúmenes montados en los contenedores tras 18 segundos. Fue unos 19 segundos más rápido que antes, pero las apps de inicio arrancaban en unos 3 segundos. Consulte la secuencia en el [experimento de montaje antes del inicio de sesión](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/prelogin-mount).
 - **Si el disco tarda, el agente no se limita a un intento.** Observa `/Volumes` dentro del proceso y espera al siguiente **cambio real**, en vez de consultar a intervalos fijos. Al arrancar, el sistema puede tardar minutos en reconocerlo; el 2026-09-23 tardó 2 minutos y 33 segundos. Consultar periódicamente ejecutaría `diskutil` en el momento de mayor carga o perdería el arranque de la app. Si no hay eventos, comprueba cada 20 segundos como respaldo, durante un total de 180 segundos. No retiene el bloqueo mientras espera. Medición: aproximadamente 1 segundo desde que aparece el volumen hasta completar el montaje.
 - **Mirar primero `/Volumes/<卷名>`.** Al arrancar o conectar, el sistema casi siempre monta ahí primero. `statfs` y una lectura del marcador de raíz, en microsegundos, identifican nuestro volumen y evitan una consulta `diskutil info`. En el arranque del 2026-09-23, esa consulta tardó **9 segundos**, el paso más costoso. Solo se recurre a `diskutil` si no puede reconocerse, por ejemplo por un cambio de nombre del sistema o un marcador ausente.
 - **Verificar después del montaje.** Si el sistema ya montó el volumen en `/Volumes`, `diskutil mount -mountPoint` puede **ignorar la ruta solicitada, imprimir `mounted` y devolver 0 igualmente**. Por ello se comprueba siempre la ubicación real. Si no coincide, se consulta dónde está montado, se desmonta de `/Volumes` y se reintenta, hasta 3 ciclos. Ocurrió el 2026-09-21 y el 09-23; las versiones de entonces lo consideraban un fallo y abandonaban, y WeChat veía un directorio vacío.
@@ -175,4 +175,4 @@ diskutil mount nobrowse -mountPoint "<挂载点路径>" <Volume UUID>
 - [Por qué el disco externo debe ser APFS](../why-apfs.md)
 - [Datos de contenedores, aislamiento e identidad de firma](container-identity.md)
 - [Guía de actualización a macOS 27](../macos-27.md): cómo cambiar desde el método antiguo
-- [Experimento: puntos de montaje](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint): pruebas en que se basa esta función
+- [Experimento: puntos de montaje](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-mountpoint): pruebas en que se basa esta función

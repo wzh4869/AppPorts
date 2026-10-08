@@ -202,6 +202,98 @@ function navigationLink(page, navigationTitle, locale) {
   return `[${navigationTitle}](${rewriteURL(`/${page.source}`, source)})`;
 }
 
+function transformBodyLinks(content, rewrite) {
+  const transform = (part) => part.split("\n").map((line) => line
+      .replace(/(\]\(\s*<?)([^\s)>]+)(>?)/g, (_, prefix, url, suffix) => `${prefix}${rewrite(url)}${suffix}`)
+      // Empty <a id="..."> elements define headings; only visit actual links.
+      .replace(/(<a\b(?![^>]*\bid=)[^>]*\bhref=")([^"]*)(")/g, (_, prefix, url, suffix) => `${prefix}${html(rewrite(url.replace(/&amp;/g, "&")))}${suffix}`)
+    ).join("\n");
+  let result = "", cursor = 0;
+  for (const [start, end] of bodyCodeRanges(content)) {
+    result += transform(content.slice(cursor, start)) + content.slice(start, end);
+    cursor = end;
+  }
+  return result + transform(content.slice(cursor));
+}
+
+function bodyCodeRanges(content) {
+  const positions = new WeakMap();
+  const ruler = markdown.inline.ruler;
+  const rules = ["backticks", "image"].map((name) => [name, ruler.__rules__.find((rule) => rule.name === name).fn]);
+  let tokens;
+  try {
+    for (const [name, rule] of rules) ruler.at(name, (state, silent) => {
+      const start = state.pos, count = state.tokens.length;
+      const matched = rule(state, silent);
+      const token = state.tokens.at(-1);
+      if (!silent && state.tokens.length > count && ["code_inline", "image"].includes(token.type)) {
+        positions.set(token, [start, state.pos]);
+      }
+      return matched;
+    });
+    tokens = markdown.parse(content, {});
+  } finally {
+    for (const [name, rule] of rules) ruler.at(name, rule);
+  }
+  const lineStarts = [0];
+  for (const match of content.matchAll(/\n/g)) lineStarts.push(match.index + 1);
+  const sourceTicks = ([first, last]) => {
+    const start = lineStarts[first], end = lineStarts[last] ?? content.length;
+    return [...content.slice(start, end).matchAll(/`/g)].map((match) => start + match.index);
+  };
+  const ranges = [];
+  let rowTicks = [], rowCursor = 0;
+  for (const token of tokens) {
+    if (["fence", "code_block"].includes(token.type)) {
+      ranges.push([lineStarts[token.map[0]], lineStarts[token.map[1]] ?? content.length]);
+    } else if (token.type === "tr_open") {
+      rowTicks = sourceTicks(token.map);
+      rowCursor = 0;
+    } else if (token.type === "inline") {
+      // Block prefixes and escaped table pipes change offsets, but preserve backtick order.
+      const ticks = [...token.content.matchAll(/`/g)].map((match) => match.index);
+      const originals = token.map ? sourceTicks(token.map) : rowTicks.slice(rowCursor, rowCursor += ticks.length);
+      const offsets = new Map(ticks.map((tick, index) => [tick, originals[index]]));
+      const collect = (children, base = 0) => {
+        for (const child of children ?? []) {
+          const position = positions.get(child);
+          if (child.type === "code_inline" && position) {
+            const start = offsets.get(base + position[0]), last = offsets.get(base + position[1] - 1);
+            if (start === undefined || last === undefined) throw new Error("Cannot locate inline code in original Markdown");
+            ranges.push([start, last + 1]);
+          } else if (child.type === "image" && position) {
+            // Image children are parsed from the label after its opening ![.
+            collect(child.children, base + position[0] + 2);
+          }
+        }
+      };
+      collect(token.children);
+    }
+  }
+  return ranges.sort(([left], [right]) => left - right);
+}
+
+function importedFragment(url, file, spaces, anchorIds) {
+  file = file.split("\\").join("/");
+  const hashIndex = url.indexOf("#");
+  if (hashIndex < 0) return null;
+  const path = url.slice(0, hashIndex).split("?")[0];
+  const anchor = decodeURIComponent(url.slice(hashIndex + 1));
+  if (!anchor) return null;
+  let target = file;
+  if (path.startsWith("https://app.gitbook.com/s/")) {
+    const match = path.match(/^https:\/\/app\.gitbook\.com\/s\/([^/]+)\/(.+)$/);
+    const space = match && Object.entries(spaces).find(([, value]) => value.id === match[1]);
+    const page = space && Object.entries(space[1].pages).find(([, value]) => value === match[2]);
+    if (!page) return null;
+    target = `${space[0]}/${page[0]}`;
+  } else if (/^(?:[a-z][a-z\d+.-]*:|\/)/i.test(path)) return null;
+  else if (path) target = posix.normalize(posix.join(posix.dirname(file), decodeURI(path)));
+  const ids = anchorIds[target];
+  const actual = ids && Object.hasOwn(ids, anchor) ? ids[anchor] : anchor;
+  return { target, anchor, actual, ids, url: actual === anchor ? url : `${url.slice(0, hashIndex)}#${actual}` };
+}
+
 const skipped = new Set();
 const generated = new Map();
 const navigationPages = [];
@@ -250,6 +342,10 @@ const manifest = {
   navigationPages,
   crossLinks,
 };
+const spaceMapPath = join(output, "space-ids.json");
+const anchorMapPath = join(output, "anchor-ids.json");
+const importedSpaces = existsSync(spaceMapPath) ? JSON.parse(readFileSync(spaceMapPath, "utf8")) : null;
+const importedAnchors = existsSync(anchorMapPath) ? JSON.parse(readFileSync(anchorMapPath, "utf8")) : null;
 
 if (mode === "export") {
   for (const [filename, content] of generated) writeNew(join(output, filename), content);
@@ -257,19 +353,34 @@ if (mode === "export") {
   console.log(`Exported ${pages.length} source pages and ${navigationPages.length} navigation pages across ${locales.length} languages.`);
   if (skipped.size) console.log(`Preserved ${skipped.size} existing edited files. Regenerate into a separate checkout to compare changes.`);
 } else if (mode === "resolve-links") {
-  const spaces = JSON.parse(readFileSync(join(output, "space-ids.json"), "utf8"));
+  if (!importedSpaces || !importedAnchors) throw new Error("Read the imported page paths and heading IDs into space-ids.json and anchor-ids.json before resolving links.");
   const importedManifest = JSON.parse(readFileSync(join(output, "migration-manifest.json"), "utf8"));
   const changes = new Map();
+  let crossSpaceReferences = 0;
   for (const link of importedManifest.crossLinks) {
-    const target = spaces[link.locale];
+    const target = importedSpaces[link.locale];
     if (!target?.id || !Object.hasOwn(target.pages, link.target)) throw new Error(`Missing imported page: ${link.locale}/${link.target}`);
     const url = `https://app.gitbook.com/s/${target.id}/${target.pages[link.target]}${link.suffix}`;
     const filename = join(output, link.file);
     const content = changes.get(filename) ?? readFileSync(filename, "utf8");
+    const count = content.split(link.provisional).length - 1;
+    if (!count) continue;
+    crossSpaceReferences += count;
     changes.set(filename, content.replaceAll(link.provisional, url));
   }
+  let fragments = 0;
+  for (const locale of locales) for (const filename of walk(join(output, locale.directory))) {
+    const content = changes.get(filename) ?? readFileSync(filename, "utf8");
+    const updated = transformBodyLinks(content, (url) => {
+      const reference = importedFragment(url, relative(output, filename), importedSpaces, importedAnchors);
+      if (!reference || reference.url === url) return url;
+      fragments++;
+      return reference.url;
+    });
+    if (updated !== content) changes.set(filename, updated);
+  }
   for (const [filename, content] of changes) writeFileSync(filename, content);
-  console.log(`Resolved ${importedManifest.crossLinks.length} cross-space references in ${changes.size} files using imported page paths.`);
+  console.log(`Resolved ${crossSpaceReferences} cross-space references and ${fragments} heading fragments using imported page paths and IDs.`);
 }
 
 // Check rendered source content rather than demanding GitBook's exact serialization.
@@ -278,6 +389,7 @@ let fences = 0;
 let mermaids = 0;
 let anchors = 0;
 let unresolved = 0;
+let fragments = 0;
 for (const page of pages) {
   const filename = join(output, page.locale.directory, page.target);
   if (!existsSync(filename)) { failures.push(`Missing page: ${filename}`); continue; }
@@ -311,8 +423,27 @@ for (const locale of locales) {
   for (const target of listed) if (!/^https?:\/\//.test(target) && !existsSync(join(localeRoot, target))) failures.push(`Broken SUMMARY target: ${locale.directory}/${target}`);
   const settings = yaml.load(readFileSync(join(localeRoot, ".gitbook.yaml"), "utf8"));
   for (const target of Object.values(settings.redirects ?? {})) if (!existsSync(join(localeRoot, target))) failures.push(`Broken redirect target: ${locale.directory}/${target}`);
-  for (const filename of walk(localeRoot)) unresolved += (readFileSync(filename, "utf8").match(/XSPACE_[A-Z_]+/g) ?? []).length;
+  for (const filename of walk(localeRoot)) {
+    const content = readFileSync(filename, "utf8");
+    unresolved += (content.match(/XSPACE_[A-Z_]+/g) ?? []).length;
+    if (!importedSpaces || !importedAnchors) continue;
+    transformBodyLinks(content, (url) => {
+      const reference = importedFragment(url, relative(output, filename), importedSpaces, importedAnchors);
+      if (!reference) return url;
+      fragments++;
+      if (!reference.ids) failures.push(`Missing imported heading IDs for ${reference.target}`);
+      else if (reference.url !== url || !Object.values(reference.ids).includes(reference.anchor)) {
+        failures.push(`Broken imported heading link in ${relative(output, filename)}: ${url}${reference.url !== url ? ` (use ${reference.url})` : ""}`);
+      }
+      return url;
+    });
+  }
 }
-if (!failures.length) console.log(`Verified ${pages.length} pages, ${fences} original code blocks (${mermaids} Mermaid), ${anchors} explicit anchors, and all navigation/redirect targets.`);
-if (unresolved) console.log(`${unresolved} cross-space references await the initial Git Sync import and resolve-links.`);
+if (mode !== "export" && (!importedSpaces || !importedAnchors)) failures.push("Imported page/heading maps are missing; collect space-ids.json and anchor-ids.json after the initial Git Sync import.");
+if (unresolved) {
+  const message = `${unresolved} cross-space references await the initial Git Sync import and resolve-links.`;
+  if (mode === "check") failures.push(message);
+  else console.log(message);
+}
+if (!failures.length) console.log(`Verified ${pages.length} pages, ${fences} original code blocks (${mermaids} Mermaid), ${anchors} explicit anchors, ${fragments} imported heading links, and all navigation/redirect targets.`);
 if (failures.length) { console.error(failures.join("\n")); process.exitCode = 1; }

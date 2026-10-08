@@ -146,6 +146,6 @@ exFAT 磁碟的使用者不少，我們認真考慮過一條繞路：在 exFAT �
 ## 相關文件 <a href="#相關文件" id="相關文件"></a>
 
 - [掛載遷移](datamigrae/mount-migration.md)：新方案怎麼用
-- [實驗紀錄：拔除磁碟測試](https://app.gitbook.com/s/XSPACE_ZH_HANS/research/unplug-test)：本文實驗的原始資料
+- [實驗紀錄：拔除磁碟測試](https://app.gitbook.com/s/ND8nWiaPokAkDK7Ae7Wg/zhi-nan/research/unplug-test)：本文實驗的原始資料
 - [macOS 27 升級說明](macos-27.md)：舊方案為什麼會在 27 上失效
 - [外接儲存裝置指南](storage-guide.md)：介面、容量與檔案系統的一般建議

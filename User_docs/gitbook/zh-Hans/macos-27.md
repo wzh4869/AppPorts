@@ -34,7 +34,7 @@
 - **只有旧的签名记录：** 可选择同版本的官方原版 `.app` 补救，或从 App Store / 开发者官网下载重装。仅有证书名称的记录不能重建开发者签名。
 - **准备覆盖安装，且应用本体在外置盘：** 先点「迁回本地」，再安装官方版本，避免只覆盖本地启动入口而留下外置副本。
 
-**不要卸载或清理容器数据目录。** 这里要恢复的是应用本体和签名。聊天记录、登录状态是否能继续使用，还取决于数据本身、应用版本和原有授权；重要数据应另有备份。详见[签名备份与恢复](datamigrae/resign.md#签名备份与恢复)。
+**不要卸载或清理容器数据目录。** 这里要恢复的是应用本体和签名。聊天记录、登录状态是否能继续使用，还取决于数据本身、应用版本和原有授权；重要数据应另有备份。详见[签名备份与恢复](datamigrae/resign.md#qian-ming-bei-fen-yu-hui-fu)。
 
 ### 第 3 步：重新检查，并从 Finder / Dock 打开 <a href="#第-3-步-重新检查-并从-finder-dock-打开" id="第-3-步-重新检查-并从-finder-dock-打开"></a>
 
@@ -75,7 +75,7 @@
 
 ## 还没升级：先检查 <a href="#还没升级-先检查" id="还没升级-先检查"></a>
 
-优先在 AppPorts 中查看「签名已替换」标记，并按上面的[修复](#修复)处理。没有标记不等于已经验证 macOS 27 兼容性；AppPorts 只能根据可读的真实应用和已有备份判断签名是否被替换。
+优先在 AppPorts 中查看「签名已替换」标记，并按上面的[修复](#xiu-fu)处理。没有标记不等于已经验证 macOS 27 兼容性；AppPorts 只能根据可读的真实应用和已有备份判断签名是否被替换。
 
 <details>
 <summary>进阶：用终端辅助检查旧备份</summary>
@@ -100,7 +100,7 @@ done
 
 ## 已升级：确认症状 <a href="#已升级-确认症状" id="已升级-确认症状"></a>
 
-先从 Finder / Dock 打开应用。若失败且 AppPorts 显示「签名已替换」，按[修复](#修复)处理。若签名检查正常，仍无法启动，应进一步排查应用版本、数据权限和外置盘连接。
+先从 Finder / Dock 打开应用。若失败且 AppPorts 显示「签名已替换」，按[修复](#xiu-fu)处理。若签名检查正常，仍无法启动，应进一步排查应用版本、数据权限和外置盘连接。
 
 <details>
 <summary>进阶：查看签名和系统日志</summary>
@@ -112,7 +112,7 @@ codesign -dv --verbose=4 "/Applications/WeChat.app" 2>&1 | grep -E "Authority|Te
 log show --last 1m --style compact 2>/dev/null | grep -i "rejected approval request"
 ```
 
-`Signature=adhoc` 需要与原始签名记录一起判断。`kTCCServiceSystemPolicyAppData ... denied` 是容器访问被拒绝的线索，单独出现不能证明一定由重签名导致。更多检查见[容器数据、沙盒与签名身份](datamigrae/container-identity.md#自查)。
+`Signature=adhoc` 需要与原始签名记录一起判断。`kTCCServiceSystemPolicyAppData ... denied` 是容器访问被拒绝的线索，单独出现不能证明一定由重签名导致。更多检查见[容器数据、沙盒与签名身份](datamigrae/container-identity.md#zi-cha)。
 
 </details>
 

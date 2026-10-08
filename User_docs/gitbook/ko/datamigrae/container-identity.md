@@ -31,7 +31,7 @@ codesign -d --entitlements - --xml /Applications/WeChat.app 2>/dev/null | grep -
 | 심볼릭 링크 + Ad-hoc 재서명 | macOS 26 이하에서는 사용 가능. 27에서는 이중 클릭 직후 종료될 수 있음. WeChat에서 확인했으며 QQ Music은 아직 열림 | 재서명이 샌드박스 신원을 제거해 링크가 작동하게 하지만, 앱과 컨테이너의 소유 관계도 지웁니다. 27부터 시스템이 그 관계를 확인 |
 | 외장 드라이브의 APFS 볼륨을 원래 디렉토리에 마운트 | 정상 동작하며 서명 유지 | 경로가 컨테이너를 벗어나지 않아 샌드박스가 허용. 외장 데이터 접근 권한 창이 한 번 뜨면 허용하면 됨 |
 
-세 방법 모두 macOS 27에서 직접 검증했습니다. 원본 로그는 [실험 기록: 심볼릭 링크](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink)와 [실험 기록: 마운트 지점](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint)에 있습니다.
+세 방법 모두 macOS 27에서 직접 검증했습니다. 원본 로그는 [실험 기록: 심볼릭 링크](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-symlink)와 [실험 기록: 마운트 지점](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-mountpoint)에 있습니다.
 
 ## 재서명이 실제로 바꾸는 것 <a href="#재서명이-실제로-바꾸는-것" id="재서명이-실제로-바꾸는-것"></a>
 
@@ -107,9 +107,9 @@ log show --last 1m --style compact 2>/dev/null | grep -iE "rejected approval req
 2. **앱 재설치:** 공식 경로에서 덮어 설치해 원본 서명과 샌드박스를 복구합니다. 컨테이너 데이터는 삭제되지 않습니다.
 3. **필요하면 마운트 마이그레이션:** 재설치 후 컨테이너 디렉토리에 ‘마운트 마이그레이션’이 표시됩니다. 계속 외장 드라이브에 두고 싶으면 이 방식으로 다시 옮깁니다.
 
-새 AppPorts의 ‘원본 서명 복원’은 개발자 개인 키 없이 전체 백업에서 원래 앱을 복원할 수 있습니다. 신원 이름만 남은 이전 기록은 같은 버전의 공식 원본 앱을 선택하거나 공식 경로에서 재설치해야 합니다. [서명 백업과 복원](resign.md#서명-백업과-복원)을 참고하세요. 서명을 복원하기 전에 클래식 모드로 옮긴 컨테이너 디렉토리를 먼저 복원해야 합니다.
+새 AppPorts의 ‘원본 서명 복원’은 개발자 개인 키 없이 전체 백업에서 원래 앱을 복원할 수 있습니다. 신원 이름만 남은 이전 기록은 같은 버전의 공식 원본 앱을 선택하거나 공식 경로에서 재설치해야 합니다. [서명 백업과 복원](resign.md#undefined-4)을 참고하세요. 서명을 복원하기 전에 클래식 모드로 옮긴 컨테이너 디렉토리를 먼저 복원해야 합니다.
 
-자세한 단계와 이미 외장 드라이브로 옮긴 앱 처리 방법은 [macOS 27 업그레이드 안내](../macos-27.md#복구)를 참고하세요.
+자세한 단계와 이미 외장 드라이브로 옮긴 앱 처리 방법은 [macOS 27 업그레이드 안내](../macos-27.md#undefined)를 참고하세요.
 
 ## 실제 사례 <a href="#실제-사례" id="실제-사례"></a>
 

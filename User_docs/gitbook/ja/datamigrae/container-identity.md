@@ -31,7 +31,7 @@ codesign -d --entitlements - --xml /Applications/WeChat.app 2>/dev/null | grep -
 | シンボリックリンク + Ad-hoc 再署名 | macOS 26 以前では使えるが、27 では起動直後に終了する場合がある。WeChat で確認済み、QQ Music は引き続き開ける | 再署名でサンドボックス ID を取り除いたためリンクが機能する。しかしアプリとコンテナの所有関係も消し、macOS 27 ではその関係が確認される |
 | 外部ドライブの APFS ボリュームを元のディレクトリにマウントする | 正常に動作し、署名も変更しない | パスがコンテナ外に出ないためサンドボックスの検証を通過する。外部ドライブのデータに対するシステムの許可を一度求められるので、許可すればよい |
 
-3 つとも macOS 27 で実測済みです。元のログは[実験記録：シンボリックリンク](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-symlink)と[実験記録：マウントポイント](https://app.gitbook.com/s/XSPACE_EN/research/sandbox-mountpoint)を参照してください。
+3 つとも macOS 27 で実測済みです。元のログは[実験記録：シンボリックリンク](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-symlink)と[実験記録：マウントポイント](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/sandbox-mountpoint)を参照してください。
 
 ## 再署名が変更するもの <a href="#再署名が変更するもの" id="再署名が変更するもの"></a>
 
@@ -107,9 +107,9 @@ log show --last 1m --style compact 2>/dev/null | grep -iE "rejected approval req
 2. **アプリを再インストール**：公式の配布元から上書きインストールし、元の署名とサンドボックスを復元します。再インストールでコンテナデータは削除されません。
 3. **必要に応じてマウント移行**：再インストール後、コンテナディレクトリに「マウント移行」が表示されます。外部ドライブで使い続けたい場合は、もう一度移行してください。
 
-新しい AppPorts の「Restore Original Signature」は、完全なバックアップから元のアプリを復元でき、開発元の秘密鍵は不要です。旧形式の ID の名前しかない記録では、同じバージョンの公式アプリを選択するか、公式の配布元から再インストールする必要があります。[署名のバックアップと復元](resign.md#署名のバックアップと復元)を参照してください。署名を復元する前には、クラシックモードで移行したコンテナディレクトリを先に復元してください。
+新しい AppPorts の「Restore Original Signature」は、完全なバックアップから元のアプリを復元でき、開発元の秘密鍵は不要です。旧形式の ID の名前しかない記録では、同じバージョンの公式アプリを選択するか、公式の配布元から再インストールする必要があります。[署名のバックアップと復元](resign.md#nohakkuaffuto)を参照してください。署名を復元する前には、クラシックモードで移行したコンテナディレクトリを先に復元してください。
 
-詳しい手順と、アプリ本体も外部ドライブへ移行している場合の対処は、[macOS 27 の修復手順](../macos-27.md#修復)を参照してください。
+詳しい手順と、アプリ本体も外部ドライブへ移行している場合の対処は、[macOS 27 の修復手順](../macos-27.md#xiu-fu)を参照してください。
 
 ## 実際の事例 <a href="#実際の事例" id="実際の事例"></a>
 

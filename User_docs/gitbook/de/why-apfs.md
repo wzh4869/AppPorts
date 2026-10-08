@@ -146,6 +146,6 @@ Nicht direkt für Mount-Migration. HFS+ kann nicht wie APFS den Speicher zwische
 ## Weitere Dokumentation <a href="#weitere-dokumentation" id="weitere-dokumentation"></a>
 
 - [Mount-Migration](datamigrae/mount-migration.md): die neue Methode verwenden
-- [Versuchsprotokoll: Abziehtest](https://app.gitbook.com/s/XSPACE_EN/research/unplug-test): Originaldaten des Tests
+- [Versuchsprotokoll: Abziehtest](https://app.gitbook.com/s/OOJEV4rd6jhAZxZO5wvY/guide/research/unplug-test): Originaldaten des Tests
 - [Hinweise zum Upgrade auf macOS 27](macos-27.md): warum die alte Methode unter 27 scheitern kann
 - [Leitfaden für externen Speicher](storage-guide.md): allgemeine Empfehlungen zu Anschlüssen, Kapazität und Dateisystemen
