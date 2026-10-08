@@ -132201,6 +132201,420 @@
           }
         }
       }
+    },
+    "应用存储位置已排除索引。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用存储位置已排除索引。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 儲存位置已排除索引。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded from indexing."
+          }
+        }
+      }
+    },
+    "应用存储位置已排除索引，Dock 快捷方式同步失败。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用存储位置已排除索引，Dock 快捷方式同步失败。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 儲存位置已排除索引，Dock 快捷方式同步失敗。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app storage location is excluded, but Dock shortcut updates failed."
+          }
+        }
+      }
+    },
+    "点击「自动处理」开始。" : {
+      "extractionState" : "manual",
+      "comment" : "Exclusion results board. English fallback for other locales, pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击「自动处理」开始。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點擊「自動處理」開始。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Click “Process Apps” to start."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

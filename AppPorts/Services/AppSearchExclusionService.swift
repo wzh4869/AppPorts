@@ -12,6 +12,83 @@ enum AppSearchExclusionService {
         url.deletingLastPathComponent().lastPathComponent == libraryName
     }
 
+    /// Opening the board only observes storage, records and existing Dock pins.
+    /// It never creates the library, repairs a portal or starts a migration.
+    static func inspect(apps: [AppItem], externalRoot: URL,
+                        localEntries: [AppPortalMaintenance.Entry] = [],
+                        store: AppSearchRecordStore = .shared,
+                        dockNeedsRedirect: (URL, URL) throws -> Bool = {
+                            try DockShortcutService.shared.needsRedirect(from: $0, to: $1)
+                        }) -> AppSearchExclusionReport {
+        let fm = FileManager.default
+        let root = externalRoot.standardizedFileURL
+        let library = library(in: root)
+        let records: [AppSearchRecord]
+        let libraryExists: Bool
+        do {
+            // Directory enumeration distinguishes an empty library from unavailable storage.
+            let names = try fm.contentsOfDirectory(atPath: root.path)
+            records = try store.records()
+            libraryExists = root == library || names.contains(libraryName)
+            if libraryExists {
+                guard try fm.attributesOfItem(atPath: library.path)[.type] as? FileAttributeType == .typeDirectory,
+                      library.resolvingSymlinksInPath().path == library.path else {
+                    throw failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                }
+                _ = try fm.contentsOfDirectory(atPath: library.path)
+            }
+        } catch {
+            return AppSearchExclusionReport(operationError: error.localizedDescription)
+        }
+
+        let entries = apps.map { app -> AppSearchExclusionReport.Entry in
+            func entry(_ outcome: AppSearchExclusionReport.Outcome, _ message: String) -> AppSearchExclusionReport.Entry {
+                .init(id: app.id, name: app.displayName, iconURL: app.displayURL, outcome: outcome, message: message)
+            }
+            if let reason = unsupportedReason(for: app) { return entry(.unsupported, reason) }
+            do {
+                let source = app.path.standardizedFileURL
+                let destination = library.appendingPathComponent(source.lastPathComponent)
+                guard (source.deletingLastPathComponent().path == root.path
+                        || source.deletingLastPathComponent().path == library.path),
+                      source.resolvingSymlinksInPath().path == source.path else {
+                    throw failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                }
+                let remembered = records.filter { $0.externalPath == source.path }
+                let volume = try source.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString
+                let identifier = NSDictionary(contentsOf: source.appendingPathComponent("Contents/Info.plist"))?["CFBundleIdentifier"] as? String
+                guard remembered.allSatisfy({ ($0.volumeUUID == nil || $0.volumeUUID == volume)
+                    && ($0.targetBundleIdentifier == nil || $0.targetBundleIdentifier == identifier) }) else {
+                    throw failure("无法确认真实应用身份，未更改存储位置。".localized)
+                }
+                let locals = localEntries.filter { $0.externalURL.standardizedFileURL.path == source.path }.map(\.localURL)
+                    + remembered.filter { !$0.isRestored }.map { URL(fileURLWithPath: $0.localPath) }
+                if libraryExists, let journal = try blockingJournal(in: library, affecting: [source, destination] + locals) {
+                    throw failure(String(format: "转换未完成，已保留应用和恢复记录：%@".localized, journal.path))
+                }
+                guard isExcluded(source) else {
+                    if libraryExists, (try? fm.attributesOfItem(atPath: destination.path)) != nil {
+                        throw failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                    }
+                    return entry(.pending, "点击「自动处理」开始。".localized)
+                }
+                let previous = library.deletingLastPathComponent().appendingPathComponent(source.lastPathComponent)
+                let dockSource = (try? fm.attributesOfItem(atPath: previous.path)) == nil ? previous : source
+                do {
+                    if try dockNeedsRedirect(dockSource, source) {
+                        return entry(.dockWarning, "应用存储位置已排除索引，Dock 快捷方式同步失败。".localized)
+                    }
+                } catch {
+                    return entry(.dockWarning, error.localizedDescription)
+                }
+                return entry(.completed, "应用存储位置已排除索引。".localized)
+            } catch {
+                return entry(.failed, error.localizedDescription)
+            }
+        }
+        return AppSearchExclusionReport(entries: entries)
+    }
+
     /// Inspect the bundle again at execution time; scan flags may be stale or from older versions.
     static func unsupportedReason(for app: AppItem) -> String? {
         guard !app.usesFolderOperation, app.path.pathExtension.lowercased() == "app" else {

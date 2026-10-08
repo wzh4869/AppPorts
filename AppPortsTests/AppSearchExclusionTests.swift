@@ -64,6 +64,142 @@ final class AppSearchExclusionTests: XCTestCase {
                      identity: try AppSearchExclusionService.FileIdentity.read(url))
     }
 
+    func testInspectPendingDoesNotCreateLibraryOrChangeRecords() throws {
+        let recordsURL = root.appendingPathComponent("records.json")
+        for hasRecords in [false, true] {
+            if hasRecords {
+                try store.record(name: "Example", localURL: local, externalURL: external,
+                                 expectsLocalEntry: false, explicitOperation: true)
+            }
+            let originalRecords = try store.records()
+            XCTAssertFalse(fm.fileExists(atPath: destination.deletingLastPathComponent().path))
+
+            let report = try inspectWithoutMutatingFixture(app: item, dockNeedsRedirect: { _, _ in false })
+
+            XCTAssertEqual(report.entries.map(\.outcome), [.pending])
+            XCTAssertEqual(report.entries.first?.id, external.path)
+            XCTAssertNil(report.operationError)
+            XCTAssertFalse(fm.fileExists(atPath: destination.deletingLastPathComponent().path))
+            XCTAssertFalse(fm.fileExists(atPath: local.path))
+            XCTAssertEqual(fm.fileExists(atPath: recordsURL.path), hasRecords)
+            XCTAssertEqual(try store.records(), originalRecords)
+        }
+    }
+
+    func testInspectExcludedAppReportsCompletedOrDockWarningWithoutWrites() throws {
+        try AppSearchExclusionService.prepareLibrary(destination.deletingLastPathComponent())
+        try fm.moveItem(at: external, to: destination)
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.unlinked)
+        let scenarios: [(needsRedirect: Bool, fails: Bool, outcome: AppSearchExclusionReport.Outcome)] = [
+            (false, false, .completed), (true, false, .dockWarning), (false, true, .dockWarning)
+        ]
+        for scenario in scenarios {
+            var probeCount = 0
+            let report = try inspectWithoutMutatingFixture(app: moved, dockNeedsRedirect: { _, target in
+                probeCount += 1
+                XCTAssertEqual(target, self.destination)
+                if scenario.fails { throw NSError(domain: "AppSearchExclusionTests.DockInspection", code: 1) }
+                return scenario.needsRedirect
+            })
+
+            XCTAssertEqual(report.entries.map(\.outcome), [scenario.outcome])
+            XCTAssertGreaterThan(probeCount, 0)
+            XCTAssertNil(report.operationError)
+            XCTAssertFalse(fm.fileExists(atPath: root.appendingPathComponent("records.json").path))
+            XCTAssertFalse(fm.fileExists(atPath: local.path))
+        }
+    }
+
+    func testInspectRelatedJournalFailsBeforeAndAfterMoveWithoutChanges() throws {
+        try link()
+        let journal = try writeJournal(source: external, portals: [journalPortal(at: local)])
+        let journalBytes = try Data(contentsOf: journal)
+        let originalRecords = try store.records()
+        for path in [external, destination] {
+            if path == destination { try fm.moveItem(at: external, to: destination) }
+            let app = AppItem(name: "Example.app", path: path, status: AppStatus.linked)
+            let report = try inspectWithoutMutatingFixture(
+                app: app, localEntries: AppPortalMaintenance.entries(at: local), dockNeedsRedirect: { _, _ in false })
+
+            XCTAssertEqual(report.entries.map(\.outcome), [.failed])
+            XCTAssertEqual(try Data(contentsOf: journal), journalBytes)
+            XCTAssertEqual(try store.records(), originalRecords)
+            XCTAssertTrue(fm.fileExists(atPath: path.path))
+            XCTAssertTrue(fm.fileExists(atPath: local.path))
+        }
+    }
+
+    func testInspectUnrelatedValidJournalDoesNotBlockPendingOrCompletedApp() throws {
+        let other = externalRoot.appendingPathComponent("Pending.app")
+        try makeApp(other, identifier: "org.example.pending")
+        let journal = try writeJournal(source: other)
+        let journalBytes = try Data(contentsOf: journal)
+        let scenarios: [(path: URL, outcome: AppSearchExclusionReport.Outcome)] = [
+            (external, .pending), (destination, .completed)
+        ]
+        for scenario in scenarios {
+            if scenario.path == destination { try fm.moveItem(at: external, to: destination) }
+            let app = AppItem(name: "Example.app", path: scenario.path, status: AppStatus.unlinked)
+            let report = try inspectWithoutMutatingFixture(app: app, dockNeedsRedirect: { _, _ in false })
+
+            XCTAssertEqual(report.entries.map(\.outcome), [scenario.outcome])
+            XCTAssertNil(report.operationError)
+            XCTAssertEqual(try Data(contentsOf: journal), journalBytes)
+            XCTAssertTrue(fm.fileExists(atPath: other.path))
+        }
+    }
+
+    func testInspectExcludedAppRejectsConflictingRememberedVolumeOrBundleIdentity() throws {
+        try link()
+        var original = try XCTUnwrap(store.records().first)
+        try AppSearchExclusionService.prepareLibrary(destination.deletingLastPathComponent())
+        try fm.moveItem(at: external, to: destination)
+        try fm.removeItem(at: local)
+        original.externalPath = destination.path
+        original.expectsLocalEntry = false
+        let moved = AppItem(name: "Example.app", path: destination, status: AppStatus.unlinked)
+        for conflictIsVolume in [true, false] {
+            var conflicting = original
+            if conflictIsVolume {
+                conflicting.volumeUUID = "different-volume"
+            } else {
+                conflicting.targetBundleIdentifier = "org.unrelated.application"
+            }
+            let records = try JSONEncoder().encode([conflicting])
+            try records.write(to: root.appendingPathComponent("records.json"))
+
+            let report = try inspectWithoutMutatingFixture(app: moved, dockNeedsRedirect: { _, _ in false })
+
+            XCTAssertEqual(report.entries.map(\.outcome), [.failed],
+                           "The noindex location cannot override remembered application identity")
+            XCTAssertEqual(try store.records(), [conflicting])
+            XCTAssertEqual(try Data(contentsOf: root.appendingPathComponent("records.json")), records)
+        }
+    }
+
+    private func inspectWithoutMutatingFixture(
+        app: AppItem, localEntries: [AppPortalMaintenance.Entry] = [],
+        dockNeedsRedirect: (URL, URL) throws -> Bool
+    ) throws -> AppSearchExclusionReport {
+        func identities() throws -> [String: AppSearchExclusionService.FileIdentity] {
+            try Dictionary(uniqueKeysWithValues: SignatureSnapshot.items(in: root).map {
+                ($0.path, try AppSearchExclusionService.FileIdentity.read($0))
+            })
+        }
+        let originalFingerprint = try SignatureSnapshot.fingerprint(of: root)
+        let originalIdentities = try identities()
+
+        let report = AppSearchExclusionService.inspect(
+            apps: [app], externalRoot: externalRoot, localEntries: localEntries,
+            store: store, dockNeedsRedirect: dockNeedsRedirect)
+
+        XCTAssertEqual(try SignatureSnapshot.fingerprint(of: root), originalFingerprint,
+                       "Inspection must not create, remove, or change fixture files")
+        XCTAssertEqual(try identities(), originalIdentities,
+                       "Inspection must not rewrite records or replace existing applications")
+        return report
+    }
+
     func testConversionPreservesBundleAndDocumentAndRetargetsExistingPortal() async throws {
         try link()
         let data = try Data(contentsOf: external.appendingPathComponent("Contents/Info.plist"))
