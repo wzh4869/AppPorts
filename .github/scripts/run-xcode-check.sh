@@ -9,11 +9,11 @@ case "$check" in
     arguments=(clean build -configuration Release)
     ;;
   prepare-tests)
-    arguments=(build-for-testing -configuration Debug -only-testing:AppPortsTests)
+    arguments=(build-for-testing -configuration Debug)
     ;;
   regression)
     arguments=(test-without-building -configuration Debug
-      -only-testing:AppPortsTests -skip-testing:AppPortsTests/LocalizationAuditTests)
+      -skip-testing:AppPortsTests/LocalizationAuditTests)
     ;;
   localization)
     arguments=(test-without-building -configuration Debug
