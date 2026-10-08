@@ -290,6 +290,8 @@ struct AppMigrationService {
             try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
             try store.retarget(from: source, to: destination, snapshots: records)
         } catch {
+            AppLogger.shared.logError("应用索引排除转换失败，开始回滚", error: error,
+                                      relatedURLs: [("source", source), ("journal", journalURL)])
             var recoveryFailed = false
             // Undo only files whose device/inode still matches our snapshot.
             for portal in backedUp.reversed() {
@@ -1983,41 +1985,51 @@ struct AppMigrationService {
         AppLogger.shared.log("已创建 iOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
 
-    /// macOS 应用的 Stub Portal
+    /// macOS 应用的 Stub Portal. The private workspace owns only newly created files.
     private func createMacOSStubPortal(at destinationURL: URL, pointingTo externalURL: URL, register: Bool = true) throws {
-        let fm = fileManager
         let localURL = destinationURL.deletingLastPathComponent()
             .appendingPathComponent(".appports-create-\(UUID().uuidString).app")
-        defer { try? fm.removeItem(at: localURL) }
-        let localContents = localURL.appendingPathComponent("Contents")
-        let localMacOS = localContents.appendingPathComponent("MacOS")
-        let externalContents = externalURL.appendingPathComponent("Contents")
+        let stage = try PortalStaging(at: localURL)
+        defer { stage.cleanup() }
+        do {
+            let localContents = localURL.appendingPathComponent("Contents")
+            let localMacOS = localContents.appendingPathComponent("MacOS")
+            let localResources = localContents.appendingPathComponent("Resources")
+            try stage.createDirectory("Contents")
+            try stage.createDirectory("Contents/MacOS")
+            try stage.createDirectory("Contents/Resources")
+            try copyNativeLauncher(to: localMacOS, resourcesDir: localResources, externalURL: externalURL)
+            try stage.recordGeneratedFiles(replacing: ["Contents/MacOS/launcher", "Contents/Resources/real_app_path.txt"])
 
-        // 1. 创建目录结构
-        try fm.createDirectory(at: localMacOS, withIntermediateDirectories: true, attributes: nil)
+            let externalContents = externalURL.appendingPathComponent("Contents")
+            let pkgInfo = externalContents.appendingPathComponent("PkgInfo")
+            var info = stat()
+            if lstat(pkgInfo.path, &info) == 0 {
+                let resolved = pkgInfo.resolvingSymlinksInPath()
+                guard resolved.path.hasPrefix(externalURL.resolvingSymlinksInPath().path + "/"),
+                      try PortalStaging.info(resolved).st_mode & S_IFMT == S_IFREG else {
+                    throw CocoaError(.fileReadInvalidFileName)
+                }
+                try stage.copyFile(from: resolved, relativePath: "Contents/PkgInfo")
+            } else if errno != ENOENT { throw PortalStaging.posixError(pkgInfo) }
 
-        // 2. 复制原生 launcher 二进制
-        let localResources = localContents.appendingPathComponent("Resources")
-        try fm.createDirectory(at: localResources, withIntermediateDirectories: true, attributes: nil)
-        try copyNativeLauncher(to: localMacOS, resourcesDir: localResources, externalURL: externalURL)
-
-        // 3. 复制 PkgInfo
-        let externalPkgInfo = externalContents.appendingPathComponent("PkgInfo")
-        if fm.fileExists(atPath: externalPkgInfo.path) {
-            try fm.copyItem(at: externalPkgInfo, to: localContents.appendingPathComponent("PkgInfo"))
+            for warning in try PortalPresentation.write(from: externalContents, to: localContents) {
+                AppLogger.shared.log(warning, level: "WARN")
+            }
+            try stage.recordPresentationFiles()
+            try signAndVerifyPortal(at: localURL)
+            try stage.recordGeneratedFiles(replacing: ["Contents/_CodeSignature", "Contents/MacOS/launcher"])
+            try stage.prepareForInstall()
+            guard renameatx_np(AT_FDCWD, localURL.path, AT_FDCWD, destinationURL.path, UInt32(RENAME_EXCL)) == 0 else {
+                throw PortalStaging.posixError(destinationURL)
+            }
+            stage.relinquish()
+            if register { refreshLaunchServices(for: destinationURL) }
+            AppLogger.shared.log("已创建 macOS Stub Portal: \(destinationURL.lastPathComponent) -> \(externalURL.path)")
+        } catch {
+            AppLogger.shared.logError("创建应用入口失败", error: error, relatedURLs: [("stage", localURL), ("external", externalURL)])
+            throw error
         }
-
-        // Creation and repair share one resource and metadata implementation.
-        for warning in try PortalPresentation.write(from: externalContents, to: localContents) {
-            AppLogger.shared.log(warning, level: "WARN")
-        }
-        try signAndVerifyPortal(at: localURL)
-        guard renameatx_np(AT_FDCWD, localURL.path, AT_FDCWD, destinationURL.path, UInt32(RENAME_EXCL)) == 0 else {
-            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
-        }
-        if register { refreshLaunchServices(for: destinationURL) }
-
-        AppLogger.shared.log("已创建 macOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
 
     /// 创建透明混合入口（Transparent Hybrid，原型）。
@@ -2122,7 +2134,6 @@ struct AppMigrationService {
               localPortalKind(at: localURL, linkedTo: externalURL) == .stubPortal,
               let resolved = try? CodeSigner.resolveAppURL(at: localURL),
               resolved.resolvingSymlinksInPath() == externalURL.resolvingSymlinksInPath() else { return false }
-        let fm = fileManager
         let localContents = localURL.appendingPathComponent("Contents")
         let externalContents = externalURL.appendingPathComponent("Contents")
         let localInfoPlist = localContents.appendingPathComponent("Info.plist")
@@ -2141,32 +2152,38 @@ struct AppMigrationService {
         }
 
         guard force || PortalPresentation.needsRefresh(local: localPlist, external: extPlist) else { return false }
-        let stage = localURL.deletingLastPathComponent()
+        let stageURL = localURL.deletingLastPathComponent()
             .appendingPathComponent(".appports-refresh-\(UUID().uuidString).app")
-        let originalIdentity = try? fm.attributesOfItem(atPath: localURL.path)[.systemFileNumber] as? NSNumber
-        defer { try? fm.removeItem(at: stage) }
         do {
-            try fm.copyItem(at: localURL, to: stage)
-            for warning in try PortalPresentation.write(from: externalContents, to: stage.appendingPathComponent("Contents")) {
+            let original = try PortalStaging.snapshot(localURL)
+            let stage = try PortalStaging(at: stageURL)
+            defer { stage.cleanup() }
+            // Copy bytes into independent files. Never inherit uchg or hard links from the old portal.
+            try stage.copyContents(from: localURL, snapshot: original)
+            for warning in try PortalPresentation.write(from: externalContents, to: stageURL.appendingPathComponent("Contents")) {
                 AppLogger.shared.log(warning, level: "WARN")
             }
-            try signAndVerifyPortal(at: stage)
+            try stage.recordPresentationFiles()
+            try signAndVerifyPortal(at: stageURL)
+            try stage.recordGeneratedFiles(replacing: ["Contents/_CodeSignature", "Contents/MacOS/launcher"])
+            try stage.prepareForInstall()
             var coordinationError: NSError?
             var commitError: Error?
             var committed = false
             NSFileCoordinator().coordinate(writingItemAt: localURL, options: .forReplacing, error: &coordinationError) { coordinatedURL in
-                // Finder may have removed or replaced the entry during resource preparation.
-                guard AppPortalMaintenance.targetIdentityMatches(localURL: coordinatedURL, externalURL: externalURL),
-                      hasRealStubStorage(at: coordinatedURL),
-                      localPortalKind(at: coordinatedURL, linkedTo: externalURL) == .stubPortal,
-                      let currentIdentity = try? fm.attributesOfItem(atPath: coordinatedURL.path)[.systemFileNumber] as? NSNumber,
-                      currentIdentity == originalIdentity else { return }
-                // Exchange requires BOTH paths to exist. A deleted entry is never recreated.
-                if renameatx_np(AT_FDCWD, stage.path, AT_FDCWD, coordinatedURL.path, UInt32(RENAME_SWAP)) != 0 {
-                    commitError = NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
-                } else {
+                do {
+                    guard AppPortalMaintenance.targetIdentityMatches(localURL: coordinatedURL, externalURL: externalURL),
+                          hasRealStubStorage(at: coordinatedURL),
+                          localPortalKind(at: coordinatedURL, linkedTo: externalURL) == .stubPortal else { return }
+                    // Check the entire old tree, not just its root inode, before replacing it.
+                    guard try PortalStaging.snapshot(coordinatedURL) == original else { return }
+                    try stage.validate()
+                    if renameatx_np(AT_FDCWD, stageURL.path, AT_FDCWD, coordinatedURL.path, UInt32(RENAME_SWAP)) != 0 {
+                        throw PortalStaging.posixError(coordinatedURL)
+                    }
+                    stage.adoptExchangedTree(original)
                     committed = true
-                }
+                } catch { commitError = error }
             }
             if let error = coordinationError ?? commitError as NSError? { throw error }
             if committed { refreshLaunchServices(for: localURL) }
@@ -2180,6 +2197,15 @@ struct AppMigrationService {
 
     /// Signing failures are fatal before a staged portal is installed.
     private func signAndVerifyPortal(at appURL: URL) throws {
+        // codesign may write into _CodeSignature; it must never be a mirrored directory.
+        let signature = appURL.appendingPathComponent("Contents/_CodeSignature")
+        var signatureInfo = stat()
+        if lstat(signature.path, &signatureInfo) == 0, signatureInfo.st_mode & S_IFMT != S_IFDIR {
+            throw CocoaError(.fileWriteInvalidFileName)
+        }
+        for entry in try PortalStaging.snapshot(appURL).values where entry.kind == S_IFREG {
+            guard entry.links == 1 else { throw CocoaError(.fileWriteNoPermission) }
+        }
         // Only staged portal resources are cleaned; the external original is never modified.
         let attributes = Process()
         attributes.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
@@ -2531,4 +2557,237 @@ private actor CopyDestinationOwnership {
     }
 
     func recorded() -> Identity? { captured }
+}
+
+
+/// Tracks the files of one portal workspace. Source flags and hard links never enter new files.
+private final class PortalStaging {
+    struct Entry: Equatable {
+        let device: dev_t
+        let inode: ino_t
+        let kind: mode_t
+        let links: nlink_t
+        let flags: UInt32
+        let size: off_t
+        let modifiedSeconds: Int
+        let modifiedNanoseconds: Int
+        init(_ value: stat) {
+            device = value.st_dev; inode = value.st_ino; kind = value.st_mode & S_IFMT
+            links = value.st_nlink; flags = value.st_flags; size = value.st_size
+            modifiedSeconds = value.st_mtimespec.tv_sec; modifiedNanoseconds = value.st_mtimespec.tv_nsec
+        }
+        func sameIdentity(_ other: Entry) -> Bool { device == other.device && inode == other.inode && kind == other.kind }
+    }
+    let url: URL
+    private var owned: [String: Entry] = [:]
+    private var active = true
+
+    init(at url: URL) throws {
+        self.url = url
+        guard mkdir(url.path, 0o700) == 0 else { throw Self.posixError(url) }
+        owned[""] = Entry(try Self.info(url))
+    }
+
+    static func posixError(_ url: URL) -> NSError {
+        NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: [NSFilePathErrorKey: url.path])
+    }
+    static func info(_ url: URL) throws -> stat {
+        var value = stat()
+        guard lstat(url.path, &value) == 0 else { throw posixError(url) }
+        return value
+    }
+    static func snapshot(_ root: URL) throws -> [String: Entry] {
+        var entries: [String: Entry] = [:]
+        func visit(_ relative: String) throws {
+            let path = relative.isEmpty ? root : root.appendingPathComponent(relative)
+            let value = try info(path)
+            entries[relative] = Entry(value)
+            if value.st_mode & S_IFMT == S_IFDIR {
+                for name in try FileManager.default.contentsOfDirectory(atPath: path.path).sorted() {
+                    try visit(relative.isEmpty ? name : relative + "/" + name)
+                }
+            }
+        }
+        try visit("")
+        return entries
+    }
+
+    private func verifyParents(of relative: String) throws {
+        var parts = relative.split(separator: "/").map(String.init)
+        parts.removeLast()
+        for count in 0...parts.count {
+            let key = parts.prefix(count).joined(separator: "/")
+            let path = key.isEmpty ? url : url.appendingPathComponent(key)
+            guard let expected = owned[key], expected.kind == S_IFDIR,
+                  expected.sameIdentity(Entry(try Self.info(path))),
+                  path.resolvingSymlinksInPath().standardizedFileURL.path == path.standardizedFileURL.path else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+        }
+    }
+
+    func createDirectory(_ relative: String) throws {
+        try verifyParents(of: relative)
+        let path = url.appendingPathComponent(relative)
+        guard mkdir(path.path, 0o755) == 0 else { throw Self.posixError(path) }
+        owned[relative] = Entry(try Self.info(path))
+    }
+
+    func copyFile(from source: URL, relativePath: String, expected: Entry? = nil) throws {
+        try verifyParents(of: relativePath)
+        let input = open(source.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
+        guard input >= 0 else { throw Self.posixError(source) }
+        let reader = FileHandle(fileDescriptor: input, closeOnDealloc: true)
+        defer { try? reader.close() }
+        var before = stat()
+        guard fstat(input, &before) == 0, before.st_mode & S_IFMT == S_IFREG,
+              expected == nil || expected == Entry(before) else { throw CocoaError(.fileReadInvalidFileName) }
+        let target = url.appendingPathComponent(relativePath)
+        let output = open(target.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
+        guard output >= 0 else { throw Self.posixError(target) }
+        let writer = FileHandle(fileDescriptor: output, closeOnDealloc: true)
+        var created = stat()
+        guard fstat(output, &created) == 0 else { try? writer.close(); throw Self.posixError(target) }
+        owned[relativePath] = Entry(created)
+        defer {
+            // Record the same open file, including a partial write, without adopting a path replacement.
+            var current = stat()
+            if fstat(output, &current) == 0 { owned[relativePath] = Entry(current) }
+            try? writer.close()
+        }
+        while let bytes = try reader.read(upToCount: 1_048_576), !bytes.isEmpty { try writer.write(contentsOf: bytes) }
+        var after = stat()
+        guard fstat(input, &after) == 0, Entry(after) == Entry(before) else { throw CocoaError(.fileReadCorruptFile) }
+        guard fchmod(output, before.st_mode & 0o777) == 0 else { throw Self.posixError(target) }
+    }
+
+    func copyContents(from source: URL, snapshot: [String: Entry]) throws {
+        for relative in snapshot.keys.sorted() where !relative.isEmpty {
+            // A new signature is generated; no old signature path can redirect codesign.
+            if relative == "Contents/_CodeSignature" || relative.hasPrefix("Contents/_CodeSignature/") { continue }
+            let sourcePath = source.appendingPathComponent(relative)
+            let expected = snapshot[relative]!
+            guard Entry(try Self.info(sourcePath)) == expected else { throw CocoaError(.fileReadCorruptFile) }
+            switch expected.kind {
+            case S_IFDIR: try createDirectory(relative)
+            case S_IFREG: try copyFile(from: sourcePath, relativePath: relative, expected: expected)
+            case S_IFLNK:
+                try verifyParents(of: relative)
+                let target = url.appendingPathComponent(relative)
+                let link = try FileManager.default.destinationOfSymbolicLink(atPath: sourcePath.path)
+                guard symlink(link, target.path) == 0 else { throw Self.posixError(target) }
+                owned[relative] = Entry(try Self.info(target))
+            default: throw CocoaError(.fileReadUnsupportedScheme)
+            }
+        }
+    }
+
+    func recordPresentationFiles() throws {
+        // The presentation writer may rebuild .icon/lproj directories, but it cannot
+        // replace the Resources root or the launcher's target marker.
+        try recordGeneratedFiles(replacing: ["Contents/Info.plist", "Contents/Resources"],
+                                 preserving: ["Contents/Resources", "Contents/Resources/real_app_path.txt"])
+    }
+
+    /// Admit changes only in the current writer's output paths. Core directories
+    /// and unrelated files must still be the objects that this workspace created.
+    func recordGeneratedFiles(replacing paths: Set<String>, preserving: Set<String> = []) throws {
+        let updated = try Self.snapshot(url)
+        for path in Set(owned.keys).union(updated.keys) {
+            if !preserving.contains(path), paths.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) { continue }
+            guard let previous = owned[path], let current = updated[path],
+                  previous.kind == S_IFDIR ? previous.sameIdentity(current) : previous == current else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+        }
+        owned = updated
+    }
+    func validate() throws {
+        guard try Self.snapshot(url) == owned else { throw CocoaError(.fileWriteInvalidFileName) }
+    }
+    func prepareForInstall() throws {
+        try validate()
+        let fd = open(url.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+        guard fd >= 0 else { throw Self.posixError(url) }
+        defer { close(fd) }
+        var value = stat()
+        guard fstat(fd, &value) == 0, owned[""] == Entry(value) else { throw CocoaError(.fileWriteInvalidFileName) }
+        guard fchmod(fd, 0o755) == 0 else { throw Self.posixError(url) }
+    }
+    func relinquish() { active = false }
+    func adoptExchangedTree(_ snapshot: [String: Entry]) { owned = snapshot }
+
+    func cleanup() {
+        guard active else { return }
+        let isolated = url.deletingLastPathComponent().appendingPathComponent(".appports-cleanup-\(UUID().uuidString).app")
+        var coordinationError: NSError?
+        var cleanupError: Error?
+        NSFileCoordinator().coordinate(writingItemAt: url, options: .forDeleting, error: &coordinationError) { path in
+            do {
+                // Directory timestamps change as children are created; ownership is device/inode/type.
+                let current = try Self.snapshot(path)
+                guard current.keys.sorted() == owned.keys.sorted(), current.allSatisfy({ key, entry in
+                    guard let expected = owned[key] else { return false }
+                    return expected.kind == S_IFDIR ? expected.sameIdentity(entry) : expected == entry
+                }) else { throw CocoaError(.fileWriteInvalidFileName) }
+                guard renameatx_np(AT_FDCWD, path.path, AT_FDCWD, isolated.path, UInt32(RENAME_EXCL)) == 0 else {
+                    throw Self.posixError(path)
+                }
+                let moved = try Self.snapshot(isolated)
+                guard moved == current else { throw CocoaError(.fileWriteInvalidFileName) }
+                try removeContents(isolated, snapshot: current)
+            } catch { cleanupError = error }
+        }
+        if let error = cleanupError ?? coordinationError {
+            AppLogger.shared.logError("应用入口临时副本清理失败，保留文件", error: error,
+                                      relatedURLs: [("stage", url), ("preserved", isolated)])
+        }
+    }
+
+    private func removeContents(_ root: URL, snapshot: [String: Entry]) throws {
+        // Bind every operation to its parent directory descriptor. Replacing an
+        // ancestor with a symlink cannot redirect a flag change into the real app.
+        let parent = open(root.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+        guard parent >= 0 else { throw Self.posixError(root) }
+        defer { close(parent) }
+        func current(_ parentFD: Int32, name: String) throws -> stat {
+            var value = stat()
+            guard fstatat(parentFD, name, &value, AT_SYMLINK_NOFOLLOW) == 0 else { throw Self.posixError(root) }
+            return value
+        }
+        func remove(_ parentFD: Int32, name: String, relative: String) throws {
+            guard let expected = snapshot[relative] else { throw CocoaError(.fileWriteInvalidFileName) }
+            let observed = Entry(try current(parentFD, name: name))
+            guard expected.kind == S_IFDIR ? expected.sameIdentity(observed) : expected == observed else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+            if expected.kind == S_IFLNK {
+                guard unlinkat(parentFD, name, 0) == 0 else { throw Self.posixError(root) }
+                return
+            }
+            guard expected.kind == S_IFREG || expected.kind == S_IFDIR else { throw CocoaError(.fileWriteInvalidFileName) }
+            let fd = openat(parentFD, name, O_RDONLY | O_NOFOLLOW | O_NONBLOCK)
+            guard fd >= 0 else { throw Self.posixError(root) }
+            defer { close(fd) }
+            var value = stat()
+            guard fstat(fd, &value) == 0, expected.sameIdentity(Entry(value)) else { throw CocoaError(.fileWriteInvalidFileName) }
+            if expected.kind == S_IFREG, Entry(value) != expected { throw CocoaError(.fileWriteInvalidFileName) }
+            if value.st_flags & UInt32(UF_IMMUTABLE) != 0 {
+                // Removing a link is safe, but changing flags on a shared inode would change its other owner.
+                guard expected.kind != S_IFREG || value.st_nlink == 1 else { throw CocoaError(.fileWriteNoPermission) }
+                guard fchflags(fd, value.st_flags & ~UInt32(UF_IMMUTABLE)) == 0 else { throw Self.posixError(root) }
+            }
+            if expected.kind == S_IFDIR {
+                let prefix = relative.isEmpty ? "" : relative + "/"
+                for child in snapshot.keys.sorted() where child.hasPrefix(prefix) && child != relative {
+                    let suffix = String(child.dropFirst(prefix.count))
+                    if !suffix.contains("/") { try remove(fd, name: suffix, relative: child) }
+                }
+            }
+            guard expected.sameIdentity(Entry(try current(parentFD, name: name))) else { throw CocoaError(.fileWriteInvalidFileName) }
+            // AT_REMOVEDIR refuses untracked children instead of recursively deleting them.
+            guard unlinkat(parentFD, name, expected.kind == S_IFDIR ? AT_REMOVEDIR : 0) == 0 else { throw Self.posixError(root) }
+        }
+        try remove(parent, name: root.lastPathComponent, relative: "")
+    }
 }

@@ -1,3 +1,4 @@
+import Darwin
 import XCTest
 @testable import AppPorts
 
@@ -85,6 +86,113 @@ final class AppSearchExclusionTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: document, encoding: .utf8), "searchable document")
         XCTAssertFalse(fm.fileExists(atPath: externalRoot.appendingPathComponent(".metadata_never_index").path))
         XCTAssertFalse(fm.fileExists(atPath: external.path))
+    }
+
+    func testConversionWithLockedPkgInfoPreservesSignedOriginalAndInstallsIndependentPortal() async throws {
+        defer { unlockOwnedExclusionFixture() }
+        let pkgInfoPath = "Contents/PkgInfo"
+        let pkgInfo = external.appendingPathComponent(pkgInfoPath)
+        let pkgInfoBytes = Data("APPLLOCK".utf8)
+        try pkgInfoBytes.write(to: pkgInfo)
+        let executable = external.appendingPathComponent("Contents/MacOS/Example")
+        let nativeLauncher = try XCTUnwrap(Bundle.main.url(forResource: "StubLauncherBinary", withExtension: nil))
+        try fm.removeItem(at: executable)
+        try fm.copyItem(at: nativeLauncher, to: executable)
+        try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+        try runFixtureCodesign(["--force", "--sign", "-", "--timestamp=none", external.path])
+        try link()
+
+        let attributeName = "com.appports.tests.locked-exclusion"
+        let marker = Data("preserve real application metadata".utf8)
+        for url in [external, pkgInfo] {
+            let status = marker.withUnsafeBytes {
+                setxattr(url.path, attributeName, $0.baseAddress, $0.count, 0, XATTR_NOFOLLOW)
+            }
+            guard status == 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+            try fm.setAttributes([.immutable: true], ofItemAtPath: url.path)
+        }
+        try runFixtureCodesign(["--verify", "--strict", external.path])
+        let originalIdentity = try AppSearchExclusionService.FileIdentity.read(external)
+        let originalPkgInfoIdentity = try AppSearchExclusionService.FileIdentity.read(pkgInfo)
+        let originalFingerprint = try SignatureSnapshot.fingerprint(of: external)
+        let originalFlags = try fixtureFlags(in: external)
+
+        let result = try await service().excludeFromSearch(
+            app: item, externalRoot: externalRoot, localEntries: [local], store: store)
+
+        XCTAssertEqual(result.destination.standardizedFileURL.path, destination.standardizedFileURL.path)
+        XCTAssertEqual(destination.deletingLastPathComponent().lastPathComponent, "AppPorts.noindex")
+        XCTAssertFalse(fm.fileExists(atPath: external.path))
+        XCTAssertEqual(try AppSearchExclusionService.FileIdentity.read(destination), originalIdentity)
+        let movedPkgInfo = destination.appendingPathComponent(pkgInfoPath)
+        XCTAssertEqual(try AppSearchExclusionService.FileIdentity.read(movedPkgInfo), originalPkgInfoIdentity)
+        XCTAssertEqual(try Data(contentsOf: movedPkgInfo), pkgInfoBytes)
+        XCTAssertEqual(try SignatureSnapshot.fingerprint(of: destination), originalFingerprint)
+        XCTAssertEqual(try fixtureFlags(in: destination), originalFlags)
+        for url in [destination, movedPkgInfo] {
+            var actual = Data(count: marker.count)
+            let count = actual.withUnsafeMutableBytes {
+                getxattr(url.path, attributeName, $0.baseAddress, $0.count, 0, XATTR_NOFOLLOW)
+            }
+            XCTAssertEqual(count, marker.count)
+            XCTAssertEqual(actual, marker)
+        }
+        try runFixtureCodesign(["--verify", "--strict", destination.path])
+
+        let portalPkgInfo = local.appendingPathComponent(pkgInfoPath)
+        XCTAssertEqual(try Data(contentsOf: portalPkgInfo), pkgInfoBytes)
+        XCTAssertEqual(try fm.attributesOfItem(atPath: portalPkgInfo.path)[.type] as? FileAttributeType, .typeRegular)
+        XCTAssertEqual(try SignatureSnapshot.info(at: portalPkgInfo).st_flags & UInt32(UF_IMMUTABLE), 0)
+        XCTAssertNotEqual(try AppSearchExclusionService.FileIdentity.read(portalPkgInfo), originalPkgInfoIdentity)
+        XCTAssertEqual(try CodeSigner.resolveAppURL(at: local).standardizedFileURL.path, destination.standardizedFileURL.path)
+        XCTAssertEqual(try store.records().first?.externalPath, destination.path)
+        try runFixtureCodesign(["--verify", "--strict", local.path])
+        let pendingJournals = try fm.contentsOfDirectory(atPath: destination.deletingLastPathComponent().path).filter {
+            $0.hasPrefix(".appports-exclusion-") && $0.hasSuffix(".json")
+        }
+        XCTAssertTrue(pendingJournals.isEmpty, "Successful exclusion must retire its recovery journal")
+    }
+
+    private func fixtureFlags(in bundle: URL) throws -> [String: UInt32] {
+        var result: [String: UInt32] = [:]
+        for url in try SignatureSnapshot.items(in: bundle) {
+            result[String(url.path.dropFirst(bundle.path.count))] = try SignatureSnapshot.info(at: url).st_flags
+        }
+        return result
+    }
+
+    private func runFixtureCodesign(_ arguments: [String]) throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
+        process.arguments = arguments
+        let output = Pipe()
+        process.standardError = output
+        try process.run()
+        process.waitUntilExit()
+        let message = String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        guard process.terminationStatus == 0 else {
+            throw NSError(domain: "AppSearchExclusionTests.Codesign", code: Int(process.terminationStatus),
+                          userInfo: [NSLocalizedDescriptionKey: message])
+        }
+    }
+
+    private func unlockOwnedExclusionFixture() {
+        guard root.lastPathComponent.hasPrefix("Exclusion-"),
+              root.deletingLastPathComponent() == fm.temporaryDirectory.resolvingSymlinksInPath() else {
+            XCTFail("Refusing to unlock outside this test's temporary fixture")
+            return
+        }
+        do {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/chflags")
+            // The UUID root belongs to this fixture; -P never follows its symbolic links.
+            process.arguments = ["-R", "-P", "nouchg", root.path]
+            try process.run()
+            process.waitUntilExit()
+            XCTAssertEqual(process.terminationStatus, 0)
+        } catch {
+            XCTFail("Unable to unlock test-owned exclusion fixture: \(error)")
+        }
     }
 
     func testDeletedPortalStaysDeletedAndExcludedAppIsStillScanned() async throws {
