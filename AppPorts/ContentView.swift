@@ -268,6 +268,7 @@ struct ContentView: View {
     // Monitors
     @State private var localMonitor: FolderMonitor?
     @State private var externalMonitor: FolderMonitor?
+    @State private var externalLibraryMonitor: FolderMonitor?
 
     // Monitor 防抖：合并两个 monitor 的扫描请求
     @State private var monitorRescanDebouncer = RescanDebouncer()
@@ -1699,7 +1700,7 @@ struct ContentView: View {
 
     func performMoveOutWholeSymlink(_ app: AppItem) {
         guard let dest = externalDriveURL else { return }
-        let destURL = dest.appendingPathComponent(app.name)
+        let destURL = AppSearchExclusionService.destination(for: app, in: dest)
         AppLogger.shared.logContext(
             "用户请求传统链接迁移",
             details: [("app_name", app.displayName), ("destination", destURL.path)]
@@ -2054,14 +2055,9 @@ struct ContentView: View {
                     progressFileName = ""
                 }
                 
-                // App Store 应用 + macOS >= 15.1 → 迁移到外部磁盘的 Applications 目录
-                let destURL: URL
+                let destURL = AppSearchExclusionService.destination(for: app, in: destination)
                 if app.isAppStoreApp && AppMigrationService.isMASExternalInstallSupported {
-                    let masDir = AppMigrationService.masApplicationsURL(for: destination)
-                    try? fileManager.createDirectory(at: masDir, withIntermediateDirectories: true)
-                    destURL = masDir.appendingPathComponent(app.name)
-                } else {
-                    destURL = destination.appendingPathComponent(app.name)
+                    try? fileManager.createDirectory(at: destURL.deletingLastPathComponent(), withIntermediateDirectories: true)
                 }
                 AppLogger.shared.logContext(
                     "批量迁移单项开始",
@@ -2751,6 +2747,8 @@ struct ContentView: View {
 
     func startMonitoringExternal(url: URL) {
         externalMonitor?.stopMonitoring()
+        externalLibraryMonitor?.stopMonitoring()
+        externalLibraryMonitor = nil
         AppLogger.shared.logContext("启动外部目录监控", details: [("path", url.path)])
 
         let monitor = FolderMonitor(url: url)
@@ -2758,6 +2756,12 @@ struct ContentView: View {
             scheduleMonitorRescan(local: false)
         }
         self.externalMonitor = monitor
+        let library = AppSearchExclusionService.library(in: url)
+        if library != url, FileManager.default.fileExists(atPath: library.path) {
+            let libraryMonitor = FolderMonitor(url: library)
+            libraryMonitor.startMonitoring { [self] in scheduleMonitorRescan(local: false) }
+            externalLibraryMonitor = libraryMonitor
+        }
     }
 
     /// 统一防抖：合并两个 monitor 的扫描请求，避免列表连续跳两下
@@ -2765,6 +2769,7 @@ struct ContentView: View {
         monitorRescanDebouncer.schedule { [self] in
             Task { @MainActor in
                 AppLogger.shared.logContext("Monitor 防抖触发扫描", details: [("trigger", local ? "local" : "external")], level: "TRACE")
+                if let root = self.externalDriveURL { self.startMonitoringExternal(url: root) }
                 self.scanBothAppsAtomic()
             }
         }
@@ -2867,6 +2872,8 @@ struct ContentView: View {
     func stopMonitoringExternal() {
         AppLogger.shared.log("停止外部目录监控", level: "TRACE")
         externalMonitor?.stopMonitoring()
+        externalLibraryMonitor?.stopMonitoring()
+        externalLibraryMonitor = nil
         externalMonitor = nil
     }
 

@@ -153,6 +153,215 @@ struct AppMigrationService {
         }
     }
 
+    /// Convert an existing standalone copy on the same volume. No missing local entry is recreated.
+    func excludeFromSearch(app: AppItem, externalRoot: URL, localEntries: [URL],
+                           store: AppSearchRecordStore = .shared) async throws -> AppSearchExclusionService.Result {
+        try await Self.mutationCoordinator.begin()
+        defer { Self.mutationCoordinator.end() }
+        typealias Exclusion = AppSearchExclusionService
+        if let reason = Exclusion.unsupportedReason(for: app) { throw Exclusion.failure(reason) }
+        let source = app.path.standardizedFileURL
+        guard source.deletingLastPathComponent() == externalRoot.standardizedFileURL
+                || source.deletingLastPathComponent() == Exclusion.library(in: externalRoot).standardizedFileURL,
+              source.resolvingSymlinksInPath() == source else {
+            throw Exclusion.failure("套件目录可能包含文档，暂不自动排除。".localized)
+        }
+        try requireNotRunning(app)
+        let library = Exclusion.library(in: externalRoot)
+        try Exclusion.prepareLibrary(library, fileManager: fileManager)
+        let destination = library.appendingPathComponent(source.lastPathComponent)
+        let pending = try fileManager.contentsOfDirectory(at: library, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.hasPrefix(".appports-exclusion-") && $0.pathExtension == "json" }
+        guard pending.isEmpty else {
+            throw Exclusion.failure("存在未完成的存储转换，请先检查应用库中的恢复记录。".localized)
+        }
+        if Exclusion.isExcluded(source) { return .init(destination: source, dockSynchronized: true) }
+        guard (try? fileManager.attributesOfItem(atPath: destination.path)) == nil else {
+            throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+        }
+        guard let volume = try source.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString else {
+            throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
+        }
+        let sourceIdentity = try Exclusion.FileIdentity.read(source, fileManager: fileManager)
+        let sourcePlist = NSDictionary(contentsOf: source.appendingPathComponent("Contents/Info.plist"))
+        let bundleID = sourcePlist?["CFBundleIdentifier"] as? String
+        let records = try store.records().filter { $0.externalPath == source.path }
+        guard records.allSatisfy({ ($0.volumeUUID == nil || $0.volumeUUID == volume)
+            && ($0.targetBundleIdentifier == nil || $0.targetBundleIdentifier == bundleID) }) else {
+            throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
+        }
+        let localURLs = Set(localEntries.map { $0.standardizedFileURL.path }
+            + records.filter { !$0.isRestored }.map(\.localPath)).map { URL(fileURLWithPath: $0) }
+        var portals: [Exclusion.Journal.Portal] = []
+        var kinds: [URL: LocalPortalKind] = [:]
+        for local in localURLs.sorted(by: { $0.path < $1.path }) {
+            guard let present = AppSearchRecordStore.observedLocalPresence(at: local) else {
+                throw Exclusion.failure("无法确认真实应用身份，未更改存储位置。".localized)
+            }
+            if !present { continue }
+            guard let kind = localPortalKind(at: local, linkedTo: source),
+                  AppPortalMaintenance.matchesRememberedTarget(.init(localURL: local, externalURL: source), store: store),
+                  kind != .stubPortal || AppPortalMaintenance.targetIdentityMatches(localURL: local, externalURL: source) else {
+                throw Exclusion.failure("本地入口并未指向当前外部应用，无法自动覆盖".localized)
+            }
+            let stageRoot = local.deletingLastPathComponent().appendingPathComponent(".appports-exclusion-\(UUID().uuidString)")
+            let backup = stageRoot.appendingPathComponent("original")
+            let stage = stageRoot.appendingPathComponent(local.lastPathComponent)
+            portals.append(.init(local: local, backup: backup, stage: stage,
+                                 identity: try Exclusion.FileIdentity.read(local, fileManager: fileManager)))
+            kinds[local] = kind
+        }
+        let journalURL = library.appendingPathComponent(".appports-exclusion-\(UUID().uuidString).json")
+        var journal = Exclusion.Journal(source: source, destination: destination, sourceIdentity: sourceIdentity,
+                                       volumeUUID: volume, portals: portals)
+        try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+        let wasImmutable = (try fileManager.attributesOfItem(atPath: source.path)[.immutable] as? Bool) == true
+        var moved = false
+        var backedUp: [Exclusion.Journal.Portal] = []
+        var installed: [URL: Exclusion.FileIdentity] = [:]
+        var ownedStageRoots: [URL] = []
+        var stagedIdentities: [URL: Exclusion.FileIdentity] = [:]
+        do {
+            try requireNotRunning(app)
+            guard try Exclusion.FileIdentity.read(source, fileManager: fileManager) == sourceIdentity else {
+                throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+            }
+            if wasImmutable { try fileManager.setAttributes([.immutable: false], ofItemAtPath: source.path) }
+            try fileManager.moveItem(at: source, to: destination)
+            moved = true
+            journal.phase = "external-moved"
+            try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+            for portal in portals {
+                try fileManager.createDirectory(at: portal.stage.deletingLastPathComponent(), withIntermediateDirectories: false)
+                ownedStageRoots.append(portal.stage.deletingLastPathComponent())
+                if kinds[portal.local] == .stubPortal {
+                    try createStubPortal(at: portal.stage, pointingTo: destination, register: false)
+                } else {
+                    try createLocalPortal(at: portal.stage, pointingTo: destination, portalKind: kinds[portal.local])
+                }
+                stagedIdentities[portal.stage] = try Exclusion.FileIdentity.read(portal.stage, fileManager: fileManager)
+            }
+            var relocated = app
+            relocated.path = destination
+            relocated.bundleURL = destination
+            try requireNotRunning(relocated)
+            for portal in portals {
+                var coordinationError: NSError?
+                var mutationError: Error?
+                NSFileCoordinator().coordinate(writingItemAt: portal.local, options: .forReplacing, error: &coordinationError) { url in
+                    do {
+                        // Recheck inside coordination and after the rename. A replacement is never ours to delete.
+                        guard try Exclusion.FileIdentity.read(url, fileManager: fileManager) == portal.identity,
+                              localPortalKind(at: url, linkedTo: source) != nil else {
+                            throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                        }
+                        try fileManager.moveItem(at: url, to: portal.backup)
+                        backedUp.append(portal)
+                        guard try Exclusion.FileIdentity.read(portal.backup, fileManager: fileManager) == portal.identity else {
+                            throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                        }
+                        let newIdentity = try Exclusion.FileIdentity.read(portal.stage, fileManager: fileManager)
+                        try fileManager.moveItem(at: portal.stage, to: url)
+                        installed[portal.local] = newIdentity
+                        stagedIdentities.removeValue(forKey: portal.stage)
+                    } catch { mutationError = error }
+                }
+                if let error = mutationError ?? coordinationError { throw error }
+            }
+            guard try Exclusion.FileIdentity.read(destination, fileManager: fileManager) == sourceIdentity else {
+                throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+            }
+            if wasImmutable { try fileManager.setAttributes([.immutable: true], ofItemAtPath: destination.path) }
+            journal.phase = "portals-installed"
+            try JSONEncoder().encode(journal).write(to: journalURL, options: .atomic)
+            try store.retarget(from: source, to: destination, snapshots: records)
+        } catch {
+            var recoveryFailed = false
+            // Undo only files whose device/inode still matches our snapshot.
+            for portal in backedUp.reversed() {
+                do {
+                    if let identity = installed[portal.local] {
+                        try removeExclusionOwnedItem(at: portal.local, identity: identity)
+                    }
+                    try fileManager.moveItem(at: portal.backup, to: portal.local)
+                } catch {
+                    recoveryFailed = true
+                    AppLogger.shared.logError("恢复原应用入口失败，保留恢复记录", error: error, relatedURLs: [("backup", portal.backup)])
+                }
+            }
+            if moved {
+                do {
+                    guard (try? Exclusion.FileIdentity.read(destination, fileManager: fileManager)) == sourceIdentity else {
+                        throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                    }
+                    if wasImmutable { try fileManager.setAttributes([.immutable: false], ofItemAtPath: destination.path) }
+                    try fileManager.moveItem(at: destination, to: source)
+                } catch {
+                    recoveryFailed = true
+                    AppLogger.shared.logError("恢复外部应用位置失败，保留恢复记录", error: error, relatedURLs: [("journal", journalURL)])
+                }
+            }
+            if wasImmutable, (try? Exclusion.FileIdentity.read(source, fileManager: fileManager)) == sourceIdentity {
+                do { try fileManager.setAttributes([.immutable: true], ofItemAtPath: source.path) }
+                catch { recoveryFailed = true }
+            }
+            if !recoveryFailed {
+                for (stage, identity) in stagedIdentities {
+                    do { try removeExclusionOwnedItem(at: stage, identity: identity) }
+                    catch { recoveryFailed = true }
+                }
+                for stageRoot in ownedStageRoots {
+                    // Never recursively remove a staging directory: it may contain a new user file.
+                    if rmdir(stageRoot.path) != 0 { recoveryFailed = true }
+                }
+                if !recoveryFailed { try? fileManager.removeItem(at: journalURL) }
+            }
+            if recoveryFailed {
+                throw Exclusion.failure(String(format: "转换未完成，已保留应用和恢复记录：%@".localized, journalURL.path))
+            }
+            throw error
+        }
+        // The record write is the commit point. Cleanup/Dock failures must not roll back a committed path.
+        for portal in portals {
+            do { try removeExclusionOwnedItem(at: portal.backup, identity: portal.identity) }
+            catch { AppLogger.shared.logError("已完成转换，入口备份清理失败", error: error, relatedURLs: [("backup", portal.backup)]) }
+            _ = rmdir(portal.stage.deletingLastPathComponent().path)
+            refreshLaunchServices(for: portal.local)
+            NotificationCenter.default.post(name: .appPortalPresentationDidChange, object: portal.local)
+        }
+        try? fileManager.removeItem(at: journalURL)
+        let dockOK = synchronizeDockShortcuts(from: source, to: destination,
+                                              operationID: AppLogger.shared.makeOperationID(prefix: "search-exclusion"))
+        return .init(destination: destination, dockSynchronized: dockOK)
+    }
+
+    /// Isolate the actual object before deletion; a concurrent replacement is restored or preserved.
+    private func removeExclusionOwnedItem(at url: URL, identity: AppSearchExclusionService.FileIdentity) throws {
+        typealias Exclusion = AppSearchExclusionService
+        let quarantine = url.deletingLastPathComponent().appendingPathComponent(".appports-cleanup-\(UUID().uuidString)")
+        var coordinationError: NSError?
+        var removalError: Error?
+        NSFileCoordinator().coordinate(writingItemAt: url, options: .forDeleting, error: &coordinationError) { coordinated in
+            do {
+                guard try Exclusion.FileIdentity.read(coordinated, fileManager: fileManager) == identity else {
+                    throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                }
+                try fileManager.moveItem(at: coordinated, to: quarantine)
+                guard try Exclusion.FileIdentity.read(quarantine, fileManager: fileManager) == identity else {
+                    // moveItem refuses to overwrite a file that appeared at the original path.
+                    try fileManager.moveItem(at: quarantine, to: coordinated)
+                    throw Exclusion.failure("应用存储路径存在冲突或已改变，未执行操作。".localized)
+                }
+                try fileManager.removeItem(at: quarantine)
+            } catch {
+                removalError = error
+                AppLogger.shared.logError("清理入口时身份改变或删除失败，保留文件", error: error,
+                                          relatedURLs: [("original", url), ("quarantine", quarantine)])
+            }
+        }
+        if let error = removalError ?? coordinationError { throw error }
+    }
+
     func moveAndLink(
         appToMove: AppItem,
         destinationURL: URL,
@@ -163,6 +372,12 @@ struct AppMigrationService {
     ) async throws {
         try await Self.mutationCoordinator.begin()
         defer { Self.mutationCoordinator.end() }
+        if AppSearchExclusionService.isExcluded(destinationURL) {
+            if let reason = AppSearchExclusionService.unsupportedReason(for: appToMove) {
+                throw AppSearchExclusionService.failure(reason)
+            }
+            try AppSearchExclusionService.prepareLibrary(destinationURL.deletingLastPathComponent(), fileManager: fileManager)
+        }
         let operationID = AppLogger.shared.makeOperationID(prefix: "app-move")
         let startedAt = Date()
         var operationResult = "failed"

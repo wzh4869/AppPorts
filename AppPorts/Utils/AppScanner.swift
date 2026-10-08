@@ -797,9 +797,7 @@ actor AppScanner {
         guard let externalAppsDir else { return nil }
 
         var index = ExternalComparisonIndex()
-        let fileManager = FileManager.default
-        let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey]
-        let items = (try? fileManager.contentsOfDirectory(at: externalAppsDir, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)) ?? []
+        let items = AppSearchExclusionService.applicationItems(in: externalAppsDir)
 
         func addComparable(bundleURL: URL, containerURL: URL) {
             let bundleID = readBundleIdentifier(from: bundleURL)
@@ -929,7 +927,7 @@ actor AppScanner {
         let fileManager = FileManager.default
         var candidates: [ScanCandidate] = []
         let keys: [URLResourceKey] = [.isSymbolicLinkKey, .isDirectoryKey]
-        let items = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)) ?? []
+        let items = AppSearchExclusionService.applicationItems(in: dir)
 
         for itemURL in items {
             if itemURL.pathExtension == "app" {
@@ -942,6 +940,7 @@ actor AppScanner {
                    isLocalApp(localAppURL, linkedTo: itemURL) {
                     status = AppStatus.linked
                 }
+                let (isAppStore, isIOS) = detectAppStoreAndIOSApp(at: itemURL)
                 let signing = checkSigningStatus(bundleURL: itemURL)
                 let (isElectron, isSparkle) = detectElectronAndSparkle(at: itemURL)
                 let hasUpdater = isSparkle || (isElectron && hasElectronUpdater(at: itemURL)) || hasCustomUpdater(at: itemURL)
@@ -953,6 +952,8 @@ actor AppScanner {
                     status: status,
                     isSystemApp: false,
                     isRunning: false,
+                    isAppStoreApp: isAppStore,
+                    isIOSApp: isIOS,
                     isResigned: signing.isResigned,
                     signatureReplaced: signing.signatureReplaced,
                     signatureCheckUnavailable: signing.signatureCheckUnavailable,

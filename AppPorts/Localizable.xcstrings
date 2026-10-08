@@ -131373,6 +131373,834 @@
           }
         }
       }
+    },
+    "套件目录可能包含文档，暂不自动排除。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套件目录可能包含文档，暂不自动排除。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套件目錄可能包含文件，暫不自動排除。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suite folders may contain documents and are not excluded automatically."
+          }
+        }
+      }
+    },
+    "App Store 和 iOS 应用保留原安装路径，暂不自动排除。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 和 iOS 应用保留原安装路径，暂不自动排除。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 和 iOS App 保留原安裝路徑，暫不自動排除。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App Store and iOS apps keep their installation paths and are not excluded automatically."
+          }
+        }
+      }
+    },
+    "无法确认真实应用身份，未更改存储位置。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法确认真实应用身份，未更改存储位置。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法確認真實 App 身分，未更改儲存位置。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The app identity could not be verified. Its location was not changed."
+          }
+        }
+      }
+    },
+    "应用存储路径存在冲突或已改变，未执行操作。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用存储路径存在冲突或已改变，未执行操作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 儲存路徑存在衝突或已改變，未執行操作。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An app storage path conflicts or has changed. The operation was stopped."
+          }
+        }
+      }
+    },
+    "应用记录已改变，请重新扫描后重试。" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用记录已改变，请重新扫描后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 記錄已改變，請重新掃描後重試。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App records have changed. Rescan and try again."
+          }
+        }
+      }
+    },
+    "转换未完成，已保留应用和恢复记录：%@" : {
+      "extractionState" : "manual",
+      "comment" : "Search exclusion. English fallback for locales other than English and Simplified/Traditional Chinese; translations pending review.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换未完成，已保留应用和恢复记录：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換未完成，已保留 App 和復原記錄：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relocation did not finish. The app and recovery record were preserved: %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

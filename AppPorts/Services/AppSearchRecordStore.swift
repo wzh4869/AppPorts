@@ -129,6 +129,19 @@ final class AppSearchRecordStore: @unchecked Sendable {
         }
     }
 
+    /// Commit path changes only after all surviving portals have been installed. Deleted portals stay deleted.
+    func retarget(from source: URL, to destination: URL, snapshots: [AppSearchRecord]) throws {
+        try mutate { records in
+            let current = records.filter { $0.externalPath == source.path }
+            guard current == snapshots else {
+                throw AppSearchExclusionService.failure("应用记录已改变，请重新扫描后重试。".localized)
+            }
+            for index in records.indices where records[index].externalPath == source.path {
+                records[index].externalPath = destination.path
+            }
+        }
+    }
+
     private func read() throws -> [AppSearchRecord] {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return [] }
         return try JSONDecoder().decode([AppSearchRecord].self, from: Data(contentsOf: fileURL))
