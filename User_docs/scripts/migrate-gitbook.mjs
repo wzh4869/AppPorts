@@ -378,6 +378,7 @@ for (const locale of locales) {
   }
   generated.set(`${locale.directory}/.gitbook.yaml`, yaml.dump({ root: "./", structure: { readme: "README.md", summary: "SUMMARY.md" }, redirects }, { lineWidth: -1 }));
   generated.set(`${locale.directory}/.gitbook/assets/logo.png`, readFileSync(join(docs, "public/logo.png")));
+  generated.set(`${locale.directory}/.gitbook/assets/home-cover.svg`, readFileSync(join(project, "scripts/assets/home-cover.svg")));
 }
 
 for (const [filename, content] of generated) {
@@ -482,6 +483,7 @@ for (const locale of locales) {
       const { data, content: body } = matter(content);
       if (data.description !== undefined && typeof data.description !== "string") failures.push(`Invalid page description in ${filename}`);
       if (data.icon !== undefined && typeof data.icon !== "string") failures.push(`Invalid page icon in ${filename}`);
+      if (typeof data.cover === "string") validateBodyTarget(data.cover, filename, localeRoot, settings.redirects ?? {}, importedSpaces, failures);
       validateNativeBlocks(body, filename, failures);
     } catch (error) { failures.push(`${filename}: ${error.message}`); }
     transformBodyLinks(content, (url) => {

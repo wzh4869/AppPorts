@@ -26,15 +26,17 @@ npm run docs:gitbook:check
 
 ### GitBook 原生排版
 
-GitBook 版式由 `scripts/gitbook-design.mjs` 统一定义，参考 [Cherry Studio 文档](https://docs.cherryai.com.cn/) 的品牌色顶栏，以及 [Bruno 文档](https://docs.usebruno.com/) 的紧凑字标、文字首页与导航卡片，使用 AppPorts 的蓝紫色品牌方案。
+GitBook 版式由 `scripts/gitbook-design.mjs` 统一定义，首页参考 [GitBook 官方文档](https://gitbook.com/docs) 的介绍区、提问框、居中分区标题和多链接卡片；顶栏沿用参考 [Cherry Studio 文档](https://docs.cherryai.com.cn/) 的蓝紫色品牌方案。
 
-- 八语首页隐藏重复的页面标题和简介展示，以原有口号、本地化介绍、操作按钮开场，再用二级标题组织实用导航卡和功能卡；卡片可整块点击，功能说明保持原意。源文件仍保留 `# AppPorts`，用于页面标题和导航。
+- 八语首页以原有口号、本地化介绍、GitBook 原生提问框和操作按钮开场，再用居中标题组织四组卡片：开始使用、存储与日常维护、核心功能、继续探索。场景与维护卡内提供多个独立文档入口，功能与资源卡可整块点击；原三项功能说明完整保留。源文件仍保留 `# AppPorts`，用于页面标题和导航。
+- 首页新增文案集中在 `scripts/gitbook-homepage-copy.mjs`。原口号锚点逐字保留，原两个分区沿用已导入的标题 ID，新分区和卡片标题使用稳定 ID，避免非拉丁文字的自动编号变化。
+- `scripts/assets/home-cover.svg` 是透明蓝紫色封面的源文件，导出器将它复制到八个 Space 的 `.gitbook/assets/`。首页通过 `layout.cover.size: background` 显示右上装饰，不占用独立横幅位置；它适用于浅色和深色主题。更换源图时同步更新八份资产。原生提问框依赖站点已启用的 Assistant。
 - 40 个主题目录采用带图标和简介的导航卡；首页与目录使用宽版并隐藏右侧提纲、分页和更新信息。
 - 正文使用正常阅读宽度，统一页面图标；主要指南补充本地化简介，长文保留右侧提纲。
 - 八语快速开始使用 GitBook `stepper` 展示下载、安装和授权三个步骤；App Store 授权说明、图片和警告继续直接显示。
 - 页面路径、`SUMMARY.md` 层级、标题锚点、代码示例和 Mermaid 不随排版调整改变。
 
-导出器会对新生成页面应用这些模板，仍不会覆盖已存在的编辑内容。调整模板后，应先导出到新的临时目录、解析链接并检查差异，再合入需要更新的页面。校验同时检查 frontmatter、GitBook 块配对、卡片和正文链接目标，以及迁移时保留的代码块和锚点。
+导出器会对新生成页面应用这些模板，仍不会覆盖已存在的编辑内容。调整模板后，应先导出到新的临时目录、解析链接并检查差异，再合入需要更新的页面。校验同时检查 frontmatter、封面文件、GitBook 块配对、卡片和正文链接目标，以及迁移时保留的代码块和锚点。
 
 站点的配色、侧栏、标志和顶栏链接记录在 `gitbook/site-theme.json`，由 GitBook 站点设置管理。Git Sync 不会自动应用此文件；调整时通过 CLI 读取现有设置并合并这些设计字段，再提交完整设置，保留其他站点选项。
 

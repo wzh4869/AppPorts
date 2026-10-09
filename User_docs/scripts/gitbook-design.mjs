@@ -1,6 +1,7 @@
 import { posix } from "node:path";
 import matter from "gray-matter";
 import yaml from "js-yaml";
+import { homepageCopy } from "./gitbook-homepage-copy.mjs";
 
 // File paths are shared by the eight spaces; titles and published routes are not.
 const icons = {
@@ -347,12 +348,45 @@ function featureCard(titleHTML, descriptionHTML, href) {
   };
 }
 
-function finishHomepage(body, translation) {
-  // Keep native buttons in one paragraph so they share a row and can wrap naturally.
-  const button = '<a\\b[^>\\n]*\\bclass="button (?:primary|secondary)"[^>\\n]*>[^\\n]*<\\/a>';
-  body = body.replace(new RegExp(`^(${button})[ \\t]*\\n(?:[ \\t]*\\n)*(${button})$`, "m"), "$1 $2");
+// Keep the imported IDs of the two existing homepage sections, including Korean
+// IDs that GitBook derived as "undefined-N" before the new card headings existed.
+const homepageSectionIds = {
+  "zh-Hans": ["cong-zhe-li-kai-shi", "tan-suo-he-xin-gong-neng"],
+  en: ["start-here", "explore-the-core-features"],
+  "zh-Hant": ["cong-zhe-li-kai-shi", "tan-suo-he-xin-gong-neng"],
+  ja: ["kokokarameru", "naworu"],
+  ko: ["undefined-1", "undefined-2"],
+  de: ["hier-beginnen", "die-kernfunktionen-entdecken"],
+  fr: ["commencer-ici", "decouvrir-les-fonctions-principales"],
+  es: ["empieza-aqui", "explora-las-funciones-principales"],
+};
 
-  // Also upgrade the exact iconless feature table emitted by the first design revision.
+function homeHeading(level, title, id, centered = false) {
+  return `<h${level}${centered ? ' align="center"' : ""}>${html(title)} <a href="#${id}" id="${id}"></a></h${level}>`;
+}
+
+function homeSection(title, description, id) {
+  return [homeHeading(3, title, id, true), description && `<p align="center">${html(description)}</p>`].filter(Boolean).join("\n\n");
+}
+
+// Native multi-link cards keep each guide independently accessible. A hidden
+// card target is reserved for cards that have only one destination.
+function guideCards(rows, cardIcons, prefix) {
+  return [
+    '<table data-view="cards">',
+    '<thead><tr><th width="48"></th><th></th><th></th><th></th><th></th><th></th></tr></thead>',
+    "<tbody>",
+    ...rows.map((row, index) => {
+      const links = row.links.map(({ href, label }) => `<td><a data-mention href="${html(href)}">${html(label)}</a></td>`).join("");
+      return `<tr><td><i class="fa-${cardIcons[index]}"></i></td><td>${homeHeading(4, row.title, `${prefix}-${index + 1}`)}</td><td>${html(row.description)}</td>${links}</tr>`;
+    }),
+    "</tbody>",
+    "</table>",
+  ].join("\n");
+}
+
+function finishHomepage(body, translation, language) {
+  // Upgrade the iconless feature table emitted by the first design revision.
   body = body.replace(/<table data-view="cards">\n<thead><tr><th><\/th><th><\/th><th data-hidden data-card-target data-type="content-ref"><\/th><\/tr><\/thead>\n<tbody>\n([\s\S]*?)\n<\/tbody>\n<\/table>/g, (table, rows) => {
     const pattern = /<tr><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><td><a href="([^"]*)">[^<]*<\/a><\/td><\/tr>/g;
     const features = [...rows.matchAll(pattern)];
@@ -360,26 +394,47 @@ function finishHomepage(body, translation) {
     return cardTable(features.map((feature) => featureCard(feature[1], feature[2], feature[3])));
   });
 
-  // Upgrade the existing section labels without adding a second set on later exports.
-  body = body.replace(/^\*\*([^\n]+)\*\*[ \t]*$/gm, (line, label) =>
-    translation.labels.includes(label) ? `## ${label}` : line);
+  const tables = [...body.matchAll(/<table\b[^>]*\bdata-view="cards"[^>]*>[\s\S]*?<\/table>/g)];
+  const features = tables.filter(([table]) => /\bdata-card-target\b/.test(table)
+    && featureTargets.every((target) => table.includes(`href="${target}"`)));
+  if (features.length !== 1) throw new Error("Expected one original feature table in the GitBook homepage");
+  const title = body.match(/^# .+$/m)?.[0];
+  const slogan = [...body.matchAll(/^## .+$/gm)].find(([heading]) => !translation.labels.some((label) => heading === `## ${label}`))?.[0];
+  const buttons = [...body.matchAll(/<a\b[^>]*\bclass="button (?:primary|secondary)"[^>]*>[^\n]*?<\/a>/g)].map(([button]) => button);
+  if (!title || !slogan || buttons.length !== 2) throw new Error("Expected the original homepage title, slogan, and two actions");
 
-  // Move the localized page description below the original slogan. Restrict this
-  // normalization to the introduction so card content and links stay untouched.
-  const firstCard = body.search(/<table\b[^>]*\bdata-view=["']cards["']/);
-  if (firstCard < 0) throw new Error("Expected navigation cards in the GitBook homepage");
-  const description = translation.home;
-  const introduction = body.slice(0, firstCard).trim().split(/\n[ \t]*\n/)
-    .filter((block) => block.replace(/\s+/g, " ").trim() !== description);
-  const slogan = introduction.findIndex((block) => /^##[ \t]+/.test(block)
-    && !translation.labels.some((label) => block.trim() === `## ${label}`));
-  if (slogan < 0) throw new Error("Expected the original slogan in the GitBook homepage");
-  introduction.splice(slogan + 1, 0, description);
-  return `${introduction.join("\n\n")}\n\n${body.slice(firstCard)}`;
+  const home = homepageCopy[language];
+  const sectionIds = homepageSectionIds[language];
+  const lastTable = tables.at(-1);
+  const appendix = body.slice(lastTable.index + lastTable[0].length).trim();
+  const more = home.more.map((row, index) => ({
+    icon: icons[row.href], href: row.href,
+    titleHTML: homeHeading(4, row.title, `explore-${index + 1}`),
+    descriptionHTML: html(row.description),
+  }));
+  return [
+    title,
+    slogan,
+    translation.home,
+    `<button type="button" class="button primary" data-action="ask" data-icon="gitbook-assistant">${html(home.ask)}</button>`,
+    buttons.join(" "),
+    homeSection(translation.labels[0], home.startIntro, sectionIds[0]),
+    guideCards(home.journeys, ["rocket", "layer-group", "database"], "start"),
+    "***",
+    homeSection(home.careTitle, home.careIntro, "storage-and-maintenance"),
+    guideCards(home.care, ["hard-drive", "arrows-rotate", "life-ring"], "maintain"),
+    "***",
+    homeSection(translation.labels[1], home.featuresIntro, sectionIds[1]),
+    features[0][0],
+    "***",
+    homeSection(home.moreTitle, "", "keep-exploring"),
+    cardTable(more),
+    appendix,
+  ].filter(Boolean).join("\n\n") + "\n";
 }
 
-function homepage(body, translation, oldDescription) {
-  if (/\bdata-card-target\b/.test(body)) return finishHomepage(body, translation);
+function homepage(body, translation, language) {
+  if (/\bdata-card-target\b/.test(body)) return finishHomepage(body, translation, language);
   const table = body.match(/<table data-view="cards"><thead><tr><th><\/th><th><\/th><\/tr><\/thead><tbody>([\s\S]*?)<\/tbody><\/table>/);
   if (!table) throw new Error("Expected the three feature cards in the exported GitBook homepage");
   const rowPattern = /<tr><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><\/tr>/g;
@@ -387,24 +442,8 @@ function homepage(body, translation, oldDescription) {
   if (features.length !== 3 || table[1].replace(rowPattern, "").trim()) {
     throw new Error("Expected exactly three feature rows in the exported GitBook homepage");
   }
-  const prefix = body.slice(0, table.index).split(/\n{2,}/).filter((block) => {
-    if (/^<figure><img src="[^"]*logo\.png" alt="[^"]*" width="160"><figcaption><\/figcaption><\/figure>$/.test(block.trim())) return false;
-    return block.trim() !== String(oldDescription ?? "").trim();
-  }).join("\n\n").trim();
-  const shortcuts = ["faststart.md", "storage-guide.md", "troubleshooting.md"].map((href, index) => ({
-    icon: icons[href], href,
-    titleHTML: `<strong>${html(translation.navigation[index])}</strong>`,
-    descriptionHTML: html(descriptionFor(href, translation)),
-  }));
   const featureCards = features.map((feature, index) => featureCard(feature[1], feature[2], featureTargets[index]));
-  return finishHomepage([
-    prefix,
-    `## ${translation.labels[0]}`,
-    cardTable(shortcuts),
-    `## ${translation.labels[1]}`,
-    cardTable(featureCards),
-    body.slice(table.index + table[0].length).trim(),
-  ].filter(Boolean).join("\n\n") + "\n", translation);
+  return finishHomepage(body.slice(0, table.index) + cardTable(featureCards) + body.slice(table.index + table[0].length), translation, language);
 }
 
 function pageForLink(href, target) {
@@ -489,7 +528,7 @@ export function applyGitBookDesign(content, { locale, target }) {
   let body = parsed.content;
   const isHome = target === "README.md";
   const isGroup = target.endsWith("/README.md") && Object.hasOwn(translation.groups, posix.dirname(target));
-  if (isHome) body = homepage(body, translation, metadata.description);
+  if (isHome) body = homepage(body, translation, key);
   else if (isGroup) body = groupHomepage(body, target, translation);
   else if (target === "faststart.md") body = quickstart(body);
 
@@ -499,6 +538,9 @@ export function applyGitBookDesign(content, { locale, target }) {
   const layout = { ...metadata.layout, width: isHome || isGroup ? "wide" : "default" };
   layout.outline = { ...layout.outline, visible: !(isHome || isGroup) };
   if (isHome) {
+    metadata.cover = ".gitbook/assets/home-cover.svg";
+    metadata.coverY = 0;
+    layout.cover = { ...layout.cover, visible: true, size: "background" };
     layout.title = { ...layout.title, visible: false };
     layout.description = { ...layout.description, visible: false };
   }

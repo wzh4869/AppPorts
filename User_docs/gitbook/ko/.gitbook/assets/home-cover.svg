@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1990" height="480" viewBox="0 0 1990 480" fill="none">
+  <defs>
+    <linearGradient id="outer" x1="1430" y1="-40" x2="1980" y2="365" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B8C4FF"/>
+      <stop offset=".38" stop-color="#7979ED"/>
+      <stop offset="1" stop-color="#5B5BD6"/>
+    </linearGradient>
+    <linearGradient id="middle" x1="1535" y1="-90" x2="1940" y2="315" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D0DAFF"/>
+      <stop offset=".43" stop-color="#919DFA"/>
+      <stop offset="1" stop-color="#7473E9"/>
+    </linearGradient>
+    <linearGradient id="inner" x1="1650" y1="-55" x2="2010" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B9C5FF"/>
+      <stop offset=".5" stop-color="#8D89F1"/>
+      <stop offset="1" stop-color="#5756C8"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="1460" y1="10" x2="1945" y2="350" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E1E7FF" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#A5A3FF" stop-opacity=".08"/>
+    </linearGradient>
+  </defs>
+  <!-- Transparent left side keeps the heading readable in either page theme. -->
+  <path d="M1418-95C1467 97 1570 225 1739 305C1836 351 1937 372 2038 370V-95H1418Z" fill="url(#outer)"/>
+  <path d="M1487-101C1530 86 1620 208 1776 276C1864 315 1953 326 2038 317V-101H1487Z" fill="url(#middle)"/>
+  <path d="M1580-98C1619 63 1690 164 1811 227C1888 267 1968 281 2038 268V-98H1580Z" fill="url(#inner)"/>
+  <path d="M1678-94C1705 30 1761 112 1850 162C1910 196 1977 210 2038 198V-94H1678Z" fill="url(#outer)"/>
+  <path d="M1792-99C1807 2 1842 61 1903 99C1946 126 1994 139 2038 132V-99H1792Z" fill="url(#middle)"/>
+  <path d="M1418-95C1467 97 1570 225 1739 305C1836 351 1937 372 2038 370" stroke="url(#edge)" stroke-width="3"/>
+  <path d="M1487-101C1530 86 1620 208 1776 276C1864 315 1953 326 2038 317" stroke="url(#edge)" stroke-width="2"/>
+  <path d="M1580-98C1619 63 1690 164 1811 227C1888 267 1968 281 2038 268" stroke="url(#edge)" stroke-width="2"/>
+  <path d="M1678-94C1705 30 1761 112 1850 162C1910 196 1977 210 2038 198" stroke="url(#edge)" stroke-width="2"/>
+</svg>
