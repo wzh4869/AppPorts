@@ -8,6 +8,10 @@ layout:
     visible: false
   metadata:
     visible: false
+  title:
+    visible: false
+  description:
+    visible: false
 icon: "book-open"
 ---
 
@@ -15,9 +19,11 @@ icon: "book-open"
 
 ## App Migration Tool <a href="#app-migration-tool" id="app-migration-tool"></a>
 
+Your macOS guide to installing AppPorts, moving apps and data, and everyday maintenance.
+
 <a href="faststart.md" class="button primary">Get Started</a> <a href="AppPorts.md" class="button secondary">Introduction</a>
 
-**Start here**
+## Start here
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>
@@ -28,7 +34,7 @@ icon: "book-open"
 </tbody>
 </table>
 
-**Explore the core features**
+## Explore the core features
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>

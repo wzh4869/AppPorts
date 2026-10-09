@@ -8,6 +8,10 @@ layout:
     visible: false
   metadata:
     visible: false
+  title:
+    visible: false
+  description:
+    visible: false
 icon: "book-open"
 ---
 
@@ -15,9 +19,11 @@ icon: "book-open"
 
 ## 外接硬碟拯救世界 <a href="#外接硬碟拯救世界" id="外接硬碟拯救世界"></a>
 
+安裝、遷移與日常維護：AppPorts 的 macOS 使用指南。
+
 <a href="faststart.md" class="button primary">快速開始</a> <a href="AppPorts.md" class="button secondary">簡介</a>
 
-**從這裡開始**
+## 從這裡開始
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>
@@ -28,7 +34,7 @@ icon: "book-open"
 </tbody>
 </table>
 
-**探索核心功能**
+## 探索核心功能
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>

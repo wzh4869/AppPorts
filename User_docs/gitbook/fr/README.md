@@ -8,6 +8,10 @@ layout:
     visible: false
   metadata:
     visible: false
+  title:
+    visible: false
+  description:
+    visible: false
 icon: "book-open"
 ---
 
@@ -15,9 +19,11 @@ icon: "book-open"
 
 ## Les disques externes sauvent le monde <a href="#les-disques-externes-sauvent-le-monde" id="les-disques-externes-sauvent-le-monde"></a>
 
+Le guide macOS pour installer AppPorts, migrer vos apps et données et les gérer au quotidien.
+
 <a href="faststart.md" class="button primary">Démarrage rapide</a> <a href="AppPorts.md" class="button secondary">Introduction</a>
 
-**Commencer ici**
+## Commencer ici
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>
@@ -28,7 +34,7 @@ icon: "book-open"
 </tbody>
 </table>
 
-**Découvrir les fonctions principales**
+## Découvrir les fonctions principales
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>

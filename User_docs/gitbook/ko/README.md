@@ -8,6 +8,10 @@ layout:
     visible: false
   metadata:
     visible: false
+  title:
+    visible: false
+  description:
+    visible: false
 icon: "book-open"
 ---
 
@@ -15,9 +19,11 @@ icon: "book-open"
 
 ## 외장 드라이브가 세상을 구합니다 <a href="#외장-드라이브가-세상을-구합니다" id="외장-드라이브가-세상을-구합니다"></a>
 
+AppPorts 설치부터 앱과 데이터 마이그레이션, 일상적인 관리까지 안내합니다.
+
 <a href="faststart.md" class="button primary">빠른 시작</a> <a href="AppPorts.md" class="button secondary">소개</a>
 
-**여기에서 시작하세요**
+## 여기에서 시작하세요
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>
@@ -28,7 +34,7 @@ icon: "book-open"
 </tbody>
 </table>
 
-**핵심 기능 살펴보기**
+## 핵심 기능 살펴보기
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>

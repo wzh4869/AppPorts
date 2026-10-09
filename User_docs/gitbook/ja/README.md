@@ -8,6 +8,10 @@ layout:
     visible: false
   metadata:
     visible: false
+  title:
+    visible: false
+  description:
+    visible: false
 icon: "book-open"
 ---
 
@@ -15,9 +19,11 @@ icon: "book-open"
 
 ## 外部ドライブで世界を救う <a href="#外部ドライブで世界を救う" id="外部ドライブで世界を救う"></a>
 
+AppPorts のインストールからアプリ・データの移行、日常のメンテナンスまで。
+
 <a href="faststart.md" class="button primary">クイックスタート</a> <a href="AppPorts.md" class="button secondary">はじめに</a>
 
-**ここから始める**
+## ここから始める
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>
@@ -28,7 +34,7 @@ icon: "book-open"
 </tbody>
 </table>
 
-**主な機能を知る**
+## 主な機能を知る
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>

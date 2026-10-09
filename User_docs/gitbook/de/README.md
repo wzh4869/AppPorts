@@ -8,6 +8,10 @@ layout:
     visible: false
   metadata:
     visible: false
+  title:
+    visible: false
+  description:
+    visible: false
 icon: "book-open"
 ---
 
@@ -15,9 +19,11 @@ icon: "book-open"
 
 ## Externe Laufwerke retten die Welt <a href="#externe-laufwerke-retten-die-welt" id="externe-laufwerke-retten-die-welt"></a>
 
+Der macOS-Leitfaden für Installation, Migration und den Alltag mit AppPorts.
+
 <a href="faststart.md" class="button primary">Schnellstart</a> <a href="AppPorts.md" class="button secondary">Einführung</a>
 
-**Hier beginnen**
+## Hier beginnen
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>
@@ -28,7 +34,7 @@ icon: "book-open"
 </tbody>
 </table>
 
-**Die Kernfunktionen entdecken**
+## Die Kernfunktionen entdecken
 
 <table data-view="cards">
 <thead><tr><th width="48"></th><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead>

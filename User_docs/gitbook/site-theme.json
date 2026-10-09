@@ -14,7 +14,8 @@
       "list": "pill"
     },
     "links": "accent",
-    "corners": "rounded"
+    "corners": "rounded",
+    "search": "subtle"
   },
   "favicon": {
     "icon": {
@@ -24,6 +25,10 @@
   },
   "header": {
     "preset": "default",
+    "logo": {
+      "light": "https://raw.githubusercontent.com/wzh4869/AppPorts/main/User_docs/gitbook/brand/appports-wordmark-light.png",
+      "dark": "https://raw.githubusercontent.com/wzh4869/AppPorts/main/User_docs/gitbook/brand/appports-wordmark-dark.png"
+    },
     "links": [
       {
         "title": "GitHub",
@@ -45,16 +50,16 @@
         "links": []
       },
       {
-        "title": "Download AppPorts",
+        "title": "Download",
         "localizedTitle": {
-          "en": "Download AppPorts",
-          "zh": "下载 AppPorts",
-          "zh-tw": "下載 AppPorts",
-          "ja": "AppPorts をダウンロード",
-          "ko": "AppPorts 다운로드",
-          "de": "AppPorts herunterladen",
-          "fr": "Télécharger AppPorts",
-          "es": "Descargar AppPorts"
+          "en": "Download",
+          "zh": "下载",
+          "zh-tw": "下載",
+          "ja": "ダウンロード",
+          "ko": "다운로드",
+          "de": "Download",
+          "fr": "Télécharger",
+          "es": "Descargar"
         },
         "style": "button-primary",
         "to": {

@@ -347,22 +347,39 @@ function featureCard(titleHTML, descriptionHTML, href) {
   };
 }
 
-function finishHomepage(body) {
+function finishHomepage(body, translation) {
   // Keep native buttons in one paragraph so they share a row and can wrap naturally.
   const button = '<a\\b[^>\\n]*\\bclass="button (?:primary|secondary)"[^>\\n]*>[^\\n]*<\\/a>';
   body = body.replace(new RegExp(`^(${button})[ \\t]*\\n(?:[ \\t]*\\n)*(${button})$`, "m"), "$1 $2");
 
   // Also upgrade the exact iconless feature table emitted by the first design revision.
-  return body.replace(/<table data-view="cards">\n<thead><tr><th><\/th><th><\/th><th data-hidden data-card-target data-type="content-ref"><\/th><\/tr><\/thead>\n<tbody>\n([\s\S]*?)\n<\/tbody>\n<\/table>/g, (table, rows) => {
+  body = body.replace(/<table data-view="cards">\n<thead><tr><th><\/th><th><\/th><th data-hidden data-card-target data-type="content-ref"><\/th><\/tr><\/thead>\n<tbody>\n([\s\S]*?)\n<\/tbody>\n<\/table>/g, (table, rows) => {
     const pattern = /<tr><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><td><a href="([^"]*)">[^<]*<\/a><\/td><\/tr>/g;
     const features = [...rows.matchAll(pattern)];
     if (features.length !== 3 || rows.replace(pattern, "").trim() || features.some((feature, index) => feature[3] !== featureTargets[index])) return table;
     return cardTable(features.map((feature) => featureCard(feature[1], feature[2], feature[3])));
   });
+
+  // Upgrade the existing section labels without adding a second set on later exports.
+  body = body.replace(/^\*\*([^\n]+)\*\*[ \t]*$/gm, (line, label) =>
+    translation.labels.includes(label) ? `## ${label}` : line);
+
+  // Move the localized page description below the original slogan. Restrict this
+  // normalization to the introduction so card content and links stay untouched.
+  const firstCard = body.search(/<table\b[^>]*\bdata-view=["']cards["']/);
+  if (firstCard < 0) throw new Error("Expected navigation cards in the GitBook homepage");
+  const description = translation.home;
+  const introduction = body.slice(0, firstCard).trim().split(/\n[ \t]*\n/)
+    .filter((block) => block.replace(/\s+/g, " ").trim() !== description);
+  const slogan = introduction.findIndex((block) => /^##[ \t]+/.test(block)
+    && !translation.labels.some((label) => block.trim() === `## ${label}`));
+  if (slogan < 0) throw new Error("Expected the original slogan in the GitBook homepage");
+  introduction.splice(slogan + 1, 0, description);
+  return `${introduction.join("\n\n")}\n\n${body.slice(firstCard)}`;
 }
 
 function homepage(body, translation, oldDescription) {
-  if (/\bdata-card-target\b/.test(body)) return finishHomepage(body);
+  if (/\bdata-card-target\b/.test(body)) return finishHomepage(body, translation);
   const table = body.match(/<table data-view="cards"><thead><tr><th><\/th><th><\/th><\/tr><\/thead><tbody>([\s\S]*?)<\/tbody><\/table>/);
   if (!table) throw new Error("Expected the three feature cards in the exported GitBook homepage");
   const rowPattern = /<tr><td>([\s\S]*?)<\/td><td>([\s\S]*?)<\/td><\/tr>/g;
@@ -382,12 +399,12 @@ function homepage(body, translation, oldDescription) {
   const featureCards = features.map((feature, index) => featureCard(feature[1], feature[2], featureTargets[index]));
   return finishHomepage([
     prefix,
-    `**${translation.labels[0]}**`,
+    `## ${translation.labels[0]}`,
     cardTable(shortcuts),
-    `**${translation.labels[1]}**`,
+    `## ${translation.labels[1]}`,
     cardTable(featureCards),
     body.slice(table.index + table[0].length).trim(),
-  ].filter(Boolean).join("\n\n") + "\n");
+  ].filter(Boolean).join("\n\n") + "\n", translation);
 }
 
 function pageForLink(href, target) {
@@ -481,6 +498,10 @@ export function applyGitBookDesign(content, { locale, target }) {
   if (description) metadata.description = description;
   const layout = { ...metadata.layout, width: isHome || isGroup ? "wide" : "default" };
   layout.outline = { ...layout.outline, visible: !(isHome || isGroup) };
+  if (isHome) {
+    layout.title = { ...layout.title, visible: false };
+    layout.description = { ...layout.description, visible: false };
+  }
   if (isHome || isGroup) {
     layout.pagination = { ...layout.pagination, visible: false };
     layout.metadata = { ...layout.metadata, visible: false };

@@ -26,9 +26,9 @@ npm run docs:gitbook:check
 
 ### GitBook 原生排版
 
-GitBook 版式由 `scripts/gitbook-design.mjs` 统一定义，参考 [Cherry Studio 文档](https://docs.cherryai.com.cn/) 的品牌色顶栏、页面图标和清楚的阅读层次，使用 AppPorts 的蓝紫色品牌方案。
+GitBook 版式由 `scripts/gitbook-design.mjs` 统一定义，参考 [Cherry Studio 文档](https://docs.cherryai.com.cn/) 的品牌色顶栏，以及 [Bruno 文档](https://docs.usebruno.com/) 的紧凑字标、文字首页与导航卡片，使用 AppPorts 的蓝紫色品牌方案。
 
-- 八语首页采用紧凑介绍、操作按钮、实用导航卡和功能卡；卡片可整块点击，功能说明保持原意。
+- 八语首页隐藏重复的页面标题和简介展示，以原有口号、本地化介绍、操作按钮开场，再用二级标题组织实用导航卡和功能卡；卡片可整块点击，功能说明保持原意。源文件仍保留 `# AppPorts`，用于页面标题和导航。
 - 40 个主题目录采用带图标和简介的导航卡；首页与目录使用宽版并隐藏右侧提纲、分页和更新信息。
 - 正文使用正常阅读宽度，统一页面图标；主要指南补充本地化简介，长文保留右侧提纲。
 - 八语快速开始使用 GitBook `stepper` 展示下载、安装和授权三个步骤；App Store 授权说明、图片和警告继续直接显示。
@@ -36,7 +36,11 @@ GitBook 版式由 `scripts/gitbook-design.mjs` 统一定义，参考 [Cherry Stu
 
 导出器会对新生成页面应用这些模板，仍不会覆盖已存在的编辑内容。调整模板后，应先导出到新的临时目录、解析链接并检查差异，再合入需要更新的页面。校验同时检查 frontmatter、GitBook 块配对、卡片和正文链接目标，以及迁移时保留的代码块和锚点。
 
-站点的配色、侧栏、标志和顶栏链接记录在 `gitbook/site-theme.json`，由 GitBook 站点设置管理。Git Sync 不会自动应用此文件；调整时通过 CLI 读取现有设置并合并这些设计字段，再提交完整设置，保留其他站点选项。标志复用已导入的 AppPorts 图片，浅色和深色模式分别使用蓝紫色与较亮的紫色。
+站点的配色、侧栏、标志和顶栏链接记录在 `gitbook/site-theme.json`，由 GitBook 站点设置管理。Git Sync 不会自动应用此文件；调整时通过 CLI 读取现有设置并合并这些设计字段，再提交完整设置，保留其他站点选项。
+
+顶栏使用 GitBook 原生 `header.logo`、紧凑搜索和本地化的 GitHub／下载入口。`gitbook/brand/` 保存 720 × 144 的透明 PNG 字标，由现有 `docs/public/logo.png` 去除透明边距后与 Arial Bold 的 AppPorts 文字组合。`light` / `dark` 指页面模式：浅色模式的深紫顶栏配白字，深色模式的浅紫顶栏配深紫字。图片使用仓库 `main` 的公开原始文件 URL；先推送图片并确认 URL 可访问，再应用站点设置。它们不依赖 Git Sync 导入未被正文引用的图片；修改图片时应更新 URL 以刷新图片缓存。
+
+这些配置遵循 [GitBook 图标、颜色和主题指南](https://gitbook.com/docs/documentation/zh/manage-your-site/customization/icons-colors-and-themes)。普通预览可能短暂保留旧主题；核验时使用 GitBook 原生自定义预览，确认其设置与站点 API 保存值一致，不通过发布站点来刷新预览。
 
 需要重新比较源文档或更新赞助名单时，导出到新的目录，再审阅和合并需要的变化：
 
