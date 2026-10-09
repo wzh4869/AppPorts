@@ -38,7 +38,7 @@ GitBook 版式由 `scripts/gitbook-design.mjs` 统一定义，参考 [Cherry Stu
 
 站点的配色、侧栏、标志和顶栏链接记录在 `gitbook/site-theme.json`，由 GitBook 站点设置管理。Git Sync 不会自动应用此文件；调整时通过 CLI 读取现有设置并合并这些设计字段，再提交完整设置，保留其他站点选项。
 
-顶栏使用 GitBook 原生 `header.logo`、紧凑搜索和本地化的 GitHub／下载入口。`gitbook/brand/` 保存 612 × 144 的透明 PNG 字标，由现有 `docs/public/logo.png` 去除透明边距后与 Arial Bold 的 AppPorts 文字组合。`light` / `dark` 指页面模式：浅色模式的深紫顶栏配白字，深色模式的浅紫顶栏配深紫字。图片使用仓库 `main` 的公开原始文件 URL；先推送图片并确认 URL 可访问，再应用站点设置。它们不依赖 Git Sync 导入未被正文引用的图片；图片 URL 的 `v` 参数取文件 SHA-256 的前 12 位，修改图片时同步更新，以刷新图片缓存。
+顶栏使用 GitBook 原生 `header.logo`、紧凑搜索和本地化的 GitHub／下载入口。`gitbook/brand/` 保存 648 × 144 的透明 PNG 字标，由现有 `docs/public/logo.png` 去除透明边距后与 Arial Bold 的 AppPorts 文字组合，右侧留白避免在窄屏上紧贴折叠菜单。`light` / `dark` 指页面模式：浅色模式的深紫顶栏配白字，深色模式的浅紫顶栏配深紫字。图片使用仓库 `main` 的公开原始文件 URL；先推送图片并确认 URL 可访问，再应用站点设置。它们不依赖 Git Sync 导入未被正文引用的图片；图片 URL 的 `v` 参数取文件 SHA-256 的前 12 位，修改图片时同步更新，以刷新图片缓存。
 
 这些配置遵循 [GitBook 图标、颜色和主题指南](https://gitbook.com/docs/documentation/zh/manage-your-site/customization/icons-colors-and-themes)。普通预览可能短暂保留旧主题；核验时使用 GitBook 原生自定义预览，确认其设置与站点 API 保存值一致，不通过发布站点来刷新预览。
 
