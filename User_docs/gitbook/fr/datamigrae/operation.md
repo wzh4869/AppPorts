@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "Suivez les étapes de migration ou de restauration des répertoires de données."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guide pratique de migration des données
 
 Cette page décrit les opérations de migration des répertoires de données. Pour les détails techniques, consultez le [fonctionnement](baseinfo.md).

@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "감지할 수 있는 도구 데이터 디렉토리를 확인합니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 도구 디렉토리 감지
 
 ![](https://pic.cdn.shimoko.com/tools.png)

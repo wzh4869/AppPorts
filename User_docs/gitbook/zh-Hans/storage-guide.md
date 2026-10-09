@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "了解外置存储的选择、格式与使用要求。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 外部存储指南
 
 外部存储的稳定性会直接影响迁移后的应用启动、数据目录访问和后续更新体验。建议优先选择性能稳定、容量充足的外置 SSD。

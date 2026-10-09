@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 핵심 기능
 
 이 페이지는 앱 패키지 마이그레이션의 핵심 기능을 다룹니다. 앱 내부 데이터 마이그레이션은 [데이터 마이그레이션](datamigrae/baseinfo.md)을 참조하세요.

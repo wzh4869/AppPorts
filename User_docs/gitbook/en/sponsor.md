@@ -1,3 +1,11 @@
+---
+icon: "heart"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Sponsor AppPorts
 
 AppPorts is completely free, open source and free of ads, with no commercial promotion of any kind. It is maintained by a single developer in his spare time and generates no revenue.

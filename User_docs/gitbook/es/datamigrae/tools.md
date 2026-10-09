@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "Consulta qué directorios de datos de herramientas se pueden detectar."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Detección de Directorios de Herramientas
 
 ![](https://pic.cdn.shimoko.com/tools.png)

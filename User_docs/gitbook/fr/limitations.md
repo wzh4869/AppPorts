@@ -1,3 +1,11 @@
+---
+icon: "triangle-exclamation"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Compatibilité et limites
 
 ## Configuration requise <a href="#configuration-requise" id="configuration-requise"></a>

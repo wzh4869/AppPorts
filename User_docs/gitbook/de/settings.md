@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Einstellungen
 
 Die Einstellungen von AppPorts öffnen Sie über das Zahnradsymbol oben rechts im Hauptfenster.

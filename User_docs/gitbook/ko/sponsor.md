@@ -1,3 +1,11 @@
+---
+icon: "heart"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # AppPorts 후원하기
 
 AppPorts는 완전 무료 오픈 소스 프로젝트이며 광고도 없고, 어떤 상업적 프로모션도 넣지 않습니다. 개인이 여가 시간에 유지 관리하는 프로젝트로 상업적 수익은 없습니다.

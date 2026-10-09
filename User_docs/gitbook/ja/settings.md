@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 設定
 
 AppPorts の設定ページは、メインウィンドウ右上の歯車アイコンから開きます。

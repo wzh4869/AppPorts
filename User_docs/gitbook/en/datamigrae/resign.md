@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Understand when re-signing applies and how crash prevention works."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Re-signing and Crash Prevention
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

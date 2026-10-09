@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "Die erkannten Datenverzeichnisse von Werkzeugen kennenlernen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Tool-Verzeichnis-Erkennung
 
 ![](https://pic.cdn.shimoko.com/tools.png)

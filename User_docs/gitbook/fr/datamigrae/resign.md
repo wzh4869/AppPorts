@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Comprenez les usages de la nouvelle signature et la prévention des plantages."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Re-signature et prévention des plantages
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

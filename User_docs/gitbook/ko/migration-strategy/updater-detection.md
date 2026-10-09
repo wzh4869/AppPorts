@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "자체 업데이트 앱의 감지와 보호 방식을 확인합니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 자체 업데이트 감지
 
 ## Electron 앱 감지 <a href="#electron-앱-감지" id="electron-앱-감지"></a>

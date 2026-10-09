@@ -1,3 +1,12 @@
+---
+icon: "rocket"
+description: "下载并安装 AppPorts，完成首次启动所需的授权。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 快速开始
 
 ## 安装 AppPorts <a href="#安装-appports" id="安装-appports"></a>
@@ -6,6 +15,9 @@
 
 1. 准备一个稳定可用的外部存储设备，例如移动硬盘或外置 SSD。
 2. Mac 运行 macOS 12.0（Monterey）或更高版本。
+
+{% stepper %}
+{% step %}
 
 ### 下载 <a href="#下载" id="下载"></a>
 
@@ -20,6 +32,10 @@
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/download.gif?sign=Xb9FOEqPxR8Q7WLixKzg5NCYcjVzmzq2eh0634xGdG0=:0)
 
 
+{% endstep %}
+
+{% step %}
+
 ### 安装并启动 <a href="#安装并启动" id="安装并启动"></a>
 
 1. 打开下载好的 `.dmg` 安装包。
@@ -28,6 +44,10 @@
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/install.gif?sign=dg-gU67tz19m6DGdI3NywEAcuqKnyTpWGas0YhZeGfM=:0)
 
+
+{% endstep %}
+
+{% step %}
 
 ### 必要授权 <a href="#必要授权" id="必要授权"></a>
 
@@ -39,6 +59,9 @@
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/outh.gif?sign=fTXqbKCR_tZBKDb6p1DziuJYjD9NZAJk-Zsw7c4oOJM=:0)
    
+{% endstep %}
+{% endstepper %}
+
 #### App Store 应用自更新授权 <a href="#app-store-应用自更新授权" id="app-store-应用自更新授权"></a>
 
 如果使用 macOS 15.1（Sequoia）或更高版本，并希望 App Store 应用安装到外部存储后仍可正常更新，请在 App Store 中开启「下载并安装大型 App 到独立存储盘」。AppPorts 会在外部存储中准备对应的 `/Applications` 目录，以便 App Store 在该位置安装和更新应用。

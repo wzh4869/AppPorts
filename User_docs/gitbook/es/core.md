@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Características Principales
 
 Esta página cubre la funcionalidad principal de migración de paquetes de aplicaciones. Para migrar datos dentro de las aplicaciones, consulte [Migración de Datos](datamigrae/baseinfo.md).

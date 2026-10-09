@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "Trouvez la stratégie de migration correspondant à chaque type d’application."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Types d'applications et stratégies
 
 | Type d'application | Classification du conteneur | Stratégie de migration | Protection par verrouillage | Notes |

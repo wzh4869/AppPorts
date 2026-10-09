@@ -1,3 +1,12 @@
+---
+icon: "rocket"
+description: "Download and install AppPorts, then grant the permissions needed for first launch."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Getting Started
 
 ## Installing AppPorts <a href="#installing-appports" id="installing-appports"></a>
@@ -5,6 +14,9 @@
 Installing AppPorts requires the following two prerequisites:
 1. A stable external storage device (such as a hard drive)
 2. Operating system no lower than macOS 12.0 (Monterey) or later
+
+{% stepper %}
+{% step %}
 
 ### Download <a href="#download" id="download"></a>
 
@@ -18,6 +30,10 @@ If the above link cannot be opened, please visit this link to get the installer 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/download.gif?sign=Xb9FOEqPxR8Q7WLixKzg5NCYcjVzmzq2eh0634xGdG0=:0)
 
 
+{% endstep %}
+
+{% step %}
+
 ### Install and Launch <a href="#install-and-launch" id="install-and-launch"></a>
 1. Open the .dmg installer
 2. Drag the application to the Applications folder
@@ -25,6 +41,10 @@ If the above link cannot be opened, please visit this link to get the installer 
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/install.gif?sign=dg-gU67tz19m6DGdI3NywEAcuqKnyTpWGas0YhZeGfM=:0)
 
+
+{% endstep %}
+
+{% step %}
 
 ### Required Authorization <a href="#required-authorization" id="required-authorization"></a>
 
@@ -35,6 +55,9 @@ Select Full Disk Access.
 3. Restart AppPorts.
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/outh.gif?sign=fTXqbKCR_tZBKDb6p1DziuJYjD9NZAJk-Zsw7c4oOJM=:0)
+
+{% endstep %}
+{% endstepper %}
 
 #### App Store App Self-Update Authorization <a href="#app-store-app-self-update-authorization" id="app-store-app-self-update-authorization"></a>
 

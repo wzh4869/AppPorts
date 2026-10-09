@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 日誌與診斷
 
 AppPorts 內建日誌系統，用於記錄應用程式執行期間的關鍵事件、遷移操作、系統資訊和錯誤詳情。遇到問題時，可匯出診斷包並提交至專案 [Issues](https://github.com/wzh4869/AppPorts/issues)，以協助排查。

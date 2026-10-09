@@ -1,3 +1,11 @@
+---
+icon: "tags"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # ステータスバッジ
 
 AppPorts は、色付きのカプセル形バッジでアプリやデータディレクトリの状態を表示します。一部のバッジはクリックすると詳しい説明や対処方法を確認できます。

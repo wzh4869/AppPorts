@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "See which tool data directories AppPorts can detect."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Tool Directory Detection
 
 ![](https://pic.cdn.shimoko.com/tools.png)

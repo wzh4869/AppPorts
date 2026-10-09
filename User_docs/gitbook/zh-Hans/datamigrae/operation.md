@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "按步骤迁移或还原数据目录。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 数据迁移操作指南
 
 本页介绍数据目录迁移的实际操作。技术实现见[基础实现](baseinfo.md)。

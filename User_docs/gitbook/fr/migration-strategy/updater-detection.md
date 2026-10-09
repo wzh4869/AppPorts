@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Comprenez la détection et la protection des applications à mise à jour automatique."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Détection des mises à jour automatiques
 
 ## Détection des applications Electron <a href="#detection-des-applications-electron" id="detection-des-applications-electron"></a>

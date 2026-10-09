@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "재서명의 적용 범위와 크래시 방지 방법을 알아봅니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 재서명과 충돌 방지
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

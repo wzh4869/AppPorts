@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "依應用程式類型查找對應的遷移策略。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 應用類型與策略對照
 
 | 應用類型 | 容器分類 | 遷移策略 | 鎖定保護 | 說明 |

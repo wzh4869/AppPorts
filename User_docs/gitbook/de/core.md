@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Kernfunktionen
 
 Diese Seite behandelt die Kernfunktionalität für die App-Paket-Migration. Für die Migration von Daten innerhalb von Apps siehe [Datenmigration](datamigrae/baseinfo.md).

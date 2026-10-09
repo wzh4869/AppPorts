@@ -1,3 +1,12 @@
+---
+icon: "wrench"
+description: "依症狀檢查權限、遷移狀態與修復方法。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 故障排除
 
 ## 應用程式按兩下無反應，圖示閃一下就沒了 <a href="#應用程式按兩下無反應-圖示閃一下就沒了" id="應用程式按兩下無反應-圖示閃一下就沒了"></a>

@@ -1,3 +1,11 @@
+---
+icon: "tags"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guía de insignias de estado
 
 AppPorts utiliza insignias de colores con forma de cápsula para mostrar el estado de las aplicaciones y los directorios de datos. Algunas permiten hacer clic para ver más detalles o recomendaciones.

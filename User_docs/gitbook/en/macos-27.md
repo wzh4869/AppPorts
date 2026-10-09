@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Review compatibility changes and repair options after upgrading."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Upgrading to macOS 27
 
 {% hint style="success" %}

@@ -6,6 +6,7 @@ import matter from "gray-matter";
 import yaml from "js-yaml";
 import { createMarkdownRenderer, resolveConfig } from "vitepress";
 import { createComponentRenderer } from "./gitbook-components.mjs";
+import { applyGitBookDesign } from "./gitbook-design.mjs";
 
 const project = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const docs = join(project, "docs");
@@ -294,6 +295,50 @@ function importedFragment(url, file, spaces, anchorIds) {
   return { target, anchor, actual, ids, url: actual === anchor ? url : `${url.slice(0, hashIndex)}#${actual}` };
 }
 
+function validateNativeBlocks(content, file, failures) {
+  const paired = new Set(["hint", "tabs", "tab", "stepper", "step", "columns", "column", "updates", "update", "file", "openapi", "code", "content-ref"]);
+  let markup = "", cursor = 0;
+  for (const [start, end] of bodyCodeRanges(content)) {
+    markup += content.slice(cursor, start);
+    cursor = end;
+  }
+  markup += content.slice(cursor);
+  const stack = [];
+  for (const match of markup.matchAll(/\{%\s*(end)?([a-z-]+)\b[^%]*%\}/g)) {
+    const [, closing, name] = match;
+    if (!paired.has(name)) continue;
+    if (closing) {
+      if (stack.pop() !== name) failures.push(`Mismatched GitBook block in ${file}: ${match[0]}`);
+    } else stack.push(name);
+  }
+  if (stack.length) failures.push(`Unclosed GitBook blocks in ${file}: ${stack.join(", ")}`);
+}
+
+function validateBodyTarget(url, file, localeRoot, redirects, spaces, failures) {
+  let pathname;
+  try { pathname = decodeURI(url.split(/[?#]/)[0]); }
+  catch { failures.push(`Malformed link in ${file}: ${url}`); return; }
+  if (pathname.startsWith("/broken/")) {
+    failures.push(`Broken GitBook reference in ${file}: ${url}`);
+    return;
+  }
+  // Both short and org-qualified URLs are valid GitBook serialization forms.
+  const crossSpace = pathname.match(/^https:\/\/app\.gitbook\.com\/(?:o\/[^/]+\/)?s\/([^/]+)(?:\/(.*))?$/);
+  if (crossSpace) {
+    const space = Object.values(spaces ?? {}).find((value) => value.id === crossSpace[1]);
+    const page = crossSpace[2]?.replace(/\/$/, "");
+    if (space && page && !Object.values(space.pages).includes(page)) failures.push(`Broken cross-space target in ${file}: ${url}`);
+    return;
+  }
+  if (!pathname || /^(?:[a-z][a-z\d+.-]*:|\/)/i.test(pathname)) return;
+  const target = resolve(dirname(file), pathname);
+  const local = relative(localeRoot, target).split("\\").join("/");
+  const redirected = Object.hasOwn(redirects, local) ? resolve(localeRoot, redirects[local]) : null;
+  if (local === ".." || local.startsWith("../") || !existsSync(target) && !(redirected && existsSync(redirected))) {
+    failures.push(`Broken local target in ${file}: ${url}`);
+  }
+}
+
 const skipped = new Set();
 const generated = new Map();
 const navigationPages = [];
@@ -333,6 +378,13 @@ for (const locale of locales) {
   }
   generated.set(`${locale.directory}/.gitbook.yaml`, yaml.dump({ root: "./", structure: { readme: "README.md", summary: "SUMMARY.md" }, redirects }, { lineWidth: -1 }));
   generated.set(`${locale.directory}/.gitbook/assets/logo.png`, readFileSync(join(docs, "public/logo.png")));
+}
+
+for (const [filename, content] of generated) {
+  const match = filename.match(/^([^/]+)\/(.+\.md)$/);
+  if (match && match[2] !== "SUMMARY.md") {
+    generated.set(filename, applyGitBookDesign(content, { locale: match[1], target: match[2] }));
+  }
 }
 
 const manifest = {
@@ -426,8 +478,15 @@ for (const locale of locales) {
   for (const filename of walk(localeRoot)) {
     const content = readFileSync(filename, "utf8");
     unresolved += (content.match(/XSPACE_[A-Z_]+/g) ?? []).length;
-    if (!importedSpaces || !importedAnchors) continue;
+    try {
+      const { data, content: body } = matter(content);
+      if (data.description !== undefined && typeof data.description !== "string") failures.push(`Invalid page description in ${filename}`);
+      if (data.icon !== undefined && typeof data.icon !== "string") failures.push(`Invalid page icon in ${filename}`);
+      validateNativeBlocks(body, filename, failures);
+    } catch (error) { failures.push(`${filename}: ${error.message}`); }
     transformBodyLinks(content, (url) => {
+      validateBodyTarget(url, filename, localeRoot, settings.redirects ?? {}, importedSpaces, failures);
+      if (!importedSpaces || !importedAnchors) return url;
       const reference = importedFragment(url, relative(output, filename), importedSpaces, importedAnchors);
       if (!reference) return url;
       fragments++;

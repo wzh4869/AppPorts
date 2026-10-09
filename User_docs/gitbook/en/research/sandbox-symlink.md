@@ -1,3 +1,12 @@
+---
+icon: "link"
+description: "Experiments with sandboxed apps accessing data through symbolic links."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Experiment Log: Sandboxed Apps + Symbolic Links (macOS 27)
 
 This page is the raw record of a **controlled experiment**, intended for readers who want to check the evidence; for the user-facing conclusions, see [Container Data, Sandboxing and Signing Identity](../datamigrae/container-identity.md). The question the experiment answers:

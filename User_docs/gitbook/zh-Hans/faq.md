@@ -1,3 +1,11 @@
+---
+icon: "circle-question"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 常见问题
 
 ## 安装与授权 <a href="#安装与授权" id="安装与授权"></a>

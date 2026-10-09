@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "移行に APFS ファイルシステムが必要な理由を確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 外部ドライブに APFS が必要な理由
 
 {% hint style="success" %}

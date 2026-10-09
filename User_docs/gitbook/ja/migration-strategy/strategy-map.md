@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "アプリの種類ごとに対応する移行戦略を探します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # アプリタイプと戦略
 
 | アプリタイプ | コンテナ分類 | 移行戦略 | ロック保護 | 備考 |

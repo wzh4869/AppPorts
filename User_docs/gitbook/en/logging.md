@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Logging & Diagnostics
 
 AppPorts has a built-in logging system that records key events, migration operations, system information, and error details during app runtime. When issues arise, you can export a diagnostic package and submit it to the project [Issues](https://github.com/wzh4869/AppPorts/issues) for troubleshooting.

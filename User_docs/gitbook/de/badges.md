@@ -1,3 +1,11 @@
+---
+icon: "tags"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Status-Badges
 
 AppPorts zeigt den Status von Apps und Datenverzeichnissen mit farbigen, kapselförmigen Badges an. Einige Badges lassen sich anklicken, um weitere Erklärungen oder Handlungsempfehlungen zu öffnen.

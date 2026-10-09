@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Einsatzbereiche der Neusignierung und Schutz vor Abstürzen verstehen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Neusignierung und Schutz vor Abstürzen
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

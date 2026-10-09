@@ -1,3 +1,12 @@
+---
+icon: "diagram-project"
+description: "データディレクトリの検出と移行の基本的な仕組みを確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # データ移行の基本実装
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.05.png)

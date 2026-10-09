@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 설정
 
 AppPorts 설정은 기본 윈도우 오른쪽 상단의 톱니바퀴 아이콘에서 열 수 있습니다.

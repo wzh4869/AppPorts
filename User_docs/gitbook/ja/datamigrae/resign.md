@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "再署名の適用範囲とクラッシュ防止について確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 再署名とクラッシュ対策
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

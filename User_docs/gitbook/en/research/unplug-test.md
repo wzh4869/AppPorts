@@ -1,3 +1,12 @@
+---
+icon: "plug"
+description: "Compare drive removal effects on APFS volumes and disk images."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Experiment Log: Impact of Unplugging the Drive on APFS Volumes and Disk Images
 
 This page is the raw record of a **controlled experiment**, used to answer a question that came up when choosing the backend for mount migration:

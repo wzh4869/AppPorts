@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "検出対象となるツールのデータディレクトリを確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # ツールディレクトリ検出
 
 ![](https://pic.cdn.shimoko.com/tools.png)

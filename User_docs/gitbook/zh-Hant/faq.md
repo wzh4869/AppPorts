@@ -1,3 +1,11 @@
+---
+icon: "circle-question"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 常見問題
 
 ## 安裝與授權 <a href="#安裝與授權" id="安裝與授權"></a>

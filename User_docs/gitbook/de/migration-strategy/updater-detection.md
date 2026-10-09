@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Erkennung und Schutz für Apps mit eigener Aktualisierung verstehen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Selbst-Updater-Erkennung
 
 ## Electron-App-Erkennung <a href="#electron-app-erkennung" id="electron-app-erkennung"></a>

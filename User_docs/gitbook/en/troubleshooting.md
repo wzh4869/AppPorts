@@ -1,3 +1,12 @@
+---
+icon: "wrench"
+description: "Find checks and fixes for permissions, migration states, and common symptoms."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Troubleshooting
 
 ## An App Does Nothing When Opened, or Its Icon Disappears Immediately <a href="#an-app-does-nothing-when-opened-or-its-icon-disappears-immediately" id="an-app-does-nothing-when-opened-or-its-icon-disappears-immediately"></a>

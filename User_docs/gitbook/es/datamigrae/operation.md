@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "Sigue los pasos para migrar o restaurar directorios de datos."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guía práctica de migración de datos
 
 Esta página explica cómo migrar directorios de datos. Para los detalles técnicos, consulte el [funcionamiento](baseinfo.md).

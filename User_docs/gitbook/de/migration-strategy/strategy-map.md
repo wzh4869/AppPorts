@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "Die passende Migrationsstrategie für jeden App-Typ finden."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # App-Typen & Strategien
 
 | App-Typ | Container-Klassifizierung | Migrationsstrategie | Sperrschutz | Hinweise |

@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 主な機能
 
 このページでは、アプリパッケージの移行に関するコア機能について説明します。アプリ内のデータ移行については、[データ移行](datamigrae/baseinfo.md)をご参照ください。

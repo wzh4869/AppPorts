@@ -1,9 +1,11 @@
 ---
 layout:
   outline:
-    visible: false
+    visible: true
   pagination:
     visible: false
+  width: "default"
+icon: "shield-halved"
 ---
 
 # AppPorts 隐私政策

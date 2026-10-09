@@ -1,3 +1,11 @@
+---
+icon: "tags"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 상태 배지 안내
 
 AppPorts는 색상이 있는 캡슐 모양 배지로 앱과 데이터 디렉토리의 상태를 표시합니다. 일부 배지는 클릭하여 자세한 설명이나 권장 조치를 볼 수 있습니다.

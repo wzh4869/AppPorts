@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Core Features
 
 This page covers the core functionality for app package migration. For migrating data within apps, see [Data Migration](datamigrae/baseinfo.md).

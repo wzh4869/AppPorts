@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Sandbox-Containerdaten auf ein externes APFS-Laufwerk verschieben."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Mount-Migration: Containerdaten auf ein externes Laufwerk verschieben
 
 {% hint style="success" %}

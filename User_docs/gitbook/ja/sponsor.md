@@ -1,3 +1,11 @@
+---
+icon: "heart"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # AppPorts をスポンサーする
 
 AppPorts は完全無料・オープンソース・広告なしで、商業的なプロモーションも一切ありません。個人が余暇に維持しているプロジェクトで、商業的な収入はありません。

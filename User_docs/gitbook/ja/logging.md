@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # ログと診断
 
 AppPorts には組み込みのログシステムがあり、アプリ実行中の重要なイベント、移行操作、システム情報、エラー詳細を記録します。問題が発生した場合は、診断パッケージを書き出すしてプロジェクトの[Issues](https://github.com/wzh4869/AppPorts/issues)に提出し、トラブルシューティングにご活用ください。

@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "Follow the steps to migrate or restore data directories."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Data Migration Guide
 
 This page explains how to migrate data directories. For the technical implementation, see [How Data Migration Works](baseinfo.md).

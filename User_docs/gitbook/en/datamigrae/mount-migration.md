@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Move sandbox container data to an external APFS drive."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Mount Migration: Move Container Data to an External Drive
 
 {% hint style="success" %}

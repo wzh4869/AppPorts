@@ -1,3 +1,12 @@
+---
+icon: "wrench"
+description: "按症状检查权限、迁移状态与修复方法。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 故障排除
 
 ## 应用双击无反应，图标闪一下就没了 <a href="#应用双击无反应-图标闪一下就没了" id="应用双击无反应-图标闪一下就没了"></a>

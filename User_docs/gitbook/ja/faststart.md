@@ -1,3 +1,12 @@
+---
+icon: "rocket"
+description: "AppPorts をダウンロードしてインストールし、初回起動に必要な権限を設定します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # はじめる
 
 ## AppPorts のインストール <a href="#appports-のインストール" id="appports-のインストール"></a>
@@ -5,6 +14,9 @@
 AppPorts のインストールには、以下の2つの前提条件が必要です：
 1. 安定した外部ストレージデバイス（ハードドライブなど）
 2. macOS 12.0（Monterey）以上のオペレーティングシステム
+
+{% stepper %}
+{% step %}
 
 ### ダウンロード <a href="#ダウンロード" id="ダウンロード"></a>
 
@@ -18,6 +30,10 @@ AppPorts のインストールには、以下の2つの前提条件が必要で�
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/download.gif?sign=Xb9FOEqPxR8Q7WLixKzg5NCYcjVzmzq2eh0634xGdG0=:0)
 
 
+{% endstep %}
+
+{% step %}
+
 ### インストールと起動 <a href="#インストールと起動" id="インストールと起動"></a>
 1. .dmg インストーラーを開く
 2. アプリケーションを Applications フォルダにドラッグ
@@ -25,6 +41,10 @@ AppPorts のインストールには、以下の2つの前提条件が必要で�
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/install.gif?sign=dg-gU67tz19m6DGdI3NywEAcuqKnyTpWGas0YhZeGfM=:0)
 
+
+{% endstep %}
+
+{% step %}
 
 ### 必要な権限 <a href="#必要な権限" id="必要な権限"></a>
 
@@ -35,6 +55,9 @@ AppPorts のインストールには、以下の2つの前提条件が必要で�
 3. AppPorts を再起動します。
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/outh.gif?sign=fTXqbKCR_tZBKDb6p1DziuJYjD9NZAJk-Zsw7c4oOJM=:0)
+
+{% endstep %}
+{% endstepper %}
 
 #### App Store アプリの自動更新権限 <a href="#app-store-アプリの自動更新権限" id="app-store-アプリの自動更新権限"></a>
 

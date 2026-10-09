@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "データディレクトリを移行・復元する手順を確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # データ移行操作ガイド
 
 このページでは、データディレクトリ移行の操作を説明します。技術的な実装は[基本実装](baseinfo.md)を参照してください。

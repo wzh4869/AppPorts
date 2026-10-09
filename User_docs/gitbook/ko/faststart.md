@@ -1,3 +1,12 @@
+---
+icon: "rocket"
+description: "AppPorts를 다운로드하고 설치한 뒤 첫 실행에 필요한 권한을 설정합니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 시작하기
 
 ## AppPorts 설치 <a href="#appports-설치" id="appports-설치"></a>
@@ -5,6 +14,9 @@
 AppPorts 설치에는 다음 두 가지 전제 조건이 필요합니다:
 1. 안정적인 외장 저장소 장치 (예: 하드 드라이브)
 2. macOS 12.0 (Monterey) 이상의 운영 체제
+
+{% stepper %}
+{% step %}
 
 ### 다운로드 <a href="#다운로드" id="다운로드"></a>
 
@@ -18,6 +30,10 @@ AppPorts 설치에는 다음 두 가지 전제 조건이 필요합니다:
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/download.gif?sign=Xb9FOEqPxR8Q7WLixKzg5NCYcjVzmzq2eh0634xGdG0=:0)
 
 
+{% endstep %}
+
+{% step %}
+
 ### 설치 및 실행 <a href="#설치-및-실행" id="설치-및-실행"></a>
 1. .dmg 설치 파일을 엽니다
 2. 애플리케이션을 Applications 폴더로 드래그합니다
@@ -25,6 +41,10 @@ AppPorts 설치에는 다음 두 가지 전제 조건이 필요합니다:
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/install.gif?sign=dg-gU67tz19m6DGdI3NywEAcuqKnyTpWGas0YhZeGfM=:0)
 
+
+{% endstep %}
+
+{% step %}
 
 ### 필요한 권한 <a href="#필요한-권한" id="필요한-권한"></a>
 
@@ -35,6 +55,9 @@ AppPorts 설치에는 다음 두 가지 전제 조건이 필요합니다:
 3. AppPorts를 재시작합니다.
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/outh.gif?sign=fTXqbKCR_tZBKDb6p1DziuJYjD9NZAJk-Zsw7c4oOJM=:0)
+
+{% endstep %}
+{% endstepper %}
 
 #### App Store 앱 자체 업데이트 권한 <a href="#app-store-앱-자체-업데이트-권한" id="app-store-앱-자체-업데이트-권한"></a>
 

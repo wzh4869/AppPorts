@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Ajustes
 
 Los ajustes de AppPorts se abren desde el icono de engranaje de la esquina superior derecha de la ventana principal.

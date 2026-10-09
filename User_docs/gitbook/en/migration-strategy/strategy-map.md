@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "Find the migration strategy for each app type."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # App Types & Strategies
 
 | App Type | Container Classification | Migration Strategy | Lock Protection | Notes |

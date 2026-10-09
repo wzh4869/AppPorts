@@ -1,3 +1,11 @@
+---
+icon: "triangle-exclamation"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 相容性與限制
 
 ## 系統要求 <a href="#系統要求" id="系統要求"></a>

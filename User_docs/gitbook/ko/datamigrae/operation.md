@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "데이터 디렉토리를 옮기거나 복원하는 절차를 확인합니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 데이터 마이그레이션 사용 안내
 
 데이터 디렉토리를 실제로 마이그레이션하는 방법을 설명합니다. 기술적인 구현은 [기본 구현](baseinfo.md)을 참고하세요.

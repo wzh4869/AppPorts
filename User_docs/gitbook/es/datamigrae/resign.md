@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Comprende cuándo se aplica la nueva firma y cómo se previenen los fallos."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Firma y prevención de cierres inesperados
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Comprende por qué la migración requiere el sistema de archivos APFS."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Por qué el disco externo debe ser APFS
 
 {% hint style="success" %}

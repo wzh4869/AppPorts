@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "查看工具資料目錄的辨識範圍。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 工具目錄識別
 ![](https://pic.cdn.shimoko.com/tools.png)
 AppPorts 可自動識別常見開發工具、AI 工具、編輯器等在用戶目錄下創建的數據目錄（dot-folder），並支持將其遷移至外部存儲，如有對更多工具的遷移需求，請提交至項目 [Issues](https://github.com/wzh4869/AppPorts/issues)。

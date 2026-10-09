@@ -1,3 +1,11 @@
+---
+icon: "compass"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # AppPorts ユーザーガイド
 
 このガイドでは、AppPorts の主な機能、設計方針、技術的な実装を説明します。詳しい技術情報は [DeepWiki](https://deepwiki.com/wzh4869/AppPorts) を参照してください。改善の提案は、プロジェクトの [Issues](https://github.com/wzh4869/AppPorts/issues) にお寄せください。

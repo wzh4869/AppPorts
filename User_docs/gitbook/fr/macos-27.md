@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Consultez les changements de compatibilité et les réparations après la mise à niveau."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guide de mise à niveau vers macOS 27
 
 {% hint style="success" %}

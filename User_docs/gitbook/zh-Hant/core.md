@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 核心功能
 此頁面介紹軟件的基本核心功能，即爲應用 App 包遷移，如需對應用內的數據進行遷移，請參閱[數據遷移](datamigrae/baseinfo.md)。
 ## 遷移應用至外部存儲  <a href="#遷移應用至外部存儲" id="遷移應用至外部存儲"></a>

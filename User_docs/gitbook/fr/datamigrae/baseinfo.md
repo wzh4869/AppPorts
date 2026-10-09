@@ -1,3 +1,12 @@
+---
+icon: "diagram-project"
+description: "Comprenez comment les répertoires de données sont détectés et migrés."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Fonctionnement de la migration des données
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.05.png)

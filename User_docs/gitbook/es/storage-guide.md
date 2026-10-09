@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Consulta los requisitos de selección, formato y uso de discos externos."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guía de almacenamiento externo
 
 La estabilidad del almacenamiento externo afecta directamente al inicio de las aplicaciones migradas, al acceso a los directorios de datos y a las actualizaciones posteriores. Se recomienda un SSD externo con rendimiento estable y capacidad suficiente.

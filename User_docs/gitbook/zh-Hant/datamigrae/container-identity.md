@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "了解沙盒容器資料與簽名身分的關係。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 容器資料、沙盒與簽名身分
 
 {% hint style="success" %}

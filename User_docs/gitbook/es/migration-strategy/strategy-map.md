@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "Encuentra la estrategia de migración para cada tipo de app."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Tipos de Apps y Estrategias
 
 | Tipo de App | Clasificación de Contenedor | Estrategia de Migración | Protección de Bloqueo | Notas |

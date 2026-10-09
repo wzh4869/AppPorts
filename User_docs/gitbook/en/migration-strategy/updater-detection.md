@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Understand detection and protection for self-updating apps."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Self-Updater Detection
 
 ## Electron App Detection <a href="#electron-app-detection" id="electron-app-detection"></a>

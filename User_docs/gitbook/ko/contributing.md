@@ -1,3 +1,11 @@
+---
+icon: "code-pull-request"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 기여하기
 
 AppPorts에 관심을 가져주셔서 감사합니다! 커뮤니티 구성원의 기여를 환영합니다. 버그 수정, 문서 개선, 새 기능 추가 모두 가능합니다.

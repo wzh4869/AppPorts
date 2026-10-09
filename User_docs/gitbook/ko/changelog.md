@@ -1,3 +1,11 @@
+---
+icon: "clock-rotate-left"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 변경 이력
 
 ## v1.9.0(개발 중) <a href="#v1-9-0-개발-중" id="v1-9-0-개발-중"></a>

@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 设置
 
 AppPorts 的设置页面可通过主窗口右上角的齿轮图标访问。

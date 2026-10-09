@@ -1,3 +1,12 @@
+---
+icon: "rocket"
+description: "Descarga e instala AppPorts y concede los permisos necesarios para el primer inicio."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Comenzar
 
 ## Instalación de AppPorts <a href="#instalacion-de-appports" id="instalacion-de-appports"></a>
@@ -5,6 +14,9 @@
 La instalación de AppPorts requiere los siguientes dos requisitos previos:
 1. Un dispositivo de almacenamiento externo estable (como un disco duro)
 2. Sistema operativo no inferior a macOS 12.0 (Monterey) o posterior
+
+{% stepper %}
+{% step %}
 
 ### Descargar <a href="#descargar" id="descargar"></a>
 
@@ -18,6 +30,10 @@ Si no puede abrir el enlace anterior, visite este enlace para obtener el instala
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/download.gif?sign=Xb9FOEqPxR8Q7WLixKzg5NCYcjVzmzq2eh0634xGdG0=:0)
 
 
+{% endstep %}
+
+{% step %}
+
 ### Instalar e Iniciar <a href="#instalar-e-iniciar" id="instalar-e-iniciar"></a>
 1. Abra el instalador .dmg
 2. Arrastre la aplicación a la carpeta Aplicaciones
@@ -25,6 +41,10 @@ Si no puede abrir el enlace anterior, visite este enlace para obtener el instala
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/install.gif?sign=dg-gU67tz19m6DGdI3NywEAcuqKnyTpWGas0YhZeGfM=:0)
 
+
+{% endstep %}
+
+{% step %}
 
 ### Autorización Requerida <a href="#autorizacion-requerida" id="autorizacion-requerida"></a>
 
@@ -35,6 +55,9 @@ Seleccione Acceso Total al Disco.
 3. Reinicie AppPorts.
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/outh.gif?sign=fTXqbKCR_tZBKDb6p1DziuJYjD9NZAJk-Zsw7c4oOJM=:0)
+
+{% endstep %}
+{% endstepper %}
 
 #### Autorización de Auto-Actualización de Aplicaciones App Store <a href="#autorizacion-de-auto-actualizacion-de-aplicaciones-app-store" id="autorizacion-de-auto-actualizacion-de-aplicaciones-app-store"></a>
 

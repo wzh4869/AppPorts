@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "앱 유형별로 알맞은 마이그레이션 전략을 찾습니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 앱 유형 및 전략
 
 | 앱 유형 | 컨테이너 분류 | 마이그레이션 전략 | 잠금 보호 | 비고 |

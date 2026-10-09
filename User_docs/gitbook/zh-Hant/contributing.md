@@ -1,3 +1,11 @@
+---
+icon: "code-pull-request"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 貢獻者指南
 
 感謝你關注 AppPorts！我們歡迎社區成員參與貢獻，無論是修復 Bug、改進文檔還是添加新功能。

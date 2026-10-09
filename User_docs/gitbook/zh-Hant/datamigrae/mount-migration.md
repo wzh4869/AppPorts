@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "將沙盒容器資料遷移到 APFS 外接磁碟。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 掛載遷移：容器資料怎麼放到外接磁碟
 
 {% hint style="success" %}

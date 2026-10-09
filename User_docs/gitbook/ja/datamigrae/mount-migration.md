@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "サンドボックスのコンテナデータを外部 APFS ドライブへ移行します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # マウント移行：コンテナデータを外部ドライブに置く
 
 {% hint style="success" %}

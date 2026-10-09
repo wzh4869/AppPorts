@@ -1,3 +1,11 @@
+---
+icon: "clock-rotate-left"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Registro de Cambios
 
 ## v1.9.0 (en desarrollo) <a href="#v1-9-0-en-desarrollo" id="v1-9-0-en-desarrollo"></a>

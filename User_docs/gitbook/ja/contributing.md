@@ -1,3 +1,11 @@
+---
+icon: "code-pull-request"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # コントリビューション
 
 AppPorts にご関心をお寄せいただきありがとうございます！バグの修正、ドキュメントの改善、新機能の追加など、コミュニティメンバーのコントリビューションを歓迎します。

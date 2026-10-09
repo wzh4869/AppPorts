@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Fonctionnalités principales
 
 Cette page couvre les fonctionnalités de base pour la migration des packages d'applications. Pour la migration des données dans les applications, voir [Migration des données](datamigrae/baseinfo.md).

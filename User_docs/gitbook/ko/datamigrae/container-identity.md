@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "컨테이너 데이터와 서명 신원의 관계를 알아봅니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 컨테이너 데이터, 샌드박스와 서명 신원
 
 {% hint style="success" %}

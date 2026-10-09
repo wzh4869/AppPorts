@@ -1,3 +1,12 @@
+---
+icon: "plug"
+description: "比较拔盘对 APFS 卷与磁盘映像的影响。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 实验记录：拔盘对 APFS 卷与磁盘映像的影响
 
 本文是一次**受控实验**的原始记录，用来回答挂载迁移选后端时的一个问题：

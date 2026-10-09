@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "依步驟遷移或還原資料目錄。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 資料遷移操作指南
 
 本頁介紹資料目錄遷移的實際操作。技術實作見[基礎實作](baseinfo.md)。

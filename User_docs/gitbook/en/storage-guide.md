@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Review external drive selection, formatting, and usage requirements."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # External Storage Guide
 
 ## Recommended Configuration <a href="#recommended-configuration" id="recommended-configuration"></a>

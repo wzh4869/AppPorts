@@ -1,3 +1,11 @@
+---
+icon: "layer-group"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 核心功能
 
 本页介绍 AppPorts 最常用的应用迁移功能。若需要迁移应用数据目录，请参阅[数据迁移](datamigrae/baseinfo.md)。

@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "自動更新アプリの検出と保護の仕組みを確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 自動更新検出
 
 ## Electron アプリ検出 <a href="#electron-アプリ検出" id="electron-アプリ検出"></a>

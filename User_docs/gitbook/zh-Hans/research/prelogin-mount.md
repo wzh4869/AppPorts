@@ -1,3 +1,12 @@
+---
+icon: "power-off"
+description: "查看登录前挂载的实验步骤与结果。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 实验记录：开机前挂载（A 实验）
 
 本文是继[挂载点实验](sandbox-mountpoint.md)之后的第三轮受控实验的原始记录。实验回答的问题是：

@@ -1,3 +1,12 @@
+---
+icon: "wrench"
+description: "Encuentra comprobaciones y soluciones para permisos, estados de migración y problemas habituales."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Resolución de problemas
 
 ## El icono aparece y desaparece al hacer doble clic <a href="#el-icono-aparece-y-desaparece-al-hacer-doble-clic" id="el-icono-aparece-y-desaparece-al-hacer-doble-clic"></a>

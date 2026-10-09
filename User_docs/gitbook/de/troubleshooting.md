@@ -1,3 +1,12 @@
+---
+icon: "wrench"
+description: "Passende Prüfungen und Lösungen für Berechtigungen, Migrationszustände und typische Probleme finden."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Fehlerbehebung
 
 ## Doppelklick ohne Reaktion, Symbol verschwindet sofort <a href="#doppelklick-ohne-reaktion-symbol-verschwindet-sofort" id="doppelklick-ohne-reaktion-symbol-verschwindet-sofort"></a>

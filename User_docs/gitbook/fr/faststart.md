@@ -1,3 +1,12 @@
+---
+icon: "rocket"
+description: "Téléchargez et installez AppPorts, puis accordez les autorisations nécessaires au premier lancement."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Commencer
 
 ## Installation d'AppPorts <a href="#installation-d-appports" id="installation-d-appports"></a>
@@ -5,6 +14,9 @@
 L'installation d'AppPorts nécessite les deux prérequis suivants :
 1. Un périphérique de stockage externe stable (comme un disque dur)
 2. Système d'exploitation au minimum macOS 12.0 (Monterey) ou ultérieur
+
+{% stepper %}
+{% step %}
 
 ### Téléchargement <a href="#telechargement" id="telechargement"></a>
 
@@ -18,6 +30,10 @@ Si le lien ci-dessus ne peut pas être ouvert, veuillez visiter ce lien pour obt
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/download.gif?sign=Xb9FOEqPxR8Q7WLixKzg5NCYcjVzmzq2eh0634xGdG0=:0)
 
 
+{% endstep %}
+
+{% step %}
+
 ### Installation et lancement <a href="#installation-et-lancement" id="installation-et-lancement"></a>
 1. Ouvrir l'installateur .dmg
 2. Glisser l'application dans le dossier Applications
@@ -25,6 +41,10 @@ Si le lien ci-dessus ne peut pas être ouvert, veuillez visiter ce lien pour obt
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/install.gif?sign=dg-gU67tz19m6DGdI3NywEAcuqKnyTpWGas0YhZeGfM=:0)
 
+
+{% endstep %}
+
+{% step %}
 
 ### Autorisation requise <a href="#autorisation-requise" id="autorisation-requise"></a>
 
@@ -35,6 +55,9 @@ Sélectionner Accès complet au disque.
 3. Redémarrer AppPorts.
 
 ![](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/outh.gif?sign=fTXqbKCR_tZBKDb6p1DziuJYjD9NZAJk-Zsw7c4oOJM=:0)
+
+{% endstep %}
+{% endstepper %}
 
 #### Autorisation de mise à jour automatique des applications App Store <a href="#autorisation-de-mise-a-jour-automatique-des-applications-app-store" id="autorisation-de-mise-a-jour-automatique-des-applications-app-store"></a>
 

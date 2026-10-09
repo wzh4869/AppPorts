@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "コンテナデータと署名 ID の関係を確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # コンテナデータ、サンドボックスと署名 ID
 
 {% hint style="success" %}

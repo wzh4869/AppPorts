@@ -1,3 +1,12 @@
+---
+icon: "route"
+description: "AppPorts がアプリの移行方式を選ぶ仕組みを確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 移行戦略
 
 ## アプリコンテナ分類 <a href="#アプリコンテナ分類" id="アプリコンテナ分類"></a>

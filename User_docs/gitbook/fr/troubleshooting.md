@@ -1,3 +1,12 @@
+---
+icon: "wrench"
+description: "Trouvez les vérifications et correctifs liés aux autorisations, aux états de migration et aux problèmes courants."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Dépannage
 
 ## L’icône apparaît puis disparaît au double-clic <a href="#l-icone-apparait-puis-disparait-au-double-clic" id="l-icone-apparait-puis-disparait-au-double-clic"></a>

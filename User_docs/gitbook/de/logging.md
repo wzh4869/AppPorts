@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Protokollierung & Diagnose
 
 AppPorts verfügt über ein eingebautes Protokollierungssystem, das Schlüsselereignisse, Migrationsvorgänge, Systeminformationen und Fehlerdetails während der App-Laufzeit aufzeichnet. Wenn Probleme auftreten, können Sie ein Diagnosepaket exportieren und zur Projekt-[Issues](https://github.com/wzh4869/AppPorts/issues)-Seite einreichen zur Fehlerbehebung.

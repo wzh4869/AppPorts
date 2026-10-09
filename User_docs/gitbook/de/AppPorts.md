@@ -1,3 +1,11 @@
+---
+icon: "compass"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # AppPorts Benutzerhandbuch
 
 Dieses Handbuch beschreibt die Kernfunktionen, Designprinzipien und technische Umsetzung von AppPorts. Weitere technische Details finden Sie im [DeepWiki](https://deepwiki.com/wzh4869/AppPorts). Verbesserungsvorschläge können Sie in den [Issues](https://github.com/wzh4869/AppPorts/issues) des Projekts einreichen.

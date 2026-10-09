@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Déplacez les données de conteneur vers un disque externe APFS."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Migration par montage : placer les données de conteneur sur un disque externe
 
 {% hint style="success" %}

@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "샌드박스 컨테이너 데이터를 외장 APFS 드라이브로 옮깁니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 마운트 마이그레이션: 컨테이너 데이터를 외장 드라이브로 옮기기
 
 {% hint style="success" %}

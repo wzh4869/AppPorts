@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "管理 App Store 应用迁移后的更新。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # App Store 应用更新策略
 
 App Store 应用的更新行为与第三方应用存在明显差异。AppPorts 会根据 macOS 版本采用不同的迁移与更新策略。

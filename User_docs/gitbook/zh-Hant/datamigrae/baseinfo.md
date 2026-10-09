@@ -1,3 +1,12 @@
+---
+icon: "diagram-project"
+description: "了解資料目錄辨識與遷移的基本機制。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 資料遷移基礎實作
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.05.png)

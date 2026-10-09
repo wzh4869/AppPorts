@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "了解重新簽名的適用範圍與崩潰防護。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 重簽名與當機防護
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

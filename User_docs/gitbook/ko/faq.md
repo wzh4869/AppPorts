@@ -1,3 +1,11 @@
+---
+icon: "circle-question"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 자주 묻는 질문
 
 ## 설치와 권한 <a href="#설치와-권한" id="설치와-권한"></a>

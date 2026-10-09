@@ -1,3 +1,11 @@
+---
+icon: "tags"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 狀態徽章說明
 
 AppPorts 使用膠囊形狀的彩色徽章展示應用程式和資料目錄的狀態。部分徽章支援按一下，可檢視更詳細的說明或處理建議。

@@ -1,3 +1,11 @@
+---
+icon: "heart"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Apoyar AppPorts
 
 AppPorts es totalmente gratuito, de código abierto y sin publicidad, y no incluye ninguna promoción comercial. Lo mantiene una sola persona en su tiempo libre y no genera ningún ingreso.

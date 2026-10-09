@@ -1,3 +1,11 @@
+---
+icon: "compass"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guide utilisateur AppPorts
 
 Ce guide présente les principales fonctionnalités d’AppPorts, ses principes de conception et son fonctionnement technique. Pour plus de détails techniques, consultez [DeepWiki](https://deepwiki.com/wzh4869/AppPorts). Les suggestions d’amélioration sont les bienvenues dans les [Issues](https://github.com/wzh4869/AppPorts/issues) du projet.

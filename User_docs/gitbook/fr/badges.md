@@ -1,3 +1,11 @@
+---
+icon: "tags"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guide des badges d’état
 
 AppPorts utilise des badges colorés en forme de capsule pour indiquer l’état des applications et des répertoires de données. Certains badges sont cliquables et affichent des explications ou des conseils supplémentaires.

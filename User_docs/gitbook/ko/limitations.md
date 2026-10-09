@@ -1,3 +1,11 @@
+---
+icon: "triangle-exclamation"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 호환성 및 제한 사항
 
 ## 시스템 요구 사항 <a href="#시스템-요구-사항" id="시스템-요구-사항"></a>

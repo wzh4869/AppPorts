@@ -1,3 +1,12 @@
+---
+icon: "route"
+description: "AppPorts가 앱 마이그레이션 방식을 선택하는 방법을 알아봅니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 마이그레이션 전략
 
 ## 앱 컨테이너 분류 <a href="#앱-컨테이너-분류" id="앱-컨테이너-분류"></a>

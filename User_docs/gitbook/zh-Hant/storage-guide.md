@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "了解外接儲存裝置的選擇、格式與使用要求。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 外接儲存裝置指南
 
 外接儲存裝置的穩定性會直接影響遷移後的應用程式啟動、資料目錄取用和後續更新體驗。建議優先選擇效能穩定、容量充足的外接 SSD。

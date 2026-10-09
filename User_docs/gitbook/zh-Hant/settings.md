@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 設定
 
 AppPorts 的設定頁面可透過主視窗右上角的齒輪圖示取用。

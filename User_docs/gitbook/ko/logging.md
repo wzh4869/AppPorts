@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 로깅 및 진단
 
 AppPorts에는 앱 런타임 중 핵심 이벤트, 마이그레이션 작업, 시스템 정보 및 오류 세부 사항을 기록하는 내장 로깅 시스템이 있습니다. 문제가 발생하면 진단 패키지를 내보내어 프로젝트 [Issues](https://github.com/wzh4869/AppPorts/issues)에 제출하여 문제를 해결할 수 있습니다.

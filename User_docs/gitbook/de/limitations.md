@@ -1,3 +1,11 @@
+---
+icon: "triangle-exclamation"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Kompatibilität und Einschränkungen
 
 ## Systemanforderungen <a href="#systemanforderungen" id="systemanforderungen"></a>

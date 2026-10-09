@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Auswahl, Formatierung und Anforderungen an externe Laufwerke verstehen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Leitfaden für externen Speicher
 
 Die Zuverlässigkeit des externen Speichers wirkt sich direkt auf den Start migrierter Apps, den Zugriff auf Datenverzeichnisse und spätere Updates aus. Eine externe SSD mit stabiler Leistung und ausreichend Kapazität wird empfohlen.

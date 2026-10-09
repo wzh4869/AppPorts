@@ -1,3 +1,11 @@
+---
+icon: "circle-question"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # よくある質問
 
 ## インストールとアクセス権 <a href="#インストールとアクセス権" id="インストールとアクセス権"></a>

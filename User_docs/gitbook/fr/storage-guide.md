@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Consultez les critères de choix, de formatage et d’utilisation des disques externes."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Guide du stockage externe
 
 La fiabilité du stockage externe influe directement sur le lancement des applications migrées, l’accès aux répertoires de données et les mises à jour ultérieures. Privilégiez un SSD externe aux performances stables et de capacité suffisante.

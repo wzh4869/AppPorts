@@ -1,3 +1,12 @@
+---
+icon: "link"
+description: "沙盒应用通过符号链接访问数据的实验记录。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 实验记录：沙盒应用 + 符号链接（macOS 27）
 
 本文是一次**受控实验**的原始记录，面向想核对证据的读者；面向用户的结论见[容器数据、沙盒与签名身份](../datamigrae/container-identity.md)。实验回答的问题是：

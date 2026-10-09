@@ -1,3 +1,11 @@
+---
+icon: "circle-question"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # FAQ
 
 ## Installation and Permissions <a href="#installation-and-permissions" id="installation-and-permissions"></a>

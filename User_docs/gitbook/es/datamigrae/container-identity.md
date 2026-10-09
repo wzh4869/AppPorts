@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "Comprende la relación entre los datos de contenedores y la identidad de firma."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Datos de contenedores, aislamiento e identidad de firma
 
 {% hint style="success" %}

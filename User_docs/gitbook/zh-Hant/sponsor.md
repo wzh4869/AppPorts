@@ -1,3 +1,11 @@
+---
+icon: "heart"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 贊助 AppPorts
 
 AppPorts 完全免費、開源、無廣告，也沒有接入任何商業推廣。專案由個人在業餘時間維護，沒有任何商業收入。

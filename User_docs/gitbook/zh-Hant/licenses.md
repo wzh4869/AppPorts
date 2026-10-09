@@ -1,9 +1,11 @@
 ---
 layout:
   outline:
-    visible: false
+    visible: true
   pagination:
     visible: false
+  width: "default"
+icon: "scale-balanced"
 ---
 
 # 開源授權

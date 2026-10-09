@@ -1,3 +1,12 @@
+---
+icon: "diagram-project"
+description: "데이터 디렉토리 감지와 마이그레이션의 기본 원리를 알아봅니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 데이터 마이그레이션 기본 구현
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.05.png)

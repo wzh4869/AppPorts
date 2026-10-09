@@ -1,3 +1,12 @@
+---
+icon: "diagram-project"
+description: "Understand how data directories are detected and migrated."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # How Data Migration Works
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.05.png)

@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Settings
 
 AppPorts' settings page is accessible via the gear icon in the upper right corner of the main window.

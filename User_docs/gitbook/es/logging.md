@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Registro y Diagnóstico
 
 AppPorts tiene un sistema de registro integrado que registra eventos clave, operaciones de migración, información del sistema y detalles de errores durante la ejecución de la aplicación. Cuando surgen problemas, puede exportar un paquete de diagnóstico y enviarlo a los [Issues](https://github.com/wzh4869/AppPorts/issues) del proyecto para solución de problemas.

@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "查看工具数据目录的识别范围。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 工具目录识别
 
 ![](https://pic.cdn.shimoko.com/tools.png)

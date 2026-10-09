@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "업그레이드 후 호환성 변경과 복구 방법을 확인합니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # macOS 27 업그레이드 안내
 
 {% hint style="success" %}

@@ -1,3 +1,12 @@
+---
+icon: "diagram-project"
+description: "了解数据目录识别与迁移的基本机制。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 数据迁移基础实现
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.05.png)

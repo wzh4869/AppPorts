@@ -1,3 +1,11 @@
+---
+icon: "sliders"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Réglages
 
 Les réglages d’AppPorts sont accessibles par l’icône d’engrenage en haut à droite de la fenêtre principale.

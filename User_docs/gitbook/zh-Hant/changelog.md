@@ -1,3 +1,11 @@
+---
+icon: "clock-rotate-left"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 更新日誌
 
 ## v1.9.0（開發中） <a href="#v1-9-0-開發中" id="v1-9-0-開發中"></a>

@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "Comprenez le lien entre les données de conteneur et l’identité de signature."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Données de conteneur, bac à sable et identité de signature
 
 {% hint style="success" %}

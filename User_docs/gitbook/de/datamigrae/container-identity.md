@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "Den Zusammenhang zwischen Containerdaten und Signaturidentität verstehen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Containerdaten, Sandbox und Signaturidentität
 
 {% hint style="success" %}

@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "アップグレード後の互換性の変化と修復方法を確認します。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # macOS 27 へのアップグレード
 
 {% hint style="success" %}

@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "理解迁移对 APFS 文件系统的要求。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 为什么外置盘必须是 APFS
 
 {% hint style="success" %}

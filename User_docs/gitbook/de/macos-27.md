@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Kompatibilitätsänderungen und Reparaturwege nach dem Upgrade prüfen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Hinweise zum Upgrade auf macOS 27
 
 {% hint style="success" %}

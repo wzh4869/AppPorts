@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "查看自更新应用的识别与保护机制。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 自更新应用识别
 
 ## Electron 应用识别 <a href="#electron-应用识别" id="electron-应用识别"></a>

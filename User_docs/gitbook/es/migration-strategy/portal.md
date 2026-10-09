@@ -1,3 +1,12 @@
+---
+icon: "route"
+description: "Descubre cómo AppPorts elige un método de migración."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Estrategias de Migración
 
 ## Clasificación de Contenedores de Aplicaciones <a href="#clasificacion-de-contenedores-de-aplicaciones" id="clasificacion-de-contenedores-de-aplicaciones"></a>

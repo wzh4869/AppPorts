@@ -1,3 +1,11 @@
+---
+icon: "triangle-exclamation"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 互換性と制限
 
 ## システム要件 <a href="#システム要件" id="システム要件"></a>

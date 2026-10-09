@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Verstehen, warum die Migration das APFS-Dateisystem benötigt."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Warum das externe Laufwerk APFS verwenden muss
 
 {% hint style="success" %}

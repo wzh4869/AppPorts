@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "了解重新签名的适用范围与崩溃防护。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 重签名与崩溃防护
 
 ![](https://pic.cdn.shimoko.com/appports/%E6%88%AA%E5%B1%8F2026-05-08%2008.38.37.png)

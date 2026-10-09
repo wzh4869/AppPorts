@@ -1,3 +1,12 @@
+---
+icon: "fingerprint"
+description: "Understand the relationship between container data and signing identity."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Container Data, Sandboxing, and Signing Identity
 
 {% hint style="success" %}

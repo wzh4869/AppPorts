@@ -1,3 +1,12 @@
+---
+icon: "arrows-left-right"
+description: "Datenverzeichnisse Schritt für Schritt migrieren oder wiederherstellen."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Anleitung zur Datenmigration
 
 Diese Seite beschreibt die praktische Datenmigration. Die technische Umsetzung steht unter [Grundlagen](baseinfo.md).

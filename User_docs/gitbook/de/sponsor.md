@@ -1,3 +1,11 @@
+---
+icon: "heart"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # AppPorts unterstützen
 
 AppPorts ist vollständig kostenlos, quelloffen und werbefrei, ohne jegliche kommerzielle Vermarktung. Das Projekt wird von einer Einzelperson in der Freizeit gepflegt und erwirtschaftet keinerlei Einnahmen.

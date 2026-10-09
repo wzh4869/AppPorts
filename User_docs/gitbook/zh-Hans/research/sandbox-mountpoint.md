@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "沙盒应用使用挂载点访问数据的实验记录。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 实验记录：沙盒应用 + 挂载点（macOS 27）
 
 本文是继[符号链接实验](sandbox-symlink.md)之后的第二轮**受控实验**的原始记录，面向想核对证据的读者；面向用户的说明见[挂载迁移](../datamigrae/mount-migration.md)。实验回答的问题是：

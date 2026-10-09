@@ -1,3 +1,12 @@
+---
+icon: "power-off"
+description: "Review the procedure and results of mounting before login."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Experiment Log: Pre-Login Mounting (Experiment A)
 
 This page is the raw record of the third round of controlled experiments, following the [mount point experiment](sandbox-mountpoint.md). The question the experiment answers:

@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "Comprende la detección y protección de apps con actualización automática."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Detección de Auto-Actualizadores
 
 ## Detección de Aplicaciones Electron <a href="#deteccion-de-aplicaciones-electron" id="deteccion-de-aplicaciones-electron"></a>

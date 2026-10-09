@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "Understand why migration requires the APFS file system."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Why External Drives Must Use APFS
 
 {% hint style="success" %}

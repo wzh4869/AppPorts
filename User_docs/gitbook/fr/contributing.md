@@ -1,3 +1,11 @@
+---
+icon: "code-pull-request"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Contribuer
 
 Merci de votre intérêt pour AppPorts ! Nous accueillons les membres de la communauté pour contribuer, qu'il s'agisse de corriger des bugs, d'améliorer la documentation ou d'ajouter de nouvelles fonctionnalités.

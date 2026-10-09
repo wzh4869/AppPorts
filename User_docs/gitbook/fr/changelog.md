@@ -1,3 +1,11 @@
+---
+icon: "clock-rotate-left"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Journal des modifications
 
 ## v1.9.0 (en développement) <a href="#v1-9-0-en-developpement" id="v1-9-0-en-developpement"></a>

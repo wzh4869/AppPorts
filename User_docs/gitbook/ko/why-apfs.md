@@ -1,3 +1,12 @@
+---
+icon: "shield-halved"
+description: "마이그레이션에 APFS 파일 시스템이 필요한 이유를 알아봅니다."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 외장 드라이브가 APFS여야 하는 이유
 
 {% hint style="success" %}

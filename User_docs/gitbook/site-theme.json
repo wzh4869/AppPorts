@@ -1,0 +1,68 @@
+{
+  "styling": {
+    "theme": "bold",
+    "primaryColor": {
+      "light": "#5B5BD6",
+      "dark": "#A5A3FF"
+    },
+    "infoColor": {
+      "light": "#5B5BD6",
+      "dark": "#A5A3FF"
+    },
+    "sidebar": {
+      "background": "filled",
+      "list": "pill"
+    },
+    "links": "accent",
+    "corners": "rounded"
+  },
+  "favicon": {
+    "icon": {
+      "light": "https://1856430553-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FND8nWiaPokAkDK7Ae7Wg%2Fuploads%2Fgit-blob-a4799bbbf61b33dc2d711ca899b8ab7a5b1a1960%2Flogo.png?alt=media",
+      "dark": "https://1856430553-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FND8nWiaPokAkDK7Ae7Wg%2Fuploads%2Fgit-blob-a4799bbbf61b33dc2d711ca899b8ab7a5b1a1960%2Flogo.png?alt=media"
+    }
+  },
+  "header": {
+    "preset": "default",
+    "links": [
+      {
+        "title": "GitHub",
+        "localizedTitle": {
+          "en": "GitHub",
+          "zh": "GitHub",
+          "zh-tw": "GitHub",
+          "ja": "GitHub",
+          "ko": "GitHub",
+          "de": "GitHub",
+          "fr": "GitHub",
+          "es": "GitHub"
+        },
+        "style": "link",
+        "to": {
+          "kind": "url",
+          "url": "https://github.com/wzh4869/AppPorts"
+        },
+        "links": []
+      },
+      {
+        "title": "Download AppPorts",
+        "localizedTitle": {
+          "en": "Download AppPorts",
+          "zh": "下载 AppPorts",
+          "zh-tw": "下載 AppPorts",
+          "ja": "AppPorts をダウンロード",
+          "ko": "AppPorts 다운로드",
+          "de": "AppPorts herunterladen",
+          "fr": "Télécharger AppPorts",
+          "es": "Descargar AppPorts"
+        },
+        "style": "button-primary",
+        "to": {
+          "kind": "url",
+          "url": "https://github.com/wzh4869/AppPorts/releases"
+        },
+        "links": []
+      }
+    ]
+  }
+}

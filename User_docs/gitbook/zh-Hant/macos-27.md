@@ -1,3 +1,12 @@
+---
+icon: "arrows-rotate"
+description: "查看升級後的相容性變化與修復方式。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # macOS 27 升級說明
 
 {% hint style="success" %}

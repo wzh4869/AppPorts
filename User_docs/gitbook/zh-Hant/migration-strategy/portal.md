@@ -1,3 +1,12 @@
+---
+icon: "route"
+description: "了解 AppPorts 如何選擇應用程式遷移方案。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 遷移策略
 
 ## 應用容器分類 <a href="#應用容器分類" id="應用容器分類"></a>

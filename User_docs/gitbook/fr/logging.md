@@ -1,3 +1,11 @@
+---
+icon: "file-lines"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Journalisation et diagnostic
 
 AppPorts dispose d'un système de journalisation intégré qui enregistre les événements clés, les opérations de migration, les informations système et les détails d'erreur pendant l'exécution de l'application. En cas de problèmes, vous pouvez exporter un paquet de diagnostic et le soumettre sur la page [Issues](https://github.com/wzh4869/AppPorts/issues) du projet pour le dépannage.

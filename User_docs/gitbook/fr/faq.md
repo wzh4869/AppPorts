@@ -1,3 +1,11 @@
+---
+icon: "circle-question"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Questions fréquentes
 
 ## Installation et autorisations <a href="#installation-et-autorisations" id="installation-et-autorisations"></a>

@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Traslada los datos de contenedores a un disco externo APFS."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Migración por montaje: llevar los datos de contenedores al disco externo
 
 {% hint style="success" %}

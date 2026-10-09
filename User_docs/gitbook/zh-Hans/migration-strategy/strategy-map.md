@@ -1,3 +1,12 @@
+---
+icon: "table-list"
+description: "按应用类型查找对应的迁移策略。"
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # 应用类型与策略对照
 
 | 应用类型 | 容器分类 | 迁移策略 | 锁定保护 | 说明 |

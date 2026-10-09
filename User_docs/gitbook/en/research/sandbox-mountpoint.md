@@ -1,3 +1,12 @@
+---
+icon: "hard-drive"
+description: "Experiments with sandboxed apps accessing data through mount points."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Experiment Log: Sandboxed Apps + Mount Points (macOS 27)
 
 This page is the raw record of the second round of **controlled experiments**, following the [symbolic link experiment](sandbox-symlink.md), intended for readers who want to check the evidence; for the user-facing explanation, see [Mount Migration](../datamigrae/mount-migration.md). The question the experiment answers:

@@ -1,3 +1,12 @@
+---
+icon: "terminal"
+description: "Consultez les répertoires de données des outils qui peuvent être détectés."
+layout:
+  width: "default"
+  outline:
+    visible: true
+---
+
 # Détection des répertoires d'outils
 
 ![](https://pic.cdn.shimoko.com/tools.png)
