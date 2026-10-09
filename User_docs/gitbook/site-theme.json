@@ -26,8 +26,8 @@
   "header": {
     "preset": "default",
     "logo": {
-      "light": "https://raw.githubusercontent.com/wzh4869/AppPorts/main/User_docs/gitbook/brand/appports-wordmark-light.png",
-      "dark": "https://raw.githubusercontent.com/wzh4869/AppPorts/main/User_docs/gitbook/brand/appports-wordmark-dark.png"
+      "light": "https://raw.githubusercontent.com/wzh4869/AppPorts/main/User_docs/gitbook/brand/appports-wordmark-light.png?v=998e983a9efc",
+      "dark": "https://raw.githubusercontent.com/wzh4869/AppPorts/main/User_docs/gitbook/brand/appports-wordmark-dark.png?v=b9c40f08e468"
     },
     "links": [
       {
