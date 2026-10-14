@@ -1,0 +1,38 @@
+# 复制到宿主仓库 .github/workflows/verify-notes.yml 后启用。
+# 默认项目级安装路径；使用其他路径时请同步修改下方命令。
+name: Verify Agent Notes
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify note tree, format, and archive seals
+        env:
+          # HEAD is a no-op on a clean checkout. Compare against the pre-change
+          # commit: PR base, or the previous tip of the pushed branch.
+          # A new-branch push sends before=0000…; git show fails and the script
+          # skips append-only (seal-vs-disk still runs).
+          AGENT_NOTE_ARCHIVE_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts
+          npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-agent-note-format.ts
+          npx tsx .agents/skills/write-notes-like-deepseek/scripts/verify-archived-agent-notes.ts

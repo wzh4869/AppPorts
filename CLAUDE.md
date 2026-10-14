@@ -21,7 +21,7 @@ AppPorts is a native macOS desktop app (Swift/SwiftUI) that migrates application
 
 If Xcode is installed outside `/Applications`, export `DEVELOPER_DIR` before running `xcodebuild`:
 ```bash
-export DEVELOPER_DIR=/Volumes/hano/Applications/Xcode.app/Contents/Developer
+export DEVELOPER_DIR="/Volumes/<external-volume>/Applications/Xcode.app/Contents/Developer"
 ```
 
 **Build** (Xcode project, no SPM):
@@ -449,3 +449,17 @@ When reporting a bug or proposing a feature:
 - **Never hardcode UI strings** — use i18n via `Localizable.xcstrings`
 - **Never use `print`** — use `AppLogger.shared` for all logging
 - **Always handle rollback** — migration operations must include rollback mechanisms on failure
+
+## Agent Notes (Decision Records)
+
+This project uses Agent Notes: **every non-trivial change must include a decision note in the same commit / PR as the code**.
+The vendored `write-notes-like-deepseek` skill is the authority for when to write notes, where they belong,
+required sections, lifecycle transitions, archiving, and verification gates. Before starting work, load
+`.claude/skills/write-notes-like-deepseek/SKILL.md`; do not rely on memory.
+
+Only two conventions are specific to this project; follow the skill for everything else:
+
+- `.agents/notes/` is the only location for decision notes. The former `docs/` directory has been moved outside
+  the repository to `~/Documents/AppPorts-docs-archive/`. `User_docs/` is the documentation site. Do not write notes in either location.
+- Verification command (the script is vendored with the skill):
+  `npx tsx .claude/skills/write-notes-like-deepseek/scripts/verify-agent-note-tree.ts`
