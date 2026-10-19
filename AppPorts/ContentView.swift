@@ -235,6 +235,9 @@ struct ContentView: View {
     @State private var pendingManualResignTarget: DataMigrationWorkflow.SigningTarget?
     @State private var pendingProtectedApps: [AppItem] = []
     @State private var pendingMigrationAfterWarning: [AppItem] = []
+    /// Apps held back by the target-volume capability warning.
+    @State private var pendingStorageLimitationApps: [AppItem] = []
+    @State private var storageLimitationRequest: WarningSheetRequest?
 
     // 自更新应用迁移确认（Sparkle/Electron，锁定模式保护）
     @State private var selfUpdaterRequest: WarningSheetRequest?
@@ -458,6 +461,8 @@ struct ContentView: View {
         }
         // 受保护应用（App Store / root）迁移预警
         .warningSheet($protectedAppsRequest)
+        // 目标存储无法保存部分应用信息
+        .warningSheet($storageLimitationRequest)
         // 自更新应用迁移确认弹窗
         .warningSheet($selfUpdaterRequest)
         .warningSheet($appReplacementRequest)
@@ -1967,8 +1972,17 @@ struct ContentView: View {
         proceedWithMigration(validApps: validApps, dest: dest)
     }
 
-    /// 校验通过后的迁移收尾：先处理自更新应用确认，否则直接批量迁移。
+    /// 校验通过后的迁移收尾：先处理目标存储能力提示，再处理自更新应用确认。
     func proceedWithMigration(validApps: [AppItem], dest: URL) {
+        // 目标盘存不住应用需要的元数据时先说明代价；只提示，不阻断。
+        if storageLimitationRequest == nil,
+           let capabilities = StorageCapabilityProbe.probe(destination: dest),
+           !capabilities.missing.isEmpty {
+            pendingStorageLimitationApps = validApps
+            storageLimitationRequest = makeStorageLimitationRequest(capabilities, dest: dest)
+            return
+        }
+
         // 检查是否包含自更新应用（Sparkle/Electron）
         let selfUpdaterApps = validApps.filter { $0.hasSelfUpdater }
         if !selfUpdaterApps.isEmpty {
@@ -2034,6 +2048,36 @@ struct ContentView: View {
                     if let dest = externalDriveURL {
                         proceedWithMigration(validApps: apps, dest: dest)
                     }
+                }
+            ]
+        )
+    }
+
+    /// 组装「目标存储无法保存部分应用信息」提示。
+    private func makeStorageLimitationRequest(_ capabilities: StorageCapabilities, dest: URL) -> WarningSheetRequest {
+        let driveName = MountMigrationGuidance.driveName(for: dest.path)
+        let items = capabilities.missing.map { $0.localizedDescription }.joined(separator: "\n")
+        AppLogger.shared.logContext(
+            "迁移目标无法保存部分应用信息",
+            details: [
+                ("destination", dest.path),
+                ("drive_name", driveName),
+                ("missing", capabilities.missing.map(\.rawValue).joined(separator: ","))
+            ],
+            level: "WARN"
+        )
+        return WarningSheetRequest(
+            title: "迁移目标无法保存部分应用信息".localized,
+            tint: .orange,
+            intro: String(format: "目标磁盘「%@」不支持以下项目：\n\n%@\n\n迁移后应用仍可正常打开和使用，应用签名校验也仍然通过。但上面这些信息无法保留：文件权限会变成磁盘的固定默认值，部分应用内部共用的文件会各存一份（占用更多空间），少数应用的自定义图标等资源可能缺失。\n\n如果这个应用带有需要管理员权限的后台服务，迁移后可能无法正常工作。这种情况建议改用 APFS 格式的磁盘。".localized, driveName, items),
+            documentationURL: DocumentationLink.url(page: "storage-capabilities", anchor: "summary"),
+            onCancel: { pendingStorageLimitationApps = [] },
+            actions: [
+                WarningAction("仍要迁移".localized, style: .preferred) {
+                    let apps = pendingStorageLimitationApps
+                    pendingStorageLimitationApps = []
+                    storageLimitationRequest = nil
+                    proceedWithMigration(validApps: apps, dest: dest)
                 }
             ]
         )

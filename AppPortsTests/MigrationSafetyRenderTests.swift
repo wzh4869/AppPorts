@@ -308,6 +308,52 @@ final class MigrationSafetyRenderTests: XCTestCase {
         print("Rendered \(url.lastPathComponent): \(bitmap.pixelsWide) × \(bitmap.pixelsHigh)")
     }
 
+    /// Exports the target-volume capability warning exactly as the user sees it.
+    ///
+    /// The warning is the one place where a relaxed app copy explains what it
+    /// will not preserve, so it is worth reviewing as pixels rather than as a
+    /// string constant.
+    @MainActor
+    func testRenderStorageCapabilityWarning() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to export the storage capability warning")
+        }
+        let output = URL(fileURLWithPath: path, isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+
+        let full = StorageCapabilities(supportsACL: false, supportsHardlinks: false,
+                                       supportsResourceFork: false, supportsPermissions: false)
+        let aclOnly = StorageCapabilities(supportsACL: false, supportsHardlinks: true,
+                                          supportsResourceFork: true, supportsPermissions: true)
+
+        for (name, capabilities, drive) in [
+            ("storage-capability-warning-full", full, "My Passport"),
+            ("storage-capability-warning-acl-only", aclOnly, "USB Stick")
+        ] {
+            let request = storageLimitationRequest(capabilities: capabilities, driveName: drive)
+            for scheme in [ColorScheme.light, .dark] {
+                let suffix = scheme == .dark ? "-dark" : ""
+                try await render(WarningSheet(request), size: NSSize(width: 520, height: 520),
+                                 to: output.appendingPathComponent("\(name)\(suffix).png"),
+                                 colorScheme: scheme)
+            }
+        }
+    }
+
+    /// Mirrors `ContentView.makeStorageLimitationRequest` so the render uses the
+    /// production strings, bullet list and documentation link without standing up
+    /// the whole main window.
+    private func storageLimitationRequest(capabilities: StorageCapabilities, driveName: String) -> WarningSheetRequest {
+        let items = capabilities.missing.map { $0.localizedDescription }.joined(separator: "\n")
+        return WarningSheetRequest(
+            title: "迁移目标无法保存部分应用信息".localized,
+            tint: .orange,
+            intro: String(format: "目标磁盘「%@」不支持以下项目：\n\n%@\n\n迁移后应用仍可正常打开和使用，应用签名校验也仍然通过。但上面这些信息无法保留：文件权限会变成磁盘的固定默认值，部分应用内部共用的文件会各存一份（占用更多空间），少数应用的自定义图标等资源可能缺失。\n\n如果这个应用带有需要管理员权限的后台服务，迁移后可能无法正常工作。这种情况建议改用 APFS 格式的磁盘。".localized, driveName, items),
+            documentationURL: DocumentationLink.url(page: "storage-capabilities", anchor: "summary"),
+            cancelTitle: "取消".localized,
+            actions: [WarningAction("仍要迁移".localized, style: .preferred) {}])
+    }
+
     private func fixtureItems() -> [DataDirItem] {
         let root = "/AppPortsSyntheticHome/Library/Containers/com.example.visual/Data"
         func item(_ relative: String, bytes: Int64 = 0, locked: Bool = false,

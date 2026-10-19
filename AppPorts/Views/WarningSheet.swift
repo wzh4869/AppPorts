@@ -68,6 +68,8 @@ struct WarningSheet: View {
     var detail: String?
     /// 勾选项文案；为 nil 时整个勾选行不出现
     var acknowledgementTitle: String?
+    /// 进一步说明的文档页，渲染成可点击的「详情请参阅」。
+    var documentationURL: URL?
     /// 次要操作（取消）
     var cancelTitle: String = "取消".localized
     var onCancel: () -> Void
@@ -122,6 +124,17 @@ struct WarningSheet: View {
                             .font(.callout)
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    if let documentationURL {
+                        Link(destination: documentationURL) {
+                            HStack(spacing: 4) {
+                                Text("详情请参阅文档".localized)
+                                Image(systemName: "arrow.up.right.square")
+                            }
+                            .font(.callout)
+                        }
+                        .help(documentationURL.absoluteString)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -222,6 +235,8 @@ struct WarningSheetRequest: Identifiable {
     var bullets: [WarningBullet] = []
     var detail: String?
     var acknowledgementTitle: String?
+    /// 进一步说明的文档页；非 nil 时在正文底部显示「详情请参阅」链接。
+    var documentationURL: URL?
     var cancelTitle: String = "取消".localized
     var onCancel: () -> Void = {}
     var actions: [WarningAction] = []
@@ -249,6 +264,7 @@ extension WarningSheet {
             bullets: request.bullets,
             detail: request.detail,
             acknowledgementTitle: request.acknowledgementTitle,
+            documentationURL: request.documentationURL,
             cancelTitle: request.cancelTitle,
             onCancel: request.onCancel,
             actions: request.actions,

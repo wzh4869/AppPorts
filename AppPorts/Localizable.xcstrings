@@ -178257,6 +178257,1102 @@
           }
         }
       }
+    },
+    "迁移目标无法保存部分应用信息" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الوجهة غير قادرة على تخزين بعض بيانات التطبيق"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠉⠁⠝⠝⠕⠞ ⠎⠞⠕⠗⠑ ⠎⠕⠍⠑ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠙⠁⠞⠁"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Ziel kann einige App-Daten nicht speichern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination cannot store some application data"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La celo ne povas konservi iujn datumojn de la programo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El destino no puede guardar parte de los datos de la app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La destination ne peut pas conserver certaines données de l’app"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गंतव्य ऐप का कुछ डेटा संग्रहीत नहीं कर सकता"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tujuan tidak dapat menyimpan sebagian data aplikasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La destinazione non può salvare alcuni dati dell’app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行先に保存できないアプリ情報があります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 디스크에 저장할 수 없는 앱 정보가 있습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bestemming kan sommige app-gegevens niet opslaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miejsce docelowe nie może zapisać części danych aplikacji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O destino não pode guardar parte dos dados da app"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назначение не может сохранить часть данных приложения"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปลายทางไม่สามารถเก็บข้อมูลบางส่วนของแอปได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef, uygulamanın bazı verilerini saklayamıyor"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đích đến không thể lưu một phần dữ liệu ứng dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移目标无法保存部分应用信息"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移目標無法儲存部分應用程式資訊"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷迻目標無法儲存部分應用程式信息"
+          }
+        }
+      }
+    },
+    "仍要迁移" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الترحيل على أي حال"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑ ⠁⠝⠽⠺⠁⠽"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trotzdem migrieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate anyway"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamen migri"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar de todos modos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrer quand même"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फिर भी स्थानांतरित करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tetap pindahkan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra comunque"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "それでも移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그래도 이동"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toch migreren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mimo to przenieś"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar mesmo assim"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всё равно перенести"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังคงย้าย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yine de taşı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vẫn chuyển"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要迁移"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要遷移"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要遷迻 ♡"
+          }
+        }
+      }
+    },
+    "• 文件权限与访问控制列表（ACL）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• أذونات الملفات وقوائم التحكم بالوصول (ACL)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ⠠⠋⠊⠇⠑ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠁⠝⠙ ⠁⠉⠉⠑⠎⠎ ⠉⠕⠝⠞⠗⠕⠇ ⠇⠊⠎⠞⠎ ⠐⠣⠠⠁⠠⠉⠠⠇⠐⠜"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Dateiberechtigungen und Zugriffskontrolllisten (ACL)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• File permissions and access control lists (ACL)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Dosierpermesoj kaj alirkontrolaj listoj (ACL)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Permisos de archivo y listas de control de acceso (ACL)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Autorisations de fichiers et listes de contrôle d’accès (ACL)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• फ़ाइल अनुमतियाँ और एक्सेस नियंत्रण सूचियाँ (ACL)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Izin berkas dan daftar kendali akses (ACL)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Permessi dei file e liste di controllo degli accessi (ACL)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ファイルのアクセス権とアクセス制御リスト（ACL）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 파일 권한 및 접근 제어 목록(ACL)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bestandsrechten en toegangsbeheerlijsten (ACL)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Uprawnienia plików i listy kontroli dostępu (ACL)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Permissões de ficheiro e listas de controlo de acesso (ACL)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Права доступа к файлам и списки управления доступом (ACL)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• สิทธิ์ไฟล์และรายการควบคุมการเข้าถึง (ACL)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Dosya izinleri ve erişim denetim listeleri (ACL)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Quyền tệp và danh sách kiểm soát truy cập (ACL)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 文件权限与访问控制列表（ACL）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 檔案權限與存取控制清單（ACL）"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 文檔權验與存取控制清單（ACL）"
+          }
+        }
+      }
+    },
+    "• 硬链接" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• الروابط الصلبة"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ⠠⠓⠁⠗⠙ ⠇⠊⠝⠅⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Hardlinks"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Hard links"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Malmolaj ligoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Enlaces duros"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Liens physiques"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• हार्ड लिंक"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Tautan keras"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Hard link"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ハードリンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 하드 링크"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Hardlinks"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Twarde dowiązania"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Links físicos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Жёсткие ссылки"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ฮาร์ดลิงก์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Sabit bağlantılar"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Liên kết cứng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 硬链接"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 硬連結"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 硬連结"
+          }
+        }
+      }
+    },
+    "• 资源叉" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• تفرعات الموارد"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ⠠⠗⠑⠎⠕⠥⠗⠉⠑ ⠋⠕⠗⠅⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Resource-Fork"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Resource forks"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Risurcforkoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bifurcaciones de recursos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Fourches de ressources"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• संसाधन फ़ोर्क"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Resource fork"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Resource fork"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• リソースフォーク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 리소스 포크"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Resource forks"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Odgałęzienia zasobów"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Forks de recursos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Ресурсные вилки"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• รีซอร์สฟอร์ก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Kaynak çatalları"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Nhánh tài nguyên"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 资源叉"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 資源分支"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 貲源分支"
+          }
+        }
+      }
+    },
+    "• POSIX 权限位" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• بتات أذونات POSIX"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ⠠⠏⠠⠕⠠⠎⠠⠊⠠⠭ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠃⠊⠞⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX-Berechtigungsbits"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX permission bits"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX-permesbitoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bits de permisos POSIX"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bits de permission POSIX"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX अनुमति बिट"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bit izin POSIX"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bit di permesso POSIX"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX パーミッション"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX 권한 비트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX-rechtenbits"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bity uprawnień POSIX"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bits de permissão POSIX"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Биты прав POSIX"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• บิตสิทธิ์ POSIX"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX izin bitleri"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Bit quyền POSIX"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX 权限位"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX 權限位"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• POSIX 權验位"
+          }
+        }
+      }
+    },
+    "目标磁盘「%@」不支持以下项目：\n\n%@\n\n迁移后应用仍可正常打开和使用，应用签名校验也仍然通过。但上面这些信息无法保留：文件权限会变成磁盘的固定默认值，部分应用内部共用的文件会各存一份（占用更多空间），少数应用的自定义图标等资源可能缺失。\n\n如果这个应用带有需要管理员权限的后台服务，迁移后可能无法正常工作。这种情况建议改用 APFS 格式的磁盘。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قرص الوجهة «%@» لا يدعم ما يلي:\n\n%@\n\nبعد الترحيل يظل التطبيق يفتح ويعمل بشكل طبيعي، ويظل التحقق من توقيع الشفرة ناجحًا. لكن هذه العناصر لا يمكن الحفاظ عليها: تصبح أذونات الملفات القيمة الافتراضية الثابتة للقرص، وتُخزَّن الملفات المشتركة داخل التطبيق نسخًا منفصلة (باستهلاك مساحة أكبر)، وقد تفقد بعض التطبيقات أيقوناتها المخصصة وموارد مشابهة.\n\nإذا كان لهذا التطبيق خدمة خلفية تتطلب امتيازات المسؤول، فقد لا تعمل بشكل صحيح بعد الترحيل. في هذه الحالة استخدم قرصًا بتنسيق APFS."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠙⠊⠎⠅ “%@” ⠙⠕⠑⠎ ⠝⠕⠞ ⠎⠥⠏⠏⠕⠗⠞⠒\n\n%@\n\n⠠⠁⠋⠞⠑⠗ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠞⠓⠑ ⠁⠏⠏ ⠎⠞⠊⠇⠇ ⠕⠏⠑⠝⠎ ⠁⠝⠙ ⠗⠥⠝⠎ ⠝⠕⠗⠍⠁⠇⠇⠽⠂ ⠁⠝⠙ ⠊⠞⠎ ⠉⠕⠙⠑ ⠎⠊⠛⠝⠁⠞⠥⠗⠑ ⠎⠞⠊⠇⠇ ⠧⠑⠗⠊⠋⠊⠑⠎⠲ ⠠⠞⠓⠑⠎⠑ ⠊⠞⠑⠍⠎ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ ⠋⠊⠇⠑ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠃⠑⠉⠕⠍⠑ ⠞⠓⠑ ⠙⠊⠎⠅’⠎ ⠋⠊⠭⠑⠙ ⠙⠑⠋⠁⠥⠇⠞⠂ ⠋⠊⠇⠑⠎ ⠎⠓⠁⠗⠑⠙ ⠊⠝⠎⠊⠙⠑ ⠞⠓⠑ ⠁⠏⠏ ⠁⠗⠑ ⠎⠞⠕⠗⠑⠙ ⠁⠎ ⠎⠑⠏⠁⠗⠁⠞⠑ ⠉⠕⠏⠊⠑⠎ ⠐⠣⠥⠎⠊⠝⠛ ⠍⠕⠗⠑ ⠎⠏⠁⠉⠑⠐⠜⠂ ⠁⠝⠙ ⠁ ⠋⠑⠺ ⠁⠏⠏⠎ ⠍⠁⠽ ⠇⠕⠎⠑ ⠉⠥⠎⠞⠕⠍ ⠊⠉⠕⠝⠎ ⠁⠝⠙ ⠎⠊⠍⠊⠇⠁⠗ ⠗⠑⠎⠕⠥⠗⠉⠑⠎⠲\n\n⠠⠊⠋ ⠞⠓⠊⠎ ⠁⠏⠏ ⠓⠁⠎ ⠁ ⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠎⠑⠗⠧⠊⠉⠑ ⠞⠓⠁⠞ ⠗⠑⠟⠥⠊⠗⠑⠎ ⠁⠙⠍⠊⠝⠊⠎⠞⠗⠁⠞⠕⠗ ⠏⠗⠊⠧⠊⠇⠑⠛⠑⠎⠂ ⠊⠞ ⠍⠁⠽ ⠝⠕⠞ ⠺⠕⠗⠅ ⠉⠕⠗⠗⠑⠉⠞⠇⠽ ⠁⠋⠞⠑⠗ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠲ ⠠⠊⠝ ⠞⠓⠁⠞ ⠉⠁⠎⠑⠂ ⠥⠎⠑ ⠁⠝ ⠠⠁⠠⠏⠠⠋⠠⠎⠤⠋⠕⠗⠍⠁⠞⠞⠑⠙ ⠙⠊⠎⠅ ⠊⠝⠎⠞⠑⠁⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zieldatenträger „%@“ unterstützt Folgendes nicht:\n\n%@\n\nNach der Migration lässt sich die App weiterhin normal öffnen und verwenden, und ihre Codesignatur wird weiterhin verifiziert. Diese Angaben können jedoch nicht erhalten werden: Dateiberechtigungen werden zum festen Standardwert des Datenträgers, innerhalb der App gemeinsam genutzte Dateien werden einzeln gespeichert (mehr Speicherbedarf), und bei wenigen Apps können benutzerdefinierte Symbole und ähnliche Ressourcen fehlen.\n\nHat die App einen Hintergrunddienst, der Administratorrechte benötigt, funktioniert sie nach der Migration möglicherweise nicht korrekt. Verwenden Sie in diesem Fall einen APFS-formatierten Datenträger."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination disk “%@” does not support:\n\n%@\n\nAfter migration the app still opens and runs normally, and its code signature still verifies. These items cannot be preserved: file permissions become the disk’s fixed default, files shared inside the app are stored as separate copies (using more space), and a few apps may lose custom icons and similar resources.\n\nIf this app has a background service that requires administrator privileges, it may not work correctly after migration. In that case, use an APFS-formatted disk instead."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cela disko “%@” ne subtenas:\n\n%@\n\nPost la migro la programo ankoraŭ malfermiĝas kaj funkcias normale, kaj ĝia kodsubskribo ankoraŭ validiĝas. Tamen ĉi tiuj eroj ne povas esti konservitaj: dosierpermesoj fariĝas la fiksa defaŭlto de la disko, dosieroj kunhavataj ene de la programo estas konservitaj aparte (uzante pli da spaco), kaj kelkaj programoj povas perdi proprajn piktogramojn kaj similajn rimedojn.\n\nSe ĉi tiu programo havas fonservon bezonantan administrajn privilegiojn, ĝi eble ne funkcios ĝuste post la migro. En tiu kazo uzu diskon en APFS-formato."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El disco de destino «%@» no admite:\n\n%@\n\nTras la migración, la app sigue abriéndose y funcionando con normalidad, y su firma de código sigue verificándose. Sin embargo, estos elementos no se pueden conservar: los permisos de archivo pasan a ser el valor predeterminado fijo del disco, los archivos compartidos dentro de la app se guardan por separado (ocupando más espacio) y algunas apps pueden perder sus iconos personalizados y recursos similares.\n\nSi esta app tiene un servicio en segundo plano que requiere privilegios de administrador, puede que no funcione correctamente tras la migración. En ese caso, use un disco con formato APFS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le disque de destination « %@ » ne prend pas en charge :\n\n%@\n\nAprès la migration, l’app s’ouvre et fonctionne normalement, et sa signature de code reste valide. Ces éléments ne peuvent toutefois pas être conservés : les autorisations de fichiers deviennent la valeur par défaut fixe du disque, les fichiers partagés au sein de l’app sont stockés séparément (espace supplémentaire utilisé) et quelques apps peuvent perdre leurs icônes personnalisées et ressources similaires.\n\nSi cette app dispose d’un service en arrière-plan nécessitant des privilèges administrateur, il risque de ne pas fonctionner correctement après la migration. Dans ce cas, utilisez un disque au format APFS."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गंतव्य डिस्क “%@” इन्हें समर्थित नहीं करती:\n\n%@\n\nस्थानांतरण के बाद ऐप सामान्य रूप से खुलता और चलता रहता है, और कोड हस्ताक्षर सत्यापन भी पास होता है। लेकिन ये जानकारी सुरक्षित नहीं रखी जा सकती: फ़ाइल अनुमतियाँ डिस्क का निश्चित डिफ़ॉल्ट बन जाती हैं, ऐप के भीतर साझा की गई फ़ाइलें अलग-अलग संग्रहीत होती हैं (अधिक स्थान लेती हैं), और कुछ ऐप्स अपने कस्टम आइकन व समान संसाधन खो सकते हैं।\n\nयदि इस ऐप में व्यवस्थापक विशेषाधिकार आवश्यक करने वाली पृष्ठभूमि सेवा है, तो स्थानांतरण के बाद यह ठीक से काम नहीं कर सकती। ऐसी स्थिति में APFS प्रारूप वाली डिस्क का उपयोग करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk tujuan “%@” tidak mendukung:\n\n%@\n\nSetelah dipindahkan, aplikasi tetap terbuka dan berjalan normal, serta verifikasi tanda tangan kode tetap lolos. Namun hal berikut tidak dapat dipertahankan: izin berkas menjadi nilai bawaan tetap disk, berkas yang dibagi di dalam aplikasi disimpan terpisah (memakai lebih banyak ruang), dan sebagian aplikasi mungkin kehilangan ikon khusus serta sumber daya serupa.\n\nJika aplikasi ini memiliki layanan latar belakang yang memerlukan hak administrator, aplikasi mungkin tidak berfungsi dengan benar setelah dipindahkan. Dalam hal ini, gunakan disk berformat APFS."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il disco di destinazione «%@» non supporta:\n\n%@\n\nDopo la migrazione l’app si apre e funziona normalmente e la firma del codice viene ancora verificata. Questi elementi però non possono essere conservati: i permessi dei file diventano il valore predefinito fisso del disco, i file condivisi all’interno dell’app vengono salvati separatamente (occupando più spazio) e alcune app possono perdere icone personalizzate e risorse simili.\n\nSe l’app dispone di un servizio in background che richiede privilegi di amministratore, dopo la migrazione potrebbe non funzionare correttamente. In tal caso, usa un disco formattato APFS."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行先のディスク「%@」は以下をサポートしていません：\n\n%@\n\n移行後もアプリは通常どおり起動・動作し、コード署名の検証も通ります。ただし上記の情報は保持できません。ファイルのアクセス権はディスクの固定値になり、アプリ内で共有されていたファイルは個別に保存されるため（容量を多く使います）、一部のアプリではカスタムアイコンなどのリソースが失われる場合があります。\n\n管理者権限を必要とするバックグラウンドサービスを持つアプリの場合、移行後に正常に動作しない可能性があります。その場合は APFS 形式のディスクをご利用ください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 디스크 “%@”은(는) 다음을 지원하지 않습니다:\n\n%@\n\n이동 후에도 앱은 정상적으로 열리고 실행되며 코드 서명 검증도 통과합니다. 다만 위 항목은 보존되지 않습니다. 파일 권한은 디스크의 고정 기본값이 되고, 앱 내부에서 공유되던 파일은 각각 따로 저장되어(공간을 더 사용) 일부 앱에서는 사용자 지정 아이콘 같은 리소스가 사라질 수 있습니다.\n\n관리자 권한이 필요한 백그라운드 서비스가 있는 앱은 이동 후 제대로 동작하지 않을 수 있습니다. 이 경우 APFS 형식 디스크를 사용하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bestemmingsschijf ‘%@’ ondersteunt het volgende niet:\n\n%@\n\nNa de migratie opent en werkt de app nog steeds normaal en blijft de codehandtekening geldig. Deze onderdelen kunnen echter niet worden bewaard: bestandsrechten worden de vaste standaardwaarde van de schijf, bestanden die binnen de app worden gedeeld, worden afzonderlijk opgeslagen (kost meer ruimte) en enkele apps kunnen aangepaste pictogrammen en dergelijke bronnen verliezen.\n\nAls deze app een achtergronddienst heeft die beheerdersrechten vereist, werkt die na de migratie mogelijk niet goed. Gebruik in dat geval een APFS-geformatteerde schijf."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dysk docelowy „%@” nie obsługuje:\n\n%@\n\nPo przeniesieniu aplikacja nadal otwiera się i działa normalnie, a jej podpis kodu nadal jest weryfikowany. Tych informacji nie można jednak zachować: uprawnienia plików stają się stałą wartością domyślną dysku, pliki współdzielone wewnątrz aplikacji są zapisywane osobno (zajmując więcej miejsca), a nieliczne aplikacje mogą utracić niestandardowe ikony i podobne zasoby.\n\nJeśli aplikacja ma usługę w tle wymagającą uprawnień administratora, po przeniesieniu może działać nieprawidłowo. W takim przypadku użyj dysku w formacie APFS."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O disco de destino «%@» não suporta:\n\n%@\n\nApós a migração, a app continua a abrir e a funcionar normalmente, e a assinatura de código continua a ser verificada. No entanto, estes itens não podem ser preservados: as permissões de ficheiro passam a ser o valor predefinido fixo do disco, os ficheiros partilhados dentro da app são guardados separadamente (ocupando mais espaço) e algumas apps podem perder ícones personalizados e recursos semelhantes.\n\nSe esta app tiver um serviço em segundo plano que exija privilégios de administrador, pode não funcionar corretamente após a migração. Nesse caso, use um disco formatado em APFS."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Диск назначения «%@» не поддерживает:\n\n%@\n\nПосле переноса приложение по-прежнему открывается и работает, а его подпись кода по-прежнему проходит проверку. Однако эти данные сохранить нельзя: права доступа к файлам становятся фиксированным значением диска, файлы, общие внутри приложения, сохраняются отдельными копиями (занимая больше места), а некоторые приложения могут потерять собственные значки и подобные ресурсы.\n\nЕсли у приложения есть фоновая служба, требующая прав администратора, после переноса она может работать неправильно. В этом случае используйте диск в формате APFS."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดิสก์ปลายทาง “%@” ไม่รองรับ:\n\n%@\n\nหลังย้ายแล้วแอปยังเปิดและทำงานได้ตามปกติ และการตรวจสอบลายเซ็นโค้ดยังผ่าน แต่ข้อมูลต่อไปนี้ไม่สามารถเก็บไว้ได้: สิทธิ์ของไฟล์จะกลายเป็นค่าเริ่มต้นคงที่ของดิสก์ ไฟล์ที่ใช้ร่วมกันภายในแอปจะถูกเก็บแยกกัน (ใช้พื้นที่มากขึ้น) และแอปบางตัวอาจสูญเสียไอคอนที่กำหนดเองและทรัพยากรลักษณะเดียวกัน\n\nหากแอปนี้มีบริการเบื้องหลังที่ต้องใช้สิทธิ์ผู้ดูแลระบบ อาจทำงานไม่ถูกต้องหลังย้าย ในกรณีนี้ขอแนะนำให้ใช้ดิสก์รูปแบบ APFS"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef disk “%@” şunları desteklemiyor:\n\n%@\n\nTaşıma sonrasında uygulama yine normal açılır ve çalışır, kod imzası doğrulaması da geçer. Ancak bu bilgiler korunamaz: dosya izinleri diskin sabit varsayılanı olur, uygulama içinde paylaşılan dosyalar ayrı ayrı saklanır (daha fazla alan kullanır) ve birkaç uygulama özel simgelerini ve benzeri kaynaklarını kaybedebilir.\n\nBu uygulamanın yönetici ayrıcalığı gerektiren bir arka plan hizmeti varsa taşıma sonrasında düzgün çalışmayabilir. Bu durumda APFS biçimli bir disk kullanın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đĩa đích “%@” không hỗ trợ:\n\n%@\n\nSau khi chuyển, ứng dụng vẫn mở và hoạt động bình thường, chữ ký mã vẫn được xác minh. Tuy nhiên những mục trên không thể giữ lại: quyền tệp trở thành giá trị mặc định cố định của đĩa, các tệp dùng chung bên trong ứng dụng được lưu riêng (tốn thêm dung lượng) và một số ứng dụng có thể mất biểu tượng tùy chỉnh cùng các tài nguyên tương tự.\n\nNếu ứng dụng có dịch vụ nền yêu cầu quyền quản trị, ứng dụng có thể không hoạt động đúng sau khi chuyển. Trong trường hợp đó, hãy dùng đĩa định dạng APFS."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标磁盘「%@」不支持以下项目：\n\n%@\n\n迁移后应用仍可正常打开和使用，应用签名校验也仍然通过。但上面这些信息无法保留：文件权限会变成磁盘的固定默认值，部分应用内部共用的文件会各存一份（占用更多空间），少数应用的自定义图标等资源可能缺失。\n\n如果这个应用带有需要管理员权限的后台服务，迁移后可能无法正常工作。这种情况建议改用 APFS 格式的磁盘。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標磁碟「%@」不支援以下項目：\n\n%@\n\n遷移後應用程式仍可正常開啟和使用，應用程式簽章驗證也仍然通過。但上面這些資訊無法保留：檔案權限會變成磁碟的固定預設值，部分應用程式內部共用的檔案會各存一份（佔用更多空間），少數應用程式自訂的圖示等資源可能遺失。\n\n如果這個應用程式帶有需要管理員權限的背景服務，遷移後可能無法正常運作。這種情況建議改用 APFS 格式的磁碟。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標磁艓「%@」不支援以下項目：\n\n%@\n\n遷迻後應用程式仍可正常開啟和使用，應用程式簽章驗證也仍然通過。但上面這些信息無法保留：文檔權验會變成磁艓的固定預設值，部分應用程式內部共用的文檔會各存一份（佔用更多空間），少數應用程式自訂的圖示等貲源可能遗夨。\n\n如果這個應用程式帶有需要管理員權验的背景服務，遷迻後可能無法正常運作。這種情況建議改用 APFS 格式的磁艓。"
+          }
+        }
+      }
+    },
+    "详情请参阅文档" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "راجع الوثائق لمزيد من التفاصيل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠑⠑ ⠞⠓⠑ ⠙⠕⠉⠥⠍⠑⠝⠞⠁⠞⠊⠕⠝ ⠋⠕⠗ ⠙⠑⠞⠁⠊⠇⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Details in der Dokumentation"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See the documentation for details"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidu la dokumentaron por detaloj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consulta la documentación para más detalles"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir la documentation pour plus de détails"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "विवरण के लिए दस्तावेज़ देखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lihat dokumentasi untuk detailnya"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vedi la documentazione per i dettagli"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細はドキュメントをご覧ください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자세한 내용은 문서를 참조하세요"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zie de documentatie voor meer informatie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szczegóły w dokumentacji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consulte a documentação para mais detalhes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробнее см. в документации"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดูรายละเอียดได้ในเอกสาร"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayrıntılar için belgelere bakın"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem tài liệu để biết chi tiết"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "详情请参阅文档"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳情請參閱文件"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳情請參閱文件"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
