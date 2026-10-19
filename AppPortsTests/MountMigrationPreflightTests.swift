@@ -159,9 +159,16 @@ struct MountMigrationPreflightTests {
                 == "https://docs-appports.shimoko.com/why-apfs.html#prepare-apfs")
         #expect(DocumentationLink.url(page: "why-apfs", language: "zh-Hant").absoluteString
                 == "https://docs-appports.shimoko.com/zh-Hant/why-apfs.html")
+        // The published site only ships zh-Hans, zh-Hant and en. Any other
+        // interface language must fall back to the English edition instead of a
+        // locale directory that was never built (which would 404).
         #expect(DocumentationLink.url(page: "datamigrae/mount-migration", language: "ja").absoluteString
-                == "https://docs-appports.shimoko.com/ja/datamigrae/mount-migration.html")
-        #expect(DocumentationLink.sitePrefix(for: "de-DE") == "de/")
+                == "https://docs-appports.shimoko.com/en/datamigrae/mount-migration.html")
+        #expect(DocumentationLink.url(page: "storage-capabilities", anchor: "summary", language: "en").absoluteString
+                == "https://docs-appports.shimoko.com/en/storage-capabilities.html#summary")
+        #expect(DocumentationLink.url(page: "storage-capabilities", anchor: "summary", language: "zh-Hans").absoluteString
+                == "https://docs-appports.shimoko.com/storage-capabilities.html#summary")
+        #expect(DocumentationLink.sitePrefix(for: "de-DE") == "en/")
         #expect(DocumentationLink.sitePrefix(for: "zh-Hant-TW") == "zh-Hant/")
         #expect(DocumentationLink.sitePrefix(for: "zh-martian") == "")
         #expect(DocumentationLink.sitePrefix(for: "ru") == "en/")

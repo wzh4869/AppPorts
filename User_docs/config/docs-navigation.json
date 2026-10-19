@@ -31,6 +31,11 @@
       "icon": "HardDrive"
     },
     {
+      "slug": "storage-capabilities",
+      "name": "目标盘存不住的应用信息",
+      "icon": "HardDrive"
+    },
+    {
       "name": "原理",
       "icon": "BookOpen",
       "children": [

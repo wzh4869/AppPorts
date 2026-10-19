@@ -84,7 +84,8 @@
       "警告": "警告",
       "详细说明": "详细说明",
       "赞助者": "赞助者",
-      "金额（CNY）": "金额（CNY）"
+      "金额（CNY）": "金额（CNY）",
+      "目标盘存不住的应用信息": "目标盘存不住的应用信息"
     },
     "provider": {
       "Copy Markdown(page actions)": "复制 Markdown",
@@ -140,7 +141,8 @@
       "archive/overview": "保留旧版功能与未采用方案，标明版本、状态和当前入口。",
       "archive/data-signing": "旧版流程记录；当前迁移不再附带自动签名。",
       "archive/app-strategies": "保留早期入口结构、启动壳变化与默认关闭原型的说明。",
-      "archive/mount-experiments": "保留磁盘映像、系统挂载配置与守护进程方案的验证结果。"
+      "archive/mount-experiments": "保留磁盘映像、系统挂载配置与守护进程方案的验证结果。",
+      "storage-capabilities": "目标盘缺少哪些能力、迁移后会怎样、以及怎样处理。"
     }
   },
   "en": {
@@ -228,7 +230,8 @@
       "警告": "Warning",
       "详细说明": "Details",
       "赞助者": "Sponsor",
-      "金额（CNY）": "Amount (CNY)"
+      "金额（CNY）": "Amount (CNY)",
+      "目标盘存不住的应用信息": "What the destination cannot store"
     },
     "provider": {
       "Copy Markdown(page actions)": "Copy Markdown",
@@ -284,7 +287,8 @@
       "archive/overview": "Older features and unused approaches, with their status and current alternatives.",
       "archive/data-signing": "Historical workflows; current migration does not automatically re-sign apps.",
       "archive/app-strategies": "Early local entries, launcher changes and the prototype disabled by default.",
-      "archive/mount-experiments": "Findings from disk images, system mount configuration and daemon experiments."
+      "archive/mount-experiments": "Findings from disk images, system mount configuration and daemon experiments.",
+      "storage-capabilities": "Which capabilities a destination may lack, what changes after migration, and what to do."
     }
   },
   "zh-Hant": {
@@ -372,7 +376,8 @@
       "警告": "警告",
       "详细说明": "詳細說明",
       "赞助者": "贊助者",
-      "金额（CNY）": "金額（CNY）"
+      "金额（CNY）": "金額（CNY）",
+      "目标盘存不住的应用信息": "目標碟存不住的应用程式資訊"
     },
     "provider": {
       "Copy Markdown(page actions)": "複製 Markdown",
@@ -428,7 +433,8 @@
       "archive/overview": "保留舊版功能與未採用方案，標明版本、狀態和當前入口。",
       "archive/data-signing": "舊版流程記錄；當前遷移不再附帶自動簽名。",
       "archive/app-strategies": "保留早期入口結構、啟動殼變化與預設關閉原型的說明。",
-      "archive/mount-experiments": "保留磁碟映像、系統掛載配置與系統背景服務方案的驗證結果。"
+      "archive/mount-experiments": "保留磁碟映像、系統掛載配置與系統背景服務方案的驗證結果。",
+      "storage-capabilities": "目標碟缺少哪些能力、遷移後會怎樣、以及怎樣處理。"
     }
   }
 }

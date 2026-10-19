@@ -18,8 +18,8 @@ async function html(file) {
   return cache.get(file);
 }
 const expected = [...navigation.main.flatMap(entry => entry.children ?? [entry]).map(entry => entry.slug), ...navigation.auxiliary].sort();
-assert.equal(expected.length, 27);
-assert.equal(pages.length, 81);
+assert.equal(expected.length, 28);
+assert.equal(pages.length, 84);
 for (const locale of locales) {
   assert.deepEqual(pages.filter(page => page.locale === locale).map(page => page.slug).sort(), expected);
   for (const group of ['text', 'provider', 'descriptions']) {
@@ -87,7 +87,7 @@ for (const slug of ['research/sandbox-symlink', 'research/sandbox-mountpoint', '
 assert.equal(navigation.main[0].slug, 'AppPorts');
 assert.equal(navigation.main.at(-1).slug, 'glossary');
 assert.equal(navigation.main.at(-1).name, '名词解释');
-assert.equal(navigation.main.flatMap(entry => entry.children ?? [entry]).length, 26);
+assert.equal(navigation.main.flatMap(entry => entry.children ?? [entry]).length, 27);
 assert.deepEqual(navigation.main.filter(entry => entry.children).map(entry => entry.name), ['原理', '博客', '帮助与支持', '历史功能归档']);
 assert.equal(navigation.main.find(entry => entry.name === '历史功能归档').children.length, 4);
 for (const slug of ['settings', 'changelog', 'sponsor', 'licenses', 'privacy']) assert.ok(navigation.main.some(entry => entry.slug === slug));

@@ -7,21 +7,17 @@ import Foundation
 
 /// 文档站链接：按当前界面语言打开对应语言的页面。
 ///
-/// 文档站有简体中文（根目录）、繁体中文、英语、日语、韩语、德语、法语、西班牙语八个站点；
-/// 其他界面语言打开英文站。锚点使用文档里显式声明的 `{#id}`，各语言页面保持一致。
+/// 文档站只发布简体中文（根目录）、繁体中文（`zh-Hant/`）和英语（`en/`）三种语言。
+/// 其余界面语言一律打开英文站——不存在的语言目录会返回 404，不能靠拼前缀碰运气。
+/// 锚点使用文档里显式声明的 `{#id}`，三种语言的页面保持一致。
 enum DocumentationLink {
     static let baseURL = URL(string: "https://docs-appports.shimoko.com/")!
 
-    /// 语言代码 → 文档站目录前缀
+    /// 语言代码 → 文档站目录前缀。只包含实际发布的语言。
     private static let sitePrefixes: [String: String] = [
         "zh-Hans": "",
         "zh-Hant": "zh-Hant/",
-        "en": "en/",
-        "ja": "ja/",
-        "ko": "ko/",
-        "de": "de/",
-        "fr": "fr/",
-        "es": "es/"
+        "en": "en/"
     ]
 
     /// - Parameters:
