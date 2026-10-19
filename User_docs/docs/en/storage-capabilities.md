@@ -69,6 +69,19 @@ When a capability is missing, a warning appears before the migration listing exa
 
 > Erasing a disk deletes data on the selected object. Confirm your backup is usable before changing formats, and do not reformat an entire drive just to bypass a warning.
 
+## Why an app bundle on an external drive may already be degraded {#degraded}
+
+When you migrate onto a disk that cannot store every attribute (exFAT, for example), the copy is already written without ACLs, hard links, resource forks and permission bits. This is not a problem that appears during restore — **the loss happened at migration time**, and the copy has been degraded ever since.
+
+Restoring copies that same bundle back to the internal disk, but copying cannot restore information that was never written. Worse, once the restore completes, the external original is deleted, so the gap becomes permanent.
+
+AppPorts therefore inspects the volume that holds the external copy before restoring. If that disk cannot represent these items, it warns that the bundle may already be degraded and offers two choices:
+
+- **Restore anyway**: accept the missing attributes and move the app back.
+- **Cancel**: leave the app on the external drive, or uninstall it and reinstall the official build.
+
+If these apps depend on permissions or access control — a privileged background service, for instance — reinstalling the official build is a better choice than restoring a degraded copy.
+
 ## When a migration is refused {#refused}
 
 Everything above is "works, but incomplete." There is another class of case where AppPorts stops and keeps the originals, because continuing would genuinely lose something:

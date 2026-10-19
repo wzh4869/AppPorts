@@ -179353,6 +179353,417 @@
           }
         }
       }
+    },
+    "外部存储上的应用包可能已降级" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قد تكون حزمة التطبيق على القرص الخارجي قد فقدت بعض البيانات بالفعل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏ ⠃⠥⠝⠙⠇⠑ ⠕⠝ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠍⠁⠽ ⠁⠇⠗⠑⠁⠙⠽ ⠃⠑ ⠙⠑⠛⠗⠁⠙⠑⠙"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das App-Bundle auf dem externen Laufwerk ist möglicherweise bereits eingeschränkt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app bundle on the external drive may already be degraded"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La programa pakaĵo sur la ekstera disko eble jam estas degradita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El paquete de la app en el disco externo puede estar ya degradado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le bundle de l’app sur le disque externe est peut-être déjà dégradé"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बाहरी डिस्क पर ऐप बंडल पहले से घटा हुआ हो सकता है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bundel aplikasi di disk eksternal mungkin sudah berkurang"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bundle dell’app sul disco esterno potrebbe essere già degradato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部ドライブ上のアプリはすでに縮退している可能性があります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "외장 드라이브의 앱 번들이 이미 손상되었을 수 있습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app-bundel op de externe schijf is mogelijk al beperkt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakiet aplikacji na dysku zewnętrznym może być już ograniczony"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O pacote da app no disco externo pode já estar degradado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пакет приложения на внешнем диске мог уже потерять часть данных"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชุดแอปบนดิสก์ภายนอกอาจลดทอนไปแล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici diskteki uygulama paketi zaten kısıtlanmış olabilir"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gói ứng dụng trên ổ ngoài có thể đã bị giảm cấp"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部存储上的应用包可能已降级"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外接磁碟上的應用程式套件可能已降級"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外接磁艓上的應用程式套件可能已降級"
+          }
+        }
+      }
+    },
+    "仍要还原" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاستعادة على أي حال"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠑ ⠁⠝⠽⠺⠁⠽"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trotzdem wiederherstellen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore anyway"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamen restaŭri"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar de todos modos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer quand même"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फिर भी पुनर्स्थापित करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tetap pulihkan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina comunque"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "それでも復元"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그래도 복원"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toch herstellen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mimo to przywróć"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar mesmo assim"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Всё равно восстановить"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังคงกู้คืน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yine de geri yükle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vẫn khôi phục"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要还原"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要還原"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要還原 ♡"
+          }
+        }
+      }
+    },
+    "以下应用目前存放在「%@」上，这块磁盘不支持以下项目：\n\n%@\n\n这些应用是在迁出时被复制到这里的，当时就已经无法保留上述信息。还原会把这份副本复制回本机，但无法补回已经丢失的部分——还原完成后，外部原件会被删除，这些缺失将变成永久的。\n\n如果这些应用对权限或访问控制有要求，建议不要在此时还原，而是重新安装官方版本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذه التطبيقات موجودة على «%@» الذي لا يدعم ما يلي:\n\n%@\n\nنُسخت إلى هناك أثناء الترحيل، حين لم يكن بالإمكان الحفاظ على هذه العناصر أصلًا. الاستعادة ستنسخ الحزمة نفسها إلى القرص الداخلي، لكنها لن تعيد ما فُقد؛ وعند الانتهاء يُحذف الأصل الخارجي فتصبح الفجوة دائمة.\n\nإذا كانت هذه التطبيقات تعتمد على الأذونات أو التحكم بالوصول، فالأفضل عدم الاستعادة الآن وإعادة تثبيت النسخة الرسمية."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑⠎⠑ ⠁⠏⠏⠎ ⠁⠗⠑ ⠎⠞⠕⠗⠑⠙ ⠕⠝ “%@”⠂ ⠺⠓⠊⠉⠓ ⠙⠕⠑⠎ ⠝⠕⠞ ⠎⠥⠏⠏⠕⠗⠞⠒\n\n%@\n\n⠠⠞⠓⠑⠽ ⠺⠑⠗⠑ ⠉⠕⠏⠊⠑⠙ ⠞⠓⠑⠗⠑ ⠙⠥⠗⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠂ ⠺⠓⠑⠝ ⠞⠓⠑⠎⠑ ⠊⠞⠑⠍⠎ ⠉⠕⠥⠇⠙ ⠁⠇⠗⠑⠁⠙⠽ ⠝⠕⠞ ⠃⠑ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠲ ⠠⠗⠑⠎⠞⠕⠗⠊⠝⠛ ⠉⠕⠏⠊⠑⠎ ⠞⠓⠊⠎ ⠎⠁⠍⠑ ⠃⠥⠝⠙⠇⠑ ⠃⠁⠉⠅ ⠞⠕ ⠞⠓⠑ ⠊⠝⠞⠑⠗⠝⠁⠇ ⠙⠊⠎⠅⠂ ⠃⠥⠞ ⠉⠁⠝⠝⠕⠞ ⠗⠑⠉⠕⠧⠑⠗ ⠺⠓⠁⠞ ⠺⠁⠎ ⠁⠇⠗⠑⠁⠙⠽ ⠇⠕⠎⠞ — ⠁⠝⠙ ⠕⠝⠉⠑ ⠞⠓⠑ ⠗⠑⠎⠞⠕⠗⠑ ⠉⠕⠍⠏⠇⠑⠞⠑⠎⠂ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠊⠎ ⠙⠑⠇⠑⠞⠑⠙⠂ ⠍⠁⠅⠊⠝⠛ ⠞⠓⠑ ⠛⠁⠏ ⠏⠑⠗⠍⠁⠝⠑⠝⠞⠲\n\n⠠⠊⠋ ⠞⠓⠑⠎⠑ ⠁⠏⠏⠎ ⠙⠑⠏⠑⠝⠙ ⠕⠝ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠕⠗ ⠁⠉⠉⠑⠎⠎ ⠉⠕⠝⠞⠗⠕⠇⠂ ⠉⠕⠝⠎⠊⠙⠑⠗ ⠝⠕⠞ ⠗⠑⠎⠞⠕⠗⠊⠝⠛ ⠝⠕⠺ ⠁⠝⠙ ⠗⠑⠊⠝⠎⠞⠁⠇⠇⠊⠝⠛ ⠞⠓⠑ ⠕⠋⠋⠊⠉⠊⠁⠇ ⠃⠥⠊⠇⠙ ⠊⠝⠎⠞⠑⠁⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Apps liegen auf „%@“, das Folgendes nicht unterstützt:\n\n%@\n\nSie wurden bei der Migration dorthin kopiert, als diese Angaben bereits nicht erhalten werden konnten. Eine Wiederherstellung kopiert dasselbe Bundle zurück auf den internen Datenträger, kann das Verlorene aber nicht zurückholen – und nach Abschluss wird das externe Original gelöscht, wodurch die Lücke dauerhaft wird.\n\nWenn diese Apps auf Berechtigungen oder Zugriffskontrolle angewiesen sind, sollten Sie jetzt nicht wiederherstellen, sondern die offizielle Version neu installieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These apps are stored on “%@”, which does not support:\n\n%@\n\nThey were copied there during migration, when these items could already not be preserved. Restoring copies this same bundle back to the internal disk, but cannot recover what was already lost — and once the restore completes, the external original is deleted, making the gap permanent.\n\nIf these apps depend on permissions or access control, consider not restoring now and reinstalling the official build instead."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiuj programoj troviĝas sur “%@”, kiu ne subtenas:\n\n%@\n\nIli estis kopiitaj tien dum la migro, kiam ĉi tiuj eroj jam ne povis esti konservitaj. Restaŭro rekopios la saman pakaĵon al la interna disko, sed ne povas rehavi tion, kio jam perdiĝis; post kompletigo la ekstera originalo estos forigita kaj la manko fariĝos daŭra.\n\nSe ĉi tiuj programoj dependas de permesoj aŭ alirkontrolo, prefere ne restaŭru nun sed reinstalu la oficialan version."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas apps están en «%@», que no admite:\n\n%@\n\nSe copiaron allí durante la migración, cuando esos elementos ya no podían conservarse. Restaurar vuelve a copiar el mismo paquete al disco interno, pero no puede recuperar lo ya perdido; además, al terminar se elimina el original externo y la pérdida pasa a ser permanente.\n\nSi estas apps dependen de permisos o control de acceso, conviene no restaurar ahora y reinstalar la versión oficial."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ces apps se trouvent sur « %@ », qui ne prend pas en charge :\n\n%@\n\nElles y ont été copiées lors de la migration, alors que ces éléments ne pouvaient déjà pas être conservés. Une restauration recopie ce même bundle sur le disque interne, mais ne peut pas récupérer ce qui est déjà perdu — et une fois terminée, l’original externe est supprimé, rendant la perte définitive.\n\nSi ces apps dépendent d’autorisations ou de contrôles d’accès, mieux vaut ne pas restaurer maintenant et réinstaller la version officielle."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ये ऐप “%@” पर मौजूद हैं, जो इन्हें समर्थित नहीं करती:\n\n%@\n\nइन्हें स्थानांतरण के समय वहाँ कॉपी किया गया था, जब ये जानकारी पहले से ही सुरक्षित नहीं रखी जा सकती थी। पुनर्स्थापित करने पर वही बंडल फिर आंतरिक डिस्क पर कॉपी होगा, पर जो जा चुका है वह वापस नहीं आएगा; पूरा होने पर बाहरी मूल प्रति हटा दी जाएगी और कमी स्थायी हो जाएगी।\n\nअगर ये ऐप अनुमतियों या एक्सेस नियंत्रण पर निर्भर हैं, तो अभी पुनर्स्थापित करने के बजाय आधिकारिक संस्करण फिर से इंस्टॉल करना बेहतर है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi ini tersimpan di “%@”, yang tidak mendukung:\n\n%@\n\nKeduanya disalin ke sana saat pemindahan, ketika hal tersebut sudah tidak dapat dipertahankan. Memulihkan akan menyalin bundel yang sama kembali ke disk internal, tetapi tidak dapat mengembalikan yang sudah hilang; setelah selesai, salinan asli eksternal dihapus sehingga kekurangan menjadi permanen.\n\nJika aplikasi ini bergantung pada izin atau kendali akses, sebaiknya jangan pulihkan sekarang dan pasang ulang versi resminya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Queste app si trovano su «%@», che non supporta:\n\n%@\n\nSono state copiate lì durante la migrazione, quando questi elementi non potevano già essere conservati. Il ripristino ricopia lo stesso bundle sul disco interno, ma non può recuperare ciò che è già andato perso; inoltre al termine l’originale esterno viene eliminato e la mancanza diventa definitiva.\n\nSe queste app dipendono da permessi o controllo degli accessi, è meglio non ripristinare ora e reinstallare la versione ufficiale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次のアプリは「%@」に保存されており、このディスクは以下をサポートしていません：\n\n%@\n\nこれらのアプリは移行時にここへコピーされたもので、その時点で上記の情報は保持できませんでした。復元すると同じバンドルを本機へコピーしますが、すでに失われた部分は取り戻せません。復元が完了すると外部の原本は削除され、欠落は恒久的になります。\n\n権限やアクセス制御に依存するアプリの場合、今は復元せず公式版を再インストールすることを検討してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 앱은 “%@”에 저장되어 있으며 이 디스크는 다음을 지원하지 않습니다:\n\n%@\n\n이 앱들은 이동할 때 여기로 복사되었고, 그 시점에 이미 위 항목을 보존할 수 없었습니다. 복원하면 같은 번들을 다시 본체로 복사하지만 이미 사라진 부분은 되돌릴 수 없습니다. 복원이 끝나면 외부 원본이 삭제되어 누락이 영구적이 됩니다.\n\n권한이나 접근 제어에 의존하는 앱이라면 지금 복원하지 말고 공식 버전을 다시 설치하는 편이 좋습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze apps staan op ‘%@’, dat het volgende niet ondersteunt:\n\n%@\n\nZe zijn daar tijdens de migratie naartoe gekopieerd, toen deze onderdelen al niet bewaard konden worden. Herstellen kopieert dezelfde bundel terug naar de interne schijf, maar kan het verlorene niet terughalen; na afloop wordt het externe origineel verwijderd, waardoor het gat blijvend is.\n\nAls deze apps afhankelijk zijn van rechten of toegangsbeheer, kun je ze beter niet nu herstellen maar de officiële versie opnieuw installeren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te aplikacje znajdują się na „%@”, który nie obsługuje:\n\n%@\n\nZostały tam skopiowane podczas przenoszenia, gdy tych informacji nie dało się już zachować. Przywrócenie skopiuje ten sam pakiet z powrotem na dysk wewnętrzny, ale nie odzyska utraconych danych; po zakończeniu zewnętrzny oryginał zostanie usunięty i brak stanie się trwały.\n\nJeśli te aplikacje zależą od uprawnień lub kontroli dostępu, lepiej nie przywracać ich teraz, tylko zainstalować oficjalną wersję ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas apps estão em «%@», que não suporta:\n\n%@\n\nForam copiadas para lá durante a migração, quando estes itens já não podiam ser preservados. Restaurar copia o mesmo pacote de volta para o disco interno, mas não recupera o que já se perdeu — e, ao concluir, o original externo é eliminado, tornando a perda permanente.\n\nSe estas apps dependem de permissões ou controlo de acesso, talvez seja melhor não restaurar agora e reinstalar a versão oficial."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эти приложения находятся на «%@», который не поддерживает:\n\n%@\n\nОни были скопированы туда при переносе, когда эти данные уже нельзя было сохранить. Восстановление скопирует тот же пакет обратно на внутренний диск, но не вернёт утраченное; после завершения внешний оригинал будет удалён, и потеря станет постоянной.\n\nЕсли этим приложениям важны права доступа или списки управления доступом, лучше не восстанавливать их сейчас, а переустановить официальную версию."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปเหล่านี้อยู่บน “%@” ซึ่งไม่รองรับ:\n\n%@\n\nถูกคัดลอกไปไว้ที่นั่นตอนย้ายออก ซึ่งตอนนั้นก็เก็บข้อมูลเหล่านี้ไม่ได้แล้ว การกู้คืนจะคัดลอกชุดเดียวกันกลับมาที่ดิสก์ภายใน แต่กู้สิ่งที่หายไปแล้วคืนไม่ได้ และเมื่อเสร็จแล้วต้นฉบับภายนอกจะถูกลบ ทำให้การขาดหายกลายเป็นถาวร\n\nหากแอปเหล่านี้ต้องพึ่งพาสิทธิ์หรือการควบคุมการเข้าถึง ควรยังไม่กู้คืนตอนนี้แล้วติดตั้งเวอร์ชันทางการใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulamalar “%@” üzerinde ve bu disk şunları desteklemiyor:\n\n%@\n\nTaşıma sırasında oraya kopyalandılar ve o anda bu bilgiler zaten korunamıyordu. Geri yükleme aynı paketi dahili diske geri kopyalar, ancak kaybolanı geri getiremez; tamamlandığında harici asıl kopya silinir ve eksiklik kalıcı olur.\n\nBu uygulamalar izinlere veya erişim denetimine bağlıysa şimdi geri yüklemek yerine resmi sürümü yeniden kurmayı düşünün."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các ứng dụng này nằm trên “%@”, đĩa này không hỗ trợ:\n\n%@\n\nChúng được sao chép tới đó khi chuyển đi, lúc đó những mục này đã không thể giữ lại. Khôi phục sẽ sao chép lại cùng gói đó về ổ trong, nhưng không thể lấy lại phần đã mất; sau khi hoàn tất, bản gốc bên ngoài sẽ bị xóa và thiếu hụt trở thành vĩnh viễn.\n\nNếu các ứng dụng này phụ thuộc vào quyền hoặc kiểm soát truy cập, nên không khôi phục lúc này mà cài lại bản chính thức."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下应用目前存放在「%@」上，这块磁盘不支持以下项目：\n\n%@\n\n这些应用是在迁出时被复制到这里的，当时就已经无法保留上述信息。还原会把这份副本复制回本机，但无法补回已经丢失的部分——还原完成后，外部原件会被删除，这些缺失将变成永久的。\n\n如果这些应用对权限或访问控制有要求，建议不要在此时还原，而是重新安装官方版本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下應用程式目前存放在「%@」上，這塊磁碟不支援以下項目：\n\n%@\n\n這些應用程式是在遷出時被複製到這裡的，當時就已經無法保留上述資訊。還原會把這份副本複製回本機，但無法補回已經遺失的部分——還原完成後，外接原件會被刪除，這些缺失將變成永久的。\n\n如果這些應用程式對權限或存取控制有要求，建議不要在此時還原，而是重新安裝官方版本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下應用程式目前存放在「%@」上，這塊磁艓不支援以下項目：\n\n%@\n\n這些應用程式是在遷出時被複製到這裡的，當時就已經無法保留上述信息。還原會把這份副本複製回本機，但無法補回已經遺失的部分——還原完成後，外接原件會被刪除，這些缺失將變成永久的。\n\n如果這些應用程式對權限或存取控制有要求，建議不要在此時還原，而是重新安裝官方版本。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

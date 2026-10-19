@@ -340,6 +340,37 @@ final class MigrationSafetyRenderTests: XCTestCase {
         }
     }
 
+    /// Exports the restore-time warning in both appearances.
+    ///
+    /// This is the counterpart of the migration warning: it explains that the
+    /// external copy was already written without attributes the volume cannot
+    /// hold, so restoring brings the loss home instead of fixing it.
+    @MainActor
+    func testRenderDegradedRestoreWarning() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to export the degraded restore warning")
+        }
+        let output = URL(fileURLWithPath: path, isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+
+        let missing: [StorageCapabilities.Missing] = [.acl, .hardlinks, .resourceFork, .permissions]
+        let items = missing.map { $0.localizedDescription }.joined(separator: "\n")
+        let request = WarningSheetRequest(
+            title: "外部存储上的应用包可能已降级".localized,
+            tint: .orange,
+            intro: String(format: "以下应用目前存放在「%@」上，这块磁盘不支持以下项目：\n\n%@\n\n这些应用是在迁出时被复制到这里的，当时就已经无法保留上述信息。还原会把这份副本复制回本机，但无法补回已经丢失的部分——还原完成后，外部原件会被删除，这些缺失将变成永久的。\n\n如果这些应用对权限或访问控制有要求，建议不要在此时还原，而是重新安装官方版本。".localized, "My Passport", items),
+            documentationURL: DocumentationLink.url(page: "storage-capabilities", anchor: "degraded"),
+            cancelTitle: "取消".localized,
+            actions: [WarningAction("仍要还原".localized, style: .preferred) {}])
+
+        for scheme in [ColorScheme.light, .dark] {
+            let suffix = scheme == .dark ? "-dark" : ""
+            try await render(WarningSheet(request), size: NSSize(width: 520, height: 560),
+                             to: output.appendingPathComponent("degraded-restore-warning\(suffix).png"),
+                             colorScheme: scheme)
+        }
+    }
+
     /// Mirrors `ContentView.makeStorageLimitationRequest` so the render uses the
     /// production strings, bullet list and documentation link without standing up
     /// the whole main window.

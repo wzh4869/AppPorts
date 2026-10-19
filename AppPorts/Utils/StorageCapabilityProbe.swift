@@ -43,6 +43,18 @@ struct StorageCapabilities: Equatable, Sendable {
     }
 }
 
+extension StorageCapabilities {
+    /// Whether a bundle copied *from* this volume may already have lost
+    /// metadata its filesystem could not store.
+    ///
+    /// A restore reads the external copy. If that volume cannot represent ACLs,
+    /// hard links, resource forks or permission bits, the copy it holds was
+    /// written without them — the loss happened at migration time and restoring
+    /// cannot bring it back. This is a property of where the copy lives, not of
+    /// where it is going.
+    var mayHoldDegradedBundle: Bool { !missing.isEmpty }
+}
+
 enum StorageCapabilityProbe {
     /// - Parameter destination: a location inside the target volume. The probe
     ///   walks up to the nearest existing directory so it works before the

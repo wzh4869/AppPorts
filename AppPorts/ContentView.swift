@@ -238,6 +238,10 @@ struct ContentView: View {
     /// Apps held back by the target-volume capability warning.
     @State private var pendingStorageLimitationApps: [AppItem] = []
     @State private var storageLimitationRequest: WarningSheetRequest?
+    /// Apps held back because the external copy being restored already lost
+    /// metadata on the volume it lives on.
+    @State private var pendingDegradedRestoreApps: [AppItem] = []
+    @State private var degradedRestoreRequest: WarningSheetRequest?
 
     // 自更新应用迁移确认（Sparkle/Electron，锁定模式保护）
     @State private var selfUpdaterRequest: WarningSheetRequest?
@@ -463,6 +467,8 @@ struct ContentView: View {
         .warningSheet($protectedAppsRequest)
         // 目标存储无法保存部分应用信息
         .warningSheet($storageLimitationRequest)
+        // 要还原的外部副本可能已经降级
+        .warningSheet($degradedRestoreRequest)
         // 自更新应用迁移确认弹窗
         .warningSheet($selfUpdaterRequest)
         .warningSheet($appReplacementRequest)
@@ -2083,6 +2089,47 @@ struct ContentView: View {
         )
     }
 
+    /// 组装「外部副本可能已降级」提示。
+    ///
+    /// A restore copies the bundle *from* the external volume. If that volume
+    /// could not store ACLs, hard links, resource forks or permission bits, the
+    /// copy it holds was written without them — the loss happened during the
+    /// migration and restoring cannot recover it. Say so before the user acts,
+    /// because afterwards the external original is deleted and the gap becomes
+    /// permanent.
+    private func makeDegradedRestoreRequest(apps: [AppItem], source: URL) -> WarningSheetRequest {
+        let names = apps.map { $0.displayName }.joined(separator: "、")
+        let driveName = MountMigrationGuidance.driveName(for: source.path)
+        let capabilities = StorageCapabilityProbe.probe(destination: source)
+        let items = (capabilities?.missing ?? []).map { $0.localizedDescription }.joined(separator: "\n")
+        AppLogger.shared.logContext(
+            "还原的外部副本可能已降级",
+            details: [
+                ("source", source.path),
+                ("drive_name", driveName),
+                ("apps", names),
+                ("missing", capabilities?.missing.map(\.rawValue).joined(separator: ",") ?? "(unknown)")
+            ],
+            level: "WARN"
+        )
+        return WarningSheetRequest(
+            title: "外部存储上的应用包可能已降级".localized,
+            tint: .orange,
+            intro: String(format: "以下应用目前存放在「%@」上，这块磁盘不支持以下项目：\n\n%@\n\n这些应用是在迁出时被复制到这里的，当时就已经无法保留上述信息。还原会把这份副本复制回本机，但无法补回已经丢失的部分——还原完成后，外部原件会被删除，这些缺失将变成永久的。\n\n如果这些应用对权限或访问控制有要求，建议不要在此时还原，而是重新安装官方版本。".localized, driveName, items),
+            documentationURL: DocumentationLink.url(page: "storage-capabilities", anchor: "degraded"),
+            onCancel: { pendingDegradedRestoreApps = [] },
+            actions: [
+                WarningAction("仍要还原".localized, style: .preferred) {
+                    let pending = pendingDegradedRestoreApps
+                    pendingDegradedRestoreApps = []
+                    degradedRestoreRequest = nil
+                    if pending.count == 1 { executeMoveBack(app: pending[0]) }
+                    else { executeBatchMoveBack(validApps: pending) }
+                }
+            ]
+        )
+    }
+
     /// 组装「自更新应用迁移」确认弹窗的内容快照。
     private func makeSelfUpdaterRequest() -> WarningSheetRequest {
         let names = pendingSelfUpdaterApps.map { $0.displayName }.joined(separator: "、")
@@ -2491,6 +2538,19 @@ struct ContentView: View {
         // 已链接的应用：传进来的可能是本地入口记录，不是本体。直接用它会变成「入口还原到入口自己」，
         // 入口检查认不出，于是报「本地已存在同名真实文件，无法覆盖」。先换成外部本体记录。
         let target = AppMigrationService().externalCounterpart(of: app, in: externalApps) ?? app
+        // 还原读取的是外部副本。如果那块盘本来就存不住 ACL/硬链接/资源叉/权限位，
+        // 这份副本在迁出时就已经缺了这些信息，还原补不回来。先说明再动手。
+        if degradedRestoreRequest == nil,
+           let capabilities = StorageCapabilityProbe.probe(destination: target.path),
+           capabilities.mayHoldDegradedBundle {
+            pendingDegradedRestoreApps = [target]
+            degradedRestoreRequest = makeDegradedRestoreRequest(apps: [target], source: target.path)
+            return
+        }
+        executeMoveBack(app: target)
+    }
+
+    private func executeMoveBack(app target: AppItem) {
         let operationID = AppLogger.shared.makeOperationID(prefix: "single-move-back")
         let destination = localDestinationForMoveBack(app: target)
         AppLogger.shared.logContext(
@@ -2500,7 +2560,7 @@ struct ContentView: View {
                 ("app_name", target.displayName),
                 ("source", target.path.path),
                 ("destination", destination.path),
-                ("resolved_from_local_portal", target.path == app.path ? "false" : "true")
+                ("degraded_source_warning_shown", "true")
             ]
         )
         guard let activityToken = operationState.begin() else { return }
@@ -2563,6 +2623,20 @@ struct ContentView: View {
         }
         
         guard !validApps.isEmpty else { return }
+        // 还原读取的是外部副本；外部盘存不住的能力，在迁出时就已丢失。
+        // 只要其中任意一个来自降级的卷，先统一说明一次再动手。
+        if degradedRestoreRequest == nil,
+           let degraded = validApps.first(where: {
+               StorageCapabilityProbe.probe(destination: $0.path)?.mayHoldDegradedBundle == true
+           }) {
+            pendingDegradedRestoreApps = validApps
+            degradedRestoreRequest = makeDegradedRestoreRequest(apps: validApps, source: degraded.path)
+            return
+        }
+        executeBatchMoveBack(validApps: validApps)
+    }
+
+    private func executeBatchMoveBack(validApps: [AppItem]) {
         let batchID = AppLogger.shared.makeOperationID(prefix: "batch-move-back")
         AppLogger.shared.logContext(
             "开始批量还原应用",
