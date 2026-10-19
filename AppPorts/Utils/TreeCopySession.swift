@@ -2,7 +2,12 @@ import CryptoKit
 import Darwin
 import Foundation
 
-/// Verified data-only copy. App bundle migration continues to use FileCopier.
+/// Verified tree copy shared by data directories and application bundles.
+///
+/// The structural guarantees are identical for both: no-follow traversal,
+/// anchored descriptors, mount-boundary refusal, atomic rename switching, and a
+/// retained original until the destination is verified. What differs is which
+/// content proof is required — see `TreeCopyProfile`.
 ///
 /// A successful result describes bytes verified at the destination, with source
 /// identities for checking a retained original. The caller must retain that
@@ -12,9 +17,12 @@ actor TreeCopySession {
 
     typealias ExtentSeek = @Sendable (Int32, off_t, Int32) -> off_t
     private let extentSeek: ExtentSeek
+    private let profile: TreeCopyProfile
 
-    init(extentSeek: @escaping ExtentSeek = { lseek($0, $1, $2) }) {
+    init(extentSeek: @escaping ExtentSeek = { lseek($0, $1, $2) },
+         profile: TreeCopyProfile = .strictData) {
         self.extentSeek = extentSeek
+        self.profile = profile
     }
 
     private enum MetadataOwnership: Equatable { case required, unchanged }
@@ -67,7 +75,7 @@ actor TreeCopySession {
         }
         var baseline = try Self.snapshot(at: source, excludingRootEntries: excludingRootEntries,
                                          finalDestination: finalDestination, logicalSourceRoot: logicalSourceRoot,
-                                         validateRelocatedLinks: validateRelocatedLinks)
+                                         validateRelocatedLinks: validateRelocatedLinks, profile: profile)
         if let legacyRootOwnership {
             guard legacyRootOwnership.uid == geteuid(), legacyRootOwnership.gid == getegid(),
                   baseline.ownershipCompatibility?.sourceIgnoresOwnership != true,
@@ -94,7 +102,8 @@ actor TreeCopySession {
         // written, including a root file that fails on its first write.
         try await preparedHandler?(baseline)
         let context = CopyContext(snapshot: baseline, source: source, destination: destination,
-                                  created: destinationCreatedHandler, progress: report, extentSeek: extentSeek)
+                                  created: destinationCreatedHandler, progress: report, extentSeek: extentSeek,
+                                  profile: profile)
         await report?(FileCopier.Progress(copiedBytes: 0, totalBytes: baseline.logicalBytes, currentFile: source.lastPathComponent))
         try Task.checkCancellation()
         let sourceParent = try Descriptor.open(source.deletingLastPathComponent().path, flags: O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
@@ -103,22 +112,41 @@ actor TreeCopySession {
             try await Self.copyNode(path: "", sourceParent: sourceParent.value, sourceName: source.lastPathComponent,
                                     targetParent: targetParent.value, targetName: destination.lastPathComponent, context: context)
             DataTransferSession.progress?.begin(.synchronizing)
-            try DurableFileIO.syncTree(at: destination, excludingRootEntries: excludingRootEntries)
+            try DurableFileIO.syncTree(at: destination, excludingRootEntries: excludingRootEntries,
+                                       barrier: profile.syncBarrier)
         }
         await report?(FileCopier.Progress(copiedBytes: baseline.logicalBytes, totalBytes: baseline.logicalBytes, currentFile: ""))
         // Read back the entire destination once after synchronization and all
         // callbacks. Per-file readback before those callbacks would be repeated
         // work and could not replace this final contents/metadata/topology check.
         try Task.checkCancellation()
-        try Self.verifyCopy(at: destination, against: baseline)
-        try Self.verifyUnchanged(at: source, against: baseline)
+        try Self.verifyCopy(at: destination, against: baseline, profile: profile)
+        try Self.verifyUnchanged(at: source, against: baseline, profile: profile)
+        // A relaxed destination may be unable to represent parts of the source.
+        // Report it once per copy so the degradation is visible to the user and
+        // in a diagnostic package, never silently assumed.
+        if context.separatedHardlinks > 0 || context.droppedResourceForks > 0 {
+            AppLogger.shared.logContext(
+                "目标存储无法保留部分元数据",
+                details: [
+                    ("destination", destination.path),
+                    ("hardlinks_split", String(context.separatedHardlinks)),
+                    ("resource_forks_dropped", String(context.droppedResourceForks)),
+                    ("note", "文件内容与签名校验仍通过；仅硬链接共享和资源叉未保留。")
+                ],
+                level: "WARN"
+            )
+        }
         return baseline
     }
 
     nonisolated static func snapshot(at root: URL, excludingRootEntries: Set<String> = [], finalDestination: URL? = nil,
-                                     logicalSourceRoot: URL? = nil, validateRelocatedLinks: Bool = true) throws -> TreeCopySnapshot {
+                                     logicalSourceRoot: URL? = nil, validateRelocatedLinks: Bool = true,
+                                     profile: TreeCopyProfile = .strictData) throws -> TreeCopySnapshot {
         let root = canonicalRoot(root)
-        let result = try DataTransferSession.measure(.scan) { try scan(root, exclusions: excludingRootEntries) }
+        let result = try DataTransferSession.measure(.scan) {
+            try scan(root, exclusions: excludingRootEntries, profile: profile)
+        }
         // A proven volume mounted privately during restore retains the link
         // semantics of its recorded original path. This changes validation
         // only; all traversal and identities still refer to the actual root.
@@ -131,11 +159,13 @@ actor TreeCopySession {
 
     /// Checks semantic equality, including hardlink relationships, without
     /// comparing source and destination device/inode numbers.
-    nonisolated static func verifyCopy(at root: URL, against snapshot: TreeCopySnapshot) throws {
+    nonisolated static func verifyCopy(at root: URL, against snapshot: TreeCopySnapshot,
+                                       profile: TreeCopyProfile = .strictData) throws {
         let root = canonicalRoot(root)
         try DataTransferSession.measure(.verification) {
-            try compare(scan(root, exclusions: snapshot.excludedRootEntries), snapshot,
-                        identities: false, ownershipRole: .destination, rootPath: root.path)
+            try compare(scan(root, exclusions: snapshot.excludedRootEntries, profile: profile), snapshot,
+                        identities: false, ownershipRole: .destination, rootPath: root.path,
+                        profile: profile)
         }
     }
 
@@ -208,25 +238,30 @@ actor TreeCopySession {
 
     /// Checks a retained original even after its root has been renamed. ctime
     /// and atime are intentionally not semantic attributes.
-    nonisolated static func verifyUnchanged(at root: URL, against snapshot: TreeCopySnapshot) throws {
+    nonisolated static func verifyUnchanged(at root: URL, against snapshot: TreeCopySnapshot,
+                                            profile: TreeCopyProfile = .strictData) throws {
         let root = canonicalRoot(root)
         try DataTransferSession.measure(.verification) {
-            try compare(scan(root, exclusions: snapshot.excludedRootEntries), snapshot,
-                        identities: true, rootPath: root.path)
+            try compare(scan(root, exclusions: snapshot.excludedRootEntries, profile: profile), snapshot,
+                        identities: true, rootPath: root.path, profile: profile)
         }
     }
 
-    nonisolated static func verifyUnchanged(at root: URL, against snapshot: TreeCopySnapshot, expectedVolumeUUID: String) throws {
+    nonisolated static func verifyUnchanged(at root: URL, against snapshot: TreeCopySnapshot,
+                                            expectedVolumeUUID: String,
+                                            profile: TreeCopyProfile = .strictData) throws {
         let root = canonicalRoot(root)
         guard UUID(uuidString: expectedVolumeUUID) != nil else { throw TreeCopyError.verificationFailed(root.path) }
         try requireVolumeUUID(expectedVolumeUUID, at: root)
-        let actual = try DataTransferSession.measure(.verification) { try scan(root, exclusions: snapshot.excludedRootEntries) }
+        let actual = try DataTransferSession.measure(.verification) {
+            try scan(root, exclusions: snapshot.excludedRootEntries, profile: profile)
+        }
         try requireVolumeUUID(expectedVolumeUUID, at: root)
         var current = stat()
         guard lstat(root.path, &current) == 0, actual.entries.first?.identity == identity(current) else {
             throw TreeCopyError.sourceChanged(root.path)
         }
-        try compare(actual, snapshot, identities: false, rootPath: root.path)
+        try compare(actual, snapshot, identities: false, rootPath: root.path, profile: profile)
         // st_dev can be reassigned after eject/reinsert. UUID establishes the
         // volume namespace; every inode and semantic attribute must still match.
         for (actual, expected) in zip(actual.entries, snapshot.entries) {
@@ -242,7 +277,8 @@ actor TreeCopySession {
     }
 
     nonisolated static func applyRootMetadata(at root: URL, from snapshot: TreeCopySnapshot,
-                                            ownershipRole: OwnershipRole = .source) throws {
+                                            ownershipRole: OwnershipRole = .source,
+                                            profile: TreeCopyProfile = .strictData) throws {
         try Task.checkCancellation()
         guard let sourceEntry = snapshot.entries.first(where: { $0.path.isEmpty }) else { throw TreeCopyError.verificationFailed("") }
         let entry = ownershipRole == .destination ? snapshot.destinationEntry(sourceEntry) : sourceEntry
@@ -266,8 +302,8 @@ actor TreeCopySession {
             : (ownershipIsIgnored ? .unchanged : .required)
         try applyMetadata(entry, fd: descriptor.value, ownership: ownership)
         try compareEntry(capture(fd: descriptor.value, parent: parent.value, name: root.lastPathComponent,
-                                 path: "", hardlinkGroup: entry.hardlinkGroup), entry,
-                         identities: false, compareOwnership: !ownershipIsIgnored)
+                                 path: "", hardlinkGroup: entry.hardlinkGroup, profile: profile), entry,
+                         identities: false, compareOwnership: !ownershipIsIgnored, profile: profile)
         restored = true
     }
 
@@ -293,13 +329,14 @@ actor TreeCopySession {
     /// can change directory timestamps, temporary owner-write modes, and the
     /// representative name of an internal hardlink group.
     nonisolated static func verifyRemovalRemainder(at root: URL, against snapshot: TreeCopySnapshot,
-                                                   expectedVolumeUUID: String? = nil, removalID: UUID) throws {
+                                                   expectedVolumeUUID: String? = nil, removalID: UUID,
+                                                   profile: TreeCopyProfile = .strictData) throws {
         guard let retained = try retainedRemovalURL(at: root, removalID: removalID) else {
             throw TreeCopyError.verificationFailed(root.path)
         }
-        let actual = try scan(retained, exclusions: snapshot.excludedRootEntries)
+        let actual = try scan(retained, exclusions: snapshot.excludedRootEntries, profile: profile)
         try compareRemovalRemainder(actual, snapshot, root: retained,
-                                    expectedVolumeUUID: expectedVolumeUUID, removalID: removalID)
+                                    expectedVolumeUUID: expectedVolumeUUID, removalID: removalID, profile: profile)
     }
 
     /// Delete a freshly verified tree, or resume a checkpointed deletion. The
@@ -309,6 +346,7 @@ actor TreeCopySession {
                                              allowPartialRemoval: Bool = false,
                                              expectedVolumeUUID: String? = nil, removalID: UUID? = nil,
                                              requireSourceIdentity: Bool = false,
+                                             profile: TreeCopyProfile = .strictData,
                                              willRemove: (() throws -> Void)? = nil) throws {
         try Task.checkCancellation()
         var root = canonicalRoot(root)
@@ -320,13 +358,17 @@ actor TreeCopySession {
             root = retained
         }
         DataTransferSession.progress?.begin(.verifying)
-        let actual = try scan(root, exclusions: snapshot.excludedRootEntries)
+        // Deletion is authorized by the manifest alone, so every node is
+        // re-checked with the profile that produced it. Relaxing the copy
+        // profile must not relax the proof that a node is the recorded one.
+        let actual = try scan(root, exclusions: snapshot.excludedRootEntries, profile: profile)
         if allowPartialRemoval, let removalID {
             try compareRemovalRemainder(actual, snapshot, root: root,
-                                        expectedVolumeUUID: expectedVolumeUUID, removalID: removalID)
+                                        expectedVolumeUUID: expectedVolumeUUID, removalID: removalID,
+                                        profile: profile)
         } else {
             try compare(actual, snapshot, identities: requireSourceIdentity && expectedVolumeUUID == nil,
-                        ownershipRole: ownershipRole, rootPath: root.path)
+                        ownershipRole: ownershipRole, rootPath: root.path, profile: profile)
             if requireSourceIdentity, let expectedVolumeUUID {
                 try requireVolumeUUID(expectedVolumeUUID, at: root)
                 for (current, original) in zip(actual.entries, snapshot.entries) {
@@ -351,13 +393,15 @@ actor TreeCopySession {
         DataTransferSession.progress?.begin(.cleaning)
         DataTransferSession.progress?.startTraversal(at: root)
         try removeNode(fd: descriptor.value, parent: parent.value, name: root.lastPathComponent, path: "", snapshot: actual, index: index,
-                       ownershipIsIgnored: actual.ownershipCompatibility?.sourceIgnoresOwnership == true, removalID: removalID)
+                       ownershipIsIgnored: actual.ownershipCompatibility?.sourceIgnoresOwnership == true,
+                       removalID: removalID, profile: profile)
     }
 
     nonisolated private static func removalName(_ id: UUID) -> String { ".appports-deleting-" + id.uuidString }
 
     nonisolated private static func compareRemovalRemainder(_ actual: TreeCopySnapshot, _ expected: TreeCopySnapshot,
-                                                           root: URL, expectedVolumeUUID: String?, removalID: UUID) throws {
+                                                           root: URL, expectedVolumeUUID: String?, removalID: UUID,
+                                                           profile: TreeCopyProfile = .strictData) throws {
         let ignoresOwnership = try permitsProjectedOwnership(expected, role: .source)
         if !ignoresOwnership, actual.ownershipCompatibility?.sourceIgnoresOwnership == true {
             throw TreeCopyError.ownershipDisabled(root.path)
@@ -401,7 +445,7 @@ actor TreeCopySession {
                 modificationTime: baseline.kind == .directory ? entry.modificationTime : baseline.modificationTime,
                 extendedAttributes: baseline.extendedAttributes, resourceFork: baseline.resourceFork, acl: baseline.acl, size: baseline.size,
                 digest: baseline.digest, linkTarget: baseline.linkTarget, hardlinkGroup: entry.hardlinkGroup)
-            try compareEntry(entry, comparable, identities: true, compareOwnership: !ignoresOwnership)
+            try compareEntry(entry, comparable, identities: true, compareOwnership: !ignoresOwnership, profile: profile)
         }
         guard matched.contains("") else { throw TreeCopyError.verificationFailed(root.path) }
         if let expectedVolumeUUID { try requireVolumeUUID(expectedVolumeUUID, at: root) }
@@ -409,7 +453,8 @@ actor TreeCopySession {
 
     nonisolated private static func removeNode(fd: Int32, parent: Int32, name: String, path: String,
                                               snapshot: TreeCopySnapshot, index: SnapshotIndex,
-                                              ownershipIsIgnored: Bool, removalID: UUID?) throws {
+                                              ownershipIsIgnored: Bool, removalID: UUID?,
+                                              profile: TreeCopyProfile = .strictData) throws {
         try Task.checkCancellation()
         DataTransferSession.progress?.activity(file: path.isEmpty ? name : path)
         guard let entryIndex = index.byPath[path] else { throw TreeCopyError.verificationFailed(path) }
@@ -417,8 +462,9 @@ actor TreeCopySession {
         try requireOwnership(fd: fd, path: path, allowingIgnored: ownershipIsIgnored)
         try requireNamedIdentity(parent: parent, name: name, expected: expected.identity)
         if expected.kind == .directory {
-            try compareEntry(capture(fd: fd, parent: parent, name: name, path: path, hardlinkGroup: expected.hardlinkGroup), expected,
-                             identities: true, compareOwnership: !ownershipIsIgnored)
+            try compareEntry(capture(fd: fd, parent: parent, name: name, path: path, hardlinkGroup: expected.hardlinkGroup,
+                                     profile: profile), expected,
+                             identities: true, compareOwnership: !ownershipIsIgnored, profile: profile)
             let expectedChildren = index.children[path] ?? []
             guard Set(try directoryNames(fd)) == Set(expectedChildren.map { ($0 as NSString).lastPathComponent }) else { throw TreeCopyError.verificationFailed(path) }
             guard fchmod(fd, expected.mode | 0o700) == 0 else { throw posix(path) }
@@ -428,7 +474,7 @@ actor TreeCopySession {
                 let childName = (child as NSString).lastPathComponent
                 let childFD = try openNode(parent: fd, name: childName, expectedDevice: expected.identity.device)
                 try removeNode(fd: childFD.value, parent: fd, name: childName, path: child, snapshot: snapshot, index: index,
-                               ownershipIsIgnored: ownershipIsIgnored, removalID: removalID)
+                               ownershipIsIgnored: ownershipIsIgnored, removalID: removalID, profile: profile)
             }
             try Task.checkCancellation()
             guard try directoryNames(fd).isEmpty else { throw TreeCopyError.verificationFailed(path) }
@@ -457,8 +503,8 @@ actor TreeCopySession {
             let quarantined = try openNode(parent: parent, name: quarantinedName, expectedDevice: expected.identity.device)
             try requireOwnership(fd: quarantined.value, path: path, allowingIgnored: ownershipIsIgnored)
             try compareEntry(capture(fd: quarantined.value, parent: parent, name: quarantinedName, path: path,
-                                     hardlinkGroup: expected.hardlinkGroup), expected,
-                             identities: true, compareOwnership: !ownershipIsIgnored)
+                                     hardlinkGroup: expected.hardlinkGroup, profile: profile), expected,
+                             identities: true, compareOwnership: !ownershipIsIgnored, profile: profile)
             try Task.checkCancellation()
             try requireNamedIdentity(parent: parent, name: quarantinedName, expected: expected.identity)
             guard unlinkat(parent, quarantinedName, 0) == 0 else { throw posix(path) }
@@ -470,7 +516,9 @@ actor TreeCopySession {
     nonisolated private static func requireNamedIdentity(parent: Int32, name: String, expected: TreeCopySnapshot.Identity) throws {
         var info = stat()
         guard fstatat(parent, name, &info, AT_SYMLINK_NOFOLLOW) == 0 else { throw posix(name) }
-        guard identity(info) == expected else { throw TreeCopyError.sourceChanged(name) }
+        guard identity(info) == expected else {
+            throw TreeCopyError.sourceChanged(name)
+        }
         try validateFlags(info, path: name)
     }
 
@@ -499,13 +547,19 @@ actor TreeCopySession {
         let created: (@Sendable (DataPathIdentity) async throws -> Void)?
         let extentSeek: ExtentSeek
         let destinationIgnoresOwnership: Bool
+        let profile: TreeCopyProfile
         let totalLogicalBytes: Int64
         var hardlinks: [TreeCopySnapshot.Identity: String] = [:]
+        /// Links that had to become independent copies on a filesystem without
+        /// inode sharing. Reported so the caller can surface the storage cost.
+        var separatedHardlinks = 0
+        /// Resource forks the destination cannot store. Surfaced as a warning.
+        var droppedResourceForks = 0
         var copiedBytes: Int64 = 0
 
         init(snapshot: TreeCopySnapshot, source: URL, destination: URL,
              created: (@Sendable (DataPathIdentity) async throws -> Void)?, progress: FileCopier.ProgressHandler?,
-             extentSeek: @escaping ExtentSeek) {
+             extentSeek: @escaping ExtentSeek, profile: TreeCopyProfile) {
             self.snapshot = snapshot
             index = SnapshotIndex(snapshot.entries)
             self.source = source
@@ -513,6 +567,7 @@ actor TreeCopySession {
             self.progress = progress
             self.created = created
             self.extentSeek = extentSeek
+            self.profile = profile
             destinationIgnoresOwnership = snapshot.ownershipCompatibility?.destinationIgnoresOwnership == true
             totalLogicalBytes = snapshot.logicalBytes
         }
@@ -521,10 +576,14 @@ actor TreeCopySession {
     nonisolated private static func copyNode(path: String, sourceParent: Int32, sourceName: String,
                                             targetParent: Int32, targetName: String, context: CopyContext) async throws {
         try Task.checkCancellation()
-        guard let entryIndex = context.index.byPath[path] else { throw TreeCopyError.sourceChanged(path) }
+        guard let entryIndex = context.index.byPath[path] else {
+            throw TreeCopyError.sourceChanged(path)
+        }
         let entry = context.snapshot.destinationEntry(context.snapshot.entries[entryIndex])
         let sourceFD = try openNode(parent: sourceParent, name: sourceName, expectedDevice: entry.identity.device)
-        guard identity(try status(sourceFD.value)) == entry.identity else { throw TreeCopyError.sourceChanged(path) }
+        guard identity(try status(sourceFD.value)) == entry.identity else {
+            throw TreeCopyError.sourceChanged(path)
+        }
         let targetFD: Descriptor
         switch entry.kind {
         case .directory:
@@ -543,7 +602,7 @@ actor TreeCopySession {
                 try requireNamedIdentity(parent: targetParent, name: targetName, expected: identity(status(targetFD.value)))
             }
             try requireOwnership(fd: targetFD.value, path: targetName, allowingIgnored: context.destinationIgnoresOwnership)
-            try setACL(nil, fd: targetFD.value, path: targetName)
+            try setACL(nil, fd: targetFD.value, path: targetName, profile: context.profile)
             guard fchmod(targetFD.value, 0o700) == 0 else { throw posix(targetName) }
             for child in (context.index.children[path] ?? []).sorted() {
                 let name = (child as NSString).lastPathComponent
@@ -555,12 +614,22 @@ actor TreeCopySession {
                 // Destination traversal remains anchored and no-follow, even
                 // when the other link lives in a different sibling directory.
                 let first = try openParent(of: firstPath, root: context.destination)
-                guard linkat(first.fd.value, first.name, targetParent, targetName, 0) == 0 else { throw posix(targetName) }
-                targetFD = try Descriptor.openAt(targetParent, targetName, flags: O_RDONLY | O_NONBLOCK | O_NOFOLLOW)
-                try requireOwnership(fd: targetFD.value, path: targetName, allowingIgnored: context.destinationIgnoresOwnership)
-                context.copiedBytes += entry.logicalBytes
-                await context.progress?(FileCopier.Progress(copiedBytes: context.copiedBytes, totalBytes: context.totalLogicalBytes, currentFile: targetName))
-                return
+                if linkat(first.fd.value, first.name, targetParent, targetName, 0) != 0 {
+                    // A destination filesystem without hardlinks (ExFAT, FAT)
+                    // cannot share an inode. Materialising a second independent
+                    // copy keeps the application usable; only the storage
+                    // saving is lost, and every file still holds the same bytes.
+                    guard context.profile.toleratesUnsupportedHardlink, errno == ENOTSUP else {
+                        throw posix(targetName)
+                    }
+                    context.separatedHardlinks += 1
+                } else {
+                    targetFD = try Descriptor.openAt(targetParent, targetName, flags: O_RDONLY | O_NONBLOCK | O_NOFOLLOW)
+                    try requireOwnership(fd: targetFD.value, path: targetName, allowingIgnored: context.destinationIgnoresOwnership)
+                    context.copiedBytes += entry.logicalBytes
+                    await context.progress?(FileCopier.Progress(copiedBytes: context.copiedBytes, totalBytes: context.totalLogicalBytes, currentFile: targetName))
+                    return
+                }
             }
             if entry.kind == .namedPipe {
                 // Realm and other databases keep FIFO notification nodes beside
@@ -580,7 +649,7 @@ actor TreeCopySession {
                 try await context.created?(DataPathIdentity.capture(context.destination))
                 try requireNamedIdentity(parent: targetParent, name: targetName, expected: identity(status(targetFD.value)))
             }
-            try setACL(nil, fd: targetFD.value, path: targetName)
+            try setACL(nil, fd: targetFD.value, path: targetName, profile: context.profile)
             let completedBytes = context.copiedBytes
             let totalBytes = context.totalLogicalBytes
             let progress = context.progress
@@ -603,7 +672,8 @@ actor TreeCopySession {
         try requireOwnership(fd: targetFD.value, path: targetName, allowingIgnored: context.destinationIgnoresOwnership)
         try await copyResourceFork(entry, sourceFD: sourceFD.value, sourceParent: sourceParent, sourceName: sourceName,
             targetFD: targetFD.value, targetParent: targetParent, targetName: targetName, context: context)
-        try applyMetadata(entry, fd: targetFD.value, ownership: context.destinationIgnoresOwnership ? .unchanged : .required)
+        try applyMetadata(entry, fd: targetFD.value, ownership: context.destinationIgnoresOwnership ? .unchanged : .required,
+                          profile: context.profile)
         await context.progress?(FileCopier.Progress(copiedBytes: context.copiedBytes, totalBytes: context.totalLogicalBytes, currentFile: targetName))
     }
 
@@ -611,11 +681,21 @@ actor TreeCopySession {
         sourceFD: Int32, sourceParent: Int32, sourceName: String,
         targetFD: Int32, targetParent: Int32, targetName: String, context: CopyContext) async throws {
         guard let expected = try recordedResourceFork(entry) else { return }
+        // A destination filesystem that cannot carry a resource fork (ExFAT,
+        // FAT) cannot store it at any cost. Materialising the data fork is still
+        // correct for an application whose signature does not cover the fork;
+        // the loss is recorded so the caller can tell the user.
+        if context.profile.toleratesUnsupportedResourceFork, !supportsResourceFork(targetFD) {
+            context.droppedResourceForks += 1
+            return
+        }
         let source = ResourceForkStream.Handle(fileDescriptor: sourceFD, parentDescriptor: sourceParent,
             name: sourceName, path: entry.path)
         let target = ResourceForkStream.Handle(fileDescriptor: targetFD, parentDescriptor: targetParent,
             name: targetName, path: entry.path, writable: true)
-        guard try source.size() == expected.size else { throw TreeCopyError.sourceChanged(entry.path) }
+        guard try source.size() == expected.size else {
+            throw TreeCopyError.sourceChanged(entry.path)
+        }
         try target.clear()
         var hash = SHA256()
         var buffer = [UInt8](repeating: 0, count: ResourceForkStream.bufferByteCount)
@@ -644,7 +724,19 @@ actor TreeCopySession {
         context.copiedBytes += expected.size
     }
 
-    nonisolated private static func scan(_ root: URL, exclusions: Set<String>) throws -> TreeCopySnapshot {
+    /// Probes the destination for resource-fork support by writing and clearing
+    /// an empty value; no content is lost if the probe succeeds.
+    nonisolated private static func supportsResourceFork(_ fd: Int32) -> Bool {
+        let name = ResourceForkStream.attributeName
+        if fsetxattr(fd, name, nil, 0, 0, 0) == 0 {
+            _ = fremovexattr(fd, name, 0)
+            return true
+        }
+        return errno != ENOTSUP && errno != EINVAL
+    }
+
+    nonisolated private static func scan(_ root: URL, exclusions: Set<String>,
+                                        profile: TreeCopyProfile = .strictData) throws -> TreeCopySnapshot {
         try Task.checkCancellation()
         DataTransferSession.progress?.startTraversal(at: root)
         for name in exclusions where name.isEmpty || name == "." || name == ".." || name.contains("/") {
@@ -658,7 +750,7 @@ actor TreeCopySession {
         var entries: [TreeCopySnapshot.Entry] = []
         var hardlinks: [TreeCopySnapshot.Identity: ScannedHardlinks] = [:]
         try walk(fd: fd.value, parent: parent.value, name: root.lastPathComponent, path: "", device: rootInfo.st_dev,
-                 exclusions: exclusions, entries: &entries, hardlinks: &hardlinks)
+                 exclusions: exclusions, entries: &entries, hardlinks: &hardlinks, profile: profile)
         // A count and canonical name prove the same hardlink relationships as
         // grouping whole entries, without a second manifest and one array for
         // every ordinary single-link file.
@@ -692,10 +784,11 @@ actor TreeCopySession {
 
     nonisolated private static func walk(fd: Int32, parent: Int32, name: String, path: String, device: Int32,
                                         exclusions: Set<String>, entries: inout [TreeCopySnapshot.Entry],
-                                        hardlinks: inout [TreeCopySnapshot.Identity: ScannedHardlinks]) throws {
+                                        hardlinks: inout [TreeCopySnapshot.Identity: ScannedHardlinks],
+                                        profile: TreeCopyProfile) throws {
         try Task.checkCancellation()
         let before = try status(fd)
-        let entry = try capture(fd: fd, parent: parent, name: name, path: path, hardlinkGroup: nil)
+        let entry = try capture(fd: fd, parent: parent, name: name, path: path, hardlinkGroup: nil, profile: profile)
         entries.append(entry)
         DataTransferSession.progress?.activity(completedItem: true)
         if entry.kind == .file || entry.kind == .namedPipe {
@@ -709,19 +802,28 @@ actor TreeCopySession {
             }
         }
         if entry.kind == .directory {
-            let names = try directoryNames(fd)
+            var names = try directoryNames(fd)
             if path.isEmpty { try validateExcludedEntries(parent: fd, names: names.filter(exclusions.contains)) }
+            // A filesystem that stores extended attributes in AppleDouble
+            // sidecars (ExFAT, FAT) exposes those `._name` files to readdir.
+            // They are the destination's own encoding of metadata we just wrote,
+            // not content the source carries, so a relaxed copy ignores them.
+            if profile.toleratesUnsupportedResourceFork {
+                names.removeAll { $0.hasPrefix("._") && !exclusions.contains($0) }
+            }
             for child in names where !path.isEmpty || !exclusions.contains(child) {
                 let childFD = try openNode(parent: fd, name: child, expectedDevice: device)
                 try walk(fd: childFD.value, parent: fd, name: child, path: path.isEmpty ? child : path + "/" + child,
-                         device: device, exclusions: exclusions, entries: &entries, hardlinks: &hardlinks)
+                         device: device, exclusions: exclusions, entries: &entries, hardlinks: &hardlinks,
+                         profile: profile)
             }
         }
-        try assertStable(before, try status(fd), path: path)
+        try assertStable(before, try status(fd), path: path, profile: profile)
     }
 
     nonisolated private static func capture(fd: Int32, parent: Int32, name: String, path: String,
-                                           hardlinkGroup: String?) throws -> TreeCopySnapshot.Entry {
+                                           hardlinkGroup: String?,
+                                           profile: TreeCopyProfile = .strictData) throws -> TreeCopySnapshot.Entry {
         DataTransferSession.progress?.activity(file: path.isEmpty ? name : path)
         let before = try status(fd)
         let kind: TreeCopySnapshot.Entry.Kind
@@ -743,7 +845,11 @@ actor TreeCopySession {
             guard try fork.size() == size else { throw TreeCopyError.sourceChanged(path) }
         } else { resourceFork = nil }
         let acl = try aclText(fd: fd, path: path)
-        let digest = kind == .file ? try sha256(fd: fd, path: path) : nil
+        // A signed bundle already carries a publisher manifest, so hashing every
+        // file here would only restate what codesign proves more cheaply. The
+        // strict profile keeps the digest because data directories have no
+        // other content proof.
+        let digest = kind == .file && profile.recordsContentDigests ? try sha256(fd: fd, path: path) : nil
         let target: String?
         if kind == .symbolicLink {
             var bytes = [CChar](repeating: 0, count: Int(PATH_MAX) + 1)
@@ -752,7 +858,7 @@ actor TreeCopySession {
             guard let decoded = String(bytes: bytes.prefix(count).map { UInt8(bitPattern: $0) }, encoding: .utf8) else { throw TreeCopyError.unsupportedMetadata(path) }
             target = decoded
         } else { target = nil }
-        try assertStable(before, try status(fd), path: path)
+        try assertStable(before, try status(fd), path: path, profile: profile)
         DataTransferSession.current?.didReadContent(bytes: (kind == .file ? before.st_size : 0) + (resourceFork?.size ?? 0))
         return TreeCopySnapshot.Entry(path: path, kind: kind, identity: identity(before), mode: before.st_mode & 0o7777,
                                       // `UF_COMPRESSED` is storage detail, not content: the
@@ -765,8 +871,9 @@ actor TreeCopySession {
     }
 
     nonisolated private static func applyMetadata(_ entry: TreeCopySnapshot.Entry, fd: Int32,
-                                                 ownership: MetadataOwnership) throws {
-        try setACL(nil, fd: fd, path: entry.path)
+                                                 ownership: MetadataOwnership,
+                                                 profile: TreeCopyProfile = .strictData) throws {
+        try setACL(nil, fd: fd, path: entry.path, profile: profile)
         if ownership != .unchanged, fchown(fd, entry.uid, entry.gid) != 0 {
             // The file is still usable on noowners when a non-root process
             // cannot assign a foreign owner. This exception is recorded only
@@ -796,7 +903,7 @@ actor TreeCopySession {
         var times = [nativeTimestamp(entry.birthTime), nativeTimestamp(entry.modificationTime)]
         guard fsetattrlist(fd, &attrs, &times, times.count * MemoryLayout<timespec>.stride, 0) == 0 else { throw posix(entry.path) }
         guard fchflags(fd, entry.flags) == 0 else { throw posix(entry.path) }
-        try setACL(entry.acl, fd: fd, path: entry.path)
+        try setACL(entry.acl, fd: fd, path: entry.path, profile: profile)
     }
 
     nonisolated private static func extendedAttributeNames(fd: Int32, path: String) throws -> [String] {
@@ -827,7 +934,10 @@ actor TreeCopySession {
 
     nonisolated private static func aclText(fd: Int32, path: String) throws -> String? {
         guard let acl = acl_get_fd_np(fd, ACL_TYPE_EXTENDED) else {
-            if errno == ENOENT { return nil }
+            // `ENOENT` means "this object has no extended ACL". `ENOTSUP` means
+            // the filesystem cannot report one at all (ExFAT, FAT); both are
+            // "nothing to preserve", not a read failure.
+            if errno == ENOENT || errno == ENOTSUP { return nil }
             throw posix(path)
         }
         defer { acl_free(UnsafeMutableRawPointer(acl)) }
@@ -838,11 +948,27 @@ actor TreeCopySession {
         return String(cString: text)
     }
 
-    nonisolated private static func setACL(_ text: String?, fd: Int32, path: String) throws {
+    /// Applies an entry's ACL, tolerating storage that cannot carry one.
+    ///
+    /// A destination filesystem without extended ACLs (ExFAT, FAT) rejects every
+    /// `acl_set_fd_np`, including the empty ACL used to mean "no ACL". Refusing
+    /// the whole copy there would forbid migrating an application to a disk that
+    /// runs it perfectly well, so an entry that has no ACL simply keeps the
+    /// destination's default. An entry that *does* carry an ACL still fails: that
+    /// is real metadata the user's application may rely on.
+    ///
+    /// This mirrors the tolerance the previous bundle copier had, and it is
+    /// limited to the relaxed profile — a data directory keeps the strict
+    /// contract, where an unsupported ACL means the copy cannot be proven.
+    nonisolated private static func setACL(_ text: String?, fd: Int32, path: String,
+                                           profile: TreeCopyProfile = .strictData) throws {
         let acl = text.map { acl_from_text($0) } ?? acl_init(0)
         guard let acl else { throw posix(path) }
         defer { acl_free(UnsafeMutableRawPointer(acl)) }
-        guard acl_set_fd_np(fd, acl, ACL_TYPE_EXTENDED) == 0 else { throw posix(path) }
+        guard acl_set_fd_np(fd, acl, ACL_TYPE_EXTENDED) == 0 else {
+            if text == nil, profile.toleratesUnsupportedACL, errno == ENOTSUP { return }
+            throw posix(path)
+        }
     }
 
     nonisolated private static func sha256(fd: Int32, path: String) throws -> Data {
@@ -987,7 +1113,8 @@ actor TreeCopySession {
     }
 
     nonisolated private static func compare(_ actual: TreeCopySnapshot, _ expected: TreeCopySnapshot, identities: Bool,
-                                           ownershipRole: OwnershipRole = .source, rootPath: String) throws {
+                                           ownershipRole: OwnershipRole = .source, rootPath: String,
+                                           profile: TreeCopyProfile = .strictData) throws {
         let ownershipIsIgnored = try permitsProjectedOwnership(expected, role: ownershipRole)
         if !ownershipIsIgnored, actual.ownershipCompatibility?.sourceIgnoresOwnership == true {
             throw TreeCopyError.ownershipDisabled(rootPath)
@@ -995,18 +1122,43 @@ actor TreeCopySession {
         guard actual.entries.map(\.path) == expected.entries.map(\.path) else { throw TreeCopyError.verificationFailed("") }
         for (actual, entry) in zip(actual.entries, expected.entries) {
             try compareEntry(actual, ownershipRole == .destination ? expected.destinationEntry(entry) : entry,
-                             identities: identities, compareOwnership: !ownershipIsIgnored)
+                             identities: identities, compareOwnership: !ownershipIsIgnored, profile: profile)
         }
     }
 
     nonisolated private static func compareEntry(_ a: TreeCopySnapshot.Entry, _ b: TreeCopySnapshot.Entry,
-                                                identities: Bool, compareOwnership: Bool = true) throws {
+                                                identities: Bool, compareOwnership: Bool = true,
+                                                profile: TreeCopyProfile = .strictData) throws {
+        // Timestamps drift on an application bundle while a launcher rewrites a
+        // plist or a log rotates. Size, kind, mode, ownership, ACLs, xattrs and
+        // the code signature still pin the product; only the strict data profile
+        // treats a timestamp change as a failed copy.
+        let timestampsMatch = profile.requiresStableTimestamps
+            ? (a.birthTime == b.birthTime && a.modificationTime == b.modificationTime)
+            : true
+        // A directory may carry a temporary owner-write bit while it is being
+        // emptied; deletion restores it before reporting success. A filesystem
+        // that cannot store POSIX permissions (ExFAT, FAT) reports a fixed mode
+        // for everything, so the relaxed profile accepts what it cannot express.
+        let modeMatches = a.mode == b.mode
+            || (a.kind == .directory && a.mode == (b.mode | 0o700))
+            || profile.toleratesUnsupportedPermissions
+        // The relaxed profile accepts a destination that had to drop metadata
+        // its filesystem cannot represent: an absent ACL, an absent resource
+        // fork, or a materialised hardlink. The presence of extra metadata is
+        // still a failure, so a genuine copy error is never hidden.
+        let aclMatches = a.acl == b.acl
+            || (profile.toleratesUnsupportedACL && a.acl == nil && b.acl != nil)
+        let forkMatches = try recordedResourceFork(a) == recordedResourceFork(b)
+            || (profile.toleratesUnsupportedResourceFork && recordedResourceFork(a) == nil)
         guard (!identities || a.identity == b.identity), a.path == b.path, a.kind == b.kind,
-              a.mode == b.mode, (!compareOwnership || (a.uid == b.uid && a.gid == b.gid)), a.flags == b.flags,
-              a.birthTime == b.birthTime, a.modificationTime == b.modificationTime,
-              portableAttributes(a.extendedAttributes) == portableAttributes(b.extendedAttributes), a.acl == b.acl, a.size == b.size,
-              try recordedResourceFork(a) == recordedResourceFork(b),
-              a.digest == b.digest, a.linkTarget == b.linkTarget, a.hardlinkGroup == b.hardlinkGroup else {
+              modeMatches, (!compareOwnership || (a.uid == b.uid && a.gid == b.gid)), a.flags == b.flags,
+              timestampsMatch,
+              portableAttributes(a.extendedAttributes) == portableAttributes(b.extendedAttributes), aclMatches, a.size == b.size,
+              forkMatches,
+              a.digest == b.digest, a.linkTarget == b.linkTarget,
+              (a.hardlinkGroup == b.hardlinkGroup
+                || (profile.toleratesUnsupportedHardlink && a.kind == .file)) else {
             throw TreeCopyError.verificationFailed(b.path)
         }
     }
@@ -1100,9 +1252,22 @@ actor TreeCopySession {
     nonisolated private static func identity(_ value: stat) -> TreeCopySnapshot.Identity { .init(device: value.st_dev, inode: value.st_ino) }
     nonisolated private static func timestamp(_ value: timespec) -> TreeCopySnapshot.Timestamp { .init(seconds: Int64(value.tv_sec), nanoseconds: Int64(value.tv_nsec)) }
     nonisolated private static func nativeTimestamp(_ value: TreeCopySnapshot.Timestamp) -> timespec { timespec(tv_sec: Int(value.seconds), tv_nsec: Int(value.nanoseconds)) }
-    nonisolated private static func assertStable(_ a: stat, _ b: stat, path: String) throws {
-        guard identity(a) == identity(b), a.st_mode == b.st_mode, a.st_size == b.st_size, a.st_nlink == b.st_nlink,
-              timestamp(a.st_mtimespec) == timestamp(b.st_mtimespec), timestamp(a.st_ctimespec) == timestamp(b.st_ctimespec) else { throw TreeCopyError.sourceChanged(path) }
+    nonisolated private static func assertStable(_ a: stat, _ b: stat, path: String,
+                                                 profile: TreeCopyProfile = .strictData) throws {
+        // Identity, mode, size and link count always prove the same object was
+        // read. The strict data profile additionally requires both timestamps to
+        // be untouched, because a data directory has no publisher manifest to
+        // fall back on. An application bundle tolerates timestamp drift: the
+        // copy is verified against the baseline and the code signature.
+        guard identity(a) == identity(b), a.st_mode == b.st_mode, a.st_size == b.st_size, a.st_nlink == b.st_nlink else {
+            throw TreeCopyError.sourceChanged(path)
+        }
+        if profile.requiresStableTimestamps {
+            guard timestamp(a.st_mtimespec) == timestamp(b.st_mtimespec),
+                  timestamp(a.st_ctimespec) == timestamp(b.st_ctimespec) else {
+                throw TreeCopyError.sourceChanged(path)
+            }
+        }
     }
     nonisolated private static func posix(_ path: String) -> NSError { NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: [NSFilePathErrorKey: path]) }
 

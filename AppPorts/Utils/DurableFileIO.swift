@@ -44,14 +44,24 @@ enum DurableFileIO {
     /// Flushes file contents and metadata, followed by every containing
     /// directory and one device-cache barrier. Traversal does not follow links
     /// and refuses nested mounts or unsupported filesystem nodes.
-    static func syncTree(at root: URL, excludingRootEntries: Set<String> = [], allowParentAlias: Bool = false) throws {
+    ///
+    /// `barrier` selects how much durability the caller needs. A tree that is
+    /// only published after its own verification does not need a device flush
+    /// per file: a power cut leaves a destination the caller re-copies, never
+    /// one it switches to. Every node still checks cancellation and reports
+    /// progress, so a long flush can be stopped and is visible to the user.
+    static func syncTree(at root: URL, excludingRootEntries: Set<String> = [],
+                         allowParentAlias: Bool = false, barrier: TreeSyncBarrier = .full) throws {
         DataTransferSession.progress?.begin(.synchronizing)
         DataTransferSession.progress?.startTraversal(at: root)
         let descriptor = try openDescriptor(root.path, flags: O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK)
         defer { _ = close(descriptor) }
         var status = stat()
         guard fstat(descriptor, &status) == 0 else { throw failure("inspect tree", root) }
-        try syncNode(descriptor, url: root, device: status.st_dev, exclusions: excludingRootEntries)
+        try syncNode(descriptor, url: root, device: status.st_dev,
+                     exclusions: excludingRootEntries, barrier: barrier)
+        // The root always gets the device-cache barrier: it is the single
+        // object whose durability the caller switches on.
         try synchronize(descriptor, url: root, full: true)
         try requireNamedObject(root, descriptor: descriptor)
         try syncDirectory(at: root.deletingLastPathComponent(), resolvingAlias: allowParentAlias)
@@ -79,7 +89,9 @@ enum DurableFileIO {
         try requireNamedObject(directory, descriptor: descriptor)
     }
 
-    private static func syncNode(_ descriptor: Int32, url: URL, device: dev_t, exclusions: Set<String> = []) throws {
+    private static func syncNode(_ descriptor: Int32, url: URL, device: dev_t, exclusions: Set<String> = [],
+                                 barrier: TreeSyncBarrier = .full) throws {
+        try Task.checkCancellation()
         DataTransferSession.progress?.activity(file: url.lastPathComponent)
         var value = stat()
         guard fstat(descriptor, &value) == 0 else { throw failure("inspect tree node", url) }
@@ -88,7 +100,9 @@ enum DurableFileIO {
         case S_IFREG, S_IFIFO:
             // A FIFO has persistent inode metadata, but no durable byte stream.
             // It was opened with O_NONBLOCK and is never read during the barrier.
-            try synchronize(descriptor, url: url, full: false)
+            // `.contentDurable` still flushes every directory, so the file's
+            // name and inode are committed by its parent's fsync.
+            if barrier == .full { try synchronize(descriptor, url: url, full: false) }
         case S_IFDIR:
             let duplicate = dup(descriptor)
             guard duplicate >= 0 else { throw failure("open directory stream", url) }
@@ -117,13 +131,18 @@ enum DurableFileIO {
                 if child.st_mode & S_IFMT == S_IFLNK { continue }
                 let childDescriptor = openat(descriptor, name, O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK)
                 guard childDescriptor >= 0 else { throw failure("open tree node", childURL) }
-                defer { _ = close(childDescriptor) }
                 var opened = stat()
-                guard fstat(childDescriptor, &opened) == 0 else { throw failure("inspect opened node", childURL) }
+                guard fstat(childDescriptor, &opened) == 0 else {
+                    _ = close(childDescriptor)
+                    throw failure("inspect opened node", childURL)
+                }
                 guard opened.st_dev == child.st_dev, opened.st_ino == child.st_ino else {
+                    _ = close(childDescriptor)
                     throw failure("tree node changed", childURL, code: ESTALE)
                 }
-                try syncNode(childDescriptor, url: childURL, device: device)
+                defer { _ = close(childDescriptor) }
+                try syncNode(childDescriptor, url: childURL, device: device,
+                             exclusions: exclusions, barrier: barrier)
             }
             try synchronize(descriptor, url: url, full: false)
         default:

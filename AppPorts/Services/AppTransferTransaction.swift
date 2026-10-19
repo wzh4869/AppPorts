@@ -14,6 +14,11 @@ struct AppTransferHooks {
 
 /// Executes the application's own location journal. It never signs real code.
 final class AppTransferTransaction {
+    /// App transfers are product moves, not data-directory moves: the bundle's
+    /// contents are already pinned by its code signature, so every pass here
+    /// uses the product-integrity profile. See `TreeCopyProfile`.
+    static let copyProfile: TreeCopyProfile = .appBundle
+
     typealias PortalBuilder = (AppTransferRecord, URL) throws -> Void
     typealias PortalMatcher = (URL, URL) -> Bool
     private let store: AppTransferStore
@@ -434,7 +439,10 @@ final class AppTransferTransaction {
         journal.record.hasSourceBaseline = false
         journal.record.candidateIdentity = nil
         try journal.save()
-        let snapshot = try await TreeCopySession().copy(from: source, to: journal.record.candidateURL,
+        // An application bundle is a replaceable product whose contents are
+        // already pinned by its code signature, so it uses the product-integrity
+        // profile instead of the data-directory content-addressed one.
+        let snapshot = try await TreeCopySession(profile: .appBundle).copy(from: source, to: journal.record.candidateURL,
             finalDestination: URL(fileURLWithPath: journal.record.destinationPath),
             preparedHandler: { snapshot in
                 try journal.store.writeBaseline(.init(tree: snapshot, linkTarget: nil, linkIdentity: nil,
@@ -459,9 +467,9 @@ final class AppTransferTransaction {
             }
         }
         let expected = journal.record.direction == .migrate ? withoutQuarantine(snapshot) : snapshot
-        try TreeCopySession.verifyCopy(at: candidate, against: expected)
+        try TreeCopySession.verifyCopy(at: candidate, against: expected, profile: Self.copyProfile)
         try verifySignatures(journal.record, root: candidate)
-        try DurableFileIO.syncTree(at: candidate)
+        try DurableFileIO.syncTree(at: candidate, barrier: Self.copyProfile.syncBarrier)
         try store.writeBaseline(try captureBaseline(candidate), named: "candidate", operationID: journal.record.operationID)
         journal.record.hasCandidateBaseline = true
         journal.record.phase = .verified
@@ -1007,7 +1015,8 @@ final class AppTransferTransaction {
         if try SignatureSnapshot.info(at: url).st_mode & S_IFMT == S_IFLNK {
             return .init(tree: nil, linkTarget: try fileManager.destinationOfSymbolicLink(atPath: url.path), linkIdentity: try DataPathIdentity.capture(url))
         }
-        return .init(tree: try TreeCopySession.snapshot(at: url), linkTarget: nil, linkIdentity: nil,
+        return .init(tree: try TreeCopySession.snapshot(at: url, profile: Self.copyProfile),
+                     linkTarget: nil, linkIdentity: nil,
                      volumeUUID: try DataPathIdentity.capture(url).volumeUUID)
     }
 
@@ -1017,9 +1026,14 @@ final class AppTransferTransaction {
 
     private func verify(_ baseline: AppTransferBaseline, at url: URL, unchanged: Bool) throws {
         if let tree = baseline.tree {
-            if unchanged, let uuid = baseline.volumeUUID { try TreeCopySession.verifyUnchanged(at: url, against: tree, expectedVolumeUUID: uuid) }
-            else if unchanged { try TreeCopySession.verifyUnchanged(at: url, against: tree) }
-            else { try TreeCopySession.verifyCopy(at: url, against: tree) }
+            if unchanged, let uuid = baseline.volumeUUID {
+                try TreeCopySession.verifyUnchanged(at: url, against: tree, expectedVolumeUUID: uuid,
+                                                    profile: Self.copyProfile)
+            } else if unchanged {
+                try TreeCopySession.verifyUnchanged(at: url, against: tree, profile: Self.copyProfile)
+            } else {
+                try TreeCopySession.verifyCopy(at: url, against: tree, profile: Self.copyProfile)
+            }
         } else {
             guard let identity = baseline.linkIdentity, let target = baseline.linkTarget else { throw CocoaError(.fileReadCorruptFile) }
             try requireIdentity(identity, at: url)
@@ -1031,7 +1045,8 @@ final class AppTransferTransaction {
         try store.recheckWriterAdmission()
         if let tree = baseline.tree {
             try TreeCopySession.removeVerifiedCopy(at: url, against: tree, allowPartialRemoval: partial,
-                expectedVolumeUUID: identity.volumeUUID, removalID: removalID)
+                                                   expectedVolumeUUID: identity.volumeUUID, removalID: removalID,
+                                                   profile: Self.copyProfile)
         } else {
             let remaining = try TreeCopySession.retainedRemovalURL(at: url, removalID: removalID) ?? url
             try verify(baseline, at: remaining, unchanged: true)
@@ -1145,11 +1160,56 @@ final class AppTransferTransaction {
     }
     private static func canonical(_ url: URL) -> URL { url.deletingLastPathComponent().resolvingSymlinksInPath().appendingPathComponent(url.lastPathComponent).standardizedFileURL }
     private static func contains(_ root: URL, _ path: URL) -> Bool { path.path == root.path || path.path.hasPrefix(root.path + "/") }
+    /// Atomic swap of two existing names.
+    ///
+    /// `RENAME_SWAP` is unsupported on some filesystems (ExFAT, FAT). There is no
+    /// atomic replacement there, so the fallback stages one name aside and moves
+    /// the other into place. The window is real but tiny, and it only opens on a
+    /// filesystem that cannot express the atomic operation at all — refusing
+    /// outright would make that drive unusable for migration.
     private static func exchange(_ a: URL, _ b: URL) throws {
-        guard renameatx_np(AT_FDCWD, a.path, AT_FDCWD, b.path, UInt32(RENAME_SWAP)) == 0 else { throw posix(a) }
+        if renameatx_np(AT_FDCWD, a.path, AT_FDCWD, b.path, UInt32(RENAME_SWAP)) == 0 { return }
+        let code = errno
+        guard code == ENOTSUP || code == EINVAL else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(code), userInfo: [NSFilePathErrorKey: a.path])
+        }
+        let staged = a.deletingLastPathComponent()
+            .appendingPathComponent(".appports-swap-" + UUID().uuidString)
+        try moveExclusively(a, staged)
+        do {
+            try moveExclusively(b, a)
+        } catch {
+            try? moveExclusively(staged, a)
+            throw error
+        }
+        do {
+            try moveExclusively(staged, b)
+        } catch {
+            try? moveExclusively(a, b)
+            try? moveExclusively(staged, a)
+            throw error
+        }
     }
+
+    /// Rename that never replaces an existing name.
+    ///
+    /// `RENAME_EXCL` is unsupported on some filesystems (ExFAT, FAT). The fallback
+    /// re-checks the target immediately before a plain `rename`, which keeps the
+    /// "do not overwrite" contract even though the check and the rename are not a
+    /// single atomic operation.
     private static func moveExclusively(_ source: URL, _ target: URL) throws {
-        guard renameatx_np(AT_FDCWD, source.path, AT_FDCWD, target.path, UInt32(RENAME_EXCL)) == 0 else { throw posix(target) }
+        if renameatx_np(AT_FDCWD, source.path, AT_FDCWD, target.path, UInt32(RENAME_EXCL)) == 0 { return }
+        let code = errno
+        guard code == ENOTSUP || code == EINVAL else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(code), userInfo: [NSFilePathErrorKey: target.path])
+        }
+        var info = stat()
+        guard lstat(target.path, &info) != 0, errno == ENOENT else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(EEXIST), userInfo: [NSFilePathErrorKey: target.path])
+        }
+        guard rename(source.path, target.path) == 0 else {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: [NSFilePathErrorKey: target.path])
+        }
     }
     private final class Journal: @unchecked Sendable {
         var record: AppTransferRecord
