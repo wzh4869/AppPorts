@@ -14,6 +14,11 @@ enum MigrationPreferences {
     /// 启动提醒里用户点过「以后再说」的应用集合（真实应用路径）。
     static let dismissedSignatureRepairKey = "signatureRepairDismissedApps"
 
+    /// 微信账号目录的拆分迁移（实验性）：只外迁 `msg`、`business`，
+    /// 保留 `db_storage` 与 `all_users` 在本地，使外置盘缺席时微信仍可启动。
+    /// 默认关闭，需用户在设置中显式开启。
+    static let partialWeChatMigrationKey = "partialWeChatMigrationEnabled"
+
     /// 经典模式是否可用。macOS 27 上被重签名的沙盒应用可能无法打开，
     /// 但 QQ 音乐等实测正常，因此不按版本禁用，只在确认框里说明。
     static var isClassicModeSupported: Bool { true }
@@ -26,6 +31,11 @@ enum MigrationPreferences {
     /// 经典模式是否生效：用户开启且系统允许。
     static var isClassicDataMigrationActive: Bool {
         isClassicModeSupported && UserDefaults.standard.bool(forKey: classicDataMigrationKey)
+    }
+
+    /// 微信拆分迁移是否生效。实验性能力，默认关闭。
+    static var isPartialWeChatMigrationActive: Bool {
+        UserDefaults.standard.bool(forKey: partialWeChatMigrationKey)
     }
 
     static var dismissedSignatureRepairApps: Set<String> {

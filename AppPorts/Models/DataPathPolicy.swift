@@ -33,9 +33,23 @@ struct DataPathPolicy: Sendable {
         let canMigrate: Bool
         /// Structural discovery only. Callers must additionally reject mount points and read failures.
         let mayDiscoverChildren: Bool
+        /// 拆分迁移放行时携带的子目录名；其余情况为 nil。
+        let partialSubdirectory: String?
+
+        init(role: Role, reason: Reason?, canMigrate: Bool, mayDiscoverChildren: Bool,
+             partialSubdirectory: String? = nil) {
+            self.role = role
+            self.reason = reason
+            self.canMigrate = canMigrate
+            self.mayDiscoverChildren = mayDiscoverChildren
+            self.partialSubdirectory = partialSubdirectory
+        }
     }
 
     let homeDirectory: URL
+
+    /// 拆分迁移策略。默认关闭；开启后只放行微信账号目录下白名单内的子目录。
+    var partialWeChatMigration = PartialWeChatMigrationPolicy()
 
     init(homeDirectory: URL = URL(fileURLWithPath: NSHomeDirectory())) {
         self.homeDirectory = homeDirectory.standardizedFileURL
@@ -47,8 +61,22 @@ struct DataPathPolicy: Sendable {
         // Preserve the protected source role even when a historical link points out of the container.
         let result = !lexical.canMigrate ? lexical : (!resolved.canMigrate ? resolved : lexical.role == .unrelated ? resolved : lexical)
         let isLink = (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) != nil
-        return Decision(role: result.role, reason: result.reason, canMigrate: result.canMigrate,
-                        mayDiscoverChildren: result.mayDiscoverChildren && !isLink)
+        let decision = Decision(role: result.role, reason: result.reason, canMigrate: result.canMigrate,
+                                mayDiscoverChildren: result.mayDiscoverChildren && !isLink)
+        return applyPartialWeChatMigration(decision, for: url)
+    }
+
+    /// 拆分迁移补充判断。
+    ///
+    /// 只在结构判定为「不可迁移」时尝试放行，且只放行微信账号目录下白名单内的子目录。
+    /// 已放行的路径（`businessData`）不受影响，保证默认行为与关闭时完全一致。
+    private func applyPartialWeChatMigration(_ decision: Decision, for url: URL) -> Decision {
+        guard !decision.canMigrate else { return decision }
+        // 用词法路径而非解析后的真实路径：链接目标可能在外置盘上，不能据此放行拆分迁移。
+        let partial = partialWeChatMigration.evaluate(url.standardizedFileURL, home: homeDirectory)
+        guard partial.canMigrate, let subdirectory = partial.subdirectory else { return decision }
+        return Decision(role: decision.role, reason: decision.reason, canMigrate: true,
+                        mayDiscoverChildren: false, partialSubdirectory: subdirectory)
     }
 
     private func classify(_ url: URL, home: URL) -> Decision {
