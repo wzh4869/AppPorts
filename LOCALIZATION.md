@@ -12,10 +12,14 @@ AppPorts 的本地化不再依赖人工记忆，而是依赖三层约束：
 
 ### 当前架构
 
-- 字符串目录：`/Users/wangheng/Documents/AppPorts/AppPorts/Localizable.xcstrings`
-- 语言注册表：`/Users/wangheng/Documents/AppPorts/AppPorts/Models/AppLanguageOption.swift`
-- 语言切换：`/Users/wangheng/Documents/AppPorts/AppPorts/Utils/LanguageManager.swift`
-- 自动审计测试：`/Users/wangheng/Documents/AppPorts/AppPortsTests/LocalizationAuditTests.swift`
+- 字符串目录：`AppPorts/Localizable.xcstrings`
+- 语言注册表：`AppPorts/Models/AppLanguageOption.swift`
+- 语言切换：`AppPorts/Utils/LanguageManager.swift`
+- 自动审计测试：`AppPortsTests/LocalizationAuditTests.swift`
+
+### 翻译范围与验证责任
+
+外部贡献者可以延后完整翻译，但下列代码接入规则仍适用。请在 PR 中列出未完成的文案、语言、实际回退显示和后续计划。AI 助手按 `CLAUDE.md` 与维护者确认范围；不要复制英文充当完成翻译或放宽审计来隐藏缺译。PR 的本地化 CI 为 Advisory，具体贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ### 开发规则
 
@@ -58,7 +62,7 @@ Text(String(format: "排序：%@".localized, selectedSortMode.rawValue.localized
 在本地运行：
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project AppPorts.xcodeproj -scheme AppPorts -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO -derivedDataPath /tmp/AppPortsDerived test
+xcodebuild -project AppPorts.xcodeproj -scheme AppPorts -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -derivedDataPath build/LocalizationAudit -only-testing:AppPortsTests/LocalizationAuditTests test
 ```
 
 `LocalizationAuditTests` 会检查：
@@ -91,7 +95,11 @@ AppPorts localization is now guarded by automation instead of memory:
 
 1. `Localizable.xcstrings` is the single translation source for UI copy
 2. `AppLanguageCatalog` is the single source of truth for supported languages
-3. `LocalizationAuditTests` blocks missing translations and unsafe raw strings
+3. `LocalizationAuditTests` detects missing translations and unsafe raw strings
+
+### Translation scope and verification responsibilities
+
+External contributors may defer complete translations, but the code-integration rules below still apply. List deferred text, languages, actual fallback display, and follow-up plans in the PR. AI assistants confirm scope with the maintainer under `CLAUDE.md`; do not copy English as a completed translation or weaken auditing to hide gaps. Localization CI is advisory on PRs; see [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
 ### Rules
 
@@ -106,7 +114,7 @@ AppPorts localization is now guarded by automation instead of memory:
 Run:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project AppPorts.xcodeproj -scheme AppPorts -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO -derivedDataPath /tmp/AppPortsDerived test
+xcodebuild -project AppPorts.xcodeproj -scheme AppPorts -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -derivedDataPath build/LocalizationAudit -only-testing:AppPortsTests/LocalizationAuditTests test
 ```
 
 The localization audit tests verify:

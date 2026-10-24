@@ -57,3 +57,7 @@ Codex 的发现入口与项目使用要求分别明确，减少仅写在 CLAUDE.
 首次迁移来源指纹覆盖 87 个文件，形成 26 篇笔记；补充后共 32 篇，20 implemented、12 proposed。1.9.1 入库时其中 10 篇源码待提交记录转为 implemented，并新增进度反馈与源码审计范围 2 篇，现为 34 篇、32 implemented、2 proposed（尚未实施的向导与临时目录提案）。合订本 79 份冻结来源逐份核对哈希，重复正文不重复建笔记。逐文件溯源使用纯文本，跨笔记引用使用相对链接。tree 与 format 校验、原资料完整性与提交范围检查构成文档验证；Swift 功能测试和真实磁盘实验没有在此次迁移中重新执行。
 
 发现入口依据官方 [Skills](https://developers.openai.com/codex/skills/) 与 [AGENTS.md](https://developers.openai.com/codex/guides/agents-md/) 文档：项目技能扫描 `.agents/skills/` 并支持目录软链接，项目指令在新运行开始时读取。入口验证核对软链接解析、目标内容一致性和 Git 的 symlink 类型；后续新会话应确认项目指令与技能实际可见。
+
+公开贡献入口中的验证责任与同步要求见[贡献流程入口](2026-10-25-contributor-workflow-entrypoints.md)；本篇原有决定保持适用。
+
+AI 指令入口的内容范围见[精简 AI 指南](2026-10-25-concise-ai-guide.md)，架构与历史事实按需查源码和既有笔记。
