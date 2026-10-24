@@ -119,6 +119,11 @@
       "icon": "Heart"
     },
     {
+      "slug": "contributing",
+      "name": "贡献者指南",
+      "icon": "BookOpen"
+    },
+    {
       "name": "历史功能归档",
       "icon": "Archive",
       "children": [
@@ -160,7 +165,5 @@
       "icon": "BookA"
     }
   ],
-  "auxiliary": [
-    "contributing"
-  ]
+  "auxiliary": []
 }

@@ -41,6 +41,17 @@ for (const route of routes) {
     const alternate = route.slug ? url(locale, route.slug) : prefix(locale) || '/';
     assert.ok(body.includes(`hrefLang="${locale}" href="https://docs-appports.shimoko.com${alternate === "/" ? "" : alternate}"`), `Wrong hreflang: ${route.url}/${locale}`);
   }
+  if (route.slug) {
+    const sidebar = body.match(/<aside\b[^>]*id="nd-sidebar"[^>]*>[\s\S]*?<\/aside>/)?.[0];
+    assert.ok(sidebar, `Missing sidebar: ${route.url}`);
+    const sponsorLink = `href="${url(route.locale, 'sponsor')}"`;
+    const contributorLink = `href="${url(route.locale, 'contributing')}"`;
+    assert.ok(sidebar.includes(contributorLink), `Missing contributor sidebar link: ${route.url}`);
+    assert.ok(sidebar.indexOf(sponsorLink) >= 0 && sidebar.indexOf(sponsorLink) < sidebar.indexOf(contributorLink), `Contributor must follow sponsor: ${route.url}`);
+  } else {
+    const footer = body.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
+    assert.ok(footer?.includes(`href="${url(route.locale, 'contributing')}"`), `Missing contributor footer link: ${route.url}`);
+  }
   const current = new URL(route.url, 'https://docs.test');
   for (const [, raw] of body.matchAll(/<(?:a|link)\b[^>]*\bhref="([^"]+)"/g)) {
     if (/^(?:mailto:|tel:|data:)/.test(raw)) continue;
@@ -87,7 +98,9 @@ for (const slug of ['research/sandbox-symlink', 'research/sandbox-mountpoint', '
 assert.equal(navigation.main[0].slug, 'AppPorts');
 assert.equal(navigation.main.at(-1).slug, 'glossary');
 assert.equal(navigation.main.at(-1).name, '名词解释');
-assert.equal(navigation.main.flatMap(entry => entry.children ?? [entry]).length, 27);
+assert.equal(navigation.main.flatMap(entry => entry.children ?? [entry]).length, 28);
+assert.deepEqual(navigation.auxiliary, []);
+assert.equal(navigation.main[navigation.main.findIndex(entry => entry.slug === 'sponsor') + 1].slug, 'contributing');
 assert.deepEqual(navigation.main.filter(entry => entry.children).map(entry => entry.name), ['原理', '博客', '帮助与支持', '历史功能归档']);
 assert.equal(navigation.main.find(entry => entry.name === '历史功能归档').children.length, 4);
 assert.ok(!navigation.main.some(entry => entry.slug === 'storage-capabilities'));
