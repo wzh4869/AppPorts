@@ -118114,6 +118114,143 @@
         }
       }
     },
+    "数据安全检查超时，已停止操作并保留数据：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتهت مهلة فحص سلامة البيانات. أُوقفت العملية وحُفظت البيانات: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠁⠞⠁ ⠎⠁⠋⠑⠞⠽ ⠉⠓⠑⠉⠅ ⠞⠊⠍⠑⠙ ⠕⠥⠞⠲ ⠠⠞⠓⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠞⠓⠑ ⠙⠁⠞⠁ ⠺⠁⠎ ⠏⠗⠑⠎⠑⠗⠧⠑⠙⠒ %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datensicherheitsprüfung hat das Zeitlimit überschritten. Der Vorgang wurde gestoppt und die Daten bleiben erhalten: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The data safety check timed out. The operation stopped and the data was preserved: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La datumsekureca kontrolo superis la tempolimon. La operacio haltis kaj la datumoj estas konservitaj: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La comprobación de seguridad de los datos agotó el tiempo de espera. La operación se detuvo y los datos se conservaron: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le délai de vérification de la sécurité des données a expiré. L’opération s’est arrêtée et les données sont conservées : %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेटा सुरक्षा जाँच का समय समाप्त हो गया। कार्रवाई रोक दी गई है और डेटा सुरक्षित रखा गया है: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemeriksaan keamanan data kehabisan waktu. Operasi dihentikan dan data dipertahankan: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il controllo di sicurezza dei dati ha superato il tempo limite. L’operazione è stata interrotta e i dati sono conservati: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データの安全確認がタイムアウトしました。操作を停止し、データを保持しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터 안전 검사 시간이 초과되었습니다. 작업을 중단하고 데이터를 보존했습니다: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De veiligheidscontrole van de gegevens heeft de tijdslimiet overschreden. De bewerking is gestopt en de gegevens zijn bewaard: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przekroczono limit czasu kontroli bezpieczeństwa danych. Operacja została zatrzymana, a dane zachowane: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A verificação de segurança dos dados excedeu o tempo limite. A operação foi interrompida e os dados foram preservados: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время ожидания проверки безопасности данных истекло. Операция остановлена, данные сохранены: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การตรวจสอบความปลอดภัยของข้อมูลหมดเวลาแล้ว หยุดการทำงานและเก็บข้อมูลไว้แล้ว: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veri güvenliği kontrolü zaman aşımına uğradı. İşlem durduruldu ve veriler korundu: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra an toàn dữ liệu đã hết thời gian chờ. Thao tác đã dừng và dữ liệu được giữ nguyên: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据安全检查超时，已停止操作并保留数据：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料安全檢查逾時，已停止操作並保留資料：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "數據安全檢査超時，已停止操作並葆畱數據：%@"
+          }
+        }
+      }
+    },
     "无法完成数据安全检查，已停止操作并保留数据：%@" : {
       "extractionState" : "manual",
       "localizations" : {

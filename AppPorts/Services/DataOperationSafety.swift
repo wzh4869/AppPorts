@@ -7,6 +7,7 @@ import Foundation
 struct DataOperationSafety: Sendable {
     enum Failure: LocalizedError {
         case protectedPath(String), conflict(String), occupied(String), inspection(String)
+        case inspectionTimedOut(String)
         case writers(String, [String])
         case accessDenied(String)
         var errorDescription: String? {
@@ -19,6 +20,8 @@ struct DataOperationSafety: Sendable {
                 return String(format: "相关应用或进程仍在使用数据，请退出后重试：%@".localized, path)
             case .inspection(let path):
                 return String(format: "无法完成数据安全检查，已停止操作并保留数据：%@".localized, path)
+            case .inspectionTimedOut(let path):
+                return String(format: "数据安全检查超时，已停止操作并保留数据：%@".localized, path)
             case .writers(let path, let processes):
                 return String(format: "以下进程正在写入数据，请退出后继续：%@\n%@".localized,
                     processes.joined(separator: "、"), path)
@@ -137,13 +140,17 @@ struct DataOperationSafety: Sendable {
             throw Failure.inspection(url.path)
         }
         let directory = info.st_mode & S_IFMT == S_IFDIR
+        // +D enumerates the entire tree before reporting open files. Million-file
+        // directories need a larger budget even when no process is writing.
         let result = try await runner.run(executable: "/usr/sbin/lsof",
-            arguments: ["-nP", "-F", "pcfa"] + (directory ? ["+D", url.path] : ["--", url.path]), timeout: 30)
+            arguments: ["-nP", "-F", "pcfa"] + (directory ? ["+D", url.path] : ["--", url.path]),
+            timeout: directory ? 1800 : 30)
         let diagnostic = result.stderrText.lowercased()
         if diagnostic.contains("permission denied") || diagnostic.contains("operation not permitted") {
             throw Failure.accessDenied(url.path)
         }
-        guard !result.timedOut, [0, 1].contains(result.status), result.stderrText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard !result.timedOut else { throw Failure.inspectionTimedOut(url.path) }
+        guard [0, 1].contains(result.status), result.stderrText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw Failure.inspection(url.path)
         }
         let writers = Self.writingProcesses(in: result.stdoutText, ownPID: ProcessInfo.processInfo.processIdentifier)

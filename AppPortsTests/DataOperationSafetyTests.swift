@@ -4,6 +4,79 @@ import Testing
 
 @Suite("Data operation execution safety")
 struct DataOperationSafetyTests {
+    @Test("Large directory inspections have a longer budget; individual files keep the short budget",
+          arguments: [true, false])
+    func inspectionBudget(directory: Bool) async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.home.appendingPathComponent("Business")
+        if directory {
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+        } else {
+            try Data("unchanged".utf8).write(to: source)
+        }
+        let runner = InspectionRunner(expectedPath: source.path, directory: directory,
+            result: .init(status: 1, standardOutput: Data(), standardError: Data(), timedOut: false))
+        try await DataOperationSafety(homeDirectory: fixture.home, store: fixture.store, runner: runner)
+            .requireNoKnownWriters(at: source)
+    }
+
+    @Test("Incomplete inspections fail closed with distinct timeout and permission errors",
+          arguments: ["timeout", "timeoutWithPartialOutput", "permission", "status", "diagnostic", "writer"])
+    func inspectionFailures(scenario: String) async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.home.appendingPathComponent("Business")
+        try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+        let file = source.appendingPathComponent("data")
+        try Data("unchanged".utf8).write(to: file)
+        let timedOut = scenario.hasPrefix("timeout")
+        let output = scenario == "timeoutWithPartialOutput" ? "p987\ncReader\nf3\nar\n"
+            : scenario == "writer" ? "p987\ncWriter\nf3\naw\n" : ""
+        let diagnostic = scenario == "permission" ? "lsof: Operation not permitted\n"
+            : scenario == "diagnostic" ? "lsof: incomplete inspection\n" : ""
+        let runner = InspectionRunner(expectedPath: source.path, directory: true,
+            result: .init(status: scenario == "status" ? 2 : 0,
+                standardOutput: Data(output.utf8), standardError: Data(diagnostic.utf8), timedOut: timedOut))
+        do {
+            try await DataOperationSafety(homeDirectory: fixture.home, store: fixture.store, runner: runner)
+                .requireNoKnownWriters(at: source)
+            Issue.record("An incomplete inspection or known writer must block the operation")
+        } catch let failure as DataOperationSafety.Failure {
+            switch failure {
+            case .inspectionTimedOut(let path):
+                #expect(timedOut)
+                #expect(path == source.path)
+                #expect(failure.localizedDescription != DataOperationSafety.Failure.inspection(path).localizedDescription)
+            case .accessDenied(let path):
+                #expect(scenario == "permission")
+                #expect(path == source.path)
+            case .inspection(let path):
+                #expect(["status", "diagnostic"].contains(scenario))
+                #expect(path == source.path)
+            case .writers(let path, let processes):
+                #expect(scenario == "writer")
+                #expect(path == source.path)
+                #expect(processes == ["Writer (987)"])
+            default: Issue.record("Unexpected inspection failure: \(failure)")
+            }
+        }
+        #expect(try Data(contentsOf: file) == Data("unchanged".utf8))
+    }
+
+    private struct InspectionRunner: ShellCommandRunning {
+        let expectedPath: String
+        let directory: Bool
+        let result: ShellCommandResult
+
+        func run(executable: String, arguments: [String], timeout: TimeInterval) async throws -> ShellCommandResult {
+            #expect(executable == "/usr/sbin/lsof")
+            #expect(arguments == ["-nP", "-F", "pcfa", directory ? "+D" : "--", expectedPath])
+            #expect(timeout == (directory ? 1800 : 30))
+            return result
+        }
+    }
+
     @Test("Read-only descriptors do not count as writers; writable and unknown descriptors do", arguments: [
         ("p987\ncIndexer\nf3\nar\n", false),
         ("p987\ncReader\nfcwd\na \nf3\nar\n", false),
