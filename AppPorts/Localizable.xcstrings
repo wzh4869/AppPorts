@@ -219321,6 +219321,417 @@
           }
         }
       }
+    },
+    "强制解绑" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة الرابط بالقوة"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠋⠕⠗⠉⠑ ⠠⠥⠝⠇⠊⠝⠅"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verknüpfung erzwingen entfernen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force Unlink"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devige malligi"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forzar desvinculación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forcer la suppression du lien"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लिंक बलपूर्वक हटाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paksa putuskan tautan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forza rimozione collegamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンクを強制解除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "링크 강제 해제"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppeling geforceerd verwijderen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymuś usunięcie dowiązania"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forçar desvinculação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Принудительно удалить ссылку"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บังคับยกเลิกลิงก์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bağlantıyı zorla kaldır"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buộc gỡ liên kết"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强制解绑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "強制解除連結"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强制解绑 ♡"
+          }
+        }
+      }
+    },
+    "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يزيل الرابط الرمزي المحلي فقط وينشئ مجلدًا فارغًا. تُحفظ البيانات الخارجية، ولا يلزم توصيل القرص الخارجي."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠋⠕⠗⠉⠑ ⠥⠝⠇⠊⠝⠅ ⠗⠑⠍⠕⠧⠑⠎ ⠕⠝⠇⠽ ⠞⠓⠑ ⠇⠕⠉⠁⠇ ⠎⠽⠍⠃⠕⠇⠊⠉ ⠇⠊⠝⠅ ⠁⠝⠙ ⠉⠗⠑⠁⠞⠑⠎ ⠁⠝ ⠑⠍⠏⠞⠽ ⠙⠊⠗⠑⠉⠞⠕⠗⠽. ⠠⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠁⠞⠁ ⠊⠎ ⠅⠑⠏⠞; ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠝⠑⠑⠙ ⠝⠕⠞ ⠃⠑ ⠉⠕⠝⠝⠑⠉⠞⠑⠙."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernt nur den lokalen symbolischen Link und erstellt einen leeren Ordner. Externe Daten bleiben erhalten; das externe Laufwerk muss nicht verbunden sein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Force unlink removes only the local symbolic link and creates an empty directory. External data is kept; the external drive need not be connected."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forigas nur la lokan simbolan ligilon kaj kreas malplenan dosierujon. Eksteraj datumoj restas; la ekstera disko ne devas esti konektita."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo elimina el enlace simbólico local y crea una carpeta vacía. Conserva los datos externos; no es necesario conectar la unidad externa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprime uniquement le lien symbolique local et crée un dossier vide. Les données externes sont conservées ; le disque externe peut être déconnecté."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "केवल स्थानीय प्रतीकात्मक लिंक हटाता है और खाली फ़ोल्डर बनाता है। बाहरी डेटा सुरक्षित रहता है; बाहरी ड्राइव का जुड़ा होना आवश्यक नहीं है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya menghapus tautan simbolis lokal dan membuat folder kosong. Data eksternal tetap disimpan; drive eksternal tidak perlu terhubung."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove solo il collegamento simbolico locale e crea una cartella vuota. I dati esterni vengono conservati; il disco esterno può essere scollegato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルのシンボリックリンクのみを削除し、空のフォルダを作成します。外部のデータは保持され、外部ドライブの接続は不要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬 심볼릭 링크만 제거하고 빈 폴더를 만듭니다. 외부 데이터는 보존되며 외장 드라이브 연결은 필요하지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert alleen de lokale symbolische koppeling en maakt een lege map. Externe gegevens blijven behouden; de externe schijf hoeft niet aangesloten te zijn."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwa tylko lokalne dowiązanie symboliczne i tworzy pusty folder. Dane zewnętrzne zostają zachowane; dysk zewnętrzny nie musi być podłączony."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove apenas o link simbólico local e cria uma pasta vazia. Os dados externos são preservados; a unidade externa não precisa estar conectada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаляется только локальная символическая ссылка и создаётся пустая папка. Внешние данные сохраняются; подключать внешний диск не требуется."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลบเฉพาะลิงก์สัญลักษณ์ในเครื่องและสร้างโฟลเดอร์ว่าง ข้อมูลภายนอกยังคงอยู่ โดยไม่ต้องเชื่อมต่อไดรฟ์ภายนอก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca yerel sembolik bağlantıyı kaldırır ve boş bir klasör oluşturur. Harici veriler korunur; harici sürücünün bağlı olması gerekmez."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ xóa liên kết tượng trưng cục bộ và tạo thư mục trống. Dữ liệu bên ngoài được giữ lại; không cần kết nối ổ đĩa ngoài."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "強制解除連結只移除本機軟連結並建立空目錄，保留外部目標資料，無需連接外接磁碟。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。 ♡"
+          }
+        }
+      }
+    },
+    "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بعد إزالة الرابط، يبدأ هذا المجلد فارغًا. لن تُستعاد البيانات السابقة تلقائيًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠋⠞⠑⠗ ⠥⠝⠇⠊⠝⠅⠊⠝⠛, ⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠎⠞⠁⠗⠞⠎ ⠑⠍⠏⠞⠽. ⠠⠏⠗⠑⠧⠊⠕⠥⠎ ⠙⠁⠞⠁ ⠺⠊⠇⠇ ⠝⠕⠞ ⠃⠑ ⠗⠑⠎⠞⠕⠗⠑⠙ ⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach dem Entfernen beginnt dieser Ordner leer. Bisherige Daten werden nicht automatisch wiederhergestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After unlinking, this directory starts empty. Previous data will not be restored automatically."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post malligo ĉi tiu dosierujo komenciĝas malplena. Antaŭaj datumoj ne estos aŭtomate restaŭritaj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras desvincular, esta carpeta empezará vacía. Los datos anteriores no se restaurarán automáticamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après la suppression du lien, ce dossier sera vide. Les anciennes données ne seront pas restaurées automatiquement."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लिंक हटाने के बाद यह फ़ोल्डर खाली होगा। पुराना डेटा अपने आप बहाल नहीं होगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setelah tautan diputus, folder ini dimulai kosong. Data sebelumnya tidak akan dipulihkan otomatis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo la rimozione, questa cartella sarà vuota. I dati precedenti non verranno ripristinati automaticamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解除後、このフォルダは空の状態から始まります。以前のデータは自動復元されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해제 후 이 폴더는 빈 상태로 시작합니다. 이전 데이터는 자동으로 복원되지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na het verwijderen begint deze map leeg. Eerdere gegevens worden niet automatisch hersteld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po usunięciu dowiązania folder będzie pusty. Poprzednie dane nie zostaną automatycznie przywrócone."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Após desvincular, esta pasta começa vazia. Os dados anteriores não serão restaurados automaticamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "После удаления ссылки папка будет пустой. Прежние данные не восстановятся автоматически."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หลังยกเลิกลิงก์ โฟลเดอร์นี้จะเริ่มต้นว่าง ข้อมูลเดิมจะไม่ถูกกู้คืนโดยอัตโนมัติ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bağlantı kaldırıldıktan sonra bu klasör boş başlar. Önceki veriler otomatik olarak geri yüklenmez."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau khi gỡ liên kết, thư mục này sẽ bắt đầu trống. Dữ liệu cũ sẽ không tự động được khôi phục."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解除連結後，此目錄將從空目錄重新開始，原有資料不會自動還原。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。 ♡"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

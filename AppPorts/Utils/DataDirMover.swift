@@ -366,6 +366,48 @@ actor DataDirMover {
     }
 
     /// Disconnecting an entry keeps its index so the now-missing original remains recoverable.
+    /// Discard an unmanaged local link without reading or changing its target.
+    /// Existing managed transfers must use their ordinary recovery flow.
+    func resetExistingLink(item: DataDirItem, expectedDestination: URL) async throws {
+        let identifier = try launchIdentifier(for: item)
+        if !ApplicationLaunchProtection.contains(identifier, directory: launchProtectionDirectory) {
+            return try await ApplicationLaunchProtection.run(identifier: identifier, directory: launchProtectionDirectory) {
+                try await self.resetExistingLink(item: item, expectedDestination: expectedDestination)
+            }
+        }
+        let local = item.path.standardizedFileURL
+        guard completingPaths.insert(local.path).inserted else { throw DataOperationSafety.Failure.occupied(local.path) }
+        defer { completingPaths.remove(local.path) }
+        try requirePolicy(local)
+        try safety.requireLocalRestoreParent(at: local)
+        try safety.requireNoOverlap(at: local)
+        try safety.requireApplicationStopped(at: local, bundleIdentifier: identifier)
+        guard isSymbolicLink(at: local) else { throw DataDirError.notASymlink(local) }
+        let identity = try DataPathIdentity.capture(local)
+        let rawTarget = try fileManager.destinationOfSymbolicLink(atPath: local.path)
+        let target = URL(fileURLWithPath: rawTarget, relativeTo: local.deletingLastPathComponent()).standardizedFileURL
+        guard target.path == expectedDestination.standardizedFileURL.path else {
+            throw DataOperationSafety.Failure.conflict(local.path)
+        }
+        try Task.checkCancellation()
+        let staging = local.deletingLastPathComponent().appendingPathComponent(".appports-unlink-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: staging, withIntermediateDirectories: false)
+        let replacement = staging.appendingPathComponent("empty-directory")
+        do {
+            try fileManager.createDirectory(at: replacement, withIntermediateDirectories: false)
+            try requireLocalRestoreParent(local)
+            try switchEntry(local: local, expectedLink: identity, replacement: replacement, staging: staging)
+        } catch {
+            // Remove only empty directories. Never recursively remove a retained entry.
+            _ = rmdir(replacement.path)
+            _ = rmdir(staging.path)
+            if try entryExists(staging) {
+                throw DataOperationSafety.Failure.inspection(error.localizedDescription + "\n" + staging.path)
+            }
+            throw error
+        }
+    }
+
     func deleteLink(localPath: URL) async throws {
         guard isSymbolicLink(at: localPath) else { throw DataDirError.notASymlink(localPath) }
         let identity = try DataPathIdentity.capture(localPath)
