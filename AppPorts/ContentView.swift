@@ -207,7 +207,7 @@ struct ContentView: View {
             
             // Check for updates
             Task {
-                if let update = await UpdateChecker.shared.checkForUpdates(channel: .preferred) {
+                if let update = await UpdateChecker.shared.checkForUpdates() {
                     AppLogger.shared.logContext(
                         "检测到新版本",
                         details: [

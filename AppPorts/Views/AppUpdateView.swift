@@ -2,62 +2,96 @@ import SwiftUI
 
 struct AppUpdateActions: View {
     let update: AppUpdateInfo
+    let dismiss: () -> Void
+    @ObservedObject private var updater = AppUpdateController.shared
+    @ObservedObject private var operations = AppOperationState.shared
 
     var body: some View {
-        if update.source == .official {
-            Link("国内下载".localized, destination: update.chinaDownloadURL)
-        } else {
-            GitHubUpdateControls(update: update)
+        VStack(alignment: .leading, spacing: 10) {
+            GitHubUpdateStatus()
+            HStack(alignment: .center, spacing: 12) {
+                Button("以后再说".localized, action: dismiss)
+                    .keyboardShortcut(.cancelAction)
+                Spacer(minLength: 0)
+                GitHubUpdateControls(update: update, showsStatus: false, showsError: false)
+                Link("国内下载".localized, destination: update.chinaDownloadURL)
+            }
+            if updater.prepared != nil, updater.installationBlocked {
+                Text("请先结束迁移任务后再安装更新。".localized)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            } else if let error = updater.errorMessage {
+                AppUpdateErrorRow(message: error, githubURL: update.githubURL)
+            }
+        }
+        .buttonStyle(.bordered)
+    }
+}
+
+private struct GitHubUpdateStatus: View {
+    @ObservedObject private var updater = AppUpdateController.shared
+
+    var body: some View {
+        if updater.isInstalling {
+            Text("正在退出并安装更新…".localized).foregroundStyle(.secondary)
+        } else if updater.isPreparing {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(updater.progress < 1 ? "正在下载更新…".localized : "正在准备安装…".localized)
+                    .foregroundStyle(.secondary)
+                ProgressView(value: updater.progress)
+            }
+        } else if updater.prepared != nil {
+            Text("更新已准备好".localized).foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct AppUpdateErrorRow: View {
+    let message: String
+    let githubURL: URL?
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(message)
+                .foregroundStyle(.red)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .help(message)
+                .layoutPriority(1)
+            if let githubURL {
+                Link("GitHub".localized, destination: githubURL)
+                    .fixedSize()
+            }
+            Spacer(minLength: 0)
         }
     }
 }
 
 struct GitHubUpdateControls: View {
     var update: AppUpdateInfo?
+    var showsStatus = true
+    var showsError = true
     @ObservedObject private var updater = AppUpdateController.shared
     @ObservedObject private var operations = AppOperationState.shared
-    @State private var confirmInstall = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if updater.isPreparing {
-                Text(updater.progress < 1 ? "正在下载更新…".localized : "正在准备安装…".localized)
-                ProgressView(value: updater.progress)
-                Button("取消".localized) { updater.cancel() }
-            } else if let prepared = updater.prepared {
-                HStack {
-                    Text(verbatim: prepared.version).foregroundStyle(.secondary)
-                    Spacer()
+            if showsStatus { GitHubUpdateStatus() }
+            HStack(spacing: 10) {
+                if updater.isPreparing {
                     Button("取消".localized) { updater.cancel() }
-                    Button("安装并重新启动".localized) { confirmInstall = true }
-                        .disabled(operations.isBusy)
-                }
-                if operations.isBusy {
-                    Text("还有任务尚未结束".localized).foregroundStyle(.secondary)
-                }
-            } else if let update {
-                HStack(spacing: 16) {
-                    if update.githubAsset != nil {
-                        Button("下载更新".localized) { updater.download(update) }
-                    }
-                    if let url = update.githubURL {
-                        Link("GitHub".localized, destination: url)
-                    }
-                }
-                if update.githubAsset == nil {
-                    Text(AppUpdateError.package.localizedDescription).foregroundStyle(.secondary)
+                } else if updater.prepared != nil {
+                    Button("取消".localized) { updater.cancel() }
+                    Button("安装并重新启动".localized) { updater.install() }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(updater.installationBlocked || updater.isInstalling)
+                } else if let update {
+                    Button("GitHub 更新".localized) { updater.download(update) }
                 }
             }
-            if let error = updater.errorMessage {
-                Text(error).foregroundStyle(.red)
-                    .fixedSize(horizontal: false, vertical: true)
+            if showsError, let error = updater.errorMessage {
+                AppUpdateErrorRow(message: error, githubURL: update?.githubURL)
             }
-        }
-        .alert("安装并重新启动".localized, isPresented: $confirmInstall) {
-            Button("取消".localized, role: .cancel) {}
-            Button("安装并重新启动".localized) { updater.install() }
-        } message: {
-            Text("安装后将退出并重新打开 AppPorts。".localized)
         }
     }
 }
@@ -72,13 +106,11 @@ struct AppUpdateSheet: View {
                 Text("发现新版本".localized).font(.headline)
                 Text(verbatim: update.version).foregroundStyle(.secondary)
                 Spacer()
-                Button("以后再说".localized) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
             }
             MarkdownTextView(markdown: update.releaseNotesMarkdown)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             Divider()
-            AppUpdateActions(update: update)
+            AppUpdateActions(update: update, dismiss: { dismiss() })
         }
         .padding(20)
         .frame(width: 500, height: 400)

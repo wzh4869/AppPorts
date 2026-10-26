@@ -57,7 +57,25 @@ struct GitHubUpdateAsset: Codable, Equatable, Sendable {
 }
 
 enum AppUpdateError: LocalizedError {
-    case package, checksum, application, location, changed
+    case package, checksum, application, location, changed, quitBlocked
+
+    static func message(for error: Error) -> String {
+        let underlying = error as NSError
+        guard underlying.domain == NSURLErrorDomain else { return error.localizedDescription }
+        switch URLError.Code(rawValue: underlying.code) {
+        case .timedOut:
+            return "更新请求超时，请重试或选择国内下载。".localized
+        case .secureConnectionFailed, .serverCertificateHasBadDate, .serverCertificateUntrusted,
+             .serverCertificateHasUnknownRoot, .serverCertificateNotYetValid:
+            return "安全连接验证失败，请检查网络或代理。".localized
+        case .notConnectedToInternet:
+            return "网络未连接，请连接网络后重试。".localized
+        case .cannotFindHost, .dnsLookupFailed, .cannotConnectToHost, .networkConnectionLost:
+            return "无法连接更新服务器，请重试或选择国内下载。".localized
+        default:
+            return error.localizedDescription
+        }
+    }
 
     var errorDescription: String? {
         switch self {
@@ -66,6 +84,7 @@ enum AppUpdateError: LocalizedError {
         case .application: return "更新包中的应用不兼容或已损坏，请前往发布页下载。".localized
         case .location: return "当前位置无法自动替换应用，请前往发布页手动更新。".localized
         case .changed: return "应用已发生变化，请重新检查更新。".localized
+        case .quitBlocked: return "未能退出应用，请关闭其他窗口后重试。".localized
         }
     }
 }

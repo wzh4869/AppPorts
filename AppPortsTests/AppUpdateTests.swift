@@ -1,8 +1,102 @@
 import CryptoKit
+import AppKit
 import XCTest
 @testable import AppPorts
 
 final class AppUpdateTests: XCTestCase {
+    @MainActor
+    func testInstallationRequestReturningKeepsHelperAndTerminationTokenAlive() async throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let helper = Process()
+        helper.executableURL = URL(fileURLWithPath: "/bin/sleep")
+        helper.arguments = ["30"]
+        try helper.run()
+        defer {
+            if helper.isRunning { helper.terminate() }
+            helper.waitUntilExit()
+        }
+        let operations = AppOperationState()
+        var terminationRequested = false
+        let controller = AppUpdateController(
+            operationState: operations,
+            makeOperationLock: { OperationLock(fileURL: root.appendingPathComponent("operation.lock"), writerAdmissionCheck: {}) },
+            launchInstaller: { _ in helper },
+            requestTermination: { terminationRequested = true }
+        )
+        let prepared = PreparedAppUpdate(workspace: root, destination: root.appendingPathComponent("AppPorts.app"),
+                                        originalIdentity: "old", stagedIdentity: "new", version: "2.0.1")
+
+        controller.install(prepared)
+        await Task.yield()
+
+        XCTAssertTrue(terminationRequested)
+        XCTAssertTrue(helper.isRunning)
+        XCTAssertTrue(controller.allowsTermination)
+        XCTAssertTrue(operations.isBusy)
+        XCTAssertFalse(controller.installationBlocked)
+        XCTAssertNil(controller.errorMessage)
+
+        controller.cancel()
+        XCTAssertFalse(controller.allowsTermination)
+        XCTAssertFalse(controller.isInstalling)
+        XCTAssertFalse(controller.installationBlocked)
+        XCTAssertFalse(operations.isBusy)
+        XCTAssertFalse(helper.isRunning)
+        XCTAssertNil(controller.errorMessage)
+    }
+
+    @MainActor
+    func testNestedUpdateSheetsAreClosedBeforeTermination() async throws {
+        let frame = NSRect(x: 0, y: 0, width: 240, height: 120)
+        let parent = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        let settings = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        let update = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        parent.isReleasedWhenClosed = false
+        settings.isReleasedWhenClosed = false
+        update.isReleasedWhenClosed = false
+        defer { update.close(); settings.close(); parent.close() }
+        parent.beginSheet(settings, completionHandler: nil)
+        settings.beginSheet(update, completionHandler: nil)
+
+        try await AppUpdateController.dismissSheets(in: [parent])
+
+        XCTAssertNil(parent.attachedSheet)
+        XCTAssertNil(settings.attachedSheet)
+        XCTAssertNil(update.sheetParent)
+        XCTAssertNil(settings.sheetParent)
+    }
+
+    @MainActor
+    func testInstallationDoesNotRequestTerminationWhileMigrationIsActive() throws {
+        let operations = AppOperationState()
+        operations.setMigrationCount(1)
+        var launched = false
+        var terminationRequested = false
+        let controller = AppUpdateController(operationState: operations,
+            launchInstaller: { _ in launched = true; return Process() },
+            requestTermination: { terminationRequested = true })
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        controller.install(PreparedAppUpdate(workspace: root, destination: root.appendingPathComponent("AppPorts.app"),
+                                             originalIdentity: "old", stagedIdentity: "new", version: "2.0.1"))
+        XCTAssertFalse(launched)
+        XCTAssertFalse(terminationRequested)
+        XCTAssertFalse(controller.allowsTermination)
+        XCTAssertTrue(operations.isBusy)
+        XCTAssertEqual(controller.errorMessage, "还有任务尚未结束".localized)
+    }
+
+    func testUpdateNetworkErrorsUseActionableMessages() {
+        XCTAssertEqual(AppUpdateError.message(for: URLError(.timedOut)),
+                       "更新请求超时，请重试或选择国内下载。".localized)
+        for code in [URLError.Code.secureConnectionFailed, .serverCertificateUntrusted, .serverCertificateHasBadDate] {
+            XCTAssertEqual(AppUpdateError.message(for: URLError(code)),
+                           "安全连接验证失败，请检查网络或代理。".localized)
+        }
+        XCTAssertEqual(AppUpdateError.message(for: AppUpdateError.checksum), AppUpdateError.checksum.localizedDescription)
+    }
+
     func testReleaseAssetSelectionAcceptsCurrentDMGNamingAndRequiresDigest() {
         let dmg = asset("AppPorts2.0.1.dmg")
         XCTAssertEqual(GitHubUpdateAsset.select(from: [dmg]), dmg)

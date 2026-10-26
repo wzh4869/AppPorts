@@ -42,6 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         if AppUpdateController.shared.allowsTermination { return .terminateNow }
+        AppUpdateController.shared.cancelInstallationForTerminationRefusal()
         if AppOperationState.shared.isBusy {
             let alert = NSAlert()
             alert.messageText = "还有任务尚未结束".localized

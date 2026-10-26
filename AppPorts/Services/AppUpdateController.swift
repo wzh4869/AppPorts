@@ -12,11 +12,39 @@ final class AppUpdateController: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var version: String?
     private var task: Task<Void, Never>?
-    private var installToken: UUID?
+    @Published private var installToken: UUID?
+    private var installationHelper: Process?
+    private var restartTask: Task<Void, Never>?
+    private let operations: AppOperationState
+    private let makeOperationLock: () -> OperationLock
+    private let launchInstaller: (PreparedAppUpdate) throws -> Process
+    private let requestTermination: () async throws -> Void
+
+    init(operationState: AppOperationState? = nil,
+         makeOperationLock: @escaping () -> OperationLock = { OperationLock() },
+         launchInstaller: @escaping (PreparedAppUpdate) throws -> Process = { try AppUpdateInstaller.launch($0) },
+         requestTermination: @escaping () async throws -> Void = {
+             try await AppUpdateController.dismissSheets(in: NSApp.windows)
+             try Task.checkCancellation()
+             guard NSApp.modalWindow == nil else { throw AppUpdateError.quitBlocked }
+             NSApp.terminate(nil)
+         }) {
+        operations = operationState ?? .shared
+        self.makeOperationLock = makeOperationLock
+        self.launchInstaller = launchInstaller
+        self.requestTermination = requestTermination
+    }
 
     var allowsTermination: Bool {
         guard let installToken else { return false }
-        return AppOperationState.shared.isOnlyOperation(installToken)
+        return operations.isOnlyOperation(installToken)
+    }
+
+    var isInstalling: Bool { installToken != nil }
+
+    var installationBlocked: Bool {
+        if let installToken { return !operations.isOnlyOperation(installToken) }
+        return operations.isBusy
     }
 
     func download(_ update: AppUpdateInfo) {
@@ -29,8 +57,15 @@ final class AppUpdateController: ObservableObject {
         let destination = Bundle.main.bundleURL
         task = Task {
             do {
+                let resolvedUpdate: AppUpdateInfo
+                if update.source == .github, update.githubAsset != nil {
+                    resolvedUpdate = update
+                } else {
+                    resolvedUpdate = try await UpdateChecker.shared.githubUpdate(for: update)
+                }
+                try Task.checkCancellation()
                 let candidate = try await Task.detached(priority: .utility) {
-                    try await GitHubUpdatePackage().prepare(update: update, destination: destination) { value in
+                    try await GitHubUpdatePackage().prepare(update: resolvedUpdate, destination: destination) { value in
                         Task { @MainActor in self.progress = value }
                     }
                 }.valueWithCancellation()
@@ -40,7 +75,10 @@ final class AppUpdateController: ObservableObject {
                     prepared = candidate
                 }
             } catch {
-                if !Task.isCancelled { errorMessage = error.localizedDescription }
+                if !Task.isCancelled {
+                    AppLogger.shared.logError("GitHub 应用更新失败", error: error)
+                    errorMessage = AppUpdateError.message(for: error)
+                }
             }
             isPreparing = false
             task = nil
@@ -48,7 +86,7 @@ final class AppUpdateController: ObservableObject {
     }
 
     func cancel() {
-        guard installToken == nil else { return }
+        stopInstallation()
         if isPreparing { task?.cancel() }
         else { discardPrepared(); errorMessage = nil; version = nil }
     }
@@ -61,13 +99,17 @@ final class AppUpdateController: ObservableObject {
     }
 
     func install() {
-        guard let prepared, !isPreparing, installToken == nil else { return }
-        let operations = AppOperationState.shared
+        guard let prepared else { return }
+        install(prepared)
+    }
+
+    func install(_ prepared: PreparedAppUpdate) {
+        guard !isPreparing, installToken == nil else { return }
         guard let token = operations.begin() else {
             errorMessage = "还有任务尚未结束".localized
             return
         }
-        let lock = OperationLock()
+        let lock = makeOperationLock()
         guard lock.tryAcquire() else {
             operations.finish(token)
             errorMessage = lock.admissionFailureReason ?? "其他程序正在处理磁盘，请稍后重试。".localized
@@ -75,19 +117,73 @@ final class AppUpdateController: ObservableObject {
         }
         defer { lock.release() }
         do {
-            let helper = try AppUpdateInstaller.launch(prepared)
+            installationHelper = try launchInstaller(prepared)
             installToken = token
-            NSApp.terminate(nil)
-            // terminate() only returns if some lifecycle participant cancels Quit.
-            if helper.isRunning { helper.terminate() }
-            installToken = nil
-            operations.finish(token)
-            errorMessage = "还有任务尚未结束".localized
+            errorMessage = nil
+            // AppKit may return while termination is still being processed.
+            // The delegate owns a refusal; keep the helper alive until the app exits.
+            restartTask = Task { [weak self] in
+                guard let self else { return }
+                do {
+                    try Task.checkCancellation()
+                    try await self.requestTermination()
+                } catch {
+                    if !Task.isCancelled {
+                        self.stopInstallation()
+                        self.errorMessage = AppUpdateError.message(for: error)
+                    }
+                }
+            }
         } catch {
             installToken = nil
             operations.finish(token)
             errorMessage = error.localizedDescription
         }
+    }
+
+    func cancelInstallationForTerminationRefusal() {
+        guard isInstalling else { return }
+        stopInstallation()
+        errorMessage = AppUpdateError.quitBlocked.localizedDescription
+    }
+
+    private func stopInstallation() {
+        restartTask?.cancel()
+        restartTask = nil
+        guard let token = installToken else { return }
+        if let installationHelper, installationHelper.isRunning {
+            installationHelper.terminate()
+            installationHelper.waitUntilExit()
+        }
+        installationHelper = nil
+        installToken = nil
+        operations.finish(token)
+    }
+
+    static func dismissSheets(in windows: [NSWindow]) async throws {
+        for window in windows {
+            while let sheet = window.attachedSheet {
+                try Task.checkCancellation()
+                try await dismissSheets(in: [sheet])
+                // Process nested sheets before their parents.
+                try await endSheet(sheet, parent: window)
+            }
+        }
+    }
+
+    private static func endSheet(_ sheet: NSWindow, parent: NSWindow) async throws {
+        try Task.checkCancellation()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            var observer: NSObjectProtocol?
+            observer = NotificationCenter.default.addObserver(forName: NSWindow.didEndSheetNotification,
+                                                              object: parent, queue: .main) { _ in
+                if let observer { NotificationCenter.default.removeObserver(observer) }
+                continuation.resume()
+            }
+            parent.endSheet(sheet)
+        }
+        sheet.orderOut(nil)
+        try Task.checkCancellation()
     }
 
     private func discardPrepared() {
