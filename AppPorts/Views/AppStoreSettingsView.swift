@@ -117,6 +117,17 @@ struct AppStoreSettingsView: View {
     /// 可滚动的设置正文。
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 24) {
+            HStack {
+                Button("关于 AppPorts...".localized) {
+                    AboutWindowController.shared.present()
+                }
+                Spacer()
+            }
+
+            UpdateSettingsSection()
+
+            Divider()
+
             readinessSection
 
             if isMASExternalSupported {

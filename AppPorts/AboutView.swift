@@ -329,6 +329,7 @@ private final class SponsorsViewModel: ObservableObject {
 /// A separate, reusable window also works when the main window is closed (macOS 12+).
 @MainActor
 final class AboutWindowController: NSWindowController {
+    static let shared = AboutWindowController()
     private var languageObserver: AnyCancellable?
 
     init() {
@@ -445,9 +446,6 @@ struct AboutView: View {
                 }
 
                 Divider()
-                AboutUpdateSection()
-
-                Divider()
                 AboutSection(title: "版权与许可".localized) {
                     Text(verbatim: "© 2025–2026 shimoko.com")
                         .foregroundStyle(.secondary)
@@ -494,53 +492,6 @@ private struct AboutLinkRow: View {
             Text(label).foregroundStyle(.secondary).frame(width: 92, alignment: .leading)
             Link(destination: URL(string: url)!) { Text(verbatim: title) }
                 .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-}
-
-private struct AboutUpdateSection: View {
-    @State private var isChecking = false
-    @State private var result: UpdateCheckResult?
-    @ObservedObject private var languageManager = LanguageManager.shared
-
-    var body: some View {
-        AboutSection(title: "更新".localized) {
-            HStack(spacing: 12) {
-                Button("检查更新".localized) { isChecking = true }
-                    .disabled(isChecking)
-                if isChecking {
-                    ProgressView().controlSize(.small)
-                        .accessibilityLabel("正在检查更新…".localized)
-                }
-            }
-            Text(isChecking ? "正在检查更新…".localized : statusText)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            if case let .available(update) = result, !isChecking {
-                HStack(spacing: 16) {
-                    if let url = update.githubURL {
-                        Link("GitHub".localized, destination: url)
-                    }
-                    Link("国内下载".localized, destination: update.chinaDownloadURL)
-                }
-            }
-        }
-        .task(id: isChecking) {
-            guard isChecking else { return }
-            let checked = await UpdateChecker.shared.checkForUpdatesResult()
-            guard !Task.isCancelled else { return }
-            result = checked
-            isChecking = false
-        }
-        .onDisappear { isChecking = false }
-    }
-
-    private var statusText: String {
-        switch result {
-        case .none: return "更新来源：GitHub Releases 与官方网站。".localized
-        case .available(let update): return "发现新版本".localized + " · " + update.version
-        case .upToDate: return "当前已是最新版本。".localized
-        case .failed: return "无法检查更新，请稍后重试。".localized
         }
     }
 }

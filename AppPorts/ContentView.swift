@@ -9,177 +9,6 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
-// MARK: - MarkdownTextView (NSTextView wrapper for Markdown rendering)
-private struct MarkdownTextView: NSViewRepresentable {
-    let markdown: String
-
-    func makeNSView(context: Context) -> NSScrollView {
-        let scrollView = NSScrollView()
-        let textView = NSTextView()
-        textView.isEditable = false
-        textView.isSelectable = true
-        textView.drawsBackground = false
-        textView.textColor = NSColor.labelColor
-        textView.font = NSFont.systemFont(ofSize: 13)
-        textView.textContainerInset = NSSize(width: 0, height: 4)
-        textView.textContainer?.lineFragmentPadding = 0
-        textView.textContainer?.widthTracksTextView = true
-        textView.textContainer?.heightTracksTextView = false
-        scrollView.documentView = textView
-        scrollView.hasVerticalScroller = true
-        scrollView.drawsBackground = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        return scrollView
-    }
-
-    func updateNSView(_ scrollView: NSScrollView, context: Context) {
-        guard let textView = scrollView.documentView as? NSTextView else { return }
-        let text = markdown.replacingOccurrences(of: "\r\n", with: "\n")
-        let result = NSMutableAttributedString()
-        let baseFont = NSFont.systemFont(ofSize: 13)
-        let boldFont = NSFont.boldSystemFont(ofSize: 13)
-        let monoFont = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
-        let codeBg = NSColor.separatorColor.withAlphaComponent(0.3)
-        let textColor = NSColor.labelColor
-        let linkColor = NSColor.linkColor
-        let indentStyle: NSMutableParagraphStyle = {
-            let s = NSMutableParagraphStyle()
-            s.headIndent = 16
-            s.firstLineHeadIndent = 16
-            s.paragraphSpacing = 4
-            return s
-        }()
-
-        for line in text.components(separatedBy: "\n") {
-            // Header
-            if line.hasPrefix("### ") {
-                let s = NSMutableParagraphStyle(); s.paragraphSpacing = 8
-                result.append(NSAttributedString(string: String(line.dropFirst(4)) + "\n",
-                    attributes: [.font: NSFont.boldSystemFont(ofSize: 15), .foregroundColor: textColor, .paragraphStyle: s]))
-            } else if line.hasPrefix("## ") {
-                let s = NSMutableParagraphStyle(); s.paragraphSpacing = 8
-                result.append(NSAttributedString(string: String(line.dropFirst(3)) + "\n",
-                    attributes: [.font: NSFont.boldSystemFont(ofSize: 18), .foregroundColor: textColor, .paragraphStyle: s]))
-            } else if line.hasPrefix("# ") {
-                let s = NSMutableParagraphStyle(); s.paragraphSpacing = 8
-                result.append(NSAttributedString(string: String(line.dropFirst(2)) + "\n",
-                    attributes: [.font: NSFont.boldSystemFont(ofSize: 22), .foregroundColor: textColor, .paragraphStyle: s]))
-            }
-            // Unordered list
-            else if line.hasPrefix("- ") || line.hasPrefix("* ") {
-                let content = "• " + String(line.dropFirst(2))
-                result.append(parseInlineMarkdown(content, baseFont: baseFont, boldFont: boldFont,
-                    monoFont: monoFont, codeBg: codeBg, textColor: textColor, linkColor: linkColor, paragraphStyle: indentStyle))
-                result.append(NSAttributedString(string: "\n"))
-            }
-            // Ordered list
-            else if let dotRange = line.range(of: ". "),
-                    let firstNum = Int(line[line.startIndex..<dotRange.lowerBound]),
-                    line.startIndex != dotRange.lowerBound {
-                let content = "\(firstNum). " + String(line[dotRange.upperBound...])
-                result.append(parseInlineMarkdown(content, baseFont: baseFont, boldFont: boldFont,
-                    monoFont: monoFont, codeBg: codeBg, textColor: textColor, linkColor: linkColor, paragraphStyle: indentStyle))
-                result.append(NSAttributedString(string: "\n"))
-            }
-            // Code block separator
-            else if line.hasPrefix("```") {
-                // skip
-            }
-            // Empty line
-            else if line.trimmingCharacters(in: .whitespaces).isEmpty {
-                result.append(NSAttributedString(string: "\n"))
-            }
-            // Normal text
-            else {
-                result.append(parseInlineMarkdown(line, baseFont: baseFont, boldFont: boldFont,
-                    monoFont: monoFont, codeBg: codeBg, textColor: textColor, linkColor: linkColor))
-                result.append(NSAttributedString(string: "\n"))
-            }
-        }
-        textView.textStorage?.setAttributedString(result)
-    }
-
-    private func parseInlineMarkdown(_ text: String, baseFont: NSFont, boldFont: NSFont,
-        monoFont: NSFont, codeBg: NSColor, textColor: NSColor, linkColor: NSColor,
-        paragraphStyle: NSMutableParagraphStyle? = nil) -> NSAttributedString {
-        let result = NSMutableAttributedString()
-        var remaining = text[...]
-        let baseAttrs: [NSAttributedString.Key: Any] = {
-            var a: [NSAttributedString.Key: Any] = [.font: baseFont, .foregroundColor: textColor]
-            if let ps = paragraphStyle { a[.paragraphStyle] = ps }
-            return a
-        }()
-        let boldAttrs: [NSAttributedString.Key: Any] = {
-            var a: [NSAttributedString.Key: Any] = [.font: boldFont, .foregroundColor: textColor]
-            if let ps = paragraphStyle { a[.paragraphStyle] = ps }
-            return a
-        }()
-
-        while !remaining.isEmpty {
-            // **bold**
-            if let r = remaining.range(of: "**") {
-                if let end = remaining[r.upperBound...].range(of: "**") {
-                    // text before bold
-                    if r.lowerBound > remaining.startIndex {
-                        result.append(NSAttributedString(string: String(remaining[..<r.lowerBound]), attributes: baseAttrs))
-                    }
-                    // bold text
-                    result.append(NSAttributedString(string: String(remaining[r.upperBound..<end.lowerBound]), attributes: boldAttrs))
-                    remaining = remaining[end.upperBound...]
-                    continue
-                }
-            }
-            // *italic*
-            if let r = remaining.range(of: "*") {
-                if let end = remaining[r.upperBound...].range(of: "*") {
-                    if r.lowerBound > remaining.startIndex {
-                        result.append(NSAttributedString(string: String(remaining[..<r.lowerBound]), attributes: baseAttrs))
-                    }
-                    let italicFont = NSFontManager.shared.convert(baseFont, toHaveTrait: .italicFontMask)
-                    var attrs = baseAttrs; attrs[.font] = italicFont
-                    result.append(NSAttributedString(string: String(remaining[r.upperBound..<end.lowerBound]), attributes: attrs))
-                    remaining = remaining[end.upperBound...]
-                    continue
-                }
-            }
-            // `code`
-            if let r = remaining.range(of: "`") {
-                if let end = remaining[r.upperBound...].range(of: "`") {
-                    if r.lowerBound > remaining.startIndex {
-                        result.append(NSAttributedString(string: String(remaining[..<r.lowerBound]), attributes: baseAttrs))
-                    }
-                    var attrs: [NSAttributedString.Key: Any] = [.font: monoFont, .foregroundColor: textColor, .backgroundColor: codeBg]
-                    if let ps = paragraphStyle { attrs[.paragraphStyle] = ps }
-                    result.append(NSAttributedString(string: String(remaining[r.upperBound..<end.lowerBound]), attributes: attrs))
-                    remaining = remaining[end.upperBound...]
-                    continue
-                }
-            }
-            // [text](url)
-            if let r = remaining.range(of: "[") {
-                if let paren = remaining[r.upperBound...].range(of: "]("),
-                   let end = remaining[paren.upperBound...].range(of: ")") {
-                    if r.lowerBound > remaining.startIndex {
-                        result.append(NSAttributedString(string: String(remaining[..<r.lowerBound]), attributes: baseAttrs))
-                    }
-                    let linkText = String(remaining[r.upperBound..<paren.lowerBound])
-                    let linkURL = String(remaining[paren.upperBound..<end.lowerBound])
-                    var attrs: [NSAttributedString.Key: Any] = [.font: baseFont, .foregroundColor: linkColor, .underlineStyle: NSUnderlineStyle.single.rawValue]
-                    if let url = URL(string: linkURL) { attrs[.link] = url }
-                    if let ps = paragraphStyle { attrs[.paragraphStyle] = ps }
-                    result.append(NSAttributedString(string: linkText, attributes: attrs))
-                    remaining = remaining[end.upperBound...]
-                    continue
-                }
-            }
-            // plain text
-            result.append(NSAttributedString(string: String(remaining), attributes: baseAttrs))
-            break
-        }
-        return result
-    }
-}
-
 // NOTE: AppItem and AppMoverError are in AppModels.swift
 // NOTE: AppLogger is in Services/AppLogger.swift
 
@@ -227,9 +56,7 @@ struct ContentView: View {
     @State private var alertMessage = ""
     
     @State private var showUpdateAlert = false
-    @State private var updateGitHubURL: URL?
-    @State private var updateChinaDownloadURL: URL?
-    @State private var updateReleaseBody = ""
+    @State private var availableUpdate: AppUpdateInfo?
     
     // 受保护应用迁移预警（App Store / root 拥有，自动迁移可能因权限失败）
     @State private var protectedAppsRequest: WarningSheetRequest?
@@ -380,7 +207,7 @@ struct ContentView: View {
             
             // Check for updates
             Task {
-                if let update = await UpdateChecker.shared.checkForUpdates() {
+                if let update = await UpdateChecker.shared.checkForUpdates(channel: .preferred) {
                     AppLogger.shared.logContext(
                         "检测到新版本",
                         details: [
@@ -391,9 +218,7 @@ struct ContentView: View {
                         ]
                     )
                     await MainActor.run {
-                        self.updateReleaseBody = update.releaseNotesMarkdown
-                        self.updateGitHubURL = update.githubURL
-                        self.updateChinaDownloadURL = update.chinaDownloadURL
+                        self.availableUpdate = update
                         self.showUpdateAlert = true
                     }
                 }
@@ -843,32 +668,9 @@ struct ContentView: View {
     }
 
     private var updateSheetContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("发现新版本".localized)
-                .font(.headline)
-            MarkdownTextView(markdown: updateReleaseBody)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            Divider()
-            HStack {
-                Spacer()
-                Button("GitHub".localized) {
-                    showUpdateAlert = false
-                    if let url = updateGitHubURL { NSWorkspace.shared.open(url) }
-                }
-                .disabled(updateGitHubURL == nil)
-                .keyboardShortcut(.defaultAction)
-                Button("国内下载".localized) {
-                    showUpdateAlert = false
-                    if let url = updateChinaDownloadURL { NSWorkspace.shared.open(url) }
-                }
-                Button("以后再说".localized) {
-                    showUpdateAlert = false
-                }
-                .keyboardShortcut(.cancelAction)
-            }
+        Group {
+            if let update = availableUpdate { AppUpdateSheet(update: update) }
         }
-        .padding(20)
-        .frame(width: 480, height: 360)
     }
 
     // MARK: - 顶部工具栏（拆出以减轻 body 的类型推断负担）

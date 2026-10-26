@@ -14,11 +14,13 @@ struct ReleaseInfo: Codable, Equatable {
     let tagName: String
     let htmlUrl: String
     let body: String
+    var assets: [GitHubUpdateAsset]? = nil
 
     enum CodingKeys: String, CodingKey {
         case tagName = "tag_name"
         case htmlUrl = "html_url"
         case body
+        case assets
     }
 }
 
@@ -53,12 +55,24 @@ struct AppUpdateInfo: Equatable {
     let githubURL: URL?
     let chinaDownloadURL: URL
     let sha256: String?
+    var githubAsset: GitHubUpdateAsset? = nil
 }
 
 enum UpdateCheckResult: Equatable {
     case available(AppUpdateInfo)
     case upToDate
     case failed
+}
+
+enum UpdateChannel: String {
+    case github
+    case official
+
+    static let defaultsKey = "UpdateChannel"
+
+    static var preferred: UpdateChannel {
+        UpdateChannel(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .official
+    }
 }
 
 // MARK: - Update Checker
@@ -111,15 +125,27 @@ final class UpdateChecker {
     }
 
     /// Background checks stay silent when no update can be offered.
-    func checkForUpdates() async -> AppUpdateInfo? {
-        if case let .available(update) = await checkForUpdatesResult() { return update }
+    func checkForUpdates(channel: UpdateChannel? = nil) async -> AppUpdateInfo? {
+        if case let .available(update) = await checkForUpdatesResult(channel: channel) { return update }
         return nil
     }
 
     /// Manual checks distinguish a successful check from unavailable sources.
-    func checkForUpdatesResult() async -> UpdateCheckResult {
+    func checkForUpdatesResult(channel: UpdateChannel? = nil) async -> UpdateCheckResult {
         guard let currentVersion = normalizedVersion(currentVersionProvider() ?? "") else {
             return .failed
+        }
+        if let channel {
+            let outcome: SourceFetchOutcome
+            switch channel {
+            case .github:
+                guard !githubUpdatesDisabledProvider() else { return .failed }
+                outcome = await fetchGitHubUpdate(currentVersion: currentVersion)
+            case .official:
+                outcome = await fetchOfficialUpdate(currentVersion: currentVersion)
+            }
+            if let update = outcome.update { return .available(update) }
+            return outcome.error == nil ? .upToDate : .failed
         }
         let githubEnabled = !githubUpdatesDisabledProvider()
         async let githubOutcome = githubEnabled
@@ -154,7 +180,8 @@ final class UpdateChecker {
                 releaseNotesMarkdown: release.body,
                 githubURL: URL(string: release.htmlUrl),
                 chinaDownloadURL: chinaDownloadURL,
-                sha256: nil
+                sha256: nil,
+                githubAsset: GitHubUpdateAsset.select(from: release.assets ?? [])
             )
             return SourceFetchOutcome(update: update, error: nil)
         } catch {

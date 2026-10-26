@@ -217326,6 +217326,1513 @@
           }
         }
       }
+    },
+    "下载更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنزيل التحديث"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠕⠺⠝⠇⠕⠁⠙ ⠠⠥⠏⠙⠁⠞⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update laden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download Update"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elŝuti ĝisdatigon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar actualización"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger la mise à jour"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट डाउनलोड करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unduh Pembaruan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarica aggiornamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートをダウンロード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 다운로드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update downloaden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pobierz aktualizację"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar atualização"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скачать обновление"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดาวน์โหลดอัปเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemeyi İndir"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải bản cập nhật"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載更新"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載更新"
+          }
+        }
+      }
+    },
+    "正在下载更新…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ تنزيل التحديث…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠕⠺⠝⠇⠕⠁⠙⠊⠝⠛ ⠥⠏⠙⠁⠞⠑⠲⠲⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update wird geladen…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Downloading update…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elŝutante ĝisdatigon…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargando actualización…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement de la mise à jour…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट डाउनलोड हो रहा है…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mengunduh pembaruan…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download dell’aggiornamento…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートをダウンロード中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 다운로드 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update wordt gedownload…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pobieranie aktualizacji…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixando atualização…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка обновления…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังดาวน์โหลดอัปเดต…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme indiriliyor…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang tải bản cập nhật…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下载更新…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載更新…"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載更新…"
+          }
+        }
+      }
+    },
+    "正在准备安装…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ تحضير التثبيت…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠏⠗⠑⠏⠁⠗⠊⠝⠛ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝⠲⠲⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installation wird vorbereitet…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing installation…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparante instaladon…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando instalación…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de l’installation…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इंस्टॉलेशन की तैयारी हो रही है…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyiapkan pemasangan…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparazione dell’installazione…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストールを準備中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치 준비 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installatie wordt voorbereid…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przygotowywanie instalacji…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando instalação…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подготовка установки…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังเตรียมติดตั้ง…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurulum hazırlanıyor…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang chuẩn bị cài đặt…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在准备安装…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在準備安裝…"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在準備安裝…"
+          }
+        }
+      }
+    },
+    "安装并重新启动" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تثبيت وإعادة تشغيل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠊⠝⠎⠞⠁⠇⠇ ⠁⠝⠙ ⠠⠗⠑⠎⠞⠁⠗⠞"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installieren und neu starten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install and Restart"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instali kaj restartigi"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar y reiniciar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer et relancer"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इंस्टॉल करके फिर खोलें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasang dan Mulai Ulang"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installa e riavvia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストールして再起動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치 후 다시 시작"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installeren en herstarten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zainstaluj i uruchom ponownie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar e reiniciar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установить и перезапустить"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ติดตั้งและเปิดใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yükle ve Yeniden Başlat"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài đặt và khởi động lại"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装并重新启动"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝並重新啟動"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝並重新啟動"
+          }
+        }
+      }
+    },
+    "安装后将退出并重新打开 AppPorts。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سيُغلق AppPorts ويُفتح مجددًا بعد التثبيت."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠺⠊⠇⠇ ⠟⠥⠊⠞ ⠁⠝⠙ ⠗⠑⠕⠏⠑⠝ ⠁⠋⠞⠑⠗ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts wird nach der Installation beendet und erneut geöffnet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts will quit and reopen after installation."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts fermiĝos kaj remalfermiĝos post la instalado."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts se cerrará y volverá a abrirse tras la instalación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts quittera puis se rouvrira après l’installation."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इंस्टॉलेशन के बाद AppPorts बंद होकर फिर खुलेगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts akan ditutup dan dibuka kembali setelah pemasangan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts si chiuderà e si riaprirà dopo l’installazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール後、AppPorts を終了して再度開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치 후 AppPorts가 종료되고 다시 열립니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts wordt na installatie gesloten en opnieuw geopend."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po instalacji AppPorts zamknie się i otworzy ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O AppPorts será fechado e reaberto após a instalação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "После установки AppPorts закроется и откроется снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts จะปิดแล้วเปิดอีกครั้งหลังติดตั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurulumdan sonra AppPorts kapanıp yeniden açılacaktır."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts sẽ thoát và mở lại sau khi cài đặt."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装后将退出并重新打开 AppPorts。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝後將結束並重新開啟 AppPorts。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安裝後將結束並重新開啟 AppPorts。"
+          }
+        }
+      }
+    },
+    "此版本没有可自动安装的更新包，请前往 GitHub 发布页下载。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا تتوفر حزمة للتثبيت التلقائي لهذا الإصدار. نزّلها من صفحة الإصدار على GitHub."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠗⠑⠇⠑⠁⠎⠑ ⠓⠁⠎ ⠝⠕ ⠥⠏⠙⠁⠞⠑ ⠏⠁⠉⠅⠁⠛⠑ ⠋⠕⠗ ⠁⠥⠞⠕⠍⠁⠞⠊⠉ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝⠲ ⠠⠙⠕⠺⠝⠇⠕⠁⠙ ⠊⠞ ⠋⠗⠕⠍ ⠞⠓⠑ ⠠⠛⠊⠞⠠⠓⠥⠃ ⠗⠑⠇⠑⠁⠎⠑ ⠏⠁⠛⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Version enthält kein automatisch installierbares Update. Lade es von der GitHub-Releaseseite herunter."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This release has no update package for automatic installation. Download it from the GitHub release page."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu eldono ne havas pakaĵon por aŭtomata instalado. Elŝutu ĝin de la eldonpaĝo de GitHub."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta versión no tiene un paquete de instalación automática. Descárgalo desde la página de versiones de GitHub."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette version ne propose aucun paquet d’installation automatique. Téléchargez-le depuis la page des versions GitHub."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस संस्करण में अपने आप इंस्टॉल होने वाला अपडेट पैकेज नहीं है। इसे GitHub रिलीज़ पेज से डाउनलोड करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilis ini tidak menyediakan paket pemasangan otomatis. Unduh dari halaman rilis GitHub."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa versione non offre un pacchetto di installazione automatica. Scaricalo dalla pagina delle versioni GitHub."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このリリースには自動インストール用のパッケージがありません。GitHub のリリースページからダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 릴리스에는 자동 설치 패키지가 없습니다. GitHub 릴리스 페이지에서 다운로드하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze versie heeft geen pakket voor automatische installatie. Download het via de GitHub-releasepagina."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To wydanie nie zawiera pakietu do automatycznej instalacji. Pobierz go ze strony wydania w GitHub."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta versão não possui um pacote de instalação automática. Baixe-o na página da versão no GitHub."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этом выпуске нет пакета для автоматической установки. Скачайте его со страницы выпуска GitHub."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รุ่นนี้ไม่มีแพ็กเกจสำหรับติดตั้งอัตโนมัติ โปรดดาวน์โหลดจากหน้าเผยแพร่บน GitHub"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu sürümde otomatik kurulum paketi yok. GitHub sürüm sayfasından indirin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản phát hành này không có gói cài đặt tự động. Hãy tải từ trang phát hành GitHub."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本没有可自动安装的更新包，请前往 GitHub 发布页下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本沒有可自動安裝的更新套件，請前往 GitHub 發布頁下載。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本沒有可自動安裝的更新套件，請前往 GitHub 發布頁下載。"
+          }
+        }
+      }
+    },
+    "更新包校验失败，请重新下载。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فشل التحقق من التحديث. يرجى تنزيله مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝ ⠋⠁⠊⠇⠑⠙⠲ ⠠⠏⠇⠑⠁⠎⠑ ⠙⠕⠺⠝⠇⠕⠁⠙ ⠊⠞ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Updateprüfung ist fehlgeschlagen. Bitte erneut herunterladen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update verification failed. Please download it again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La kontrolo de la ĝisdatigo malsukcesis. Bonvolu reelŝuti ĝin."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La verificación de la actualización falló. Descárgala de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La vérification de la mise à jour a échoué. Veuillez la télécharger à nouveau."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट का सत्यापन विफल हुआ। कृपया दोबारा डाउनलोड करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifikasi pembaruan gagal. Silakan unduh kembali."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La verifica dell’aggiornamento non è riuscita. Scaricalo di nuovo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートの検証に失敗しました。もう一度ダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 검증에 실패했습니다. 다시 다운로드하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De updatecontrole is mislukt. Download de update opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weryfikacja aktualizacji nie powiodła się. Pobierz ją ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A verificação da atualização falhou. Baixe-a novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка обновления не пройдена. Скачайте его снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบอัปเดตไม่สำเร็จ โปรดดาวน์โหลดใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme doğrulanamadı. Lütfen yeniden indirin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác minh bản cập nhật thất bại. Vui lòng tải lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新包校验失败，请重新下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新套件驗證失敗，請重新下載。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新套件驗證失敗，請重新下載。"
+          }
+        }
+      }
+    },
+    "更新包中的应用不兼容或已损坏，请前往发布页下载。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التطبيق في حزمة التحديث غير متوافق أو تالف. نزّله من صفحة الإصدار."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠊⠝ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠊⠎ ⠊⠝⠉⠕⠍⠏⠁⠞⠊⠃⠇⠑ ⠕⠗ ⠙⠁⠍⠁⠛⠑⠙⠲ ⠠⠙⠕⠺⠝⠇⠕⠁⠙ ⠊⠞ ⠋⠗⠕⠍ ⠞⠓⠑ ⠗⠑⠇⠑⠁⠎⠑ ⠏⠁⠛⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Anwendung im Update ist inkompatibel oder beschädigt. Lade sie von der Releaseseite herunter."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The application in the update is incompatible or damaged. Download it from the release page."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵo en la ĝisdatigo estas nekongrua aŭ difektita. Elŝutu ĝin de la eldonpaĝo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplicación de la actualización es incompatible o está dañada. Descárgala desde la página de versiones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’application de la mise à jour est incompatible ou endommagée. Téléchargez-la depuis la page des versions."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट में मौजूद ऐप असंगत या क्षतिग्रस्त है। इसे रिलीज़ पेज से डाउनलोड करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi dalam pembaruan tidak kompatibel atau rusak. Unduh dari halaman rilis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’applicazione nell’aggiornamento è incompatibile o danneggiata. Scaricala dalla pagina delle versioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新パッケージ内のアプリに互換性がないか、破損しています。リリースページからダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 패키지의 앱이 호환되지 않거나 손상되었습니다. 릴리스 페이지에서 다운로드하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app in de update is niet compatibel of beschadigd. Download deze via de releasepagina."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikacja w pakiecie jest niezgodna lub uszkodzona. Pobierz ją ze strony wydania."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O aplicativo na atualização é incompatível ou está danificado. Baixe-o na página da versão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение в обновлении несовместимо или повреждено. Скачайте его со страницы выпуска."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปในแพ็กเกจอัปเดตไม่เข้ากันหรือเสียหาย โปรดดาวน์โหลดจากหน้าเผยแพร่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemedeki uygulama uyumsuz veya hasarlı. Sürüm sayfasından indirin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng trong bản cập nhật không tương thích hoặc bị hỏng. Hãy tải từ trang phát hành."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新包中的应用不兼容或已损坏，请前往发布页下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新套件中的應用程式不相容或已損壞，請前往發布頁下載。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新套件中的應用程式不相容或已損壞，請前往發布頁下載。"
+          }
+        }
+      }
+    },
+    "当前位置无法自动替换应用，请前往发布页手动更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يمكن استبدال التطبيق تلقائيًا في هذا الموقع. حدّثه يدويًا من صفحة الإصدار."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠗⠑⠏⠇⠁⠉⠑⠙ ⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽ ⠁⠞ ⠞⠓⠊⠎ ⠇⠕⠉⠁⠞⠊⠕⠝⠲ ⠠⠥⠏⠙⠁⠞⠑ ⠊⠞ ⠍⠁⠝⠥⠁⠇⠇⠽ ⠋⠗⠕⠍ ⠞⠓⠑ ⠗⠑⠇⠑⠁⠎⠑ ⠏⠁⠛⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Anwendung kann an diesem Ort nicht automatisch ersetzt werden. Aktualisiere sie manuell über die Releaseseite."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The application cannot be replaced automatically at this location. Update it manually from the release page."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵo ne povas esti aŭtomate anstataŭigita ĉi tie. Ĝisdatigu ĝin permane per la eldonpaĝo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede reemplazar automáticamente la aplicación en esta ubicación. Actualízala manualmente desde la página de versiones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’application ne peut pas être remplacée automatiquement à cet emplacement. Mettez-la à jour manuellement depuis la page des versions."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस स्थान पर ऐप को अपने आप बदला नहीं जा सकता। रिलीज़ पेज से मैन्युअल अपडेट करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi tidak dapat diganti otomatis di lokasi ini. Perbarui secara manual dari halaman rilis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è possibile sostituire automaticamente l’applicazione in questa posizione. Aggiornala manualmente dalla pagina delle versioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の場所ではアプリを自動で置き換えられません。リリースページから手動で更新してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 위치에서는 앱을 자동으로 교체할 수 없습니다. 릴리스 페이지에서 수동으로 업데이트하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app kan op deze locatie niet automatisch worden vervangen. Werk deze handmatig bij via de releasepagina."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można automatycznie zastąpić aplikacji w tej lokalizacji. Zaktualizuj ją ręcznie ze strony wydania."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível substituir o aplicativo automaticamente neste local. Atualize-o manualmente pela página da versão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Невозможно автоматически заменить приложение в этом месте. Обновите его вручную со страницы выпуска."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถแทนที่แอปอัตโนมัติในตำแหน่งนี้ได้ โปรดอัปเดตด้วยตนเองจากหน้าเผยแพร่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama bu konumda otomatik olarak değiştirilemiyor. Sürüm sayfasından elle güncelleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tự động thay thế ứng dụng tại vị trí này. Hãy cập nhật thủ công từ trang phát hành."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前位置无法自动替换应用，请前往发布页手动更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前位置無法自動替換應用程式，請前往發布頁手動更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前位置無法自動替換應用程式，請前往發布頁手動更新。"
+          }
+        }
+      }
+    },
+    "应用已发生变化，请重新检查更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تغيّر التطبيق. يرجى البحث عن تحديثات مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠓⠁⠎ ⠉⠓⠁⠝⠛⠑⠙⠲ ⠠⠏⠇⠑⠁⠎⠑ ⠉⠓⠑⠉⠅ ⠋⠕⠗ ⠥⠏⠙⠁⠞⠑⠎ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Anwendung wurde geändert. Suche erneut nach Updates."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The application has changed. Please check for updates again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵo ŝanĝiĝis. Bonvolu rekontroli ĝisdatigojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplicación ha cambiado. Busca actualizaciones de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’application a changé. Recherchez à nouveau les mises à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप बदल गया है। कृपया अपडेट फिर से जाँचें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi telah berubah. Periksa pembaruan kembali."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’applicazione è cambiata. Controlla di nuovo gli aggiornamenti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリが変更されています。もう一度アップデートを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱이 변경되었습니다. 업데이트를 다시 확인하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app is gewijzigd. Controleer opnieuw op updates."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikacja została zmieniona. Sprawdź aktualizacje ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O aplicativo foi alterado. Verifique as atualizações novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение изменилось. Проверьте обновления снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปมีการเปลี่ยนแปลง โปรดตรวจสอบอัปเดตอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama değişti. Güncellemeleri yeniden denetleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đã thay đổi. Vui lòng kiểm tra cập nhật lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用已发生变化，请重新检查更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用程式已發生變更，請重新檢查更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用程式已發生變更，請重新檢查更新。"
+          }
+        }
+      }
+    },
+    "自动更新未完成，旧版本备份已保留。请重新打开 AppPorts，或前往发布页手动更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يكتمل التحديث التلقائي. حُفظت نسخة الإصدار السابق. أعد فتح AppPorts أو حدّثه يدويًا من صفحة الإصدار."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠥⠞⠕⠍⠁⠞⠊⠉ ⠥⠏⠙⠁⠞⠑ ⠙⠊⠙ ⠝⠕⠞ ⠋⠊⠝⠊⠎⠓⠲ ⠠⠞⠓⠑ ⠏⠗⠑⠧⠊⠕⠥⠎ ⠧⠑⠗⠎⠊⠕⠝ ⠃⠁⠉⠅⠥⠏ ⠺⠁⠎ ⠅⠑⠏⠞⠲ ⠠⠗⠑⠕⠏⠑⠝ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠕⠗ ⠥⠏⠙⠁⠞⠑ ⠍⠁⠝⠥⠁⠇⠇⠽ ⠋⠗⠕⠍ ⠞⠓⠑ ⠗⠑⠇⠑⠁⠎⠑ ⠏⠁⠛⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das automatische Update wurde nicht abgeschlossen. Die Sicherung der vorherigen Version bleibt erhalten. Öffne AppPorts erneut oder aktualisiere es manuell über die Releaseseite."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The automatic update did not finish. The previous version backup was kept. Reopen AppPorts or update manually from the release page."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aŭtomata ĝisdatigo ne finiĝis. La sekurkopio de la antaŭa versio estas konservita. Remalfermu AppPorts aŭ ĝisdatigu ĝin permane per la eldonpaĝo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La actualización automática no terminó. Se conservó la copia de la versión anterior. Vuelve a abrir AppPorts o actualízalo manualmente desde la página de versiones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mise à jour automatique n’a pas abouti. La sauvegarde de la version précédente est conservée. Rouvrez AppPorts ou effectuez la mise à jour manuellement depuis la page des versions."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्वचालित अपडेट पूरा नहीं हुआ। पिछले संस्करण का बैकअप सुरक्षित है। AppPorts फिर खोलें या रिलीज़ पेज से मैन्युअल अपडेट करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pembaruan otomatis tidak selesai. Cadangan versi sebelumnya disimpan. Buka kembali AppPorts atau perbarui secara manual dari halaman rilis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’aggiornamento automatico non è stato completato. Il backup della versione precedente è conservato. Riapri AppPorts o aggiornalo manualmente dalla pagina delle versioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動更新が完了しませんでした。旧バージョンのバックアップは保持されています。AppPorts を再度開くか、リリースページから手動で更新してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동 업데이트가 완료되지 않았습니다. 이전 버전 백업이 보관되었습니다. AppPorts를 다시 열거나 릴리스 페이지에서 수동으로 업데이트하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De automatische update is niet voltooid. De reservekopie van de vorige versie is bewaard. Open AppPorts opnieuw of werk deze handmatig bij via de releasepagina."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatyczna aktualizacja nie została ukończona. Zachowano kopię poprzedniej wersji. Otwórz ponownie AppPorts lub zaktualizuj go ręcznie ze strony wydania."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A atualização automática não foi concluída. O backup da versão anterior foi mantido. Reabra o AppPorts ou atualize-o manualmente pela página da versão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматическое обновление не завершено. Резервная копия предыдущей версии сохранена. Откройте AppPorts снова или обновите его вручную со страницы выпуска."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปเดตอัตโนมัติไม่เสร็จสมบูรณ์ เก็บสำเนารุ่นก่อนหน้าไว้แล้ว โปรดเปิด AppPorts อีกครั้งหรืออัปเดตด้วยตนเองจากหน้าเผยแพร่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik güncelleme tamamlanmadı. Önceki sürümün yedeği korundu. AppPorts’u yeniden açın veya sürüm sayfasından elle güncelleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật tự động chưa hoàn tất. Bản sao lưu phiên bản trước đã được giữ lại. Hãy mở lại AppPorts hoặc cập nhật thủ công từ trang phát hành."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动更新未完成，旧版本备份已保留。请重新打开 AppPorts，或前往发布页手动更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動更新未完成，舊版本備份已保留。請重新開啟 AppPorts，或前往發布頁手動更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動更新未完成，舊版本備份已保留。請重新開啟 AppPorts，或前往發布頁手動更新。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -210,6 +210,54 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(result, .failed)
     }
 
+    func testDomesticChannelDoesNotRequestGitHub() async {
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "9.0.0", body: "GitHub notes")),
+            official: .json(officialRelease(version: "1.7.0", notes: ["en": "Official notes"]))
+        )
+        let result = await checker.checkForUpdatesResult(channel: .official)
+        guard case let .available(update) = result else { return XCTFail("Expected domestic update") }
+        XCTAssertEqual(update.source, .official)
+        XCTAssertEqual(update.version, "1.7.0")
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://appports.shimoko.com/latest.json"])
+    }
+
+    func testGitHubUpdateIncludesVerifiedReleaseAssetForInstallation() async {
+        var release = gitHubRelease(tag: "v1.7.0", body: "GitHub notes")
+        release["assets"] = [[
+            "name": "AppPorts1.7.0.dmg",
+            "size": 12345,
+            "browser_download_url": "https://github.com/wzh4869/AppPorts/releases/download/1.7.0/AppPorts1.7.0.dmg",
+            "digest": "sha256:" + String(repeating: "a", count: 64)
+        ]]
+        let checker = makeChecker(github: .json(release), official: .status(404))
+        let update = await checker.checkForUpdates(channel: .github)
+        XCTAssertEqual(update?.githubAsset?.name, "AppPorts1.7.0.dmg")
+        XCTAssertEqual(update?.githubAsset?.sha256, String(repeating: "a", count: 64))
+    }
+
+    func testGitHubChannelDoesNotRequestDomesticFeed() async {
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),
+            official: .json(officialRelease(version: "9.0.0", notes: ["en": "Official notes"]))
+        )
+        let result = await checker.checkForUpdatesResult(channel: .github)
+        guard case let .available(update) = result else { return XCTFail("Expected GitHub update") }
+        XCTAssertEqual(update.source, .github)
+        XCTAssertEqual(update.version, "1.7.0")
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://api.github.com/repos/wzh4869/AppPorts/releases/latest"])
+    }
+
+    func testDomesticFailureDoesNotFallBackToGitHub() async {
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),
+            official: .error(URLError(.timedOut))
+        )
+        let result = await checker.checkForUpdatesResult(channel: .official)
+        XCTAssertEqual(result, .failed)
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://appports.shimoko.com/latest.json"])
+    }
+
     private func makeChecker(
         github: MockUpdateURLProtocol.MockResponse,
         official: MockUpdateURLProtocol.MockResponse,
@@ -296,17 +344,26 @@ private final class MockUpdateURLProtocol: URLProtocol {
     }
 
     private static var responses: [String: MockResponse] = [:]
+    private static var requests: [String] = []
     private static let lock = NSLock()
+
+    static var requestedURLs: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return requests
+    }
 
     static func setResponses(_ newResponses: [String: MockResponse]) {
         lock.lock()
         responses = newResponses
+        requests = []
         lock.unlock()
     }
 
     static func reset() {
         lock.lock()
         responses = [:]
+        requests = []
         lock.unlock()
     }
 
@@ -349,6 +406,7 @@ private final class MockUpdateURLProtocol: URLProtocol {
     private static func response(for urlString: String) -> MockResponse? {
         lock.lock()
         defer { lock.unlock() }
+        requests.append(urlString)
         return responses[urlString]
     }
 
