@@ -229,6 +229,45 @@ final class ContainerMountStore: @unchecked Sendable {
     func transfers() throws -> [DataTransferRecord] {
         try read { $0.transfers.sorted { $0.createdAt == $1.createdAt ? $0.operationID.uuidString < $1.operationID.uuidString : $0.createdAt < $1.createdAt } }
     }
+
+    /// Explicitly detach this exact symlink entry. Old copies remain historical
+    /// material and no longer reserve the entry or participate in automatic completion.
+    func detachSymlinkHistory(at local: URL, transfers expected: [DataTransferRecord],
+                              link expectedLink: ManagedDataLinkRecord?, reason: String,
+                              verifyingFilesystem: () throws -> Void) throws {
+        try mutate { current in
+            let related = current.transfers.filter { $0.originalPath == local.path }
+            let links = current.managedLinks.filter { $0.originalPath == local.path }
+            let ids = Set(expected.map(\.operationID))
+            guard !reason.isEmpty, related.count == expected.count,
+                  related.allSatisfy({ expected.contains($0) && $0.mode == .symlink }),
+                  links == (expectedLink.map({ [$0] }) ?? []),
+                  !current.transfers.contains(where: {
+                      !ids.contains($0.operationID) && $0.priorOperationID.map(ids.contains) == true
+                  }),
+                  !current.managedLinks.contains(where: {
+                      $0.originalPath != local.path && ids.contains($0.operationID)
+                  }) else {
+                throw StoreError.conflict("Symlink history changed or belongs to another path")
+            }
+            try verifyingFilesystem()
+            for transfer in related {
+                guard !current.preservedMaterials.contains(where: { $0.id == transfer.operationID }) else {
+                    throw StoreError.conflict("Transfer already has preserved material")
+                }
+                current.preservedMaterials.append(DataTransferMaterial(transfer: transfer, reason: reason))
+            }
+            if let link = expectedLink, !ids.contains(link.operationID) {
+                guard !current.preservedMaterials.contains(where: { $0.id == link.operationID }) else {
+                    throw StoreError.conflict("Link already has preserved material")
+                }
+                current.preservedMaterials.append(DataTransferMaterial(detachedLink: link, reason: reason))
+            }
+            current.transfers.removeAll { ids.contains($0.operationID) }
+            current.managedLinks.removeAll { $0.originalPath == local.path }
+        }
+    }
+
     func managedLinks() throws -> [ManagedDataLinkRecord] { try read { $0.managedLinks.sorted { $0.originalPath < $1.originalPath } } }
     func managedLink(forOriginalPath path: String) throws -> ManagedDataLinkRecord? {
         try managedLinks().first { DataPathTopology.relationship($0.originalPath, path) == .same }

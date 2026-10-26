@@ -350,6 +350,21 @@ struct DataTransferMaterial: Codable, Equatable, Identifiable, Sendable {
         nextAutomaticRetryAt = transfer.nextAutomaticRetryAt
     }
 
+    /// A detached index preserves its external location without authorizing cleanup.
+    init(detachedLink link: ManagedDataLinkRecord, reason: String) {
+        id = link.operationID
+        appName = link.appName
+        mode = .symlink
+        direction = .migrate
+        originalPath = link.originalPath
+        paths = [link.destinationPath]
+        volumeUUID = nil
+        volumeName = nil
+        containerUUID = nil
+        self.reason = reason
+        createdAt = link.createdAt
+    }
+
     /// The live mount continues to own its volume. Only separate paths from an
     /// old cleanup become historical material when that cleanup is superseded.
     init(legacyCleanup: ContainerCleanupRecord, retainingDetachedVolume: Bool = false) {
