@@ -23,6 +23,8 @@ Status: implemented
 
 ## Related decisions
 
+- 刷新按钮的当前页面分发、连接筛选及页面保留见[列表刷新筛选与页面状态保留](../feature/2026-10-26-列表刷新筛选与页面状态保留.md)，不改变本篇扫描请求与强制重测约束。
+
 - 即时发布反映服务实际提交结果，持久化完成依据见[迁移以持久化切换和可重试清理为完成依据](../architecture/2026-10-10-verified-transfer-lifecycle.md)。
 - 搜索实际展示与原入口验收不能由列表刷新测试代替，见[Spotlight 去重必须验收真实搜索与原入口](../testing/2026-10-09-spotlight-ui-acceptance.md)。
 

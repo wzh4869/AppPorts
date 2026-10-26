@@ -26,6 +26,8 @@ Status: implemented
 
 ## Related decisions
 
+- 名称候选发现的两层访问限制与取消检查见[应用数据发现限制层级并响应取消](../bug-fix/2026-10-26-应用数据发现限制层级并响应取消.md)，不改变本篇普通容器的精确身份范围。
+
 - 状态统计与精确可见行的交集见[状态统计切换为精确目录筛选](2026-10-01-directory-status-filtering.md)。
 - 隐藏临时数据的推荐边界见[临时目录的结构资格与迁移推荐分开](../../proposed/feature/2026-10-01-temporary-directory-migration-policy.md)。
 
