@@ -338,23 +338,6 @@ struct DataDirsView: View {
                 statsBar(items: filteredDotFolderItems)
             }
 
-            HStack(spacing: 10) {
-                Group {
-                    if let date = toolSizeCacheUpdatedAt {
-                        Text("上次缓存时间".localized + "：" + date.formatted(Date.FormatStyle(date: .numeric, time: .shortened).locale(locale)))
-                    } else {
-                        Text("尚无大小缓存".localized)
-                    }
-                }
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-                Spacer()
-                Button("刷新缓存".localized) { reloadCurrentTab(forceToolSizeRefresh: true) }
-                    .disabled(isScanning)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 4)
-
             // 列表
             ZStack {
                 Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
