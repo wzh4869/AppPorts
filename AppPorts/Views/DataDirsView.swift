@@ -1442,6 +1442,7 @@ struct DataDirsView: View {
                 return results
             }
 
+            guard !Task.isCancelled else { return }
             await MainActor.run {
                 guard self.libraryScanToken == scanToken,
                       self.selectedApp?.path.standardizedFileURL == appPath else { return }
