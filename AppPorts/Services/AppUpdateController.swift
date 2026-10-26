@@ -15,6 +15,7 @@ final class AppUpdateController: ObservableObject {
     @Published private var installToken: UUID?
     private var installationHelper: Process?
     private var restartTask: Task<Void, Never>?
+    private var cleanupTask: Task<Void, Never>?
     private let operations: AppOperationState
     private let makeOperationLock: () -> OperationLock
     private let launchInstaller: (PreparedAppUpdate) throws -> Process
@@ -70,7 +71,7 @@ final class AppUpdateController: ObservableObject {
                     }
                 }.valueWithCancellation()
                 if Task.isCancelled {
-                    try? FileManager.default.removeItem(at: candidate.workspace)
+                    queueCleanup(candidate)
                 } else {
                     prepared = candidate
                 }
@@ -92,9 +93,15 @@ final class AppUpdateController: ObservableObject {
     }
 
     func finishBeforeTerminating(_ reply: @escaping @MainActor () -> Void) -> Bool {
-        guard let task else { discardPrepared(); return false }
-        task.cancel()
-        Task { await task.value; reply() }
+        let downloadTask = task
+        downloadTask?.cancel()
+        discardPrepared()
+        guard downloadTask != nil || cleanupTask != nil else { return false }
+        Task {
+            await downloadTask?.value
+            await waitForCleanup()
+            reply()
+        }
         return true
     }
 
@@ -125,6 +132,7 @@ final class AppUpdateController: ObservableObject {
             restartTask = Task { [weak self] in
                 guard let self else { return }
                 do {
+                    await self.waitForCleanup()
                     try Task.checkCancellation()
                     try await self.requestTermination()
                 } catch {
@@ -153,8 +161,8 @@ final class AppUpdateController: ObservableObject {
         guard let token = installToken else { return }
         if let installationHelper, installationHelper.isRunning {
             installationHelper.terminate()
-            installationHelper.waitUntilExit()
         }
+        queueCleanup(nil, waitingFor: installationHelper)
         installationHelper = nil
         installToken = nil
         operations.finish(token)
@@ -162,33 +170,44 @@ final class AppUpdateController: ObservableObject {
 
     static func dismissSheets(in windows: [NSWindow]) async throws {
         for window in windows {
-            while let sheet = window.attachedSheet {
-                try Task.checkCancellation()
-                try await dismissSheets(in: [sheet])
-                // Process nested sheets before their parents.
-                try await endSheet(sheet, parent: window)
-            }
+            guard let sheet = window.attachedSheet else { continue }
+            try Task.checkCancellation()
+            try await dismissSheets(in: [sheet])
+            try await endSheet(sheet, parent: window)
         }
     }
 
     private static func endSheet(_ sheet: NSWindow, parent: NSWindow) async throws {
         try Task.checkCancellation()
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            var observer: NSObjectProtocol?
-            observer = NotificationCenter.default.addObserver(forName: NSWindow.didEndSheetNotification,
-                                                              object: parent, queue: .main) { _ in
-                if let observer { NotificationCenter.default.removeObserver(observer) }
-                continuation.resume()
-            }
-            parent.endSheet(sheet)
-        }
+        parent.endSheet(sheet)
         sheet.orderOut(nil)
-        try Task.checkCancellation()
+        // AppKit detaches the sheet after its dismissal animation. Yield to
+        // that animation instead of repeatedly ending the same attached sheet.
+        let deadline = ProcessInfo.processInfo.systemUptime + 3
+        while parent.attachedSheet === sheet {
+            try Task.checkCancellation()
+            guard ProcessInfo.processInfo.systemUptime < deadline else { throw AppUpdateError.quitBlocked }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
     }
 
     private func discardPrepared() {
-        if let prepared { try? FileManager.default.removeItem(at: prepared.workspace) }
+        let candidate = prepared
         prepared = nil
+        if let candidate { queueCleanup(candidate) }
+    }
+
+    private func queueCleanup(_ candidate: PreparedAppUpdate?, waitingFor helper: Process? = nil) {
+        let previous = cleanupTask
+        cleanupTask = Task.detached(priority: .utility) {
+            await previous?.value
+            if let helper, helper.isRunning { helper.waitUntilExit() }
+            if let candidate { try? FileManager.default.removeItem(at: candidate.workspace) }
+        }
+    }
+
+    func waitForCleanup() async {
+        await cleanupTask?.value
     }
 }
 

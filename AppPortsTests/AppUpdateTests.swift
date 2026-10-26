@@ -38,6 +38,7 @@ final class AppUpdateTests: XCTestCase {
         XCTAssertNil(controller.errorMessage)
 
         controller.cancel()
+        await controller.waitForCleanup()
         XCTAssertFalse(controller.allowsTermination)
         XCTAssertFalse(controller.isInstalling)
         XCTAssertFalse(controller.installationBlocked)

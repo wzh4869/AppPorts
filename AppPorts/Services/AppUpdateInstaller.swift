@@ -84,8 +84,8 @@ enum AppUpdateInstaller {
         count=0
         while /bin/kill -0 \(parentPID) 2>/dev/null; do
             count=$((count + 1))
-            [ "$count" -le \(waitAttempts) ] || exit 1
-            /bin/sleep 1
+            [ "$count" -le \(waitAttempts * 10) ] || exit 1
+            /bin/sleep 0.1
         done
         [ ! -L "$target" ] && [ ! -L "$staged" ] && [ ! -e "$backup" ] || fail
         [ "$(/usr/bin/stat -f '%d:%i' "$target")" = \(quote(update.originalIdentity)) ] || fail
@@ -106,8 +106,8 @@ enum AppUpdateInstaller {
         while [ ! -f "$work/launched" ]; do
             count=$((count + 1))
             # A successful open request alone does not prove launch. Keep the backup on timeout.
-            [ "$count" -le \(waitAttempts) ] || exit 0
-            /bin/sleep 1
+            [ "$count" -le \(waitAttempts * 10) ] || exit 0
+            /bin/sleep 0.1
         done
         /bin/rm -rf "$work"
         """

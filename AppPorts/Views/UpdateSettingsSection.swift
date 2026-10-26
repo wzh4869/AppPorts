@@ -41,9 +41,13 @@ struct UpdateSettingsSection: View {
                 Button("关于".localized) {
                     AboutWindowController.shared.present()
                 }
-                Button("检查更新".localized) { isChecking = true }
-                    .disabled(isChecking || hasPendingDownload)
                 Spacer(minLength: 0)
+                if hasPendingDownload {
+                    GitHubUpdateControls(showsStatus: false)
+                } else {
+                    Button("检查更新".localized) { isChecking = true }
+                        .disabled(isChecking)
+                }
             }
             .buttonStyle(.bordered)
 
@@ -52,15 +56,14 @@ struct UpdateSettingsSection: View {
                     ProgressView().controlSize(.small)
                     Text("正在检查更新…".localized).foregroundStyle(.secondary)
                 }
+            } else if hasPendingDownload || updater.errorMessage != nil {
+                GitHubUpdateStatus()
             } else if let result {
                 Text(statusText(for: result))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if hasPendingDownload {
-                GitHubUpdateControls()
-            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
