@@ -81,6 +81,7 @@ struct AppListRowAppearance: ViewModifier {
 /// Disabled primary actions use a neutral surface instead of a faded accent fill.
 struct AppListPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -92,6 +93,8 @@ struct AppListPrimaryButtonStyle: ButtonStyle {
                     .fill(isEnabled ? Color.accentColor : Color.primary.opacity(0.045))
             )
             .opacity(isEnabled && configuration.isPressed ? 0.8 : 1)
+            .scaleEffect(!reduceMotion && isEnabled && configuration.isPressed ? 0.97 : 1)
+            .animation(reduceMotion ? nil : AppMotion.interaction, value: configuration.isPressed)
             .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }

@@ -26,6 +26,7 @@ struct DataDirRowView: View {
     var classicModeActive: Bool = false
 
     @State private var isHovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 12) {
@@ -115,15 +116,14 @@ struct DataDirRowView: View {
                       ? Color.accentColor.opacity(0.15)
                       : (isHovered ? Color(nsColor: .controlBackgroundColor) : .clear))
                 .shadow(color: isHovered && !isSelected ? Color.black.opacity(0.04) : .clear, radius: 4, y: 2)
+                .animation(reduceMotion ? nil : AppMotion.interaction, value: isHovered)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(isSelected ? Color.accentColor.opacity(0.3) : (isHovered ? Color.primary.opacity(0.05) : .clear), lineWidth: 1)
+                .strokeBorder(isHovered && !isSelected ? Color.primary.opacity(0.05) : .clear, lineWidth: 1)
         )
         .contentShape(Rectangle())
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) { isHovered = hovering }
-        }
+        .onHover { isHovered = $0 }
         .accessibilityElement(children: .combine)
         .contextMenu {
             Button("在 Finder 中显示".localized) {

@@ -139454,6 +139454,23 @@
         }
       }
     },
+    "权限不完整" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissions Incomplete"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "权限不完整"
+          }
+        }
+      }
+    },
     "权限不足。请前往“系统设置 > 隐私与安全性 > 完全磁盘访问权限”，允许 AppPorts 访问磁盘，然后重启应用。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -172634,6 +172651,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目錄無法完整讀取，請檢查訪問權限後重試。"
+          }
+        }
+      }
+    },
+    "目录状态已变化，请重新选择后再迁移。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The directory state has changed. Select it again before migrating."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目录状态已变化，请重新选择后再迁移。"
           }
         }
       }

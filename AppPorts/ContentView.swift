@@ -191,7 +191,7 @@ struct ContentView: View {
 
     var body: some View {
         mainContent
-        .frame(minWidth: 900, minHeight: 600)
+        .frame(minWidth: 930, minHeight: 620)
         .onAppear {
             // A unit-test host must not scan apps, refresh agents, or observe real volumes.
             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
@@ -467,6 +467,14 @@ struct ContentView: View {
             sortColumnButton("名称".localized, option: .name, sorting: sorting)
         } size: {
             sortColumnButton("大小".localized, option: .size, sorting: sorting)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.primary.opacity(0.10))
+                        .frame(width: 1, height: 16)
+                        .offset(x: -10)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
         } actions: {
             Color.clear.frame(height: 1)
         }
@@ -493,7 +501,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppPressButtonStyle())
         .accessibilityAddTraits(sorting.wrappedValue.option == option ? .isSelected : [])
     }
 
@@ -538,7 +546,7 @@ struct ContentView: View {
                                         .frame(minWidth: 36, minHeight: 34)
                                         .contentShape(Rectangle())
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(AppPressButtonStyle())
                             }
 
                             if let accessory {
@@ -560,7 +568,7 @@ struct ContentView: View {
                                     .frame(width: 34, height: 34)
                                     .contentShape(Rectangle())
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(AppPressButtonStyle())
                                 .disabled(isRefreshing)
                                 .accessibilityLabel(isRefreshing ? "正在扫描...".localized : "刷新列表".localized)
                                 .help(isRefreshing ? "正在扫描...".localized : "刷新列表".localized)
@@ -688,7 +696,7 @@ struct ContentView: View {
             // Keep visited pages alive so switching tabs cannot discard an active
             // operation's progress, result alerts, or batch state. Hidden pages
             // suspend their list scans through isActive.
-            ZStack {
+            ZStack(alignment: .topLeading) {
                 if mainTab == .dataDirs || hasOpenedDataDirs {
                     DataDirsView(
                         isActive: mainTab == .dataDirs,
@@ -705,9 +713,7 @@ struct ContentView: View {
                         onResignApp: { app in performSingleResign(app: app) },
                         resolveRealAppURL: resolveRealAppURL(for:)
                     )
-                    .opacity(mainTab == .dataDirs ? 1 : 0)
-                    .allowsHitTesting(mainTab == .dataDirs)
-                    .accessibilityHidden(mainTab != .dataDirs)
+                    .modifier(AppPageVisibility(isActive: mainTab == .dataDirs))
                 }
                 if mainTab == .customDirs || hasOpenedCustomDirs {
                     CustomDirsView(
@@ -716,18 +722,15 @@ struct ContentView: View {
                         onScanningChanged: { isCustomDirsScanning = $0 }
                     )
                         .disabled(operationState.blocksInteraction)
-                        .opacity(mainTab == .customDirs ? 1 : 0)
-                        .allowsHitTesting(mainTab == .customDirs)
-                        .accessibilityHidden(mainTab != .customDirs)
+                        .modifier(AppPageVisibility(isActive: mainTab == .customDirs))
                 }
-                if mainTab == .apps {
-                    HStack(spacing: 8) {
-                        localAppsPane
-                        externalAppsPane
-                    }
-                    .padding(6)
-                    .disabled(operationState.blocksInteraction)
+                HStack(spacing: 8) {
+                    localAppsPane
+                    externalAppsPane
                 }
+                .padding(6)
+                .disabled(operationState.blocksInteraction)
+                .modifier(AppPageVisibility(isActive: mainTab == .apps))
             }
         }
         .onChange(of: mainTab) { tab in
@@ -787,22 +790,18 @@ struct ContentView: View {
     private var primaryNavigation: some View {
         HStack(spacing: 2) {
             TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps) {
-                withAnimation { mainTab = .apps }
+                mainTab = .apps
             }
             TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs) {
-                withAnimation {
-                    selectedDataDirsTab = .toolDirs
-                    mainTab = .dataDirs
-                }
+                selectedDataDirsTab = .toolDirs
+                mainTab = .dataDirs
             }
             TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs) {
-                withAnimation {
-                    selectedDataDirsTab = .appDirs
-                    mainTab = .dataDirs
-                }
+                selectedDataDirsTab = .appDirs
+                mainTab = .dataDirs
             }
             TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
-                withAnimation { mainTab = .customDirs }
+                mainTab = .customDirs
             }
         }
         .padding(4)
@@ -823,7 +822,7 @@ struct ContentView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(AppPressButtonStyle())
                 .keyboardShortcut("f", modifiers: .command)
                 .accessibilityLabel("搜索应用 (本地 / 外部)...".localized)
                 TextField("搜索应用 (本地 / 外部)...".localized, text: $searchText)
@@ -858,7 +857,7 @@ struct ContentView: View {
                             .clipShape(Capsule())
                             .contentShape(Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(AppPressButtonStyle())
                     .accessibilityAddTraits(appConnectionFilter == filter ? .isSelected : [])
                 }
             }
@@ -907,11 +906,9 @@ struct ContentView: View {
                 }
             }
             .frame(width: 32, height: 30)
-            .background(Color.primary.opacity(0.03))
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(AppPressButtonStyle())
         .foregroundColor(.secondary)
         .disabled(operationState.blocksInteraction || isCurrentPageRefreshing)
         .help("刷新缓存".localized)
@@ -1153,10 +1150,11 @@ struct ContentView: View {
                 )
                 .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(AppPressButtonStyle())
             .accessibilityAddTraits(isSelected ? .isSelected : [])
             .onHover { isHovered = $0 }
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: isHovered)
+            .animation(reduceMotion ? nil : AppMotion.interaction, value: isHovered)
+            .animation(reduceMotion ? nil : AppMotion.interaction, value: isSelected)
         }
     }
 
@@ -2809,7 +2807,7 @@ struct ContentView: View {
             onOpenDataDirs: { target in
                 selectedDataDirsApp = target
                 selectedDataDirsTab = .appDirs
-                withAnimation { mainTab = .dataDirs }
+                mainTab = .dataDirs
             },
             onDismiss: { signatureRepairApp = nil },
             onChooseOfficialOriginal: { target in
@@ -2857,7 +2855,7 @@ struct ContentView: View {
             actions: [
                 WarningAction("查看".localized, style: .preferred) {
                     localAppFilter = .signatureReplaced
-                    withAnimation { mainTab = .apps }
+                    mainTab = .apps
                 }
             ]
         )
