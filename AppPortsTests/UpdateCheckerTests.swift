@@ -13,7 +13,7 @@ final class UpdateCheckerTests: XCTestCase {
             official: .status(404)
         )
 
-        let update = await checker.checkForUpdates()
+        let update = await checker.checkForUpdates(channel: .github)
 
         XCTAssertEqual(update?.source, .github)
         XCTAssertEqual(update?.version, "1.7.0")
@@ -38,9 +38,9 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(update?.chinaDownloadURL.absoluteString, "https://file.shimoko.com/AppPorts")
     }
 
-    func testHigherVersionWinsWhenBothSourcesHaveDifferentNewVersions() async throws {
+    func testDefaultCheckUsesFeedEvenWhenGitHubHasHigherVersion() async throws {
         let checker = makeChecker(
-            github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),
+            github: .json(gitHubRelease(tag: "9.0.0", body: "GitHub notes")),
             official: .json(officialRelease(version: "1.8.0", notes: ["zh-Hans": "官网高版本"])),
             language: "zh-Hans"
         )
@@ -52,7 +52,7 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(update?.releaseNotesMarkdown, "官网高版本")
     }
 
-    func testSameNewVersionPrefersGitHubWhenGitHubSucceeds() async throws {
+    func testDefaultCheckUsesOfficialNotesWithoutRequestingGitHub() async throws {
         let checker = makeChecker(
             github: .json(gitHubRelease(tag: "v1.7.0", body: "GitHub notes")),
             official: .json(officialRelease(version: "1.7.0", notes: ["zh-Hans": "官网说明"])),
@@ -61,9 +61,10 @@ final class UpdateCheckerTests: XCTestCase {
 
         let update = await checker.checkForUpdates()
 
-        XCTAssertEqual(update?.source, .github)
+        XCTAssertEqual(update?.source, .official)
         XCTAssertEqual(update?.version, "1.7.0")
-        XCTAssertEqual(update?.releaseNotesMarkdown, "GitHub notes")
+        XCTAssertEqual(update?.releaseNotesMarkdown, "官网说明")
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://docs-appports.shimoko.com/latest.json"])
     }
 
     func testSameNewVersionUsesOfficialWhenGitHubFails() async throws {
@@ -93,7 +94,7 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(update?.releaseNotesMarkdown, "Official notes")
     }
 
-    func testOfficialFailureDoesNotBlockGitHubUpdate() async throws {
+    func testDefaultFeedFailureDoesNotRequestGitHub() async throws {
         let checker = makeChecker(
             github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),
             official: .error(URLError(.timedOut))
@@ -101,8 +102,8 @@ final class UpdateCheckerTests: XCTestCase {
 
         let update = await checker.checkForUpdates()
 
-        XCTAssertEqual(update?.source, .github)
-        XCTAssertEqual(update?.releaseNotesMarkdown, "GitHub notes")
+        XCTAssertNil(update)
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://docs-appports.shimoko.com/latest.json"])
     }
 
     func testGitHubAPIFailureFallsBackToAtomFeed() async throws {
@@ -112,7 +113,7 @@ final class UpdateCheckerTests: XCTestCase {
             atom: .text(gitHubAtomFeed(tag: "v1.7.0", htmlBody: "<h2>GitHub Atom Notes</h2><p><strong>Fixed</strong> update checks.</p>"))
         )
 
-        let update = await checker.checkForUpdates()
+        let update = await checker.checkForUpdates(channel: .github)
 
         XCTAssertEqual(update?.source, .github)
         XCTAssertEqual(update?.version, "1.7.0")
@@ -198,7 +199,7 @@ final class UpdateCheckerTests: XCTestCase {
     }
 
     func testManualCheckReportsAvailableVersion() async {
-        let checker = makeChecker(github: .json(gitHubRelease(tag: "1.7.0", body: "Notes")), official: .status(503))
+        let checker = makeChecker(github: .status(503), official: .json(officialRelease(version: "1.7.0", notes: ["en": "Notes"])))
         let result = await checker.checkForUpdatesResult()
         guard case let .available(update) = result else { return XCTFail("Expected available update") }
         XCTAssertEqual(update.version, "1.7.0")
@@ -210,10 +211,114 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(result, .failed)
     }
 
+    func testDomesticChannelDoesNotRequestGitHub() async {
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "9.0.0", body: "GitHub notes")),
+            official: .json(officialRelease(version: "1.7.0", notes: ["en": "Official notes"]))
+        )
+        let result = await checker.checkForUpdatesResult(channel: .official)
+        guard case let .available(update) = result else { return XCTFail("Expected domestic update") }
+        XCTAssertEqual(update.source, .official)
+        XCTAssertEqual(update.version, "1.7.0")
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://docs-appports.shimoko.com/latest.json"])
+    }
+
+    func testGitHubUpdateIncludesVerifiedReleaseAssetForInstallation() async {
+        var release = gitHubRelease(tag: "v1.7.0", body: "GitHub notes")
+        release["assets"] = [[
+            "name": "AppPorts1.7.0.dmg",
+            "size": 12345,
+            "browser_download_url": "https://github.com/wzh4869/AppPorts/releases/download/1.7.0/AppPorts1.7.0.dmg",
+            "digest": "sha256:" + String(repeating: "a", count: 64)
+        ]]
+        let checker = makeChecker(github: .json(release), official: .status(404))
+        let update = await checker.checkForUpdates(channel: .github)
+        XCTAssertEqual(update?.githubAsset?.name, "AppPorts1.7.0.dmg")
+        XCTAssertEqual(update?.githubAsset?.sha256, String(repeating: "a", count: 64))
+    }
+
+    func testGitHubChannelDoesNotRequestDomesticFeed() async {
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),
+            official: .json(officialRelease(version: "9.0.0", notes: ["en": "Official notes"]))
+        )
+        let result = await checker.checkForUpdatesResult(channel: .github)
+        guard case let .available(update) = result else { return XCTFail("Expected GitHub update") }
+        XCTAssertEqual(update.source, .github)
+        XCTAssertEqual(update.version, "1.7.0")
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://api.github.com/repos/wzh4869/AppPorts/releases/latest"])
+    }
+
+    func testDomesticFailureDoesNotFallBackToGitHub() async {
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),
+            official: .error(URLError(.timedOut))
+        )
+        let result = await checker.checkForUpdatesResult(channel: .official)
+        XCTAssertEqual(result, .failed)
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://docs-appports.shimoko.com/latest.json"])
+    }
+
+    func testGitHubSelectionResolvesTheVersionShownInTheSheet() async throws {
+        var release = gitHubRelease(tag: "v1.7.0", body: "GitHub notes")
+        release["assets"] = [[
+            "name": "AppPorts1.7.0.dmg",
+            "size": 12345,
+            "browser_download_url": "https://github.com/wzh4869/AppPorts/releases/download/1.7.0/AppPorts1.7.0.dmg",
+            "digest": "sha256:" + String(repeating: "a", count: 64)
+        ]]
+        let checker = makeChecker(
+            github: .json(gitHubRelease(tag: "9.0.0", body: "Newer version")),
+            official: .json(officialRelease(version: "1.7.0", notes: ["en": "Feed notes"])),
+            taggedRelease: .json(release)
+        )
+        let checked = await checker.checkForUpdates()
+        let update = try XCTUnwrap(checked)
+        let resolved = try await checker.githubUpdate(for: update)
+        XCTAssertEqual(resolved.source, .github)
+        XCTAssertEqual(resolved.version, "1.7.0")
+        XCTAssertEqual(resolved.releaseNotesMarkdown, "Feed notes")
+        XCTAssertEqual(resolved.githubAsset?.name, "AppPorts1.7.0.dmg")
+        XCTAssertEqual(resolved.chinaDownloadURL, update.chinaDownloadURL)
+        XCTAssertEqual(MockUpdateURLProtocol.requestedTimeouts, [3, 30])
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, [
+            "https://docs-appports.shimoko.com/latest.json",
+            "https://api.github.com/repos/wzh4869/AppPorts/releases/tags/1.7.0"
+        ])
+    }
+
+    func testGitHubSelectionRejectsDifferentVersionOrMissingAsset() async throws {
+        for tag in ["1.7.0", "1.8.0"] {
+            let checker = makeChecker(
+                github: .status(503),
+                official: .json(officialRelease(version: "1.7.0", notes: [:])),
+                taggedRelease: .json(gitHubRelease(tag: tag, body: "Notes"))
+            )
+            let checked = await checker.checkForUpdates()
+            let update = try XCTUnwrap(checked)
+            do {
+                _ = try await checker.githubUpdate(for: update)
+                XCTFail("Unsafe or unavailable package must be rejected")
+            } catch {
+                XCTAssertTrue(error is AppUpdateError)
+            }
+        }
+    }
+
+    func testDefaultCheckStopsAfterThreeSecondsWithoutGitHubFallback() async {
+        let checker = makeChecker(github: .status(200), official: .pending)
+        let started = Date()
+        let result = await checker.checkForUpdatesResult()
+        XCTAssertEqual(result, .failed)
+        XCTAssertLessThan(Date().timeIntervalSince(started), 5)
+        XCTAssertEqual(MockUpdateURLProtocol.requestedURLs, ["https://docs-appports.shimoko.com/latest.json"])
+    }
+
     private func makeChecker(
         github: MockUpdateURLProtocol.MockResponse,
         official: MockUpdateURLProtocol.MockResponse,
         atom: MockUpdateURLProtocol.MockResponse = .status(404),
+        taggedRelease: MockUpdateURLProtocol.MockResponse = .status(404),
         language: String = "en",
         currentVersion: String = "1.6.0",
         githubUpdatesDisabled: Bool = false
@@ -221,7 +326,8 @@ final class UpdateCheckerTests: XCTestCase {
         MockUpdateURLProtocol.setResponses([
             "https://api.github.com/repos/wzh4869/AppPorts/releases/latest": github,
             "https://github.com/wzh4869/AppPorts/releases.atom": atom,
-            "https://appports.shimoko.com/latest.json": official
+            "https://api.github.com/repos/wzh4869/AppPorts/releases/tags/1.7.0": taggedRelease,
+            "https://docs-appports.shimoko.com/latest.json": official
         ])
 
         let configuration = URLSessionConfiguration.ephemeral
@@ -293,20 +399,39 @@ private final class MockUpdateURLProtocol: URLProtocol {
         case text(String)
         case status(Int)
         case error(Error)
+        case pending
     }
 
     private static var responses: [String: MockResponse] = [:]
+    private static var requests: [String] = []
+    private static var timeouts: [TimeInterval] = []
     private static let lock = NSLock()
+
+    static var requestedURLs: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return requests
+    }
+
+    static var requestedTimeouts: [TimeInterval] {
+        lock.lock()
+        defer { lock.unlock() }
+        return timeouts
+    }
 
     static func setResponses(_ newResponses: [String: MockResponse]) {
         lock.lock()
         responses = newResponses
+        requests = []
+        timeouts = []
         lock.unlock()
     }
 
     static func reset() {
         lock.lock()
         responses = [:]
+        requests = []
+        timeouts = []
         lock.unlock()
     }
 
@@ -324,7 +449,7 @@ private final class MockUpdateURLProtocol: URLProtocol {
             return
         }
 
-        let response = Self.response(for: url.absoluteString)
+        let response = Self.response(for: url.absoluteString, timeout: request.timeoutInterval)
         switch response {
         case let .json(object):
             do {
@@ -339,6 +464,8 @@ private final class MockUpdateURLProtocol: URLProtocol {
             send(statusCode: statusCode, data: Data())
         case let .error(error):
             client?.urlProtocol(self, didFailWithError: error)
+        case .pending:
+            break
         case nil:
             send(statusCode: 404, data: Data())
         }
@@ -346,9 +473,11 @@ private final class MockUpdateURLProtocol: URLProtocol {
 
     override func stopLoading() {}
 
-    private static func response(for urlString: String) -> MockResponse? {
+    private static func response(for urlString: String, timeout: TimeInterval) -> MockResponse? {
         lock.lock()
         defer { lock.unlock() }
+        requests.append(urlString)
+        timeouts.append(timeout)
         return responses[urlString]
     }
 

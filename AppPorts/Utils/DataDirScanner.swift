@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Darwin
 
 // MARK: - 已知 dotFolder 描述结构
 
@@ -630,6 +631,7 @@ actor DataDirScanner {
 
     func scanLibraryDirsWithDiagnostics(for app: AppItem, externalRootURL: URL? = nil) -> DataDirScanResult {
         readIssues = []
+        guard !Task.isCancelled else { return DataDirScanResult(items: [], readIssues: []) }
         guard !app.isFolder else { return DataDirScanResult(items: [], readIssues: []) }
         let scanID = AppLogger.shared.makeOperationID(prefix: "scanner-library-dirs")
         let identity: ResolvedAppIdentity?
@@ -670,6 +672,7 @@ actor DataDirScanner {
         var resultsByPath: [String: DataDirItem] = [:]
 
         for config in appDataSearchConfigs() {
+            guard !Task.isCancelled else { return DataDirScanResult(items: [], readIssues: []) }
             // Ordinary sandbox containers are keyed by application identity. Product-name
             // similarities are insufficient evidence that another container belongs to this app.
             let localCandidates = config.type == .containers
@@ -677,6 +680,7 @@ actor DataDirScanner {
                 : findMatchingDirs(in: config.localBaseURL, matchProfile: matchProfile)
 
             for candidateURL in localCandidates {
+                guard !Task.isCancelled else { return DataDirScanResult(items: [], readIssues: []) }
                 let inspection = inspectItem(at: candidateURL, type: config.type)
 
                 if config.type == .containers || config.type == .groupContainers {
@@ -704,6 +708,7 @@ actor DataDirScanner {
             // rediscovered by fuzzy product names in an external mirror.
             if config.type == .containers { continue }
             for externalBaseURL in externalBaseURLs(for: config.localBaseURL, externalRootURL: externalRootURL) {
+                guard !Task.isCancelled else { return DataDirScanResult(items: [], readIssues: []) }
                 let externalCandidates = findMatchingDirs(in: externalBaseURL, matchProfile: matchProfile)
 
                 for externalCandidate in externalCandidates {
@@ -736,6 +741,7 @@ actor DataDirScanner {
             }
         }
 
+        guard !Task.isCancelled else { return DataDirScanResult(items: [], readIssues: []) }
         for item in scanSpecialAssociatedDirs(for: app, bundleID: bundleID, appName: appName, externalRootURL: externalRootURL) {
             resultsByPath[item.path.standardizedFileURL.path] = item
         }
@@ -1052,6 +1058,7 @@ actor DataDirScanner {
         var results: [DataDirItem] = []
 
         func visit(_ url: URL, depth: Int) {
+            guard !Task.isCancelled else { return }
             let inspection = inspectItem(at: url, type: type)
             let decision = policy.evaluate(url)
             var item = makeAppDataItem(name: containerRelativeSuffix(of: url, in: rootURL), path: url,
@@ -1531,57 +1538,63 @@ actor DataDirScanner {
         }
     }
 
-    /// 在指定目录中查找与应用匹配的子目录。
-    ///
-    /// 使用 enumerator 仅遍历至多 2 层深度，单次批量遍历替代逐层 contentsOfDirectory。
-    /// 对非匹配的顶层目录自动下钻一层，匹配后跳过子树。
+    /// Discover at most two levels without letting a recursive enumerator open deeper nodes.
     private func findMatchingDirs(in baseURL: URL, matchProfile: AppMatchProfile) -> [URL] {
-        guard fileManager.fileExists(atPath: baseURL.path) else { return [] }
-
+        guard !Task.isCancelled, fileManager.fileExists(atPath: baseURL.path) else { return [] }
         var matched: [URL] = []
-        guard let enumerator = fileManager.enumerator(
-            at: baseURL,
-            includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
-            options: [.skipsHiddenFiles],
-            errorHandler: { failedURL, error in
-                // 不将其他应用目录的访问限制算成当前应用的扫描失败。
-                let path = failedURL.standardizedFileURL.path
-                if path == baseURL.standardizedFileURL.path
-                    || matched.contains(where: { path == $0.path || path.hasPrefix($0.path + "/") })
-                    || self.matchesDirectoryName(failedURL.lastPathComponent, profile: matchProfile) {
-                    self.recordReadIssue(at: failedURL, error: error)
-                }
-                return true
-            }
-        ) else { return [] }
 
-        let baseDepth = baseURL.standardizedFileURL.pathComponents.count
-
-        for case let itemURL as URL in enumerator {
-            let depth = itemURL.standardizedFileURL.pathComponents.count - baseDepth
-            guard depth <= 2 else {
-                enumerator.skipDescendants()
-                continue
-            }
-
-            guard let values = try? itemURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey]),
-                  (values.isDirectory == true || values.isSymbolicLink == true) else { continue }
-
-            if matchesDirectoryName(itemURL.lastPathComponent, profile: matchProfile) {
-                matched.append(itemURL)
-                if depth >= 2 {
-                    enumerator.skipDescendants()
-                }
-            } else if depth >= 2 {
-                // 非匹配的二级目录不再深入
-                enumerator.skipDescendants()
+        func recordRelatedReadIssue(at url: URL, error: Error) {
+            let path = url.standardizedFileURL.path
+            if path == baseURL.standardizedFileURL.path
+                || matched.contains(where: { path == $0.path || path.hasPrefix($0.path + "/") })
+                || matchesDirectoryName(url.lastPathComponent, profile: matchProfile) {
+                recordReadIssue(at: url, error: error)
             }
         }
 
+        func entries(in directory: URL) -> [URL] {
+            guard !Task.isCancelled else { return [] }
+            do {
+                // Do not prefetch metadata for unrelated files, sockets or named pipes.
+                return try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil,
+                                                           options: [.skipsHiddenFiles])
+            } catch {
+                // Preserve diagnostics for the search root and matching app directories only.
+                recordRelatedReadIssue(at: directory, error: error)
+                return []
+            }
+        }
+
+        func inspect(_ url: URL) -> Bool {
+            guard !Task.isCancelled else { return false }
+            // Read the entry itself without opening special files or following links.
+            var metadata = stat()
+            guard lstat(url.path, &metadata) == 0 else {
+                let error = NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+                recordRelatedReadIssue(at: url, error: error)
+                return false
+            }
+            let kind = metadata.st_mode & mode_t(S_IFMT)
+            guard kind == mode_t(S_IFDIR) || kind == mode_t(S_IFLNK) else { return false }
+            if matchesDirectoryName(url.lastPathComponent, profile: matchProfile) {
+                matched.append(url)
+            }
+            return kind == mode_t(S_IFDIR)
+        }
+
+        for firstLevelURL in entries(in: baseURL) {
+            guard !Task.isCancelled else { return [] }
+            guard inspect(firstLevelURL) else { continue }
+            for secondLevelURL in entries(in: firstLevelURL) {
+                guard !Task.isCancelled else { return [] }
+                _ = inspect(secondLevelURL)
+            }
+        }
         return deduplicate(urls: matched)
     }
 
     private func directoryEntries(at baseURL: URL, includeHidden: Bool = false) -> [URL] {
+        guard !Task.isCancelled else { return [] }
         let contents: [URL]
         do {
             contents = try fileManager.contentsOfDirectory(
@@ -1601,6 +1614,7 @@ actor DataDirScanner {
             baseURL.appendingPathComponent($0.lastPathComponent, isDirectory: false).standardizedFileURL
         } : contents
         return entries.filter { itemURL in
+            guard !Task.isCancelled else { return false }
             do {
                 let values = try itemURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
                 return values.isDirectory == true || values.isSymbolicLink == true

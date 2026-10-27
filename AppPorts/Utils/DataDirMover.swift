@@ -365,6 +365,62 @@ actor DataDirMover {
         catch { throw DataDirError.symlinkFailed(error) }
     }
 
+    /// Discard a local link without reading or changing its target. Explicit
+    /// reset retires this entry's old symlink journals while preserving their copies.
+    func resetExistingLink(item: DataDirItem, expectedDestination: URL) async throws {
+        let identifier = try launchIdentifier(for: item)
+        if !ApplicationLaunchProtection.contains(identifier, directory: launchProtectionDirectory) {
+            return try await ApplicationLaunchProtection.run(identifier: identifier, directory: launchProtectionDirectory) {
+                try await self.resetExistingLink(item: item, expectedDestination: expectedDestination)
+            }
+        }
+        let local = item.path.standardizedFileURL
+        guard completingPaths.insert(local.path).inserted else { throw DataOperationSafety.Failure.occupied(local.path) }
+        defer { completingPaths.remove(local.path) }
+        try requirePolicy(local)
+        try safety.requireLocalRestoreParent(at: local)
+        try safety.requireApplicationStopped(at: local, bundleIdentifier: identifier)
+        guard isSymbolicLink(at: local) else { throw DataDirError.notASymlink(local) }
+        let identity = try DataPathIdentity.capture(local)
+        let rawTarget = try fileManager.destinationOfSymbolicLink(atPath: local.path)
+        let target = URL(fileURLWithPath: rawTarget, relativeTo: local.deletingLastPathComponent()).standardizedFileURL
+        guard target.path == expectedDestination.standardizedFileURL.path else {
+            throw DataOperationSafety.Failure.conflict(local.path)
+        }
+        let related = try store.transfers().filter { $0.originalPath == local.path }
+        let indexed = try store.managedLink(forOriginalPath: local.path)
+        guard related.allSatisfy({ $0.mode == .symlink }),
+              indexed == nil || indexed?.originalPath == local.path else {
+            throw DataOperationSafety.Failure.conflict(local.path)
+        }
+        try safety.requireNoOverlap(at: local, ownedTransferIDs: Set(related.map(\.operationID)),
+                                    ownedLinkPath: indexed?.originalPath)
+        try Task.checkCancellation()
+        let staging = local.deletingLastPathComponent().appendingPathComponent(".appports-unlink-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: staging, withIntermediateDirectories: false)
+        let replacement = staging.appendingPathComponent("empty-directory")
+        do {
+            try fileManager.createDirectory(at: replacement, withIntermediateDirectories: false)
+            try requireLocalRestoreParent(local)
+            // Commit the user's decision to end the old association first. A
+            // failed filesystem switch still leaves its link and copies intact.
+            try store.detachSymlinkHistory(at: local, transfers: related, link: indexed,
+                reason: "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。".localized) {
+                    try self.requireIdentity(local, identity)
+                }
+            try safety.requireNoOverlap(at: local)
+            try switchEntry(local: local, expectedLink: identity, replacement: replacement, staging: staging)
+        } catch {
+            // Remove only empty directories. Never recursively remove a retained entry.
+            _ = rmdir(replacement.path)
+            _ = rmdir(staging.path)
+            if try entryExists(staging) {
+                throw DataOperationSafety.Failure.inspection(error.localizedDescription + "\n" + staging.path)
+            }
+            throw error
+        }
+    }
+
     /// Disconnecting an entry keeps its index so the now-missing original remains recoverable.
     func deleteLink(localPath: URL) async throws {
         guard isSymbolicLink(at: localPath) else { throw DataDirError.notASymlink(localPath) }

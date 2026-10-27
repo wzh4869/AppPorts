@@ -24,6 +24,7 @@ struct DataDirGroup {
 /// - 本地应用在 ~/Library/ 下的关联数据（需用户选择应用）
 struct DataDirsView: View {
     @Environment(\.locale) private var locale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ObservedObject private var languageManager = LanguageManager.shared
     @ObservedObject private var operationState = AppOperationState.shared
 
@@ -71,6 +72,8 @@ struct DataDirsView: View {
     @State private var dotFolderItems: [DataDirItem] = []
     @State private var toolSizeCacheUpdatedAt: Date?
     @State private var libraryItems:   [DataDirItem] = []
+    @State private var appDataScanCache = AppDataScanCache()
+    @State private var appDataPermissionIncomplete = false
     @State private var migratedAppDataIDs: Set<String> = []
     @State private var directoryRevealRequest: DataDirTree.RevealRequest?
     @State private var summaryFilter: DataDirTree.SummaryFilter?
@@ -202,22 +205,30 @@ struct DataDirsView: View {
                 .padding(.vertical, 8)
             }
             // ── 主内容区 ────────────────────────────────────────
-            if selectedTab == .toolDirs {
-                toolDirsContent
-            } else {
-                appDirsContent
+            ZStack(alignment: .topLeading) {
+                if selectedTab == .toolDirs {
+                    toolDirsContent
+                        .transaction { $0.animation = nil }
+                        .transition(.opacity)
+                } else {
+                    appDirsContent
+                        .transaction { $0.animation = nil }
+                        .transition(.opacity)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .animation(reduceMotion ? nil : AppMotion.page, value: selectedTab)
         }
         .disabled(operationState.blocksInteraction)
         .onAppear {
             guard !hasLoadedDirectories else { return }
             hasLoadedDirectories = true
-            reloadCurrentTab()
+            reloadCurrentTab(useCachedAppData: true)
         }
         .onChange(of: selectedTab) { _ in
             directoryRevealRequest = nil
             summaryFilter = nil
-            reloadCurrentTab()
+            reloadCurrentTab(useCachedAppData: true)
         }
         .onDisappear {
             suspendDirectoryScans()
@@ -225,12 +236,29 @@ struct DataDirsView: View {
         .onChange(of: isActive) { active in
             if active {
                 hasLoadedDirectories = true
-                reloadCurrentTab()
+                reloadCurrentTab(useCachedAppData: true)
             } else {
                 suspendDirectoryScans()
             }
         }
+        .onChange(of: operationState.recordsRevision) { _ in
+            appDataScanCache.removeAll()
+            if isActive, selectedTab == .appDirs { reloadCurrentTab() }
+        }
+        .onChange(of: externalDriveURL) { _ in
+            appDataScanCache.removeAll()
+            reloadCurrentTab()
+        }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { _ in
+            appDataScanCache.removeAll()
+            if isActive, selectedTab == .appDirs { reloadCurrentTab() }
+        }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { _ in
+            appDataScanCache.removeAll()
+            if isActive, selectedTab == .appDirs { reloadCurrentTab() }
+        }
         .onChange(of: refreshTrigger) { _ in
+            appDataScanCache.removeAll()
             clearSizeCache()
             reloadCurrentTab(forceToolSizeRefresh: true)
         }
@@ -290,7 +318,9 @@ struct DataDirsView: View {
         .warningSheet($managedLinkNormalizationRequest)
         .warningSheet($migrationRiskRequest)
         .warningSheet($mountMigrationRequest)
-        .sheet(isPresented: $showReadinessCheck) {
+        .sheet(isPresented: $showReadinessCheck, onDismiss: {
+            if appDataPermissionIncomplete, let app = selectedApp { scanLibraryDirs(for: app) }
+        }) {
             ReadinessCheckSheet()
         }
         .sheet(isPresented: $showCleanupResolution) {
@@ -328,32 +358,10 @@ struct DataDirsView: View {
 
     private var toolDirsContent: some View {
         VStack(spacing: 0) {
-            // 外部存储路径提示区
-            if externalDriveURL == nil {
-                externalDriveWarning
-            }
-
             // 统计栏
             if !dotFolderItems.isEmpty {
                 statsBar(items: filteredDotFolderItems)
             }
-
-            HStack(spacing: 10) {
-                Group {
-                    if let date = toolSizeCacheUpdatedAt {
-                        Text("上次缓存时间".localized + "：" + date.formatted(Date.FormatStyle(date: .numeric, time: .shortened).locale(locale)))
-                    } else {
-                        Text("尚无大小缓存".localized)
-                    }
-                }
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-                Spacer()
-                Button("刷新缓存".localized) { reloadCurrentTab(forceToolSizeRefresh: true) }
-                    .disabled(isScanning)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 4)
 
             // 列表
             ZStack {
@@ -384,6 +392,12 @@ struct DataDirsView: View {
                         }
                         .padding(.vertical, 4)
                     }
+                }
+            }
+            .overlay(alignment: .top) {
+                if externalDriveURL == nil {
+                    externalDriveWarning
+                        .padding(12)
                 }
             }
         }
@@ -509,9 +523,6 @@ struct DataDirsView: View {
                 .settingsCardBackground(opacity: 0.05)
                 .padding(12)
 
-                // 外部存储路径提示
-                if externalDriveURL == nil { externalDriveWarning }
-
                 if let app = selectedApp, app.needsSignatureAttention {
                     signatureReplacedBanner(for: app)
                 }
@@ -524,6 +535,13 @@ struct DataDirsView: View {
                             ContentView.EmptyStateView(icon: "magnifyingglass", text: "正在扫描...".localized)
                         } else {
                             ContentView.EmptyStateView(icon: "arrow.left.circle", text: "从左侧选择一个应用".localized)
+                        }
+                    } else if appDataPermissionIncomplete {
+                        VStack(spacing: 12) {
+                            Text("权限不完整".localized)
+                                .foregroundColor(.secondary)
+                            Button("检查访问权限".localized) { showReadinessCheck = true }
+                                .buttonStyle(.bordered)
                         }
                     } else if isScanning && libraryItems.isEmpty {
                         loadingView
@@ -546,6 +564,12 @@ struct DataDirsView: View {
                             revealRequest: directoryRevealRequest,
                             actions: directoryOperationButtons
                         )
+                    }
+                }
+                .overlay(alignment: .top) {
+                    if externalDriveURL == nil {
+                        externalDriveWarning
+                            .padding(12)
                     }
                 }
             }
@@ -623,8 +647,13 @@ struct DataDirsView: View {
                 .controlSize(.small)
         }
         .padding(10)
-        .background(Color.orange.opacity(0.08))
-        .overlay(Rectangle().frame(height: 1).foregroundColor(.orange.opacity(0.2)), alignment: .bottom)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
     }
 
     private func signatureReplacedBanner(for app: AppItem) -> some View {
@@ -1229,7 +1258,7 @@ struct DataDirsView: View {
         isScanning = false
     }
 
-    private func reloadCurrentTab(forceToolSizeRefresh: Bool = false) {
+    private func reloadCurrentTab(forceToolSizeRefresh: Bool = false, useCachedAppData: Bool = false) {
         guard isActive else { return }
         if selectedTab == .appDirs {
             refreshOperationRecords()
@@ -1251,7 +1280,7 @@ struct DataDirsView: View {
         } else {
             dotFolderScanToken = UUID()
             if let app = selectedApp {
-                scanLibraryDirs(for: app)
+                scanLibraryDirs(for: app, useCachedResult: useCachedAppData, forceSizeRefresh: forceToolSizeRefresh)
             } else {
                 isScanning = false
             }
@@ -1353,42 +1382,70 @@ struct DataDirsView: View {
                 guard self.dotFolderScanToken == scanToken else { return }
                 if !pendingIndices.isEmpty { ToolDirectorySizeCacheStore.shared.save(completedSnapshot) }
                 self.toolSizeCacheUpdatedAt = completedSnapshot.updatedAt
-                withAnimation {
-                    for (i, result) in sizedItems {
-                        guard i < self.dotFolderItems.count else { continue }
-                        self.dotFolderItems[i].applySize(result)
-                        self.dotFolderReadIssues.append(contentsOf: result.readIssues)
-                    }
-                    self.isScanning = false
+                for (i, result) in sizedItems {
+                    guard i < self.dotFolderItems.count else { continue }
+                    self.dotFolderItems[i].applySize(result)
+                    self.dotFolderReadIssues.append(contentsOf: result.readIssues)
                 }
+                self.isScanning = false
             }
         }
     }
 
-    private func scanLibraryDirs(for app: AppItem) {
+    private func applyAppDataSnapshot(_ snapshot: AppDataScanCache.Snapshot) {
+        libraryItems = snapshot.items
+        libraryReadIssues = snapshot.readIssues
+        libraryIdentityIssue = snapshot.identityIssue
+        selectedAppIsSandboxed = snapshot.isSandboxed
+        selectedAppIsWeChat = snapshot.isWeChat
+        weChatContainerIdentifier = snapshot.containerIdentifier
+        appDataPermissionIncomplete = false
+    }
+
+    private func scanLibraryDirs(for app: AppItem, useCachedResult: Bool = true,
+                                 forceSizeRefresh: Bool = false,
+                                 completion: (([DataDirItem]) -> Void)? = nil) {
         guard isActive else { return }
         directoryScanTask?.cancel()
         let scanToken = UUID()
         libraryScanToken = scanToken
         isScanning = true
+        appDataPermissionIncomplete = false
         libraryItems = []
         libraryReadIssues = []
         libraryIdentityIssue = nil
-        let appDisplayName = app.displayName
-        let appPath = app.path.standardizedFileURL
-        let selectedExternalRoot = externalDriveURL
-        let splitMode = MigrationPreferences.isPartialWeChatMigrationEnabled(for: app.path)
-        let scanID = AppLogger.shared.makeOperationID(prefix: "scan-library-dirs")
-        AppLogger.shared.logContext(
-            "开始扫描应用数据目录",
-            details: [
-                ("scan_id", scanID),
-                ("app_name", appDisplayName),
-                ("app_path", app.path.path),
-                ("external_root", selectedExternalRoot?.path)
-            ]
-        )
+        let context = AppDataScanCache.Context(app: app, externalRoot: externalDriveURL,
+            splitMode: MigrationPreferences.isPartialWeChatMigrationEnabled(for: app.path),
+            recordsRevision: operationState.recordsRevision)
         directoryScanTask = Task.detached(priority: .userInitiated) {
+            // Probe the current process before reading any protected app data, even on cache hits.
+            let permission = LaunchReadinessChecker.fullDiskAccessState()
+            guard !Task.isCancelled else { return }
+            guard permission == .granted else {
+                await MainActor.run {
+                    guard self.libraryScanToken == scanToken else { return }
+                    self.appDataScanCache.removeAll()
+                    self.appDataPermissionIncomplete = true
+                    self.isScanning = false
+                    AppLogger.shared.log("应用数据扫描已停止：读取权限未就绪", level: "WARN")
+                }
+                return
+            }
+            let cached = await MainActor.run {
+                useCachedResult && !forceSizeRefresh
+                    ? self.appDataScanCache.snapshot(for: context, permission: permission) : nil
+            }
+            if let cached {
+                await MainActor.run {
+                    guard self.libraryScanToken == scanToken else { return }
+                    self.applyAppDataSnapshot(cached)
+                    self.isScanning = false
+                    AppLogger.shared.logContext("应用数据扫描使用缓存", details: [("app_name", app.displayName)])
+                    completion?(cached.items)
+                }
+                return
+            }
+            AppLogger.shared.logContext("开始扫描应用数据目录", details: [("app_name", app.displayName)])
             let matchesWeChatName = app.displayName.localizedCaseInsensitiveContains("wechat")
             let isWeChat: Bool
             let containerIdentifier: String
@@ -1399,96 +1456,92 @@ struct DataDirsView: View {
                 isWeChat = matchesWeChatName
                 containerIdentifier = PartialWeChatMigrationPolicy.bundleIdentifier
             }
-            let scanner = DataDirScanner(partialWeChatMigrationEnabled: splitMode && isWeChat,
+            let scanner = DataDirScanner(partialWeChatMigrationEnabled: context.splitMode && isWeChat,
                                          weChatContainerIdentifier: containerIdentifier)
-            // 沙盒应用迁移数据后不能重签名；先算一次供整页使用。
             let isSandboxed = await scanner.isSandboxed(app)
             guard !Task.isCancelled else { return }
-            let scanResult = await scanner.scanLibraryDirsWithDiagnostics(for: app, externalRootURL: selectedExternalRoot)
+            let result = await scanner.scanLibraryDirsWithDiagnostics(for: app, externalRootURL: context.externalRoot)
             guard !Task.isCancelled else { return }
-            let items = WeChatAccountMigrationService.groupedItems(scanResult.items, splitMode: splitMode && isWeChat,
+            let items = WeChatAccountMigrationService.groupedItems(result.items, splitMode: context.splitMode && isWeChat,
                                                                    containerIdentifier: containerIdentifier)
-
+            var snapshot = AppDataScanCache.Snapshot(context: context, items: items,
+                readIssues: result.readIssues, identityIssue: result.identityIssue,
+                isSandboxed: isSandboxed, isWeChat: isWeChat, containerIdentifier: containerIdentifier)
+            let discoveredSnapshot = snapshot
             await MainActor.run {
-                guard self.libraryScanToken == scanToken,
-                      self.selectedApp?.path.standardizedFileURL == appPath else { return }
-                self.libraryItems = items
-                self.libraryReadIssues = scanResult.readIssues
-                self.libraryIdentityIssue = scanResult.identityIssue
-                self.selectedAppIsSandboxed = isSandboxed
-                self.selectedAppIsWeChat = isWeChat
-                self.weChatContainerIdentifier = containerIdentifier
+                guard self.libraryScanToken == scanToken else { return }
+                self.applyAppDataSnapshot(discoveredSnapshot)
             }
-            AppLogger.shared.logContext(
-                "应用数据目录扫描完成",
-                details: [
-                    ("scan_id", scanID),
-                    ("app_name", appDisplayName),
-                    ("sandboxed", isSandboxed ? "true" : "false"),
-                    ("count", String(items.count)),
-                    ("statuses", Dictionary(grouping: items, by: \.status).map { "\($0.key)=\($0.value.count)" }.sorted().joined(separator: ", "))
-                ]
-            )
-
-            guard !Task.isCancelled else { return }
-            // 并行计算所有目录大小
+            // Ordinary visits can reuse measured sizes; explicit refresh/migration cannot.
             let sizedItems = await withTaskGroup(of: (Int, DirectorySizeResult).self) { group in
                 var results: [(Int, DirectorySizeResult)] = []
                 var iterator = items.indices.makeIterator()
-                var active = 0
-                let maxConcurrency = 4
-
-                // 启动初始批次
-                for _ in 0..<min(maxConcurrency, items.count) {
-                    guard let i = iterator.next() else { break }
-                    let measuredItem = items[i]
-                    group.addTask { (i, measureDataDirectorySize(for: measuredItem)) }
-                    active += 1
+                for _ in 0..<min(4, items.count) {
+                    guard !Task.isCancelled, let i = iterator.next() else { break }
+                    group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh)) }
                 }
-
-                // 每完成一个再启动一个
                 for await result in group {
                     results.append(result)
-                    active -= 1
                     if !Task.isCancelled, let i = iterator.next() {
-                        let measuredItem = items[i]
-                        group.addTask { (i, measureDataDirectorySize(for: measuredItem)) }
-                        active += 1
+                        group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh)) }
                     }
                 }
                 return results
             }
-
+            guard !Task.isCancelled else { return }
+            for (i, measured) in sizedItems {
+                snapshot.items[i].applySize(measured)
+                snapshot.readIssues.append(contentsOf: measured.readIssues)
+            }
+            let completedSnapshot = snapshot
             await MainActor.run {
                 guard self.libraryScanToken == scanToken,
-                      self.selectedApp?.path.standardizedFileURL == appPath else { return }
-                withAnimation {
-                    for (i, result) in sizedItems {
-                        guard i < self.libraryItems.count else { continue }
-                        self.libraryItems[i].applySize(result)
-                        self.libraryReadIssues.append(contentsOf: result.readIssues)
-                    }
-                    self.isScanning = false
-                }
+                      self.operationState.recordsRevision == context.recordsRevision else { return }
+                self.applyAppDataSnapshot(completedSnapshot)
+                self.appDataScanCache.store(completedSnapshot)
+                self.isScanning = false
+                AppLogger.shared.logContext("应用数据目录扫描及大小统计完成",
+                    details: [("app_name", app.displayName), ("count", String(completedSnapshot.items.count))])
+                completion?(completedSnapshot.items)
             }
+        }
+    }
+
+    /// Refresh display data before opening migration confirmation; never execute from a cached item.
+    private func refreshAppDataBeforeMigration(_ item: DataDirItem, continuing: @escaping (DataDirItem) -> Void) {
+        guard selectedTab == .appDirs, let app = selectedApp else { continuing(item); return }
+        guard !isScanning, !operationState.blocksInteraction else { return }
+        appDataScanCache.removeAll()
+        scanLibraryDirs(for: app, useCachedResult: false, forceSizeRefresh: true) { items in
+            guard let fresh = items.first(where: { $0.path.standardizedFileURL == item.path.standardizedFileURL }),
+                  fresh.isMigratable, !fresh.sizeIsIncomplete, fresh.status == DataDirStatus.local else {
+                errorMessage = "目录状态已变化，请重新选择后再迁移。".localized
+                showError = true
+                return
+            }
+            continuing(fresh)
         }
     }
 
     // MARK: - 迁移 / 还原 确认
 
     private func askMigrate(_ item: DataDirItem) {
+        refreshAppDataBeforeMigration(item, continuing: askMigrateWithFreshData)
+    }
+
+    private func askMigrateWithFreshData(_ item: DataDirItem) {
         if !item.weChatSplitMembers.isEmpty {
             weChatMigrationMode = .split
             checkMountMigrationDestination(for: item, destination: externalDriveURL)
             return
         }
         if partialWeChatMigrationEnabled, selectedWeChatPolicy.isAccount(item.path) {
-            askMountMigrate(item)
+            askMountMigrateWithFreshData(item)
             return
         }
         // 容器数据只能挂载迁移；符号链接会被内核按真实路径拒绝。经典模式下由用户自担风险。
         if item.requiresMountMigration && !classicModeActive {
-            askMountMigrate(item)
+            askMountMigrateWithFreshData(item)
             return
         }
 
@@ -1556,12 +1609,25 @@ struct DataDirsView: View {
             return
         }
 
-        confirmRequest = makeConfirmRequest(
+        confirmRequest = WarningSheetRequest(
             title: "现有软链".localized,
-            actionTitle: "规范化管理".localized,
-            message: String(format: "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。".localized,
+            icon: "link",
+            tint: .blue,
+            intro: String(format: "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。".localized,
                 item.name, item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"), linkedDest.path),
-            action: { queueManagedLinkNormalization(item, currentTarget: linkedDest) }
+            detail: "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。".localized,
+            acknowledgementTitle: "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。".localized,
+            actions: [
+                WarningAction("强制解绑".localized, style: .destructive, requiresAcknowledgement: true) {
+                    submitDataTask(item, title: "强制解绑".localized) { _ in
+                        try await DataDirMover().resetExistingLink(item: item, expectedDestination: linkedDest)
+                        return nil
+                    }
+                },
+                WarningAction("规范化管理".localized, style: .preferred) {
+                    queueManagedLinkNormalization(item, currentTarget: linkedDest)
+                }
+            ]
         )
     }
 
@@ -1800,6 +1866,10 @@ struct DataDirsView: View {
     // MARK: - 挂载迁移（沙盒应用容器数据）
 
     private func askMountMigrate(_ item: DataDirItem) {
+        refreshAppDataBeforeMigration(item, continuing: askMountMigrateWithFreshData)
+    }
+
+    private func askMountMigrateWithFreshData(_ item: DataDirItem) {
         if partialWeChatMigrationEnabled, selectedWeChatPolicy.isAccount(item.path) {
             if requestAssociatedAppExit(for: item, continuing: { askMountMigrate(item) }) { return }
             weChatMigrationItem = item

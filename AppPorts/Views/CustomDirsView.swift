@@ -36,6 +36,8 @@ enum CustomDirRecoveryEligibility {
 @MainActor
 struct CustomDirsView: View {
     var isActive: Bool = true
+    var refreshTrigger: Int = 0
+    var onScanningChanged: ((Bool) -> Void)? = nil
     @Environment(\.locale) private var locale
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var configStore = CustomDirConfigStore.shared
@@ -106,17 +108,6 @@ struct CustomDirsView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                HStack {
-                    if let date = sizeCacheUpdatedAt {
-                        Text("上次缓存时间".localized + "：" + date.formatted(Date.FormatStyle(date: .numeric, time: .shortened).locale(locale)))
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Button("刷新缓存".localized) { refresh(forceSizeRefresh: true) }
-                        .disabled(isScanning || operationState.blocksInteraction)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
                 if retainedTransfers.contains(where: { $0.needsAttention }) {
                     HStack {
                         Text(retainedTransfers.contains(where: { $0.cleanupDisposition == .deferred })
@@ -146,11 +137,19 @@ struct CustomDirsView: View {
             isVisible = active
             if active { refresh() } else { invalidateRefresh() }
         }
+        .onChange(of: refreshTrigger) { _ in
+            guard isActive, !isScanning, !operationState.blocksInteraction else { return }
+            refresh(forceSizeRefresh: true)
+        }
+        .onChange(of: isScanning) { scanning in
+            onScanningChanged?(scanning)
+        }
         .onChange(of: operationState.recordsRevision) { _ in refresh() }
         .onChange(of: configStore.configs) { _ in refresh() }
         .onDisappear {
             isVisible = false
             invalidateRefresh()
+            onScanningChanged?(false)
         }
         .sheet(isPresented: $showAddSheet) {
             AddCustomDirSheet(existingConfigs: configs) { config in

@@ -1,4 +1,5 @@
 import XCTest
+import Darwin
 @testable import AppPorts
 
 final class DataDirScannerTests: XCTestCase {
@@ -381,6 +382,45 @@ final class DataDirScannerTests: XCTestCase {
         )
 
         XCTAssertFalse(try XCTUnwrap(items.first(where: { $0.path.standardizedFileURL == localGroupContainerURL.standardizedFileURL })).isMigratable)
+    }
+
+    func testAppDataDiscoveryStopsAtTwoLevelsAndIgnoresSpecialFiles() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Focus.app", bundleID: "com.example.focus", in: workspace.appsURL)
+        let base = workspace.homeURL.appendingPathComponent("Library/Application Support")
+        let direct = base.appendingPathComponent("Focus")
+        let vendorChild = base.appendingPathComponent("Vendor/Focus")
+        let tooDeep = base.appendingPathComponent("Other/Products/Focus")
+        for url in [direct, vendorChild, tooDeep] { try createDirectoryWithPayload(at: url) }
+        let pipe = base.appendingPathComponent("Focus.pipe")
+        XCTAssertEqual(mkfifo(pipe.path, 0o600), 0)
+
+        let result = await DataDirScanner(homeDir: workspace.homeURL,
+            mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("mounts.plist")))
+            .scanLibraryDirsWithDiagnostics(for: AppItem(name: "Focus.app", path: appURL, status: AppStatus.local))
+        let paths = Set(result.items.map { $0.path.standardizedFileURL })
+        XCTAssertTrue(paths.contains(direct.standardizedFileURL))
+        XCTAssertTrue(paths.contains(vendorChild.standardizedFileURL))
+        XCTAssertFalse(paths.contains(tooDeep.standardizedFileURL))
+        XCTAssertFalse(paths.contains(pipe.standardizedFileURL))
+    }
+
+    func testCancelledAppDataDiscoveryReturnsWithoutPublishingItems() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Focus.app", bundleID: "com.example.focus", in: workspace.appsURL)
+        try createDirectoryWithPayload(at: workspace.homeURL.appendingPathComponent("Library/Application Support/Focus"))
+        let scanner = DataDirScanner(homeDir: workspace.homeURL,
+            mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("mounts.plist")))
+        let app = AppItem(name: "Focus.app", path: appURL, status: AppStatus.local)
+        let task = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return await scanner.scanLibraryDirsWithDiagnostics(for: app)
+        }
+        let result = await task.value
+        XCTAssertTrue(result.items.isEmpty)
+        XCTAssertTrue(result.readIssues.isEmpty)
     }
 
     // MARK: - Bundle ID 后缀匹配

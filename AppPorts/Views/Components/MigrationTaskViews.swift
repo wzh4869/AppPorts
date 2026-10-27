@@ -159,20 +159,17 @@ struct MigrationTaskList: View {
                 .onPreferenceChange(MigrationTaskListHeightKey.self) { contentHeight = $0 }
             }
             Divider()
-            VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
                 HStack(spacing: 8) {
                     Button("暂停".localized) { center.pause(selection) }
                     Button("继续".localized) { center.resume(selection) }
                     Button("取消任务".localized) { center.cancel(selection) }
-                    Spacer(minLength: 0)
                 }
                 .disabled(selection.isEmpty)
-                HStack {
-                    Spacer(minLength: 0)
-                    Button("清空已完成".localized) { center.clearCompleted() }
-                        .disabled(!center.jobs.contains { $0.status == .completed })
-                        .help("只清空已完成的任务记录，不删除文件".localized)
-                }
+                Spacer(minLength: 0)
+                Button("清空已完成".localized) { center.clearCompleted() }
+                    .disabled(!center.jobs.contains { $0.status == .completed })
+                    .help("只清空已完成的任务记录，不删除文件".localized)
             }
             .padding(10)
         }

@@ -27,7 +27,7 @@ import Combine
 /// App 生命周期代理
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
-    lazy var aboutWindowController = AboutWindowController()
+    lazy var aboutWindowController = AboutWindowController.shared
     fileprivate static weak var mainWindow: NSWindow?
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -41,6 +41,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if AppUpdateController.shared.allowsTermination { return .terminateNow }
+        AppUpdateController.shared.cancelInstallationForTerminationRefusal()
         if AppOperationState.shared.isBusy {
             let alert = NSAlert()
             alert.messageText = "还有任务尚未结束".localized
@@ -55,6 +57,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             return .terminateCancel
         }
+        if AppUpdateController.shared.finishBeforeTerminating({
+            sender.reply(toApplicationShouldTerminate: !AppOperationState.shared.isBusy)
+        }) { return .terminateLater }
         return AppOperationState.shared.finishBeforeTerminating {
             sender.reply(toApplicationShouldTerminate: true)
         } ? .terminateLater : .terminateNow
@@ -65,6 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppUpdateInstaller.acknowledgeLaunch()
         // 应用可能被移动过：校准登录代理指向的程序，免得它指向一个已经不存在的路径。
         Task.detached(priority: .utility) {
             do { try await AutoResignInstaller.refreshInstalledScriptIfNeeded() }

@@ -29,6 +29,10 @@ final class AppOperationState: ObservableObject {
     var isBusy: Bool { activeOperation != nil || migrationCount > 0 }
     var blocksInteraction: Bool { activeOperation != nil }
 
+    func isOnlyOperation(_ token: UUID) -> Bool {
+        activeOperation == token && migrationCount == 0
+    }
+
     func setMigrationCount(_ count: Int) {
         let wasBusy = isBusy
         migrationCount = count
