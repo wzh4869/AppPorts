@@ -17,18 +17,18 @@ struct UpdateSettingsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 20) {
+            HStack(spacing: 12) {
                 Image(nsImage: NSApplication.shared.applicationIconImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 80, height: 80)
+                    .frame(width: 48, height: 48)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(verbatim: "AppPorts").font(.largeTitle.bold())
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(verbatim: "AppPorts").font(.title2.bold())
                     Text("macOS 应用迁移工具".localized)
-                        .font(.headline)
+                        .font(.body)
                         .foregroundStyle(.secondary)
-                    Text(version).foregroundStyle(.secondary)
+                    Text(version).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
             }
