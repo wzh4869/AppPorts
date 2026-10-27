@@ -61,17 +61,31 @@ struct AppListFooterStyle: ViewModifier {
 struct AppListRowAppearance: ViewModifier {
     let isSelected: Bool
     let index: Int
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isHovered = false
+
+    private var surface: Color {
+        colorScheme == .light ? .white : Color(nsColor: .controlBackgroundColor)
+    }
 
     private var background: Color {
         if isSelected { return Color.accentColor.opacity(0.20) }
         if isHovered { return Color.primary.opacity(0.08) }
-        return index.isMultiple(of: 2) ? Color(nsColor: .controlBackgroundColor) : Color.primary.opacity(0.035)
+        return surface
     }
 
     func body(content: Content) -> some View {
         content
-            .listRowBackground(background)
+            .listRowBackground(
+                background.overlay(alignment: .top) {
+                    if index > 0 {
+                        Divider()
+                            .padding(.horizontal, 16)
+                            .background(surface)
+                            .allowsHitTesting(false)
+                    }
+                }
+            )
             .onHover { hovering in
                 if isHovered != hovering { isHovered = hovering }
             }
