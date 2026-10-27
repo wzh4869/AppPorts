@@ -358,11 +358,6 @@ struct DataDirsView: View {
 
     private var toolDirsContent: some View {
         VStack(spacing: 0) {
-            // 外部存储路径提示区
-            if externalDriveURL == nil {
-                externalDriveWarning
-            }
-
             // 统计栏
             if !dotFolderItems.isEmpty {
                 statsBar(items: filteredDotFolderItems)
@@ -397,6 +392,12 @@ struct DataDirsView: View {
                         }
                         .padding(.vertical, 4)
                     }
+                }
+            }
+            .overlay(alignment: .top) {
+                if externalDriveURL == nil {
+                    externalDriveWarning
+                        .padding(12)
                 }
             }
         }
@@ -522,9 +523,6 @@ struct DataDirsView: View {
                 .settingsCardBackground(opacity: 0.05)
                 .padding(12)
 
-                // 外部存储路径提示
-                if externalDriveURL == nil { externalDriveWarning }
-
                 if let app = selectedApp, app.needsSignatureAttention {
                     signatureReplacedBanner(for: app)
                 }
@@ -566,6 +564,12 @@ struct DataDirsView: View {
                             revealRequest: directoryRevealRequest,
                             actions: directoryOperationButtons
                         )
+                    }
+                }
+                .overlay(alignment: .top) {
+                    if externalDriveURL == nil {
+                        externalDriveWarning
+                            .padding(12)
                     }
                 }
             }
@@ -643,8 +647,13 @@ struct DataDirsView: View {
                 .controlSize(.small)
         }
         .padding(10)
-        .background(Color.orange.opacity(0.08))
-        .overlay(Rectangle().frame(height: 1).foregroundColor(.orange.opacity(0.2)), alignment: .bottom)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
     }
 
     private func signatureReplacedBanner(for app: AppItem) -> some View {
@@ -1600,12 +1609,25 @@ struct DataDirsView: View {
             return
         }
 
-        confirmRequest = makeConfirmRequest(
+        confirmRequest = WarningSheetRequest(
             title: "现有软链".localized,
-            actionTitle: "规范化管理".localized,
-            message: String(format: "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。".localized,
+            icon: "link",
+            tint: .blue,
+            intro: String(format: "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。".localized,
                 item.name, item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"), linkedDest.path),
-            action: { queueManagedLinkNormalization(item, currentTarget: linkedDest) }
+            detail: "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。".localized,
+            acknowledgementTitle: "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。".localized,
+            actions: [
+                WarningAction("强制解绑".localized, style: .destructive, requiresAcknowledgement: true) {
+                    submitDataTask(item, title: "强制解绑".localized) { _ in
+                        try await DataDirMover().resetExistingLink(item: item, expectedDestination: linkedDest)
+                        return nil
+                    }
+                },
+                WarningAction("规范化管理".localized, style: .preferred) {
+                    queueManagedLinkNormalization(item, currentTarget: linkedDest)
+                }
+            ]
         )
     }
 
