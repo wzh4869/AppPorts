@@ -18,6 +18,110 @@ final class WriterAdmissionTests: XCTestCase {
         }, "An identified AppPorts writer still requires a readable identity")
     }
 
+    func testCollectionRemovesDeadMalformedPresenceAndKeepsLivePresence() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        let dead = admission.presenceURL(processID: 303)
+        try Data("broken".utf8).write(to: dead)
+        admission.pruneExitedPresences(timeBudget: 2, hasExited: { $0 == 303 })
+        XCTAssertFalse(FileManager.default.fileExists(atPath: dead.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: admission.presenceURL(processID: 101).path))
+        XCTAssertNoThrow(try admission.checkCurrentWriters())
+    }
+
+    func testCollectionRestoresConcurrentPublicationWithoutDeletingIt() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        let record = admission.presenceURL(processID: 303)
+        try Data("old".utf8).write(to: record)
+        let replacement = Data("new registration".utf8)
+        admission.pruneExitedPresences(timeBudget: 2, hasExited: { $0 == 303 }, beforeClaim: {
+            try! replacement.write(to: record, options: .atomic)
+        })
+        XCTAssertEqual(try Data(contentsOf: record), replacement)
+    }
+
+    func testCollectionKeepsSymlinkAndItsTarget() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        let target = fixture.directory.appendingPathComponent("protected")
+        try Data("protected".utf8).write(to: target)
+        let link = admission.presenceURL(processID: 303)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
+        admission.pruneExitedPresences(timeBudget: 2, hasExited: { $0 == 303 })
+        XCTAssertEqual(try FileManager.default.destinationOfSymbolicLink(atPath: link.path), target.path)
+        XCTAssertEqual(try Data(contentsOf: target), Data("protected".utf8))
+    }
+
+    func testCollectionRespectsRemovalBudget() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        for pid in 303...312 { try Data("old".utf8).write(to: admission.presenceURL(processID: Int32(pid))) }
+        admission.pruneExitedPresences(maximumRemoved: 2, timeBudget: 2, hasExited: { $0 >= 303 })
+        let remaining = (303...312).filter { FileManager.default.fileExists(atPath: admission.presenceURL(processID: Int32($0)).path) }
+        XCTAssertEqual(remaining.count, 8)
+    }
+
+    func testCollectionRestoresClaimWhenProcessAppearsBeforeDeletion() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        let record = admission.presenceURL(processID: 303)
+        let bytes = Data("preserve".utf8)
+        try bytes.write(to: record)
+        var exited = true
+        admission.pruneExitedPresences(timeBudget: 2, hasExited: { $0 == 303 && exited }, beforeClaim: {
+            exited = false
+        })
+        XCTAssertEqual(try Data(contentsOf: record), bytes)
+    }
+
+    func testCollectionRecoversInterruptedClaimWithoutOverwritingPublicRecord() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        let claims = fixture.directory.appendingPathComponent(".writer-presence")
+        let claim = claims.appendingPathComponent(".claim-303-" + UUID().uuidString)
+        try Data("retained".utf8).write(to: claim)
+        admission.pruneExitedPresences(timeBudget: 2, hasExited: { _ in false })
+        let record = admission.presenceURL(processID: 303)
+        XCTAssertEqual(try Data(contentsOf: record), Data("retained".utf8))
+        try Data("older".utf8).write(to: claim)
+        admission.pruneExitedPresences(timeBudget: 2, hasExited: { _ in false })
+        XCTAssertEqual(try Data(contentsOf: record), Data("retained".utf8))
+        XCTAssertEqual(try Data(contentsOf: claim), Data("older".utf8))
+    }
+
+    func testCollectionDoesNoWorkWithZeroScanBudget() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        let record = admission.presenceURL(processID: 303)
+        try Data("old".utf8).write(to: record)
+        admission.pruneExitedPresences(maximumScanned: 0, hasExited: { _ in XCTFail("No inspection permitted"); return true })
+        XCTAssertTrue(FileManager.default.fileExists(atPath: record.path))
+    }
+
+    func testBackgroundBatchesVisitTailAfterManyRetainedEntries() throws {
+        let fixture = Fixture()
+        let admission = fixture.admission()
+        try admission.registerCurrentProcess()
+        for pid in 303...602 {
+            try Data("keep".utf8).write(to: admission.presenceURL(processID: Int32(pid)))
+        }
+        var visited = Set<Int32>()
+        admission.pruneExitedPresences(maximumScanned: 8, timeBudget: 2,
+                                      continueInBatches: true, hasExited: { pid in
+            visited.insert(pid)
+            return false
+        })
+        XCTAssertEqual(visited.count, 301)
+    }
+
     private final class Fixture {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("WriterAdmissionTests-" + UUID().uuidString)
         let current = WriterProcessIdentity(processID: 101, userID: getuid(), startSeconds: 1,

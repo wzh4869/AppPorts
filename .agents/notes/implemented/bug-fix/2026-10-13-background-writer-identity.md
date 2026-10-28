@@ -21,6 +21,8 @@ Status: implemented
 
 ## Related decisions
 
+- 退出后的登记垃圾回收见[已退出进程登记的有界回收](2026-10-28-writer-presence-collection.md)；回收不能代替运行进程的身份准入。
+
 - 进程准入与持久化格式共同约束写入，见[迁移以持久化切换和可重试清理为完成依据](../../implemented/architecture/2026-10-10-verified-transfer-lifecycle.md)。
 - 代理登记与代理在未完成恢复期间的生命周期相关，见[由持久化事务自动完成 APFS 恢复与清理](../architecture/2026-10-12-apfs-automatic-recovery.md)。
 
