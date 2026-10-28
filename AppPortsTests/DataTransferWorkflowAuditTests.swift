@@ -167,8 +167,15 @@ struct DataTransferWorkflowAuditTests {
         try FileManager.default.moveItem(at: fixture.external, to: offline)
         try FileManager.default.createDirectory(at: fixture.external, withIntermediateDirectories: false)
         let ledger = try Data(contentsOf: fixture.ledger)
-        await #expect(throws: (any Error).self) { try await fixture.mover.cleanupRetainedTransfer(operationID: retained.operationID) }
-        try expectLedgerUnchangedApartFromRetry(try Data(contentsOf: fixture.ledger), ledger)
+        let currentData = try TreeCopySession.snapshot(at: fixture.local)
+        let retainedData = try TreeCopySession.snapshot(at: offline)
+        await #expect(throws: DataOperationSafety.Failure.self) {
+            try await fixture.mover.cleanupRetainedTransfer(operationID: retained.operationID)
+        }
+        let reason = DataOperationSafety.Failure.conflict(fixture.external.path).localizedDescription
+        try expectLedgerUnchangedApartFromRetry(try Data(contentsOf: fixture.ledger), ledger, recoveryReason: reason)
+        #expect(try TreeCopySession.snapshot(at: fixture.local) == currentData)
+        #expect(try TreeCopySession.snapshot(at: offline) == retainedData)
         #expect(try String(contentsOf: offline.appendingPathComponent("Payload/a.txt"), encoding: .utf8) == "first")
         #expect(try fixture.text("a.txt") == "first")
     }
@@ -242,11 +249,17 @@ struct DataTransferWorkflowAuditTests {
         }
     }
 
-    private func expectLedgerUnchangedApartFromRetry(_ actual: Data, _ expected: Data) throws {
-        let priorDocument = try #require(try PropertyListSerialization.propertyList(from: expected, format: nil) as? [String: Any])
+    private func expectLedgerUnchangedApartFromRetry(_ actual: Data, _ expected: Data, recoveryReason: String) throws {
+        var priorDocument = try #require(try PropertyListSerialization.propertyList(from: expected, format: nil) as? [String: Any])
         let priorSchema = try #require(priorDocument["schemaVersion"] as? Int)
-        func withoutSchedule(_ data: Data) throws -> NSDictionary {
-            var document = try #require(try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
+        var priorTransfers = try #require(priorDocument["transfers"] as? [[String: Any]])
+        try #require(priorTransfers.count == 1)
+        // A checkpointed cleanup records the failure reason as well as its retry schedule.
+        priorTransfers[0]["recoverableReason"] = recoveryReason
+        priorDocument["transfers"] = priorTransfers
+        let actualDocument = try #require(try PropertyListSerialization.propertyList(from: actual, format: nil) as? [String: Any])
+        func withoutSchedule(_ original: [String: Any]) throws -> NSDictionary {
+            var document = original
             var transfers = try #require(document["transfers"] as? [[String: Any]])
             for index in transfers.indices {
                 transfers[index].removeValue(forKey: "retryFailureCount")
@@ -257,7 +270,7 @@ struct DataTransferWorkflowAuditTests {
             if document["schemaVersion"] as? Int == 11, priorSchema < 11 { document["schemaVersion"] = priorSchema }
             return document as NSDictionary
         }
-        #expect(try withoutSchedule(actual) == withoutSchedule(expected))
+        #expect(try withoutSchedule(actualDocument) == withoutSchedule(priorDocument))
     }
 
     private func linkOutsideSelection(_ url: URL, root: URL) throws {

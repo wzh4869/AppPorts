@@ -12,6 +12,8 @@ Status: implemented
 
 请求沿用应用授权的文件读取规则，包含原迁移记录和当前有效位置。管理员入口核对已完成切换、清理检查点、活动数据及旧副本/父目录身份，复用 removeVerifiedCopy 的原内容清单及断点删除；不另写 rm 或扩大为任意文件操作。界面明确管理员所有权、当前有效数据位置和保留副本位置，具体底层错误与阶段进入既有诊断日志。不增加 schema 或常驻特权服务。
 
+已有清理检查点的任务在后续检查失败时更新 `recoverableReason`，即使本次尚未进入删除阶段，也保留最新受阻原因。`missingBackupWithReplacedParent` 对这项变化逐值核对，其余账本字段仍整体比较，仅沿用原有重试调度字段及其 schema 升级归一化；当前数据和移走的旧副本均以完整树快照确认不变。
+
 ## Existing-note audit
 
 - [应用本体授权](../../implemented/bug-fix/2026-10-20-root应用迁移授权.md)：部分重叠，复用授权运输和请求读取，不改变应用交换与签名规则。
@@ -24,10 +26,15 @@ Status: implemented
 - 只改错误文本：可以解释 root 所有权，但用户点击重试仍不能完成本次实际清理，因此提供显式授权继续。
 - 递归 chown 或以管理员启动 GUI：可以绕过权限，但改变第三方数据的所有权或扩大整个进程权限，沿用已有一次性受限执行方式。
 - 新安装常驻特权服务：可持续处理权限操作，但本次只需前台单次清理，增加部署及维护成本。
+- 在回归测试中直接忽略 `recoverableReason`：改动更少，但无法发现漏写或写错失败原因，因此只在预期账本中设置确切的路径冲突原因，不从实际账本比较中排除该字段。
 
 ## Testing
 
 `PrivilegedDataCleanupTests` 通过实际临时文件执行同一严格删除器，验证只删旧副本、当前目录身份/内容/元数据不变、旧迁移使用最新本地还原位置；有内容差异、缺少删除检查点、活动位置与旧副本重叠或活动对象被替换时保留文件。诊断测试确认记录 ID、路径、阶段和原始 POSIX 错误经过 NSError 桥接保留。未为这些测试增加 mock 删除器。
+
+合并提交 `d1402dd` 的 CI 回归日志只有 `missingBackupWithReplacedParent` 一项断言失败：测试只允许重试调度变化，未同步已有清理检查点会更新失败原因的行为。修正后的 `DataTransferWorkflowAuditTests` 和 `PrivilegedDataCleanupTests` 共33项通过，包含临时目录中的真实迁移→迁回→移走外部目录→拒绝清理路径；日志 `/tmp/AppPortsCleanupAudit-20261029-tests.log`。该验证不代替真实外置卷拔插或全量回归。
+
+该测试修正后的 arm64/x86_64 Release clean build 通过，日志 `/tmp/AppPortsCleanupAudit-20261029-release.log`；笔记目录、相对链接和格式校验通过。本次只改测试与本记录，未运行全量测试或真实外置卷拔插，未修改生产清理逻辑。
 
 `DataDirMoverTests` 的真实迁移→规范化→还原流程验证所有历史记录均显示最新本地数据位置。两个生产入口（应用数据页、任务中心异常恢复）共用 completedLocation 解析，在后台加载路径映射。首轮数据/应用迁移、账本及维护回归165项通过；最终 UI 路径接线后数据和清理测试通过。应用迁移复跑曾有3项被测试宿主正常退出中断（退出码0，不是断言失败），单独完整复验76项通过；原因未确认，不修改退出逻辑，也不将这次中断隐藏为全程全绿。最终源码的专项合计165项通过。日志 `/tmp/AppPortsDataCleanup-regression.log`、`/tmp/AppPortsDataCleanup-final-regression.log`、`/tmp/AppPortsDataCleanup-app-transfer-retry.log`。
 
