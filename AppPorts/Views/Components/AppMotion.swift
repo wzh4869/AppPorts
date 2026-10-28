@@ -2,8 +2,9 @@ import SwiftUI
 
 /// Shared motion for navigation and small control feedback; list layout stays unanimated.
 enum AppMotion {
-    static let page = Animation.easeInOut(duration: 0.18)
+    static let page = Animation.spring(response: 0.32, dampingFraction: 1)
     static let interaction = Animation.spring(response: 0.28, dampingFraction: 0.82)
+    static let pageTransition = AnyTransition.opacity.combined(with: .offset(y: 6))
 }
 
 struct AppPageVisibility: ViewModifier {
@@ -16,7 +17,9 @@ struct AppPageVisibility: ViewModifier {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .transaction { $0.animation = nil }
             .opacity(isVisible ? 1 : 0)
+            .offset(y: reduceMotion || isVisible ? 0 : 6)
             .animation(reduceMotion ? nil : AppMotion.page, value: isVisible)
+            .zIndex(isActive ? 1 : 0)
             .allowsHitTesting(isActive)
             .accessibilityHidden(!isActive)
             .onAppear { isVisible = isActive }

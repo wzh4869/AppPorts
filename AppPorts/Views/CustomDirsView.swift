@@ -244,26 +244,23 @@ struct CustomDirsView: View {
                 }
             }
 
-            VStack(spacing: 0) {
-                HStack(spacing: 8) {
-                    Button(action: relinkSelected) {
-                        footerLabel(title: relinkButtonTitle, icon: "link")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    .disabled(relinkablePairs.isEmpty)
-
-                    Button(action: restoreSelected) {
-                        footerLabel(title: restoreButtonTitle, icon: "arrow.turn.up.left")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange.opacity(0.85))
-                    .disabled(restorablePairs.isEmpty)
+            HStack(spacing: 8) {
+                Spacer(minLength: 0)
+                Button(action: restoreSelected) {
+                    Label(restoreButtonTitle, systemImage: "arrow.turn.up.left")
+                        .frame(minWidth: 100, minHeight: 22)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .buttonStyle(.bordered)
+                .disabled(restorablePairs.isEmpty)
+
+                Button(action: relinkSelected) {
+                    Label(relinkButtonTitle, systemImage: "link")
+                        .frame(minWidth: 100, minHeight: 22)
+                }
+                .buttonStyle(AppListPrimaryButtonStyle())
+                .disabled(relinkablePairs.isEmpty)
             }
-            .background(Color(nsColor: .controlBackgroundColor))
+            .modifier(AppListFooterStyle())
         }
     }
 
@@ -286,18 +283,6 @@ struct CustomDirsView: View {
             return "还原文件夹".localized
         }
         return String(format: "还原 %lld 个文件夹".localized, Int64(restorablePairs.count))
-    }
-
-    private func footerLabel(title: String, icon: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .medium))
-            Text(title)
-                .fontWeight(.medium)
-                .font(.system(size: 13))
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 28)
     }
 
     private func addConfig(_ config: CustomDirConfig) -> String? {

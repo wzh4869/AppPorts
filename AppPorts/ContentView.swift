@@ -161,6 +161,8 @@ struct ContentView: View {
 
     // MARK: - Tab
     enum MainTab { case apps, dataDirs, customDirs }
+    @Namespace private var navigationSelection
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var mainTab: MainTab = .apps
     @State private var hasOpenedDataDirs = false
     @State private var hasOpenedCustomDirs = false
@@ -732,6 +734,7 @@ struct ContentView: View {
                 .disabled(operationState.blocksInteraction)
                 .modifier(AppPageVisibility(isActive: mainTab == .apps))
             }
+            .clipped()
         }
         .onChange(of: mainTab) { tab in
             if tab == .dataDirs { hasOpenedDataDirs = true }
@@ -789,18 +792,18 @@ struct ContentView: View {
 
     private var primaryNavigation: some View {
         HStack(spacing: 2) {
-            TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps) {
+            TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps, selectionNamespace: navigationSelection) {
                 mainTab = .apps
             }
-            TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs) {
+            TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs, selectionNamespace: navigationSelection) {
                 selectedDataDirsTab = .toolDirs
                 mainTab = .dataDirs
             }
-            TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs) {
+            TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs, selectionNamespace: navigationSelection) {
                 selectedDataDirsTab = .appDirs
                 mainTab = .dataDirs
             }
-            TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
+            TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs, selectionNamespace: navigationSelection) {
                 mainTab = .customDirs
             }
         }
@@ -809,6 +812,8 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.primary.opacity(0.03))
         )
+        .animation(reduceMotion ? nil : AppMotion.page, value: mainTab)
+        .animation(reduceMotion ? nil : AppMotion.page, value: selectedDataDirsTab)
     }
 
     private var appListToolbar: some View {
@@ -1123,6 +1128,7 @@ struct ContentView: View {
         let title: String
         var systemImage: String? = nil
         let isSelected: Bool
+        let selectionNamespace: Namespace.ID
         let action: () -> Void
 
         @State private var isHovered = false
@@ -1142,19 +1148,22 @@ struct ContentView: View {
                 .foregroundColor(isSelected ? .accentColor : .secondary)
                 .padding(.horizontal, 12)
                 .frame(height: 30)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(isSelected
-                              ? Color.accentColor.opacity(0.12)
-                              : (isHovered ? Color.primary.opacity(0.04) : .clear))
-                )
+                .background {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.accentColor.opacity(0.12))
+                            .matchedGeometryEffect(id: "navigationSelection", in: selectionNamespace)
+                    } else {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(isHovered ? Color.primary.opacity(0.04) : .clear)
+                    }
+                }
                 .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(AppPressButtonStyle())
             .accessibilityAddTraits(isSelected ? .isSelected : [])
             .onHover { isHovered = $0 }
             .animation(reduceMotion ? nil : AppMotion.interaction, value: isHovered)
-            .animation(reduceMotion ? nil : AppMotion.interaction, value: isSelected)
         }
     }
 

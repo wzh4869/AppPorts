@@ -209,11 +209,11 @@ struct DataDirsView: View {
                 if selectedTab == .toolDirs {
                     toolDirsContent
                         .transaction { $0.animation = nil }
-                        .transition(.opacity)
+                        .transition(reduceMotion ? .identity : AppMotion.pageTransition)
                 } else {
                     appDirsContent
                         .transaction { $0.animation = nil }
-                        .transition(.opacity)
+                        .transition(reduceMotion ? .identity : AppMotion.pageTransition)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
