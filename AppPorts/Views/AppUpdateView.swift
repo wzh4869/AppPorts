@@ -1,5 +1,29 @@
 import SwiftUI
 
+/// The same value supplies both presentation and content. A separate Boolean
+/// can open a sheet while its optional content still captures an empty value.
+struct AppUpdatePresentation: ViewModifier {
+    @Binding var update: AppUpdateInfo?
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(item: $update) { update in AppUpdateSheet(update: update) }
+            .modifier(AppUpdatePresentationDismissal { update = nil })
+    }
+}
+
+/// Attach at each presentation owner so AppKit dismissal cannot leave a true
+/// SwiftUI binding that recreates the sheet during application termination.
+struct AppUpdatePresentationDismissal: ViewModifier {
+    let dismiss: () -> Void
+
+    func body(content: Content) -> some View {
+        content.onReceive(NotificationCenter.default.publisher(for: .appPortsWillInstallUpdate)) { _ in
+            dismiss()
+        }
+    }
+}
+
 struct AppUpdateActions: View {
     let update: AppUpdateInfo
     let dismiss: () -> Void
@@ -14,7 +38,10 @@ struct AppUpdateActions: View {
                     .keyboardShortcut(.cancelAction)
                 Spacer(minLength: 0)
                 GitHubUpdateControls(update: update, showsStatus: false)
+            }
+            if updater.errorMessage != nil && !updater.isPreparing && !updater.isInstalling {
                 Link("国内下载".localized, destination: update.chinaDownloadURL)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .buttonStyle(.bordered)
@@ -75,6 +102,7 @@ struct GitHubUpdateControls: View {
                         .disabled(updater.installationBlocked || updater.isInstalling)
                 } else if let update {
                     Button("GitHub 更新".localized) { updater.download(update) }
+                    Button("国内更新".localized) { updater.download(update, channel: .official) }
                 }
             }
         }

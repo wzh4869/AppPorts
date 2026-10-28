@@ -56,8 +56,26 @@ struct GitHubUpdateAsset: Codable, Equatable, Sendable {
     }
 }
 
+/// A resolved package shared by both download sources. The resolver establishes its source;
+/// SHA-256 and size are checked again before any archive is opened.
+struct AppUpdatePackageAsset: Equatable, Sendable {
+    let name: String
+    let size: Int64
+    let downloadURL: URL
+    let sha256: String
+
+    var isSupported: Bool {
+        downloadURL.scheme == "https" && downloadURL.host != nil
+            && downloadURL.user == nil && downloadURL.password == nil
+            && name.lowercased().hasPrefix("appports") && !name.contains("/") && !name.contains("\\")
+            && ["zip", "dmg"].contains((name as NSString).pathExtension.lowercased())
+            && size > 0 && size <= 512 * 1024 * 1024
+            && sha256.count == 64 && sha256.allSatisfy { $0.isASCII && $0.isHexDigit }
+    }
+}
+
 enum AppUpdateError: LocalizedError {
-    case package, checksum, application, location, changed, quitBlocked
+    case package, domesticPackage, missingChecksum, checksum, application, location, changed, quitBlocked
 
     static func message(for error: Error) -> String {
         let underlying = error as NSError
@@ -80,6 +98,8 @@ enum AppUpdateError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .package: return "此版本没有可自动安装的更新包，请前往 GitHub 发布页下载。".localized
+        case .domesticPackage: return "国内更新包暂不可用，请重试或前往国内下载站手动下载。".localized
+        case .missingChecksum: return "此版本尚未提供国内更新包校验值，请前往国内下载站手动下载。".localized
         case .checksum: return "更新包校验失败，请重新下载。".localized
         case .application: return "更新包中的应用不兼容或已损坏，请前往发布页下载。".localized
         case .location: return "当前位置无法自动替换应用，请前往发布页手动更新。".localized
@@ -109,8 +129,19 @@ struct GitHubUpdatePackage: Sendable {
 
     func prepare(update: AppUpdateInfo, destination: URL,
                  progress: @escaping @Sendable (Double) -> Void) async throws -> PreparedAppUpdate {
-        guard update.source == .github, let asset = update.githubAsset, asset.isSupported else {
-            throw AppUpdateError.package
+        let asset: AppUpdatePackageAsset
+        switch update.source {
+        case .github:
+            guard let github = update.githubAsset, github.isSupported, let sha256 = github.sha256 else {
+                throw AppUpdateError.package
+            }
+            asset = AppUpdatePackageAsset(name: github.name, size: github.size,
+                                          downloadURL: github.browserDownloadURL, sha256: sha256)
+        case .official:
+            guard let domestic = update.domesticAsset, domestic.isSupported,
+                  domestic.name == "AppPorts\(update.version).dmg",
+                  domestic.sha256 == update.sha256?.lowercased() else { throw AppUpdateError.domesticPackage }
+            asset = domestic
         }
         let destination = destination.standardizedFileURL
         let original = try Self.validateDestination(destination)
@@ -119,7 +150,7 @@ struct GitHubUpdatePackage: Sendable {
         try FileManager.default.createDirectory(at: workspace, withIntermediateDirectories: false,
                                                attributes: [.posixPermissions: 0o700])
         do {
-            var request = URLRequest(url: asset.browserDownloadURL)
+            var request = URLRequest(url: asset.downloadURL)
             request.timeoutInterval = 300
             request.setValue("AppPorts-Updater", forHTTPHeaderField: "User-Agent")
             let delegate = UpdateDownloadProgress(expectedSize: asset.size, progress: progress)
@@ -157,7 +188,13 @@ struct GitHubUpdatePackage: Sendable {
     }
 
     static func verifyArchive(at url: URL, asset: GitHubUpdateAsset) throws {
-        guard asset.isSupported, let expected = asset.sha256,
+        guard asset.isSupported, let sha256 = asset.sha256 else { throw AppUpdateError.checksum }
+        try verifyArchive(at: url, asset: AppUpdatePackageAsset(name: asset.name, size: asset.size,
+                           downloadURL: asset.browserDownloadURL, sha256: sha256))
+    }
+
+    static func verifyArchive(at url: URL, asset: AppUpdatePackageAsset) throws {
+        guard asset.isSupported,
               (try url.resourceValues(forKeys: [.fileSizeKey])).fileSize == Int(asset.size) else {
             throw AppUpdateError.checksum
         }
@@ -168,7 +205,7 @@ struct GitHubUpdatePackage: Sendable {
             try Task.checkCancellation()
             hasher.update(data: data)
         }
-        guard hasher.finalize().map({ String(format: "%02x", $0) }).joined() == expected else {
+        guard hasher.finalize().map({ String(format: "%02x", $0) }).joined() == asset.sha256.lowercased() else {
             throw AppUpdateError.checksum
         }
     }

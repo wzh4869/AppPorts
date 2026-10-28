@@ -1,6 +1,7 @@
 import CryptoKit
 import AppKit
 import XCTest
+import SwiftUI
 @testable import AppPorts
 
 final class AppUpdateTests: XCTestCase {
@@ -69,6 +70,30 @@ final class AppUpdateTests: XCTestCase {
     }
 
     @MainActor
+    func testHelperExitBeforeApplicationQuitReleasesInstallationAndAllowsRetry() async throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let helper = Process()
+        helper.executableURL = URL(fileURLWithPath: "/bin/sleep")
+        helper.arguments = ["0.1"]
+        try helper.run()
+        let state = AppOperationState()
+        let controller = AppUpdateController(operationState: state,
+            makeOperationLock: { OperationLock(fileURL: root.appendingPathComponent("operation.lock"), writerAdmissionCheck: {}) },
+            launchInstaller: { _ in helper }, requestTermination: {})
+        controller.install(PreparedAppUpdate(workspace: root, destination: root.appendingPathComponent("AppPorts.app"),
+            originalIdentity: "old", stagedIdentity: "new", version: "2.0.1"))
+        let deadline = Date().addingTimeInterval(3)
+        while controller.isInstalling && Date() < deadline {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertFalse(controller.isInstalling)
+        XCTAssertFalse(state.isBusy)
+        XCTAssertEqual(controller.errorMessage, AppUpdateError.quitBlocked.localizedDescription)
+        await controller.waitForCleanup()
+    }
+
+    @MainActor
     func testInstallationDoesNotRequestTerminationWhileMigrationIsActive() throws {
         let operations = AppOperationState()
         operations.setMigrationCount(1)
@@ -86,6 +111,122 @@ final class AppUpdateTests: XCTestCase {
         XCTAssertFalse(controller.allowsTermination)
         XCTAssertTrue(operations.isBusy)
         XCTAssertEqual(controller.errorMessage, "还有任务尚未结束".localized)
+    }
+
+    @MainActor
+    func testTerminationFromBackgroundClosesNestedSheetsAndCallsAppKitOnMainThread() async throws {
+        let frame = NSRect(x: 0, y: 0, width: 240, height: 120)
+        let parent = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        let settings = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        let update = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        for window in [parent, settings, update] { window.isReleasedWhenClosed = false }
+        defer { update.close(); settings.close(); parent.close() }
+        parent.beginSheet(settings, completionHandler: nil)
+        settings.beginSheet(update, completionHandler: nil)
+        var terminated = false
+        try await Task.detached {
+            try await AppUpdateController.requestApplicationTermination(windows: {
+                XCTAssertTrue(Thread.isMainThread)
+                return [parent]
+            }, modalWindow: {
+                XCTAssertTrue(Thread.isMainThread)
+                XCTAssertNil(parent.attachedSheet)
+                XCTAssertNil(settings.attachedSheet)
+                return nil
+            }, terminate: {
+                XCTAssertTrue(Thread.isMainThread)
+                terminated = true
+            })
+        }.value
+        XCTAssertTrue(terminated)
+    }
+
+    @MainActor
+    func testTerminationRefusesAnActiveModalWindow() async throws {
+        let modal = NSWindow(contentRect: .zero, styleMask: [], backing: .buffered, defer: false)
+        modal.isReleasedWhenClosed = false
+        defer { modal.close() }
+        do {
+            try await AppUpdateController.requestApplicationTermination(windows: { [] }, modalWindow: { modal },
+                terminate: { XCTFail("A modal window must prevent termination") })
+            XCTFail("Expected quit refusal")
+        } catch {
+            guard case AppUpdateError.quitBlocked = error else { return XCTFail("\(error)") }
+        }
+    }
+
+    @MainActor
+    func testTerminationDismissesSwiftUIOwnedUpdateSheet() async throws {
+        for nested in [false, true] {
+            try await verifySwiftUISheetTermination(nested: nested)
+        }
+    }
+
+    @MainActor
+    func testUpdatePresentationHasContentAndSizeOnFirstOpenAndReopen() async throws {
+        let state = UpdatePresentationTestState()
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 450),
+                              styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: UpdatePresentationTestView(state: state))
+        window.orderFront(nil)
+        defer { state.update = nil; window.close() }
+        XCTAssertNil(window.attachedSheet)
+        for (version, notes) in [("2.0.0", "# First release\n\n**Ready** [link](https://example.com)"),
+                                 ("2.0.1", "# Second release\n\nNew notes"), ("2.0.2", "")] {
+            state.update = AppUpdateInfo(version: version, source: .official, releaseNotesMarkdown: notes,
+                githubURL: nil, chinaDownloadURL: URL(string: "https://file.shimoko.com/AppPorts")!, sha256: nil)
+            let deadline = Date().addingTimeInterval(3)
+            while window.attachedSheet == nil && Date() < deadline {
+                try await Task.sleep(nanoseconds: 10_000_000)
+            }
+            let sheet = try XCTUnwrap(window.attachedSheet)
+            let content = try XCTUnwrap(sheet.contentView)
+            XCTAssertEqual(content.bounds.width, 500, accuracy: 1)
+            XCTAssertEqual(content.bounds.height, 400, accuracy: 1)
+            let text = try XCTUnwrap(findMarkdownText(in: content))
+            if !notes.isEmpty {
+                XCTAssertTrue(text.string.contains(version == "2.0.0" ? "First release" : "Second release"))
+            }
+            try await AppUpdateController.requestApplicationTermination(windows: { [window] },
+                modalWindow: { nil }, terminate: {})
+            XCTAssertNil(state.update)
+            XCTAssertNil(window.attachedSheet)
+        }
+    }
+
+    @MainActor
+    private func findMarkdownText(in view: NSView) -> NSTextView? {
+        if let text = view as? NSTextView { return text }
+        for child in view.subviews {
+            if let text = findMarkdownText(in: child) { return text }
+        }
+        return nil
+    }
+
+    @MainActor
+    private func verifySwiftUISheetTermination(nested: Bool) async throws {
+        let state = UpdateSheetTestState(nested: nested)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 300, height: 200),
+                              styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: UpdateSheetTestView(state: state))
+        window.orderFront(nil)
+        defer { state.shown = false; window.close() }
+        let deadline = Date().addingTimeInterval(3)
+        while (window.attachedSheet == nil || (nested && window.attachedSheet?.attachedSheet == nil)) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertNotNil(window.attachedSheet)
+        if nested { XCTAssertNotNil(window.attachedSheet?.attachedSheet) }
+        var requested = false
+        try await AppUpdateController.requestApplicationTermination(windows: { [window] }, modalWindow: { nil },
+            terminate: { requested = true })
+        try await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertTrue(requested)
+        XCTAssertNil(window.attachedSheet)
+        XCTAssertFalse(state.shown)
+        XCTAssertFalse(state.nested)
     }
 
     func testUpdateNetworkErrorsUseActionableMessages() {
@@ -133,6 +274,9 @@ final class AppUpdateTests: XCTestCase {
         let hash = SHA256.hash(data: contents).map { String(format: "%02x", $0) }.joined()
         let valid = asset("AppPorts.zip", digest: "sha256:" + hash, size: Int64(contents.count))
         XCTAssertNoThrow(try GitHubUpdatePackage.verifyArchive(at: archive, asset: valid))
+        let lowercase = asset("appports.zip", digest: "sha256:" + hash, size: Int64(contents.count))
+        XCTAssertTrue(lowercase.isSupported)
+        XCTAssertNoThrow(try GitHubUpdatePackage.verifyArchive(at: archive, asset: lowercase))
         XCTAssertThrowsError(try GitHubUpdatePackage.verifyArchive(at: archive, asset: asset("AppPorts.zip", size: Int64(contents.count))))
         XCTAssertThrowsError(try GitHubUpdatePackage.verifyArchive(at: archive, asset: asset("AppPorts.zip", digest: "sha256:" + hash, size: 999)))
     }
@@ -144,6 +288,22 @@ final class AppUpdateTests: XCTestCase {
         XCTAssertNotEqual(result.status, 0)
         XCTAssertEqual(try fixture.targetText(), "old")
         XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.update.stagedApplication.path))
+    }
+
+    func testDomesticArchiveUsesFeedChecksumAndRequiresExactSize() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let archive = root.appendingPathComponent("update.dmg")
+        let contents = Data("domestic release".utf8)
+        try contents.write(to: archive)
+        let hash = SHA256.hash(data: contents).map { String(format: "%02x", $0) }.joined()
+        let url = URL(string: "https://storage.example/AppPorts2.0.1.dmg")!
+        let valid = AppUpdatePackageAsset(name: "AppPorts2.0.1.dmg", size: Int64(contents.count), downloadURL: url, sha256: hash)
+        XCTAssertNoThrow(try GitHubUpdatePackage.verifyArchive(at: archive, asset: valid))
+        let wrongHash = AppUpdatePackageAsset(name: valid.name, size: valid.size, downloadURL: url, sha256: String(repeating: "a", count: 64))
+        XCTAssertThrowsError(try GitHubUpdatePackage.verifyArchive(at: archive, asset: wrongHash))
+        let wrongSize = AppUpdatePackageAsset(name: valid.name, size: valid.size + 1, downloadURL: url, sha256: hash)
+        XCTAssertThrowsError(try GitHubUpdatePackage.verifyArchive(at: archive, asset: wrongSize))
     }
 
     func testInstallerReplacesAndCleansOnlyAfterLaunchAcknowledgement() async throws {
@@ -240,5 +400,39 @@ final class AppUpdateTests: XCTestCase {
             try script.write(to: url, atomically: true, encoding: .utf8)
             return try await ProcessCommandRunner().run(executable: "/bin/sh", arguments: [url.path], timeout: 10)
         }
+    }
+}
+
+private final class UpdateSheetTestState: ObservableObject {
+    @Published var shown = true
+    @Published var nested: Bool
+
+    init(nested: Bool) { self.nested = nested }
+}
+
+private final class UpdatePresentationTestState: ObservableObject {
+    @Published var update: AppUpdateInfo?
+}
+
+private struct UpdatePresentationTestView: View {
+    @ObservedObject var state: UpdatePresentationTestState
+
+    var body: some View {
+        Text("Main").frame(width: 600, height: 450)
+            .modifier(AppUpdatePresentation(update: $state.update))
+    }
+}
+
+private struct UpdateSheetTestView: View {
+    @ObservedObject var state: UpdateSheetTestState
+
+    var body: some View {
+        Text("Main").frame(width: 300, height: 200)
+            .sheet(isPresented: $state.shown) {
+                Text("Settings").frame(width: 200, height: 100)
+                    .sheet(isPresented: $state.nested) { Text("Update").frame(width: 180, height: 100) }
+                    .modifier(AppUpdatePresentationDismissal { state.nested = false })
+            }
+            .modifier(AppUpdatePresentationDismissal { state.shown = false })
     }
 }

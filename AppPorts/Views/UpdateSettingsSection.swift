@@ -4,7 +4,7 @@ import SwiftUI
 struct UpdateSettingsSection: View {
     @State private var isChecking = false
     @State private var result: UpdateCheckResult?
-    @State private var showsUpdate = false
+    @State private var availableUpdate: AppUpdateInfo?
     @ObservedObject private var updater = AppUpdateController.shared
 
     private var hasPendingDownload: Bool { updater.isPreparing || updater.prepared != nil }
@@ -74,13 +74,9 @@ struct UpdateSettingsSection: View {
             guard !Task.isCancelled else { return }
             result = checked
             isChecking = false
-            if case .available = checked { showsUpdate = true }
+            if case let .available(update) = checked { availableUpdate = update }
         }
-        .sheet(isPresented: $showsUpdate) {
-            if case let .available(update) = result {
-                AppUpdateSheet(update: update)
-            }
-        }
+        .modifier(AppUpdatePresentation(update: $availableUpdate))
         .onDisappear { isChecking = false }
     }
 
