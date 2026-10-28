@@ -68,7 +68,6 @@ struct ContentView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     
-    @State private var showUpdateAlert = false
     @State private var availableUpdate: AppUpdateInfo?
     
     // 受保护应用迁移预警（App Store / root 拥有，自动迁移可能因权限失败）
@@ -250,7 +249,6 @@ struct ContentView: View {
                     )
                     await MainActor.run {
                         self.availableUpdate = update
-                        self.showUpdateAlert = true
                     }
                 }
             }
@@ -357,9 +355,10 @@ struct ContentView: View {
         .sheet(item: $signatureRepairApp) { app in
             signatureRepairSheet(for: app)
         }
-        .sheet(isPresented: $showUpdateAlert) {
-            updateSheetContent
-        }
+        .modifier(AppUpdatePresentation(update: $availableUpdate))
+        .modifier(AppUpdatePresentationDismissal {
+            showAppStoreSettings = false
+        })
         // 受保护应用（App Store / root）迁移预警
         .warningSheet($protectedAppsRequest)
         // 目标存储无法保存部分应用信息
@@ -738,12 +737,6 @@ struct ContentView: View {
             if tab == .customDirs { hasOpenedCustomDirs = true }
         }
         .background(Color(nsColor: .controlBackgroundColor))
-    }
-
-    private var updateSheetContent: some View {
-        Group {
-            if let update = availableUpdate { AppUpdateSheet(update: update) }
-        }
     }
 
     // MARK: - 顶部工具栏（拆出以减轻 body 的类型推断负担）

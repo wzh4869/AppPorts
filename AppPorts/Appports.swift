@@ -41,6 +41,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        AppLogger.shared.logContext("应用收到退出请求", details: [
+            ("update_allows_termination", String(AppUpdateController.shared.allowsTermination)),
+            ("busy", String(AppOperationState.shared.isBusy))
+        ])
         if AppUpdateController.shared.allowsTermination { return .terminateNow }
         AppUpdateController.shared.cancelInstallationForTerminationRefusal()
         if AppOperationState.shared.isBusy {

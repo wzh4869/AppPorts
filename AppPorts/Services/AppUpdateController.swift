@@ -2,6 +2,10 @@ import AppKit
 import Combine
 import Foundation
 
+extension Notification.Name {
+    static let appPortsWillInstallUpdate = Notification.Name("AppPorts.willInstallUpdate")
+}
+
 @MainActor
 final class AppUpdateController: ObservableObject {
     static let shared = AppUpdateController()
@@ -19,16 +23,13 @@ final class AppUpdateController: ObservableObject {
     private let operations: AppOperationState
     private let makeOperationLock: () -> OperationLock
     private let launchInstaller: (PreparedAppUpdate) throws -> Process
-    private let requestTermination: () async throws -> Void
+    private let requestTermination: @MainActor () async throws -> Void
 
     init(operationState: AppOperationState? = nil,
          makeOperationLock: @escaping () -> OperationLock = { OperationLock() },
          launchInstaller: @escaping (PreparedAppUpdate) throws -> Process = { try AppUpdateInstaller.launch($0) },
-         requestTermination: @escaping () async throws -> Void = {
-             try await AppUpdateController.dismissSheets(in: NSApp.windows)
-             try Task.checkCancellation()
-             guard NSApp.modalWindow == nil else { throw AppUpdateError.quitBlocked }
-             NSApp.terminate(nil)
+         requestTermination: @escaping @MainActor () async throws -> Void = {
+             try await AppUpdateController.requestApplicationTermination()
          }) {
         operations = operationState ?? .shared
         self.makeOperationLock = makeOperationLock
@@ -48,7 +49,7 @@ final class AppUpdateController: ObservableObject {
         return operations.isBusy
     }
 
-    func download(_ update: AppUpdateInfo) {
+    func download(_ update: AppUpdateInfo, channel: UpdateChannel = .github) {
         guard !isPreparing, installToken == nil else { return }
         discardPrepared()
         version = update.version
@@ -59,7 +60,9 @@ final class AppUpdateController: ObservableObject {
         task = Task {
             do {
                 let resolvedUpdate: AppUpdateInfo
-                if update.source == .github, update.githubAsset != nil {
+                if channel == .official {
+                    resolvedUpdate = try await UpdateChecker.shared.domesticUpdate(for: update)
+                } else if update.source == .github, update.githubAsset != nil {
                     resolvedUpdate = update
                 } else {
                     resolvedUpdate = try await UpdateChecker.shared.githubUpdate(for: update)
@@ -77,7 +80,7 @@ final class AppUpdateController: ObservableObject {
                 }
             } catch {
                 if !Task.isCancelled {
-                    AppLogger.shared.logError("GitHub 应用更新失败", error: error)
+                    AppLogger.shared.logError("应用更新失败", error: error)
                     errorMessage = AppUpdateError.message(for: error)
                 }
             }
@@ -127,14 +130,18 @@ final class AppUpdateController: ObservableObject {
             installationHelper = try launchInstaller(prepared)
             installToken = token
             errorMessage = nil
+            AppLogger.shared.logContext("更新安装 helper 已启动", details: [("version", prepared.version)])
             // AppKit may return while termination is still being processed.
             // The delegate owns a refusal; keep the helper alive until the app exits.
             restartTask = Task { [weak self] in
                 guard let self else { return }
                 do {
+                    AppLogger.shared.logContext("更新安装等待历史清理", details: [])
                     await self.waitForCleanup()
+                    AppLogger.shared.logContext("更新安装历史清理已完成", details: [])
                     try Task.checkCancellation()
                     try await self.requestTermination()
+                    AppLogger.shared.logContext("更新退出请求已返回，等待进程退出", details: [])
                 } catch {
                     if !Task.isCancelled {
                         self.stopInstallation()
@@ -142,11 +149,24 @@ final class AppUpdateController: ObservableObject {
                     }
                 }
             }
+            if let helper = installationHelper {
+                helper.terminationHandler = { [weak self] process in
+                    Task { @MainActor in self?.installationHelperExited(process) }
+                }
+                if !helper.isRunning { installationHelperExited(helper) }
+            }
         } catch {
             installToken = nil
             operations.finish(token)
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func installationHelperExited(_ helper: Process) {
+        guard installationHelper === helper, installToken != nil else { return }
+        AppLogger.shared.logContext("更新安装 helper 在应用退出前结束", details: [("status", String(helper.terminationStatus))])
+        stopInstallation()
+        errorMessage = AppUpdateError.quitBlocked.localizedDescription
     }
 
     func cancelInstallationForTerminationRefusal() {
@@ -159,6 +179,7 @@ final class AppUpdateController: ObservableObject {
         restartTask?.cancel()
         restartTask = nil
         guard let token = installToken else { return }
+        installationHelper?.terminationHandler = nil
         if let installationHelper, installationHelper.isRunning {
             installationHelper.terminate()
         }
@@ -175,6 +196,26 @@ final class AppUpdateController: ObservableObject {
             try await dismissSheets(in: [sheet])
             try await endSheet(sheet, parent: window)
         }
+    }
+
+    /// Keep every AppKit access on the main actor, including after sheet dismissal
+    /// suspends. An unisolated async callback may resume on the generic executor.
+    static func requestApplicationTermination(
+        windows: @MainActor () -> [NSWindow] = { NSApp.windows },
+        modalWindow: @MainActor () -> NSWindow? = { NSApp.modalWindow },
+        terminate: @MainActor () -> Void = { NSApp.terminate(nil) }
+    ) async throws {
+        AppLogger.shared.logContext("更新退出开始关闭弹窗", details: [])
+        NotificationCenter.default.post(name: .appPortsWillInstallUpdate, object: nil)
+        // SwiftUI owns the presentation bindings. Let it process their dismissal
+        // before using AppKit to finish any remaining sheet animations.
+        await Task.yield()
+        try await dismissSheets(in: windows())
+        AppLogger.shared.logContext("更新退出弹窗关闭已完成", details: [])
+        try Task.checkCancellation()
+        guard modalWindow() == nil else { throw AppUpdateError.quitBlocked }
+        AppLogger.shared.logContext("更新请求 AppKit 退出", details: [])
+        terminate()
     }
 
     private static func endSheet(_ sheet: NSWindow, parent: NSWindow) async throws {

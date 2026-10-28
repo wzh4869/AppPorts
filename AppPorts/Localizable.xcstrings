@@ -685,6 +685,417 @@
         }
       }
     },
+    "国内更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التحديث عبر المرآة الصينية"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠥⠏⠙⠁⠞⠑ ⠧⠊⠁ ⠉⠓⠊⠝⠁ ⠍⠊⠗⠗⠕⠗"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über China-Mirror aktualisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update via China mirror"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĝisdatigi per ĉina spegulo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar desde China"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour via la Chine"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चीनी मिरर से अपडेट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perbarui melalui mirror Tiongkok"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna dal mirror cinese"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中国ミラーから更新"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중국 미러에서 업데이트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bijwerken via Chinese mirror"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizuj z chińskiego serwera"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar pelo servidor chinês"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить через зеркало в Китае"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปเดตผ่านเซิร์ฟเวอร์จีน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çin yansısından güncelle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật qua máy chủ Trung Quốc"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国内更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "國內更新"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "國內哽噺"
+          }
+        }
+      }
+    },
+    "国内更新包暂不可用，请重试或前往国内下载站手动下载。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حزمة التحديث الصينية غير متاحة. أعد المحاولة أو نزّلها يدوياً من موقع التنزيل الصيني."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠞⠓⠑ ⠉⠓⠊⠝⠁ ⠥⠏⠙⠁⠞⠑ ⠏⠁⠉⠅⠁⠛⠑ ⠊⠎ ⠥⠝⠁⠧⠁⠊⠇⠁⠃⠇⠑. ⠗⠑⠞⠗⠽ ⠕⠗ ⠙⠕⠺⠝⠇⠕⠁⠙ ⠍⠁⠝⠥⠁⠇⠇⠽ ⠋⠗⠕⠍ ⠞⠓⠑ ⠉⠓⠊⠝⠁ ⠙⠕⠺⠝⠇⠕⠁⠙ ⠎⠊⠞⠑."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das chinesische Updatepaket ist nicht verfügbar. Erneut versuchen oder manuell von der chinesischen Downloadseite laden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The China update package is unavailable. Retry or download manually from the China download site."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĉina ĝisdatiga pakaĵo ne disponeblas. Reprovu aŭ elŝutu permane de la ĉina elŝutejo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El paquete de actualización de China no está disponible. Reinténtalo o descárgalo manualmente desde el sitio de China."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le paquet de mise à jour en Chine est indisponible. Réessayez ou téléchargez-le manuellement sur le site chinois."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चीनी अपडेट पैकेज उपलब्ध नहीं है। फिर से प्रयास करें या चीनी डाउनलोड साइट से मैन्युअल रूप से डाउनलोड करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paket pembaruan Tiongkok tidak tersedia. Coba lagi atau unduh secara manual dari situs unduhan Tiongkok."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il pacchetto di aggiornamento cinese non è disponibile. Riprova o scaricalo manualmente dal sito cinese."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中国の更新パッケージを利用できません。再試行するか、中国のダウンロードサイトから手動でダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중국 업데이트 패키지를 사용할 수 없습니다. 다시 시도하거나 중국 다운로드 사이트에서 수동으로 다운로드하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het Chinese updatepakket is niet beschikbaar. Probeer opnieuw of download het handmatig van de Chinese downloadsite."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiński pakiet aktualizacji jest niedostępny. Spróbuj ponownie lub pobierz go ręcznie z chińskiej strony."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O pacote de atualização da China está indisponível. Tente novamente ou baixe manualmente pelo site chinês."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пакет обновления в Китае недоступен. Повторите попытку или скачайте его вручную с китайского сайта."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แพ็กเกจอัปเดตในจีนไม่พร้อมใช้งาน โปรดลองอีกครั้งหรือดาวน์โหลดด้วยตนเองจากเว็บไซต์ดาวน์โหลดในจีน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çin güncelleme paketi kullanılamıyor. Yeniden deneyin veya Çin indirme sitesinden elle indirin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gói cập nhật tại Trung Quốc hiện không khả dụng. Hãy thử lại hoặc tải thủ công từ trang tải xuống Trung Quốc."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "国内更新包暂不可用，请重试或前往国内下载站手动下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "國內更新套件暫時無法使用，請重試或前往國內下載站手動下載。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "國內哽噺包暫芣岢鼡，請偅試戓湔暀國內丅載站掱動丅載。"
+          }
+        }
+      }
+    },
+    "此版本尚未提供国内更新包校验值，请前往国内下载站手动下载。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يتضمن هذا الإصدار قيمة تحقق لحزمة التحديث الصينية. نزّلها يدوياً من موقع التنزيل الصيني."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠞⠓⠊⠎ ⠗⠑⠇⠑⠁⠎⠑ ⠓⠁⠎ ⠝⠕ ⠉⠓⠑⠉⠅⠎⠥⠍ ⠋⠕⠗ ⠞⠓⠑ ⠉⠓⠊⠝⠁ ⠥⠏⠙⠁⠞⠑ ⠏⠁⠉⠅⠁⠛⠑. ⠙⠕⠺⠝⠇⠕⠁⠙ ⠍⠁⠝⠥⠁⠇⠇⠽ ⠋⠗⠕⠍ ⠞⠓⠑ ⠉⠓⠊⠝⠁ ⠙⠕⠺⠝⠇⠕⠁⠙ ⠎⠊⠞⠑."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diese Version fehlt die Prüfsumme des chinesischen Updatepakets. Bitte manuell von der chinesischen Downloadseite laden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This release has no checksum for the China update package. Download manually from the China download site."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu versio ne havas kontrolsumon por la ĉina ĝisdatiga pakaĵo. Elŝutu permane de la ĉina elŝutejo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta versión no tiene una suma de verificación del paquete de China. Descárgalo manualmente desde el sitio de China."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette version ne fournit pas de somme de contrôle du paquet chinois. Téléchargez-le manuellement sur le site chinois."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस संस्करण में चीनी अपडेट पैकेज का चेकसम नहीं है। चीनी डाउनलोड साइट से मैन्युअल रूप से डाउनलोड करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versi ini belum menyediakan checksum paket pembaruan Tiongkok. Unduh secara manual dari situs unduhan Tiongkok."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa versione non fornisce una somma di controllo del pacchetto cinese. Scaricalo manualmente dal sito cinese."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバージョンには中国の更新パッケージのチェックサムがありません。中国のダウンロードサイトから手動でダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 버전에는 중국 업데이트 패키지의 체크섬이 없습니다. 중국 다운로드 사이트에서 수동으로 다운로드하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze versie heeft geen controlesom voor het Chinese updatepakket. Download het handmatig van de Chinese downloadsite."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta wersja nie ma sumy kontrolnej chińskiego pakietu aktualizacji. Pobierz go ręcznie z chińskiej strony."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta versão não fornece a soma de verificação do pacote chinês. Baixe manualmente pelo site chinês."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для этой версии нет контрольной суммы китайского пакета обновления. Скачайте его вручную с китайского сайта."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รุ่นนี้ยังไม่มีค่าเช็กซัมของแพ็กเกจอัปเดตในจีน โปรดดาวน์โหลดด้วยตนเองจากเว็บไซต์ดาวน์โหลดในจีน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu sürümde Çin güncelleme paketinin sağlama toplamı yok. Çin indirme sitesinden elle indirin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phiên bản này chưa có mã kiểm tra cho gói cập nhật Trung Quốc. Hãy tải thủ công từ trang tải xuống Trung Quốc."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本尚未提供国内更新包校验值，请前往国内下载站手动下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此版本尚未提供國內更新套件校驗值，請前往國內下載站手動下載。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "泚蝂夲尚沬提供國內哽噺包校驗値，請湔暀國內丅載站掱動丅載。"
+          }
+        }
+      }
+    },
     "，大小约 %@" : {
       "extractionState" : "manual",
       "localizations" : {

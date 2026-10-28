@@ -43,7 +43,7 @@ struct OfficialReleaseLinks: Codable, Equatable {
 }
 
 /// 更新弹窗使用的统一模型。
-struct AppUpdateInfo: Equatable {
+struct AppUpdateInfo: Equatable, Identifiable {
     enum Source: String {
         case github
         case official
@@ -56,6 +56,9 @@ struct AppUpdateInfo: Equatable {
     let chinaDownloadURL: URL
     let sha256: String?
     var githubAsset: GitHubUpdateAsset? = nil
+    var domesticAsset: AppUpdatePackageAsset? = nil
+
+    var id: String { source.rawValue + ":" + version }
 }
 
 enum UpdateCheckResult: Equatable {
@@ -164,6 +167,40 @@ final class UpdateChecker {
     }
 
     // MARK: - Source Fetching
+
+    /// OpenList resolves a version-specific DMG to its current storage URL. Trust the
+    /// checksum from the official feed, never OpenList's link signature or a filename alone.
+    func domesticUpdate(for update: AppUpdateInfo) async throws -> AppUpdateInfo {
+        guard let version = normalizedVersion(update.version), version == update.version else {
+            throw AppUpdateError.domesticPackage
+        }
+        guard let hash = update.sha256?.lowercased(), hash.count == 64,
+              hash.allSatisfy({ $0.isASCII && $0.isHexDigit }) else { throw AppUpdateError.missingChecksum }
+        let name = "AppPorts\(version).dmg"
+        var request = URLRequest(url: URL(string: "https://file.shimoko.com/api/fs/get")!)
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(["path": "/AppPorts/" + name, "password": ""])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("AppPorts-UpdateChecker", forHTTPHeaderField: "User-Agent")
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.timeoutInterval = 30
+        let response: DomesticPackageResponse
+        do {
+            response = try await fetchJSON(DomesticPackageResponse.self, request: request, sourceName: "OpenList")
+        } catch {
+            if error is URLError || error is CancellationError { throw error }
+            AppLogger.shared.logError("国内更新包查询失败", error: error)
+            throw AppUpdateError.domesticPackage
+        }
+        guard response.code == 200, let file = response.data, file.name == name, !file.isDir,
+              let url = URL(string: file.rawURL) else { throw AppUpdateError.domesticPackage }
+        let asset = AppUpdatePackageAsset(name: name, size: file.size, downloadURL: url, sha256: hash)
+        guard asset.isSupported else { throw AppUpdateError.domesticPackage }
+        // Preserve the displayed notes and version; never install an implicitly newer package.
+        return AppUpdateInfo(version: update.version, source: .official,
+            releaseNotesMarkdown: update.releaseNotesMarkdown, githubURL: update.githubURL,
+            chinaDownloadURL: update.chinaDownloadURL, sha256: hash, domesticAsset: asset)
+    }
 
     private func fetchGitHubUpdate(currentVersion: String) async -> SourceFetchOutcome {
         do {
@@ -486,6 +523,24 @@ final class UpdateChecker {
         }
 
         return result
+    }
+}
+
+private struct DomesticPackageResponse: Decodable {
+    let code: Int
+    let data: File?
+
+    struct File: Decodable {
+        let name: String
+        let size: Int64
+        let isDir: Bool
+        let rawURL: String
+
+        enum CodingKeys: String, CodingKey {
+            case name, size
+            case isDir = "is_dir"
+            case rawURL = "raw_url"
+        }
     }
 }
 
