@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DataCleanupResolutionSheet: View {
     let transfers: [DataTransferRecord]
+    var currentDataPaths: [UUID: String] = [:]
     let otherIssues: [String]
     let onRetry: (UUID?) -> Void
     let onChanged: () -> Void
@@ -62,6 +63,8 @@ struct DataCleanupResolutionSheet: View {
 
     private func transferRow(_ transfer: DataTransferRecord) -> some View {
         let disposition = updated[transfer.id] ?? transfer.cleanupDisposition
+        let needsAdministrator = DataCleanupResolution.requiresAdministrator(transfer)
+        let administratorMessage = "旧副本由管理员（root）拥有，需要授权后才能清理。当前数据未受影响。".localized
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(verbatim: transfer.appName).font(.headline)
@@ -72,7 +75,14 @@ struct DataCleanupResolutionSheet: View {
                     Text("已暂停自动处理".localized).foregroundStyle(.secondary)
                 }
             }
-            Text(verbatim: transfer.originalPath).font(.caption).textSelection(.enabled)
+            if let path = currentDataPaths[transfer.id] {
+                Text(String(format: "当前数据：%@".localized, path)).font(.caption).textSelection(.enabled)
+            } else {
+                Text(verbatim: transfer.originalPath).font(.caption).textSelection(.enabled)
+            }
+            if needsAdministrator, disposition != .keep, transfer.recoverableReason?.contains(administratorMessage) != true {
+                Text(verbatim: administratorMessage).font(.callout)
+            }
             if disposition != .keep, let reason = transfer.recoverableReason {
                 Text(verbatim: reason).font(.callout).textSelection(.enabled)
             }
@@ -83,11 +93,13 @@ struct DataCleanupResolutionSheet: View {
                     .font(.callout).foregroundStyle(.secondary)
             }
             if let path = transfer.backupPath {
-                Text(verbatim: path).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                Text(String(format: "保留的旧副本：%@".localized, path))
+                    .font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
             }
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Button(disposition == .keep ? "重新尝试清理".localized : "重试".localized) {
+                    Button(needsAdministrator ? "授权清理旧副本".localized
+                        : disposition == .keep ? "重新尝试清理".localized : "重试".localized) {
                         dismiss(); onRetry(transfer.id)
                     }
                     if transfer.isDataSwitchComplete {

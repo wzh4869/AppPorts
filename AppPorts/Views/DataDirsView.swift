@@ -110,6 +110,7 @@ struct DataDirsView: View {
     @State private var dataTransfers: [DataTransferRecord] = []
     @State private var preservedMaterials: [DataTransferMaterial] = []
     @State private var cleanupWarning: ContainerVolumeMigrator.CleanupWarning?
+    @State private var currentDataPaths: [UUID: String] = [:]
     @State private var showCleanupWarning = false
     @State private var showCleanupResolution = false
     @State private var dataCompletionWarning = ""
@@ -324,7 +325,7 @@ struct DataDirsView: View {
             ReadinessCheckSheet()
         }
         .sheet(isPresented: $showCleanupResolution) {
-            DataCleanupResolutionSheet(transfers: dataTransfers,
+            DataCleanupResolutionSheet(transfers: dataTransfers, currentDataPaths: currentDataPaths,
                 otherIssues: pendingCleanups.map { $0.mountRecord.appName + ": " + $0.localPath }
                     + preservedMaterials.map { $0.appName + ": " + $0.reason },
                 onRetry: { id in
@@ -1212,6 +1213,7 @@ struct DataDirsView: View {
             do {
                 // 迁移记录含大目录的校验清单，解析和等待记录锁不能占用主线程。
                 let inspection = try ContainerMountStore.shared.recordsForInspection()
+                let currentPaths = DataCleanupResolution.currentDataPaths(for: inspection.transfers)
                 // 使用持久化的数据迁移记录，不扫描各应用目录，也不把应用本体迁移当作数据迁移。
                 let identifiers = Set(inspection.mounts.compactMap(\.bundleIdentifier)
                     + inspection.managedLinks.compactMap(\.bundleIdentifier))
@@ -1230,6 +1232,7 @@ struct DataDirsView: View {
                     guard self.recordRefreshToken == token else { return }
                     self.migratedAppDataIDs = migratedSnapshot
                     self.dataTransfers = inspection.transfers
+                    self.currentDataPaths = currentPaths
                     self.preservedMaterials = inspection.preservedMaterials
                     self.pendingCleanups = inspection.cleanups
                     if let error = inspection.validationError {

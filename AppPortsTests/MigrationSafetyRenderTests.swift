@@ -84,7 +84,8 @@ final class MigrationSafetyRenderTests: XCTestCase {
                 try await render(localized(MigrationTaskDetail(job: job, center: center)),
                     size: NSSize(width: 460, height: 420),
                     to: output.appendingPathComponent("\(prefix)-detail.png"), colorScheme: scheme)
-                try await render(localized(DataCleanupResolutionSheet(transfers: [transfer], otherIssues: [],
+                try await render(localized(DataCleanupResolutionSheet(transfers: [transfer],
+                    currentDataPaths: [transfer.id: transfer.activePath], otherIssues: [],
                     onRetry: { _ in XCTFail("Rendering must not retry a migration") },
                     onChanged: { XCTFail("Rendering must not change a record") },
                     onPermissions: { XCTFail("Rendering must not open system settings") })),

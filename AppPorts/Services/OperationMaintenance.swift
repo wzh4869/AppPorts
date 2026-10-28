@@ -138,7 +138,7 @@ actor OperationMaintenance {
                 guard let transfer = try store.transfer(operationID: retryOperationID) else { return [] }
                 if transfer.isDataSwitchComplete {
                     if transfer.mode == .mount { try await migrator.cleanupRetainedTransfer(operationID: retryOperationID) }
-                    else { try await DataDirMover().cleanupRetainedTransfer(operationID: retryOperationID) }
+                    else { try await DataDirMover(allowsAdministratorPrompt: interactive).cleanupRetainedTransfer(operationID: retryOperationID) }
                     return []
                 }
                 if transfer.mode == .symlink {

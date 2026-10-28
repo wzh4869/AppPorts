@@ -19,6 +19,8 @@ OperationBlockage 通过 CustomNSError 携带稳定诊断码与字段。AppLogge
 - [后台任务](../../implemented/architecture/2026-10-21-后台迁移任务与异常处理.md)：部分重叠，丰富失败消息及诊断，不改变调度、重试与恢复权威来源。
 - 活跃 proposed/rejected 未发现相同方案；上述现行记录均保留，不归档。
 
+数据副本清理进一步记录具体路径、阶段和原始 NSError，并区分最新数据位置，见[旧数据副本授权清理](2026-10-28-data-cleanup-administrator-authorization.md)。
+
 ## Alternatives considered
 
 - 仅替换弹窗文字：变更小，但原因在抛错和字符串聚合时已经丢失，无法知道具体阻塞记录。
@@ -30,6 +32,8 @@ OperationBlockage 通过 CustomNSError 携带稳定诊断码与字段。AppLogge
 相关回归 200 项通过（100 项 XCTest、100 项 Swift Testing），覆盖隔离文件锁竞争、不可访问、非法文件、admission 和错误重置，签名阻塞记录、损坏记录、真实交换后清理失败，以及原始签名备份保留中断。任务中心测试确认 attention 状态、历史重载文本和任务 ID/执行尝试 ID/阻塞记录关联。实际诊断包导出保留稳定码、阶段和底层错误，同时用户名/外盘名脱敏。独立进程写锁测试另通过 4 项。
 
 Release 双架构 `xcodebuild clean build` 成功。功能日志 `/tmp/AppPortsIssue81-diagnostics-final-tests.log`，构建日志 `/tmp/AppPortsIssue81-diagnostics-final-release.log`。提示修正后补充回归 36 项通过（24 项 XCTest、12 项 Swift Testing，含上述 4 项跨进程测试）；本地化审计仍仅同样 3 项失败。补充日志见 `/tmp/AppPortsIssue81-diagnostics-guidance-tests.log`。本地化新增 7 条诊断文案均覆盖 22 种语言；全库审计仍有 3 项既有失败，分别涉及 stale 状态和旧键缺失翻译，未将它报告为全绿。完整测试套件未在本机运行，遵循一次性 runner 的仓库要求。
+
+签名锁错误的调用方断言包含 `SignatureBackupCleanupTests.respectsSignatureLock`：它持有真实文件锁，检查 `.signatureLockBusy` 并确认备份记录字节不变。合并后 CI 曾因该测试仍要求旧 `SigningError` 类型而失败；这是遗漏的测试契约更新，不通过放宽锁或删除备份不变断言修复。修正后完整运行 SignatureBackupCleanup、CodeSigner、SignatureOperation 与 OperationLock，共118项通过（13项XCTest、105项Swift Testing），日志 `/tmp/AppPortsLatest-signature-regression.log`；未将专项通过等同于远端全量CI已通过。
 
 ## Consequences
 

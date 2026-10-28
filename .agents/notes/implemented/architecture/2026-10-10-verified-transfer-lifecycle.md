@@ -55,6 +55,8 @@ Status: implemented
 
 单卷暂停与现有链接确认接管见[保留单卷卸载意图并补齐旧软链接管](../bug-fix/2026-10-28-manual-unmount-and-link-adoption.md)；原事务切换、验证和副本清理要求继续成立。
 
+root 所有的数据旧副本只在用户指定记录重试时授权清理，见[旧数据副本授权清理](../bug-fix/2026-10-28-data-cleanup-administrator-authorization.md)；普通进程继续持锁和写账本。
+
 ## Alternatives considered
 
 - **签名与数据合成父 workflow**：可集中串联步骤，但把独立签名及其恢复材料变成释放空间的前提，增加跨服务状态。

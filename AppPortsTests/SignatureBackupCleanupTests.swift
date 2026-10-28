@@ -263,8 +263,11 @@ struct SignatureBackupCleanupTests {
         let lock = OperationLock(fileURL: fixture.backups.appendingPathComponent("signature-operation.lock"))
         try #require(lock.tryAcquire())
         defer { lock.release() }
-        await #expect(throws: CodeSigner.SigningError.self) {
-            try await signer.discardUnusedOriginalBackup(bundleIdentifier: fixture.identifier)
+        do {
+            _ = try await signer.discardUnusedOriginalBackup(bundleIdentifier: fixture.identifier)
+            Issue.record("An occupied signature lock must prevent backup cleanup")
+        } catch let error as OperationBlockage {
+            #expect(error.reason == .signatureLockBusy)
         }
         #expect(try Data(contentsOf: fixture.record) == before)
     }
