@@ -22,6 +22,8 @@ Status: implemented
 - 恢复候选的只读身份解析另有归属，见[应用数据扫描使用真实应用身份](2026-09-29-app-data-identity.md)。
 - 新手动签名的已提交备份选择由[迁移与手动签名分离，手动签名只保留临时候选](../architecture/2026-10-10-independent-manual-signing.md)。
 
+- 操作受阻的具体原因、关联记录与未知锁持有者的诊断边界见[操作受阻诊断](2026-10-28-operation-blockage-diagnostics.md)，不改变本篇的恢复权限。
+
 ## Alternatives considered
 
 - **用“有备份”认定已重签**：容易实现，但备份在操作前产生，失败的重签也可能留下它。

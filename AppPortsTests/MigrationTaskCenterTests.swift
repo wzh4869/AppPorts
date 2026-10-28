@@ -4,6 +4,33 @@ import Testing
 
 @MainActor
 struct MigrationTaskCenterTests {
+    @Test("A structured failure keeps one association across task display, history and diagnostics")
+    func blockedTaskKeepsDiagnosticAssociation() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let failure = OperationBlockage(reason: .signaturePreparation,
+            applicationURL: fixture.root.appendingPathComponent("Example.app"),
+            blockingOperationID: UUID(), blockingPhase: "prepared")
+        fixture.center.submit(title: "Synthetic signature dependency", category: .apps, resources: fixture.resources,
+            operation: { progress in
+                progress.begin(.verifying)
+                throw failure
+            })
+        let job = try #require(fixture.center.detail)
+        let worker = try #require(job.worker)
+        await worker.value
+        #expect(job.status == .attention)
+        #expect(job.message == failure.localizedDescription)
+        #expect(fixture.history.load().first?.message == job.message)
+        #expect(fixture.reopen().jobs.first?.message == job.message)
+        let summary = try #require(AppLogger.shared.recentOperationSummariesSnapshot().last { $0.operationID == job.id.uuidString })
+        #expect(summary.errorCode == failure.diagnosticCode)
+        #expect(summary.details["failure_stage"] == "verifying")
+        #expect(summary.details["attempt_id"].flatMap(UUID.init(uuidString:)) != nil)
+        #expect(summary.details["cause_failure_id"] == failure.failureID.uuidString)
+        #expect(summary.details["cause_blocking_operation_id"] == failure.blockingOperationID?.uuidString)
+    }
+
     @Test("An explicit retry replaces the failed attempt in the list and saved history")
     func retryUpdatesTheOriginalTask() async throws {
         let fixture = try Fixture()

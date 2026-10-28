@@ -28,6 +28,8 @@ Status: implemented
 
 主动弹出后的暂停准入和真实重连接恢复见[主动弹出外盘时暂停恢复挂载](../feature/2026-10-23-explicit-disk-ejection.md)。
 
+同目录手动卸载的持久暂停见[保留单卷卸载意图并补齐旧软链接管](2026-10-28-manual-unmount-and-link-adoption.md)。
+
 ## Alternatives considered
 
 - **相信 diskutil exit 0 后结束**：命令接口最简单，但已挂载卷可以忽略新的 mountPoint，成功码并未证明入口恢复。

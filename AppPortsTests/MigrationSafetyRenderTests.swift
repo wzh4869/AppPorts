@@ -7,6 +7,31 @@ import XCTest
 /// Run with TEST_RUNNER_APPPORTS_RENDER_UI_OUTPUT=/absolute/output/directory.
 /// No DataDirsView, scanner or migration service is instantiated; preferences use isolated test suites.
 final class MigrationSafetyRenderTests: XCTestCase {
+    @MainActor
+    func testRenderManualPauseStates() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render manual pause states")
+        }
+        let output = URL(fileURLWithPath: path, isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let root = URL(fileURLWithPath: "/AppPortsSyntheticHome/Library/Containers/com.example.pause/Data/Documents")
+        let items = [DataDirStatus.mounted, DataDirStatus.pendingMount, DataDirStatus.volumeMissing].enumerated().map { index, status in
+            var item = DataDirItem(name: "Pause example \(index + 1)", path: root.appendingPathComponent("Cache\(index)"),
+                type: .containers, priority: .optional, description: "", status: status, autoMountPaused: true)
+            item.requiresMountMigration = true
+            item.size = "128 MB"
+            return item
+        }
+        for scheme in [ColorScheme.light, .dark] {
+            let view = AppDataDirectoryBrowser(groups: [DataDirGroup(type: .containers, items: items)],
+                matchingItemIDs: Set(items.map(\.id)), isFiltering: false, showLockedStructure: false) { item in
+                    self.actions(for: item)
+                }
+            try await render(view, size: NSSize(width: 680, height: 420),
+                to: output.appendingPathComponent("manual-pause-\(scheme).png"), colorScheme: scheme)
+        }
+    }
+
     /// Exercise production sheets with synthetic records only; no migration is submitted.
     @MainActor
     func testRenderLocalizationSheets() async throws {

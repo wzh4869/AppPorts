@@ -14,7 +14,7 @@ actor CodeSigner {
     enum SigningError: LocalizedError {
         case codesignFailed(String), backupFailed(String), restoreFailed(String)
         case noBackupFound, legacyBackupIncomplete, snapshotInvalid, applicationChanged
-        case operationInProgress, atomicReplacementUnavailable, originalApplicationMismatch
+        case atomicReplacementUnavailable, originalApplicationMismatch
         case applicationUnavailable(URL), sandboxedApplication(URL), lockedApplication(URL)
         case entitlementsUnavailable(String), originalIdentityUnavailable, incompletePreparation
         case incompatibleWriter(String)
@@ -33,7 +33,6 @@ actor CodeSigner {
             case .legacyBackupIncomplete: return "旧版记录不包含原始应用，不能恢复签名字节。请选择同版本官方原件或从官方渠道重新安装。".localized
             case .snapshotInvalid: return "签名材料缺失、身份改变或校验失败，已保留现有应用和可用材料。".localized
             case .applicationChanged: return "应用对象、版本或内容已经改变，原有确认不再适用。请重新检查当前应用。".localized
-            case .operationInProgress: return "已有文件操作或该应用的签名准备尚未完成，AppPorts 会自动继续处理，请稍后重试。".localized
             case .atomicReplacementUnavailable: return "此存储不支持安全交换应用。请将应用迁回本地后重试；原应用已保留。".localized
             case .originalApplicationMismatch: return "所选原件的应用标识、双版本或可验证开发者身份不匹配，或严格验签失败。请选择同版本官方原件。".localized
             case .applicationUnavailable(let url): return "无法找到真实应用：".localized + url.path
@@ -352,7 +351,7 @@ actor CodeSigner {
         let app = try Self.resolveAppURL(at: appURL)
         _ = try requireSigningInspection(at: app, allowSandboxed: allowSandboxed)
         try await prepareServices()
-        let locks = try acquireLocks()
+        let locks = try acquireLocks(applicationURL: app)
         defer { locks.forEach { $0.release() } }
         if let result = try await finishPriorSignatureOperation(at: app, kind: .sign) { return result }
         let identity = try DataPathIdentity.capture(app)
@@ -379,7 +378,7 @@ actor CodeSigner {
             // A known original is an ongoing recovery obligation. An offline
             // disk or pending relocation must not silently discard its lineage
             // when another signature replaces the application's inode.
-            guard retained.relocation == nil else { throw SigningError.operationInProgress }
+            guard retained.relocation == nil else { throw OperationBlockage(reason: .backupRelocation, applicationURL: app, blockingPhase: "relocating", recordURL: URL(fileURLWithPath: path)) }
             _ = try history.snapshotParent(for: retained)
             _ = try history.verifiedSnapshot(for: retained)
             legacy = (URL(fileURLWithPath: path), retained)
@@ -460,7 +459,10 @@ actor CodeSigner {
         } catch {
             // A failed post-exchange checkpoint must never turn into a rollback
             // or a claim that cancellation prevented the signature change.
-            if (try? hasExchanged(record)) == true { return await finishCommitted(record, priorWarning: error.localizedDescription) }
+            if (try? hasExchanged(record)) == true {
+                logSignatureFailure(error, record: record, stage: "post_exchange", result: "success_with_warning")
+                return await finishCommitted(record, priorWarning: error.localizedDescription)
+            }
             await cleanFailedPreparation(record, failure: error)
             throw error
         }
@@ -471,7 +473,7 @@ actor CodeSigner {
                           historicalMaterialID: String? = nil) async throws -> SignatureOperationResult {
         let app = try Self.resolveAppURL(at: appURL)
         try await prepareServices()
-        let locks = try acquireLocks()
+        let locks = try acquireLocks(applicationURL: app)
         defer { locks.forEach { $0.release() } }
         if let result = try await finishPriorSignatureOperation(at: app, kind: .restore) { return result }
         try facts.reconcileCommittedMetadata(at: app)
@@ -488,7 +490,10 @@ actor CodeSigner {
                 try await finishBackupCleanup(backup, recordURL: history.recordURL(bundleIdentifier: bundleIdentifier), app: app,
                                         applicationFingerprint: cleanup.applicationFingerprint)
                 return .init(applicationURL: app, operationID: nil, committed: true, cleanupWarning: nil)
-            } catch { return .init(applicationURL: app, operationID: nil, committed: true, cleanupWarning: error.localizedDescription) }
+            } catch {
+                logSignatureFailure(error, app: app, stage: "restored_metadata_cleanup", result: "success_with_warning")
+                return .init(applicationURL: app, operationID: nil, committed: true, cleanupWarning: error.localizedDescription)
+            }
         }
         try requireNoPreparation(for: app, records: pendingOperations)
         let source = try await restorationSource(app: app, bundleIdentifier: bundleIdentifier,
@@ -525,7 +530,10 @@ actor CodeSigner {
             try write(record)
             return try await commit(&record)
         } catch {
-            if (try? hasExchanged(record)) == true { return await finishCommitted(record, priorWarning: error.localizedDescription) }
+            if (try? hasExchanged(record)) == true {
+                logSignatureFailure(error, record: record, stage: "post_exchange", result: "success_with_warning")
+                return await finishCommitted(record, priorWarning: error.localizedDescription)
+            }
             await cleanFailedPreparation(record, failure: error)
             throw error
         }
@@ -600,21 +608,27 @@ actor CodeSigner {
         }
     }
 
-    private func acquireLocks() throws -> [OperationLock] {
+    private func acquireLocks(applicationURL: URL? = nil) throws -> [OperationLock] {
         let globalURL = backupDirectoryURL.standardizedFileURL == Self.defaultBackupDirectoryURL.standardizedFileURL
             ? OperationLock.defaultFileURL : backupDirectoryURL.deletingLastPathComponent().appendingPathComponent("operation.lock")
         let global = OperationLock(fileURL: globalURL)
         guard global.tryAcquire() else {
-            if let reason = global.admissionFailureReason { throw SigningError.incompatibleWriter(reason) }
-            throw SigningError.operationInProgress
+            throw global.diagnosticFailure(scope: .global, applicationURL: applicationURL)
         }
         let signature = OperationLock(fileURL: backupDirectoryURL.appendingPathComponent("signature-operation.lock"))
         guard signature.tryAcquire() else {
             global.release()
-            if let reason = signature.admissionFailureReason { throw SigningError.incompatibleWriter(reason) }
-            throw SigningError.operationInProgress
+            throw signature.diagnosticFailure(scope: .signature, applicationURL: applicationURL)
         }
         return [signature, global]
+    }
+
+    private func logSignatureFailure(_ error: Error, record: SignatureOperationRecord? = nil,
+                                     app: URL? = nil, stage: String, result: String = "failed") {
+        AppLogger.shared.logOperationFailure(category: "signature", operationID: record?.id.uuidString
+            ?? AppLogger.shared.makeOperationID(prefix: "signature"), error: error, stage: stage,
+            details: [("record_id", record?.id.uuidString), ("record_phase", record?.phase.rawValue),
+                      ("application_path", record?.applicationPath ?? app?.path)], result: result)
     }
 
     private func requireWriterAdmission() throws {
@@ -636,7 +650,7 @@ actor CodeSigner {
         let identity = try DataPathIdentity.capture(app)
         let inventory = try operations.inventory()
         if let unreadable = inventory.unreadableRecords.first(where: { $0.concerns(app, identity: identity) }) {
-            throw SigningError.unreadableOperationRecord(unreadable.url)
+            throw OperationBlockage(reason: .signatureRecordUnreadable, applicationURL: app, recordURL: unreadable.url)
         }
         return inventory.records.filter { $0.applicationPath == app.path
             || (try? $0.resolvingApplicationLocation().applicationPath) == app.path }
@@ -645,7 +659,7 @@ actor CodeSigner {
     private func requireNoPreparation(for app: URL, records: [SignatureOperationRecord]? = nil) throws {
         for record in try records ?? operationsForApplication(app)
             where ![.committed, .cleaning, .abandoned].contains(record.phase) {
-            throw SigningError.operationInProgress
+            throw OperationBlockage.pendingSignature(record)
         }
     }
 
@@ -788,6 +802,7 @@ actor CodeSigner {
             if let priorWarning { AppLogger.shared.logContext("签名提交已重新对账并完成清理", details: [("recovered_error", priorWarning)]) }
             return .init(applicationURL: record.applicationURL, operationID: record.id, committed: true, cleanupWarning: nil)
         } catch {
+            logSignatureFailure(error, record: record, stage: "committed_cleanup", result: "success_with_warning")
             record.warning = error.localizedDescription
             try? write(record)
             return .init(applicationURL: record.applicationURL, operationID: record.id, committed: true,
@@ -1010,6 +1025,7 @@ actor CodeSigner {
                     guard try DataPathIdentity.capture(pending.applicationURL).matchesFilesystemObject(pending.applicationIdentity) else { throw SigningError.applicationChanged }
                     try protection.commitExchange(token, to: pending.applicationURL)
                 } catch {
+                    logSignatureFailure(error, record: pending, stage: "cancel_cleanup")
                     pending.warning! += "\n" + error.localizedDescription
                 }
             }
@@ -1022,6 +1038,7 @@ actor CodeSigner {
             // Preserve the most recent deletion checkpoint, including a
             // partially removed candidate. Never overwrite it with stale input.
             var remaining = (try? operations.record(id: record.id)) ?? pending
+            logSignatureFailure(error, record: remaining, stage: "preparation_cleanup")
             if remaining.phase != .abandoned { remaining.phase = .cancelling }
             remaining.warning = failure.localizedDescription + "\n" + error.localizedDescription
             try? write(remaining)
@@ -1233,7 +1250,7 @@ extension CodeSigner {
             verifySignature = true
         } else {
             guard let record else { throw SigningError.noBackupFound }
-            guard record.1.relocation == nil else { throw SigningError.operationInProgress }
+            guard record.1.relocation == nil else { throw OperationBlockage(reason: .backupRelocation, applicationURL: app, blockingPhase: "relocating", recordURL: record.0) }
             guard !(try history.hasPendingDeletion(for: record.0, snapshot: history.snapshotURL(for: record.1))) else {
                 throw SigningError.snapshotInvalid
             }
@@ -1332,7 +1349,7 @@ extension CodeSigner {
         }
         let groups = Array(Set((backup.originalApplicationGroups ?? []) + (official?.applicationGroups ?? [])))
         guard try !hasBackupDependencies(backup, recordURL: recordURL, app: app, groups: groups, excludingOperation: excludingOperation) else {
-            throw SigningError.operationInProgress
+            throw OperationBlockage(reason: .backupDependency, applicationURL: app, recordURL: recordURL)
         }
         if backup.cleanup != nil { backup.cleanup?.applicationFingerprint = applicationFingerprint }
         if backup != original { try history.write(backup, to: recordURL) }
@@ -1370,7 +1387,7 @@ extension CodeSigner {
                   try DataPathIdentity.capture(app).matchesFilesystemObject(appIdentity),
                   try SignatureSnapshot.fingerprint(of: app) == applicationFingerprint else { throw SigningError.applicationChanged }
             guard try !hasBackupDependencies(backup, recordURL: recordURL, app: app, groups: groups, excludingOperation: excludingOperation) else {
-                throw SigningError.operationInProgress
+                throw OperationBlockage(reason: .backupDependency, applicationURL: app, recordURL: recordURL)
             }
             // Keep the injected historical deletion seam for migration of old
             // checkpoints. Default deletion is real deletion, never hidden Trash.
@@ -1518,11 +1535,11 @@ extension CodeSigner {
         guard let material = try history.materials().first(where: { $0.id == id }), material.canDelete else { throw SigningError.snapshotInvalid }
         let record = try history.selectedRecord(materialID: id)
         if let (_, backup) = record {
-            guard backup.relocation == nil else { throw SigningError.operationInProgress }
+            guard backup.relocation == nil else { throw OperationBlockage(reason: .backupRelocation, applicationURL: URL(fileURLWithPath: backup.originalPath), blockingPhase: "relocating", recordURL: record?.0) }
             _ = try history.snapshotParent(for: backup)
             guard try !hasBackupDependencies(backup, recordURL: record!.0,
                 app: URL(fileURLWithPath: backup.originalPath), groups: backup.originalApplicationGroups ?? []) else {
-                throw SigningError.operationInProgress
+                throw OperationBlockage(reason: .backupDependency, applicationURL: URL(fileURLWithPath: backup.originalPath), recordURL: record?.0)
             }
         }
         let target = material.url
@@ -1651,15 +1668,25 @@ extension CodeSigner {
 
     func performAutomaticMaintenance() async -> [String] {
         var warnings: [String] = []
+        let attemptID = AppLogger.shared.makeOperationID(prefix: "signature-maintenance")
+        var stage = "preparing_services"
         do {
             try await prepareServices()
+            stage = "waiting"
             let locks = try acquireLocks()
+            stage = "inventory"
             defer { locks.forEach { $0.release() } }
             let inventory = try operations.inventory()
             let pauseDirectory = backupDirectoryURL.standardizedFileURL == Self.defaultBackupDirectoryURL.standardizedFileURL
                 ? OperationLock.defaultFileURL.deletingLastPathComponent() : backupDirectoryURL.deletingLastPathComponent()
             let ejection = try DiskEjectionPauseStore(directory: pauseDirectory).snapshot()
-            warnings += inventory.unreadableRecords.map(\.detail)
+            for unreadable in inventory.unreadableRecords {
+                let failure = OperationBlockage(reason: .signatureRecordUnreadable, recordURL: unreadable.url)
+                AppLogger.shared.logOperationFailure(category: "signature_maintenance", operationID: attemptID,
+                    error: failure, stage: "inventory", details: [("record_read_error", unreadable.detail),
+                        ("recorded_application_path", unreadable.applicationPath)])
+                warnings.append(failure.localizedDescription)
+            }
             for record in inventory.records {
                 if ejection.blocks(volumeUUIDs: [record.applicationIdentity.volumeUUID,
                     record.applicationParentIdentity.volumeUUID, record.directoryIdentity?.volumeUUID],
@@ -1668,7 +1695,12 @@ extension CodeSigner {
                 do {
                     let result = try await reconcilePendingSignature(record)
                     if let warning = result.cleanupWarning { warnings.append(warning) }
-                } catch { warnings.append(record.applicationURL.lastPathComponent + ": " + error.localizedDescription) }
+                } catch {
+                    AppLogger.shared.logOperationFailure(category: "signature_maintenance", operationID: attemptID,
+                        error: error, stage: "signature_recovery", details: [("record_id", record.id.uuidString),
+                            ("record_phase", record.phase.rawValue), ("application_path", record.applicationPath)])
+                    warnings.append(record.applicationURL.lastPathComponent + ": " + error.localizedDescription)
+                }
             }
             for url in try history.records() {
                 do {
@@ -1684,15 +1716,26 @@ extension CodeSigner {
                               backup.cleanup == nil {
                         _ = try await relocateInternalBackup(backup, recordURL: url)
                     }
-                } catch { warnings.append(url.lastPathComponent + ": " + error.localizedDescription) }
+                } catch {
+                    AppLogger.shared.logOperationFailure(category: "signature_maintenance", operationID: attemptID,
+                        error: error, stage: "backup_maintenance", details: [("related_record_path", url.path)])
+                    warnings.append(url.lastPathComponent + ": " + error.localizedDescription)
+                }
             }
             // Finish older, already authorized deletion journals as well.
             for deletion in try history.deletions() {
                 if ejection.blocks(deletion) { continue }
                 do { _ = try finishMaterialDeletion(deletion) }
-                catch { warnings.append(error.localizedDescription) }
+                catch {
+                    AppLogger.shared.logOperationFailure(category: "signature_maintenance", operationID: attemptID,
+                        error: error, stage: "material_deletion", details: [("record_id", deletion.id.uuidString)])
+                    warnings.append(error.localizedDescription)
+                }
             }
-        } catch { warnings.append(error.localizedDescription) }
+        } catch {
+            AppLogger.shared.logOperationFailure(category: "signature_maintenance", operationID: attemptID, error: error, stage: stage)
+            warnings.append(error.localizedDescription)
+        }
         return warnings
     }
 

@@ -144,3 +144,14 @@ struct DiskEjectionPauseStore: Sendable {
         return try reconcile(await disk.ejectionInventory())
     }
 }
+
+/// Single-volume intent is independent of whole-disk ejection and reconnection.
+enum ManualMountPauseError: LocalizedError {
+    case paused, retryPaused
+    var errorDescription: String? {
+        switch self {
+        case .paused: return "自动挂载已暂停。点击“挂载”可恢复。".localized
+        case .retryPaused: return "自动挂载已暂停，本次未执行。请先恢复自动挂载后重试。".localized
+        }
+    }
+}

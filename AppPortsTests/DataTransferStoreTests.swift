@@ -4,6 +4,43 @@ import Testing
 @testable import AppPorts
 
 struct DataTransferStoreTests {
+    @Test("Manual pause upgrades the ledger, survives reopening, and is removed with its mount")
+    func manualPauseLifecycle() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("Pause")
+        try fixture.store.upsert(mount)
+        #expect(try !fixture.store.isManuallyUnmounted(mount))
+        try fixture.store.setManuallyUnmounted(true, record: mount)
+        let reopened = ContainerMountStore(fileURL: fixture.file)
+        #expect(try reopened.isManuallyUnmounted(mount))
+        let object = try #require(try PropertyListSerialization.propertyList(from: Data(contentsOf: fixture.file), format: nil) as? [String: Any])
+        #expect(object["schemaVersion"] as? Int == 13)
+        try reopened.remove(mountPointPath: mount.mountPointPath)
+        #expect(try !reopened.isManuallyUnmounted(mount))
+        try reopened.upsert(mount)
+        #expect(try !reopened.isManuallyUnmounted(mount))
+    }
+
+    @Test("Old schemas omit pause intent and malformed new pause intent refuses execution", arguments: ["legacy", "unknown-volume", "wrong-path", "old-schema"])
+    func manualPauseSchemaValidation(_ scenario: String) throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let mount = fixture.mount("Pause")
+        let encoded = try PropertyListSerialization.propertyList(from: PropertyListEncoder().encode(mount), format: nil)
+        var document: [String: Any] = ["schemaVersion": scenario == "legacy" || scenario == "old-schema" ? 12 : 13,
+            "mounts": [encoded], "cleanups": [], "transfers": []]
+        if scenario != "legacy" {
+            document["manualMountPauses"] = [scenario == "unknown-volume" ? "FOREIGN-UUID" : mount.volumeUUID.uppercased():
+                scenario == "wrong-path" ? fixture.root.appendingPathComponent("Other").path : mount.mountPointPath]
+        }
+        let bytes = try PropertyListSerialization.data(fromPropertyList: document, format: .binary, options: 0)
+        try bytes.write(to: fixture.file)
+        if scenario == "legacy" { #expect(try !fixture.store.isManuallyUnmounted(mount)) }
+        else { #expect(throws: (any Error).self) { try fixture.store.recordsStrict() } }
+        #expect(try Data(contentsOf: fixture.file) == bytes)
+    }
+
     @Test("Legacy schemas have no schedule and upgrades preserve cleanup and encryption facts", arguments: Array(2...10))
     func retrySchemaCompatibility(_ schema: Int) throws {
         let fixture = try Fixture()
@@ -35,7 +72,7 @@ struct DataTransferStoreTests {
         var object = try #require(try PropertyListSerialization.propertyList(from: PropertyListEncoder().encode(cleanup), format: nil) as? [String: Any])
         if scenario != "missing-count" { object["retryFailureCount"] = scenario == "negative" ? -1 : 1 }
         if scenario != "missing-date" { object["nextAutomaticRetryAt"] = Date() }
-        let bytes = try PropertyListSerialization.data(fromPropertyList: ["schemaVersion": scenario == "future" ? 13 : 11, "mounts": [], "cleanups": [object], "transfers": []], format: .binary, options: 0)
+        let bytes = try PropertyListSerialization.data(fromPropertyList: ["schemaVersion": scenario == "future" ? 14 : 11, "mounts": [], "cleanups": [object], "transfers": []], format: .binary, options: 0)
         try bytes.write(to: fixture.file)
         #expect(throws: (any Error).self) { try fixture.store.recordCleanupRetry(.legacy(cleanup.id), failed: true) }
         #expect(try Data(contentsOf: fixture.file) == bytes)

@@ -433,6 +433,143 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
 
 @Suite("Container volume migration", .serialized)
 struct ContainerVolumeMigratorTests {
+    @Test("Manual unmount survives a cold store, isolates other volumes, and explicit mount resumes")
+    func manualUnmountPersistsAndResumes() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "ManualPause")
+        let other = try workspace.makeContainerDirectory(named: "OtherVolume")
+        for url in [source, other] { try FileManager.default.removeItem(at: url.appendingPathComponent("payload.txt")) }
+        let record = workspace.record(mountPoint: source, volumeUUID: "PAUSED-UUID")
+        let otherRecord = workspace.record(mountPoint: other, volumeUUID: "OTHER-UUID")
+        try workspace.store.upsert(record)
+        try workspace.store.upsert(otherRecord)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID, otherRecord.volumeUUID])
+        runner.markVolumeMounted(record.volumeUUID, at: source.path)
+        try await workspace.makeMigrator(runner: runner).unmount(record: record)
+        #expect(!runner.isMounted(source))
+        let reopened = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("container-mounts.plist"))
+        #expect(try reopened.isManuallyUnmounted(record))
+        let cold = workspace.makeMigrator(runner: runner, storeOverride: reopened)
+        let outcomes = await cold.remountAvailableRecords()
+        #expect(outcomes.contains { $0.record == record && $0.state == .requiresIntervention(ManualMountPauseError.paused.localizedDescription) })
+        #expect(!runner.isMounted(source))
+        #expect(runner.isMounted(other))
+        await #expect(throws: ManualMountPauseError.self) { try await cold.mount(record: record) }
+        runner.failWhen(prefix: ["mount"])
+        await #expect(throws: (any Error).self) { try await cold.mount(record: record, resumingManualPause: true) }
+        #expect(try reopened.isManuallyUnmounted(record))
+        runner.clearFailure()
+        try await cold.mount(record: record, resumingManualPause: true)
+        #expect(runner.isMounted(source))
+        #expect(try !reopened.isManuallyUnmounted(record))
+    }
+
+    @Test("Pause save failure prevents unmount; an unmount failure retains saved intent", arguments: [true, false])
+    func manualUnmountFailurePreservesIntent(saveFails: Bool) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "PauseFailure")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.markVolumeMounted(record.volumeUUID, at: source.path)
+        let store = saveFails ? ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("container-mounts.plist"),
+            writeData: { _, _ in throw CocoaError(.fileWriteUnknown) }) : workspace.store
+        if !saveFails { runner.failWhen(prefix: ["unmount"]) }
+        await #expect(throws: (any Error).self) { try await workspace.makeMigrator(runner: runner, storeOverride: store).unmount(record: record) }
+        #expect(runner.isMounted(source))
+        #expect(try workspace.store.isManuallyUnmounted(record) == !saveFails)
+        if saveFails { #expect(runner.commands(prefix: ["unmount"]).isEmpty) }
+    }
+
+    @Test("Cold automatic recovery leaves a manually paused restore untouched")
+    func manualPauseBlocksColdRestoreRecovery() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "PausedRestore")
+        try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        try seedUnstartedRestore(unstartedRestore(workspace, record), store: workspace.store)
+        try workspace.store.setManuallyUnmounted(true, record: record)
+        let file = workspace.rootURL.appendingPathComponent("container-mounts.plist")
+        let before = try Data(contentsOf: file)
+        let reopened = ContainerMountStore(fileURL: file)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let migrator = workspace.makeMigrator(runner: runner, storeOverride: reopened)
+        #expect(await migrator.performAutomaticMaintenance() == [])
+        let outcomes = await migrator.remountAvailableRecords()
+        #expect(outcomes.map(\.state) == [.requiresIntervention(ManualMountPauseError.paused.localizedDescription)])
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(runner.commands(prefix: ["unmount"]).isEmpty)
+        #expect(try Data(contentsOf: file) == before)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: source.path).isEmpty)
+    }
+
+    @Test("Explicit retry reports a manual pause without changing recovery or cleanup intent")
+    @MainActor
+    func explicitPausedRetryIsNotReportedAsComplete() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "PausedExplicitRetry")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let pending = unstartedRestore(workspace, record)
+        try seedUnstartedRestore(pending, store: workspace.store)
+        try workspace.store.setManuallyUnmounted(true, record: record)
+        let file = workspace.rootURL.appendingPathComponent("container-mounts.plist")
+        let before = try Data(contentsOf: file)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        let migrator = workspace.makeMigrator(runner: runner)
+        #expect(await migrator.performAutomaticMaintenance(only: pending.operationID, ignoresRetryBackoff: true)
+            == [ManualMountPauseError.retryPaused.localizedDescription])
+        #expect(try Data(contentsOf: file) == before)
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(runner.commands(prefix: ["unmount"]).isEmpty)
+        #expect(await migrator.performAutomaticMaintenance() == [])
+
+        // Exercise the real retry-result handoff to task history, not just the warning string.
+        let history = MigrationTaskHistoryStore(fileURL: workspace.rootURL.appendingPathComponent("retry-history.json"))
+        let lockURL = workspace.rootURL.appendingPathComponent("retry-operation.lock")
+        let center = MigrationTaskCenter(historyStore: history, operationState: AppOperationState(),
+            makeOperationLock: { OperationLock(fileURL: lockURL) })
+        center.submit(title: "Paused retry", category: .appData,
+            resources: MigrationResources(paths: [source])) { _ in
+                let warnings = await migrator.performAutomaticMaintenance(only: pending.operationID, ignoresRetryBackoff: true)
+                return warnings.isEmpty ? nil : warnings.joined(separator: "\n\n")
+            }
+        let job = try #require(center.detail)
+        let worker = try #require(job.worker)
+        await worker.value
+        #expect(job.status == .attention)
+        #expect(job.message == ManualMountPauseError.retryPaused.localizedDescription)
+        #expect(history.load().first?.status == .attention)
+        #expect(try Data(contentsOf: file) == before)
+    }
+
+    @Test("Resuming a still-mounted volume clears pause without unmounting or remounting")
+    func resumeAutomaticMountingAfterFailedUnmount() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "FailedUnmountResume")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.markVolumeMounted(record.volumeUUID, at: source.path)
+        runner.failWhen(prefix: ["unmount"])
+        let migrator = workspace.makeMigrator(runner: runner)
+        await #expect(throws: (any Error).self) { try await migrator.unmount(record: record) }
+        #expect(try workspace.store.isManuallyUnmounted(record))
+        let unmounts = runner.commands(prefix: ["unmount"])
+        try await migrator.mount(record: record, resumingManualPause: true)
+        #expect(try !workspace.store.isManuallyUnmounted(record))
+        #expect(runner.isMounted(source))
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(runner.commands(prefix: ["unmount"]) == unmounts)
+        #expect(try String(contentsOf: source.appendingPathComponent("payload.txt"), encoding: .utf8) == "payload")
+    }
+
     @Test("Ownership recovery checks the local parent before detaching a usable data volume")
     func ownershipRecoveryChecksParentBeforeUnmount() async throws {
         let workspace = try Workspace()
@@ -1545,7 +1682,7 @@ struct ContainerVolumeMigratorTests {
         #expect(try workspace.store.transfer(operationID: transfer.operationID)?.phase == .awaitingUserVerification)
         try FileManager.default.moveItem(at: moved, to: backup)
         try await migrator.unmount(record: record)
-        try await migrator.mount(record: record)
+        try await migrator.mount(record: record, resumingManualPause: true)
         #expect(runner.isMounted(source))
         _ = try await migrator.restore(record: record, estimatedTotalBytes: 0, progressHandler: nil)
         #expect(!runner.isMounted(source))

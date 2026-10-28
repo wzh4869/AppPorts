@@ -2489,8 +2489,9 @@ struct ContentView: View {
             } catch is CancellationError {
                 // A committed result is returned by the service, not reported as cancellation.
             } catch {
-                AppLogger.shared.logError("手动重签名失败", error: error,
-                    errorCode: "RESIGN-FAILED", relatedURLs: [("target_app", app.displayURL)])
+                AppLogger.shared.logOperationFailure(category: "manual_sign",
+                    operationID: AppLogger.shared.makeOperationID(prefix: "manual-sign"), error: error,
+                    details: [("application_path", app.displayURL.path)], relatedURLs: [("target_app", app.displayURL)])
                 showError(title: "签名失败".localized, message: error.localizedDescription)
             }
         }
@@ -2552,6 +2553,9 @@ struct ContentView: View {
                 offerOriginalApplication(for: app, reason: CodeSigner.SigningError.snapshotInvalid.localizedDescription)
             } catch {
                 await MainActor.run {
+                    AppLogger.shared.logOperationFailure(category: "signature_restore",
+                        operationID: AppLogger.shared.makeOperationID(prefix: "signature-restore"), error: error,
+                        details: [("application_path", app.displayURL.path)])
                     showError(title: "恢复签名失败".localized, message: error.localizedDescription)
                 }
             }

@@ -313,8 +313,7 @@ final class MigrationTaskCenter: ObservableObject {
                                 let lock = makeOperationLock()
                                 guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else {
                                     try Task.checkCancellation()
-                                    throw DataOperationSafety.Failure.inspection(lock.admissionFailureReason
-                                        ?? "其他程序正在处理磁盘，请稍后重试。".localized)
+                                    throw lock.diagnosticFailure(scope: .global)
                                 }
                                 defer { lock.release() }
                                 try await control.checkpointAsync()
@@ -346,6 +345,12 @@ final class MigrationTaskCenter: ObservableObject {
                 job.status = .cancelled
                 job.message = "任务已取消。已保留的数据和未完成的清理可在原页面查看。".localized
             } else {
+                let snapshot = job.progress.snapshot()
+                AppLogger.shared.logOperationFailure(category: "migration_task", operationID: job.id.uuidString,
+                    error: error, stage: String(describing: snapshot.stage), startedAt: job.startedAt,
+                    details: [("task_title", job.title), ("attempt_id", job.retryToken.attemptID.uuidString),
+                              ("task_category", String(describing: job.category)),
+                              ("resource_paths", job.resources.paths.sorted().joined(separator: "\n"))])
                 job.status = .attention
                 job.message = error.localizedDescription
                 if let recovery = job.recoveryHandler {

@@ -69,7 +69,7 @@ final class AppTransferTransaction {
                   try AppTransferStore.exists(destination),
                   try DataPathIdentity.capture(destination).matchesFilesystemObject(activation.identity) else { continue }
             guard record.isSwitchComplete, record.switchIntentRecorded, record.hasCandidateBaseline else {
-                throw CodeSigner.SigningError.operationInProgress
+                throw OperationBlockage(reason: .applicationTransfer, applicationURL: app, blockingOperationID: record.operationID, blockingPhase: record.phase.rawValue, recordURL: url)
             }
             guard try DataPathIdentity.capture(destination.deletingLastPathComponent()).matchesFilesystemObject(activation.parentIdentity) else {
                 throw CodeSigner.SigningError.applicationChanged

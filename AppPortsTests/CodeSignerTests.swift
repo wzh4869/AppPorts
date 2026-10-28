@@ -777,7 +777,11 @@ struct CodeSignerTests {
         do {
             try await signer.sign(appURL: app, bundleIdentifier: nil)
             Issue.record("Another signing transaction holds the lock")
-        } catch CodeSigner.SigningError.operationInProgress {}
+        } catch let error as OperationBlockage {
+            #expect(error.reason == .signatureLockBusy)
+            #expect(error.applicationURL?.resolvingSymlinksInPath().path == app.resolvingSymlinksInPath().path)
+            #expect(error.diagnosticFields["lock_owner"] == "unknown")
+        }
         #expect(try SignatureSnapshot.fingerprint(of: app) == before)
     }
 

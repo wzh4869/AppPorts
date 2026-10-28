@@ -1,4 +1,5 @@
 import XCTest
+import Darwin
 @testable import AppPorts
 
 /// 跨进程锁：让登录代理和主应用不要同时抢同一个挂载点。
@@ -11,6 +12,88 @@ final class OperationLockTests: XCTestCase {
         FileManager.default.temporaryDirectory
             .appendingPathComponent("OperationLockTests-\(UUID().uuidString)")
             .appendingPathComponent("operation.lock")
+    }
+
+    func testDiagnosticDistinguishesLockScopesWithoutClaimingAnOwner() throws {
+        let url = makeLockFileURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let owner = OperationLock(fileURL: url, writerAdmissionCheck: {})
+        let waiter = OperationLock(fileURL: url, writerAdmissionCheck: {})
+        XCTAssertTrue(owner.tryAcquire())
+        defer { owner.release() }
+        XCTAssertFalse(waiter.tryAcquire())
+        let global = waiter.diagnosticFailure(scope: .global)
+        let signature = waiter.diagnosticFailure(scope: .signature)
+        XCTAssertEqual(global.reason, .globalLockBusy)
+        XCTAssertEqual(signature.reason, .signatureLockBusy)
+        XCTAssertEqual(global.diagnosticFields["lock_owner"], "unknown")
+        XCTAssertNil(global.blockingOperationID)
+        let underlying = try XCTUnwrap((global as NSError).userInfo[NSUnderlyingErrorKey] as? NSError)
+        XCTAssertEqual(underlying.code, Int(EWOULDBLOCK))
+        owner.release()
+        XCTAssertTrue(waiter.tryAcquire())
+        XCTAssertNil(waiter.diagnosticFailure(scope: .global).systemErrorCode, "Successful acquire clears the prior failure facts")
+        waiter.release()
+    }
+
+    func testInaccessibleLockIsNotReportedAsBusy() throws {
+        let url = makeLockFileURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        let lock = OperationLock(fileURL: url, writerAdmissionCheck: {})
+        XCTAssertFalse(lock.tryAcquire())
+        let failure = lock.diagnosticFailure(scope: .global)
+        XCTAssertEqual(failure.reason, .lockUnavailable)
+        XCTAssertEqual(failure.systemErrorCode, EISDIR)
+        XCTAssertEqual(failure.lockURL, url)
+    }
+
+    func testSymlinkLockFailureDoesNotFollowOrModifyItsTarget() throws {
+        let url = makeLockFileURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let target = url.deletingLastPathComponent().appendingPathComponent("target")
+        let bytes = Data("sentinel".utf8)
+        try bytes.write(to: target)
+        try FileManager.default.createSymbolicLink(at: url, withDestinationURL: target)
+        let lock = OperationLock(fileURL: url, writerAdmissionCheck: {})
+        XCTAssertFalse(lock.tryAcquire())
+        let failure = lock.diagnosticFailure(scope: .signature)
+        XCTAssertEqual(failure.reason, .lockUnavailable)
+        XCTAssertEqual(failure.systemErrorCode, ELOOP)
+        XCTAssertEqual(try Data(contentsOf: target), bytes)
+    }
+
+    func testManagedLeaseDiagnosticPreservesFailureAndClearsItAfterAcquire() throws {
+        let url = makeLockFileURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let owner = OperationLock(fileURL: url, writerAdmissionCheck: {})
+        let waiter = OperationLock(fileURL: url, writerAdmissionCheck: {})
+        XCTAssertTrue(owner.tryAcquire())
+        defer { owner.release() }
+        MigrationExecution.$managed.withValue(true) {
+            XCTAssertFalse(waiter.tryAcquire())
+        }
+        XCTAssertEqual(waiter.diagnosticFailure(scope: .global).reason, .globalLockBusy)
+        owner.release()
+        MigrationExecution.$managed.withValue(true) {
+            XCTAssertTrue(waiter.tryAcquire())
+        }
+        XCTAssertNil(waiter.diagnosticFailure(scope: .global).systemErrorCode)
+        waiter.release()
+    }
+
+    func testAdmissionFailurePreservesItsUnderlyingError() throws {
+        let url = makeLockFileURL()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let original = NSError(domain: "SyntheticAdmission", code: 42, userInfo: [NSLocalizedDescriptionKey: "Synthetic blocked writer"])
+        let lock = OperationLock(fileURL: url, writerAdmissionCheck: { throw original })
+        XCTAssertFalse(lock.tryAcquire())
+        let failure = lock.diagnosticFailure(scope: .global)
+        XCTAssertEqual(failure.reason, .writerAdmission)
+        XCTAssertEqual(failure.admissionReason, original.localizedDescription)
+        XCTAssertEqual(failure.underlyingError?.domain, original.domain)
+        XCTAssertEqual(failure.underlyingError?.code, original.code)
     }
 
     func testManagedLeaseRemainsExclusiveUntilEveryNestedHolderFinishes() {
@@ -213,7 +296,7 @@ final class OperationLockTests: XCTestCase {
         let execution = try XCTUnwrap(scheduler.range(of: "return try await operation(progress)"))
         XCTAssertLessThan(acquire.lowerBound, execution.lowerBound)
         let beforeExecution = scheduler[acquire.upperBound..<execution.lowerBound]
-        XCTAssertTrue(beforeExecution.contains("throw DataOperationSafety.Failure.inspection"))
+        XCTAssertTrue(beforeExecution.contains("throw lock.diagnosticFailure(scope: .global)"))
         XCTAssertTrue(beforeExecution.contains("defer { lock.release() }"))
         XCTAssertTrue(scheduler.contains("MigrationExecution.$managed.withValue(true)"))
 
