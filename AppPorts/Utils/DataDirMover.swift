@@ -28,6 +28,7 @@ actor DataDirMover {
     private let mountMigrator: ContainerVolumeMigrator?
     private let failSymlinkCreation: Bool
     private let synchronizeDirectory: @Sendable (URL, Bool) throws -> Void
+    private let allowsAdministratorPrompt: Bool
     private var runningMigrations: Set<UUID> = []
     private var runningRestores: Set<UUID> = []
     private var runningCleanups: Set<UUID> = []
@@ -61,6 +62,7 @@ actor DataDirMover {
          failSymlinkCreation: Bool = false, failSourceBackupCleanup: Bool = false,
          store: ContainerMountStore = .shared, runner: any ShellCommandRunning = ProcessCommandRunner(),
          mountMigrator: ContainerVolumeMigrator? = nil,
+         allowsAdministratorPrompt: Bool = false,
          synchronizeDirectory: @escaping @Sendable (URL, Bool) throws -> Void = {
              try DurableFileIO.syncDirectory(at: $0, resolvingAlias: $1)
          }) {
@@ -70,6 +72,7 @@ actor DataDirMover {
         self.mountMigrator = mountMigrator
         self.failSymlinkCreation = failSymlinkCreation
         self.synchronizeDirectory = synchronizeDirectory
+        self.allowsAdministratorPrompt = allowsAdministratorPrompt
         // Kept source-compatible with older callers. Success now always retains the original.
         _ = failSourceBackupCleanup
     }
@@ -1444,6 +1447,7 @@ actor DataDirMover {
         let baseline = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded)
         let deletionPreviouslyStarted = transfer.cleanupParentIdentity != nil
         var requestedCleanup = false
+        var stage = "verify_active_data"
         do {
             let context = try await cleanupContext(for: transfer)
             guard !DiskUtility.isMountPoint(retained) else { throw DataOperationSafety.Failure.conflict(retained.path) }
@@ -1472,7 +1476,9 @@ actor DataDirMover {
                 let type = DataDirType(rawValue: transfer.dataDirType) ?? .custom
                 try requireIdentity(context.activeURL, context.identity)
                 try store.recheckWriterAdmission()
-                try TreeCopySession.removeVerifiedCopy(at: retained, against: baseline, allowPartialRemoval: deletionPreviouslyStarted,
+                stage = "remove_retained_copy"
+                do {
+                    try TreeCopySession.removeVerifiedCopy(at: retained, against: baseline, allowPartialRemoval: deletionPreviouslyStarted,
                     expectedVolumeUUID: retainedIdentity.volumeUUID, removalID: operationID, requireSourceIdentity: true,
                     prepareForRemoval: {
                         try self.requireIdentity(actual, retainedIdentity)
@@ -1502,6 +1508,9 @@ actor DataDirMover {
                         try self.requireIdentity(parent, parentIdentity)
                         try self.requireIdentity(actual, retainedIdentity)
                     })
+                } catch {
+                    try authorizeCleanupIfNeeded(error, transfer: transfer)
+                }
             } else {
                 guard let expectedParent = transfer.cleanupParentIdentity else { throw DataOperationSafety.Failure.inspection(retained.path) }
                 try requireIdentity(parent, expectedParent)
@@ -1510,18 +1519,37 @@ actor DataDirMover {
                 throw DataOperationSafety.Failure.inspection(retained.path)
             }
             try syncDirectory(at: parent)
+            stage = "finish_cleanup_record"
             try store.finishTransfer(operationID: operationID, deletionConfirmed: true)
             invalidateSizeCache(for: retained)
         } catch {
             // The switch is still complete. The immutable manifest and cleanup
             // checkpoint make another attempt safe without blocking local data.
-            if requestedCleanup {
-                transfer.recoverableReason = error.localizedDescription
+            if error is CancellationError { throw error }
+            let failure = DataCleanupFailure(transfer: transfer, stage: stage, underlying: error as NSError)
+            let reported: Error = DataCleanupFailure.isPermissionFailure(error) ? failure : error
+            AppLogger.shared.logOperationFailure(category: "data_cleanup", operationID: operationID.uuidString,
+                error: failure, stage: stage, details: [("original_path", transfer.originalPath)])
+            if requestedCleanup || transfer.cleanupParentIdentity != nil {
+                transfer.recoverableReason = reported.localizedDescription
                 do { try store.updateTransfer(transfer) }
                 catch { AppLogger.shared.logError("无法更新副本清理恢复记录，原事务仍保留", error: error) }
             }
-            throw error
+            throw reported
         }
+    }
+
+    private func authorizeCleanupIfNeeded(_ error: Error, transfer: DataTransferRecord) throws {
+        guard allowsAdministratorPrompt, transfer.cleanupParentIdentity != nil,
+              DataCleanupFailure.isPermissionFailure(error),
+              DataCleanupResolution.requiresAdministrator(transfer) else { throw error }
+        try Task.checkCancellation()
+        try store.recheckWriterAdmission()
+        let current = try store.completedLocation(after: transfer.operationID)
+        let request = PrivilegedDataCleanup.Request(transfer: transfer, currentLocation: current)
+        AppLogger.shared.logContext("旧数据副本清理需要管理员授权", details: [
+            ("operation_id", transfer.operationID.uuidString), ("retained_path", transfer.backupPath)])
+        try PrivilegedDataCleanup.authorize(request)
     }
 
     private func transferAncestors(of id: UUID, transfers: [DataTransferRecord]) -> Set<UUID> {

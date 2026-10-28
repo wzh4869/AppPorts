@@ -7,6 +7,7 @@ struct DataMigrationTaskRecoveryView: View {
     let job: MigrationJob
     @Environment(\.dismiss) private var dismiss
     @State private var transfers: [DataTransferRecord] = []
+    @State private var currentDataPaths: [UUID: String] = [:]
     @State private var otherIssues: [String] = []
     @State private var errorMessage: String?
     @State private var loading = true
@@ -16,7 +17,7 @@ struct DataMigrationTaskRecoveryView: View {
             if loading {
                 ProgressView().frame(width: 460, height: 180)
             } else if errorMessage == nil, !transfers.isEmpty || !otherIssues.isEmpty {
-                DataCleanupResolutionSheet(transfers: transfers, otherIssues: otherIssues,
+                DataCleanupResolutionSheet(transfers: transfers, currentDataPaths: currentDataPaths, otherIssues: otherIssues,
                     onRetry: { operationID in
                         MigrationTaskCenter.shared.submit(title: "正在继续处理".localized,
                             category: job.category,
@@ -58,14 +59,16 @@ struct DataMigrationTaskRecoveryView: View {
         loading = true
         errorMessage = nil
         do {
-            let inspection = try await Task.detached(priority: .utility) {
-                try ContainerMountStore.shared.recordsForInspection()
+            let (inspection, paths) = try await Task.detached(priority: .utility) {
+                let inspection = try ContainerMountStore.shared.recordsForInspection()
+                return (inspection, DataCleanupResolution.currentDataPaths(for: inspection.transfers))
             }.value
             guard !Task.isCancelled else { return }
             if let error = inspection.validationError { throw error }
             // The general retry processes the complete ledger, including deferred
             // work. Show that same scope instead of hiding unrelated affected rows.
             transfers = inspection.transfers.filter { $0.retainedCopyRemovedAt == nil }
+            currentDataPaths = paths
             otherIssues = inspection.cleanups
                 .map { $0.mountRecord.appName + ": " + $0.localPath }
                 + inspection.preservedMaterials.map { $0.appName + ": " + $0.reason }
