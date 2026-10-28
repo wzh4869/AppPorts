@@ -104,7 +104,10 @@ actor OperationMaintenance {
     private static func finishScheduledDataOperations(interactive: Bool, retryOperationID: UUID?) async -> [String] {
         let lock = OperationLock()
         guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else {
-            return [lock.admissionFailureReason ?? "应用操作正在进行，请稍后重试。".localized]
+            let failure = lock.diagnosticFailure(scope: .global)
+            AppLogger.shared.logOperationFailure(category: "data_maintenance", operationID: failure.failureID.uuidString,
+                error: failure, stage: "waiting")
+            return [failure.localizedDescription]
         }
         defer { lock.release() }
         var warnings: [String] = []
@@ -114,6 +117,11 @@ actor OperationMaintenance {
         catch { return [error.localizedDescription] }
         if interactive {
             do {
+                // Check explicit retry before changing cleanup intent or selecting a direct cleanup path.
+                if let retryOperationID, let transfer = try store.transfer(operationID: retryOperationID),
+                   transfer.mode == .mount, try store.manualMountPauseBlocks(transfer) {
+                    return [ManualMountPauseError.retryPaused.localizedDescription]
+                }
                 for transfer in try store.transfers() where transfer.cleanupDisposition != nil {
                     // A general retry resumes deferred work, never a copy the
                     // user explicitly chose to keep. That requires its own retry.

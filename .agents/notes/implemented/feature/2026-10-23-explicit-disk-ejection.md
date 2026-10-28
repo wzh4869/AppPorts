@@ -56,6 +56,8 @@ AppPorts 的结果显示独立于 Finder。`PhysicalDiskMonitor` 只注册 Disk 
 - [写入者身份](../../implemented/bug-fix/2026-10-13-background-writer-identity.md)：部分重叠；沿用能力登记和锁，不以安装版本号证明运行进程支持暂停。
 - 没有既有主动弹出实现需要替代或归档。
 
+单卷手动卸载另由[持久单卷暂停](../bug-fix/2026-10-28-manual-unmount-and-link-adoption.md)约束，整盘真实重连接不会清除它。
+
 ## Alternatives considered
 
 - **NSWorkspace 直接弹出**：不需要 Finder 自动化，但实测占用时立即返回错误，没有 Finder 的占用提示。

@@ -1597,7 +1597,6 @@ struct DataDirsView: View {
     }
 
     private func askManageExistingLink(_ item: DataDirItem) {
-        if isContainerSymlinkOperationBlocked(item) { return }
         guard let linkedDest = item.linkedDestination else {
             AppLogger.shared.logError(
                 "请求接管现有软链失败：无法读取目标路径",
@@ -1606,6 +1605,20 @@ struct DataDirsView: View {
             )
             errorMessage = "无法读取现有软链的目标路径".localized
             showError = true
+            return
+        }
+
+        // Existing container links may be brought home without enabling classic migration.
+        if (item.type == .containers || item.type == .groupContainers), !classicModeActive {
+            confirmRequest = makeConfirmRequest(title: "还原数据目录".localized, actionTitle: "还原".localized,
+                message: String(format: "将「%@」还原到本地。\n\n外部来源：%@\n还原到：%@\n\n校验和切换成功后自动清理外部旧副本，还原直接完成。".localized,
+                    item.name, linkedDest.path, item.path.path)) {
+                    submitDataTask(item, title: "还原数据目录".localized, destinations: [linkedDest]) { progress in
+                        let result = try await DataDirMover().restoreAndComplete(item: item,
+                            progressHandler: { progress.update($0) })
+                        return result.cleanupWarning
+                    }
+                }
             return
         }
 
@@ -1997,7 +2010,7 @@ struct DataDirsView: View {
             for record in records {
                 try await MigrationExecution.control?.checkpointAsync()
                 try Task.checkCancellation()
-                try await migrator.mount(record: record)
+                try await migrator.mount(record: record, resumingManualPause: true)
             }
             return nil
         }

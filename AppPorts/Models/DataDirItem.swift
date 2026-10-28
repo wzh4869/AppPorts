@@ -132,6 +132,7 @@ enum DataDirStatus {
     static let mounted = "已挂载"
     /// 挂载迁移：外置卷在线但尚未挂载
     static let pendingMount = "待挂载"
+    static let mountPaused = "自动挂载已暂停"
     static let waitingForUnlock = "等待解锁"
     /// 挂载迁移：找不到外置卷（外部存储未连接或卷已删除）
     static let volumeMissing = "卷丢失"
@@ -161,6 +162,8 @@ enum DataDirStatus {
             return "已挂载".localized
         case waitingForUnlock:
             return "等待解锁".localized
+        case mountPaused:
+            return "自动挂载已暂停".localized
         case pendingMount:
             return "待挂载".localized
         case volumeMissing:
@@ -227,6 +230,9 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     /// - "未找到"：路径不存在
     /// - "已挂载" / "待挂载" / "卷丢失"：由挂载迁移管理，见 `ContainerVolumeMigrator`
     var status: String = "本地"
+
+    /// User intent is independent from whether the volume is mounted or online.
+    var autoMountPaused = false
 
     /// 目录大小字符串（nil 表示计算中）
     var size: String? = nil
@@ -364,6 +370,7 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     static func == (lhs: DataDirItem, rhs: DataDirItem) -> Bool {
         lhs.id == rhs.id &&
         lhs.status == rhs.status &&
+        lhs.autoMountPaused == rhs.autoMountPaused &&
         lhs.size == rhs.size &&
         lhs.sizeBytes == rhs.sizeBytes &&
         lhs.sizeIsIncomplete == rhs.sizeIsIncomplete &&

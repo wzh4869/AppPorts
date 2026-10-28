@@ -40,6 +40,27 @@ final class OperationLock: @unchecked Sendable {
     private var descriptor: Int32 = -1
     private var managedLease = false
     private var lastAdmissionFailure: String?
+    private enum AcquisitionFailure { case busy(Int32), unavailable(Int32), admission(Error) }
+    private var lastAcquisitionFailure: AcquisitionFailure?
+
+    enum DiagnosticScope: Equatable { case global, signature }
+
+    /// Snapshot the actual acquisition failure; never infer who owns the lock.
+    func diagnosticFailure(scope: DiagnosticScope, applicationURL: URL? = nil) -> OperationBlockage {
+        stateLock.lock(); defer { stateLock.unlock() }
+        let reason: OperationBlockage.Reason
+        var code: Int32?
+        var admission: String?
+        var underlying: NSError?
+        switch lastAcquisitionFailure {
+        case .busy(let value): reason = scope == .global ? .globalLockBusy : .signatureLockBusy; code = value
+        case .unavailable(let value): reason = .lockUnavailable; code = value
+        case .admission(let value): reason = .writerAdmission; admission = value.localizedDescription; underlying = value as NSError
+        case nil: reason = .lockUnavailable
+        }
+        return OperationBlockage(reason: reason, applicationURL: applicationURL, lockURL: fileURL,
+                                 systemErrorCode: code, admissionReason: admission, underlyingError: underlying)
+    }
 
     init(fileURL: URL = OperationLock.defaultFileURL, writerAdmissionCheck: (() throws -> Void)? = nil) {
         self.fileURL = fileURL
@@ -74,7 +95,7 @@ final class OperationLock: @unchecked Sendable {
         stateLock.unlock()
         guard !alreadyHeldBySelf else { return false }
 
-        guard let probe = openDescriptor() else { return false }
+        guard let probe = openDescriptor(recordFailure: false) else { return false }
         defer {
             _ = flock(probe, LOCK_UN)
             _ = close(probe)
@@ -88,13 +109,19 @@ final class OperationLock: @unchecked Sendable {
     func tryAcquire() -> Bool {
         stateLock.lock()
         defer { stateLock.unlock() }
+        lastAcquisitionFailure = nil
         guard checkAdmission() else { return false }
         if descriptor >= 0 || managedLease { return true }
 
         if MigrationExecution.managed {
             managedLease = ManagedOperationLeases.shared.acquire(path: fileURL.standardizedFileURL.path) {
                 guard let candidate = self.openDescriptor() else { return nil }
-                guard flock(candidate, LOCK_EX | LOCK_NB) == 0, self.checkAdmission() else {
+                guard flock(candidate, LOCK_EX | LOCK_NB) == 0 else {
+                    self.recordFlockFailure(errno)
+                    _ = close(candidate)
+                    return nil
+                }
+                guard self.checkAdmission() else {
                     _ = close(candidate)
                     return nil
                 }
@@ -105,6 +132,7 @@ final class OperationLock: @unchecked Sendable {
 
         guard let candidate = openDescriptor() else { return false }
         guard flock(candidate, LOCK_EX | LOCK_NB) == 0 else {
+            recordFlockFailure(errno)
             _ = close(candidate)
             return false
         }
@@ -156,19 +184,31 @@ final class OperationLock: @unchecked Sendable {
             return true
         } catch {
             lastAdmissionFailure = error.localizedDescription
+            lastAcquisitionFailure = .admission(error)
             return false
         }
     }
 
-    private func openDescriptor() -> Int32? {
+    private func recordFlockFailure(_ code: Int32) {
+        lastAcquisitionFailure = code == EWOULDBLOCK || code == EAGAIN ? .busy(code) : .unavailable(code)
+    }
+
+    private func openDescriptor(recordFailure: Bool = true) -> Int32? {
         let directory = fileURL.deletingLastPathComponent()
         if !FileManager.default.fileExists(atPath: directory.path) {
             try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         }
         let candidate = open(fileURL.path, O_CREAT | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0o644)
-        guard candidate >= 0 else { return nil }
+        guard candidate >= 0 else {
+            let code = errno
+            if recordFailure { lastAcquisitionFailure = .unavailable(code) }
+            return nil
+        }
         var info = stat()
-        guard fstat(candidate, &info) == 0, info.st_mode & S_IFMT == S_IFREG else {
+        let result = fstat(candidate, &info)
+        let code = result == 0 ? EINVAL : errno
+        guard result == 0, info.st_mode & S_IFMT == S_IFREG else {
+            if recordFailure { lastAcquisitionFailure = .unavailable(code) }
             _ = close(candidate)
             return nil
         }

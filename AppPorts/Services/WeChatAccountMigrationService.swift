@@ -224,6 +224,7 @@ struct WeChatAccountMigrationService: Sendable {
                 continue
             }
             item.weChatSplitMembers = active
+            item.autoMountPaused = active.contains { $0.autoMountPaused }
             item.description = "微信账号 · 拆分迁移（msg + business）".localized
             item.isMigratable = localPreview
             item.hasMountTransferRecord = !localPreview

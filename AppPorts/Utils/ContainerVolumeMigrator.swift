@@ -1704,6 +1704,18 @@ actor ContainerVolumeMigrator {
 
     /// 把记录对应的卷重新挂到容器内挂载点上；已挂载则直接返回。
     func mount(record: ContainerMountRecord) async throws {
+        try await mount(record: record, resumingManualPause: false)
+    }
+
+    func mount(record: ContainerMountRecord, resumingManualPause: Bool) async throws {
+        if !resumingManualPause, try store.isManuallyUnmounted(record) {
+            throw ManualMountPauseError.paused
+        }
+        try await mountRecordedVolume(record)
+        if resumingManualPause { try store.setManuallyUnmounted(false, record: record) }
+    }
+
+    private func mountRecordedVolume(_ record: ContainerMountRecord) async throws {
         let mountPoint = record.mountPointURL
         guard try !DiskEjectionPauseStore(store: store).snapshot().blocks(volumeUUIDs: [record.volumeUUID],
             paths: [record.mountPointPath, record.externalRootPath]) else { throw DiskEjectionError.paused }
@@ -1730,7 +1742,7 @@ actor ContainerVolumeMigrator {
             try requirePreparationLedger(pending)
             try requireUnswitchedMountEntry(pending)
             _ = try await recoverWithIndependentBudget(pending, finishPreparedRestore: false)
-            return try await mount(record: record)
+            return try await mountRecordedVolume(record)
         }
         let compatibleRestores = try await remountCompatibleRestoreIDs(record: record)
         let requiresOwnership = record.ownershipPolicy == .owners
@@ -1821,6 +1833,7 @@ actor ContainerVolumeMigrator {
     func unmount(record: ContainerMountRecord, force: Bool = false) async throws {
         let mountPoint = record.mountPointURL
         guard try store.recordsStrict().contains(record) else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
+        try store.setManuallyUnmounted(true, record: record)
         guard isMountPoint(mountPoint) else {
             if fileManager.fileExists(atPath: mountPoint.path) {
                 let lease = try makeMountPointLease(mountPoint)
@@ -1866,6 +1879,15 @@ actor ContainerVolumeMigrator {
             return []
         }
         for record in records {
+            do {
+                if try store.isManuallyUnmounted(record) {
+                    outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(ManualMountPauseError.paused.localizedDescription)))
+                    continue
+                }
+            } catch {
+                outcomes.append(RemountOutcome(record: record, state: .failed(error.localizedDescription)))
+                continue
+            }
             if ejection.blocks(volumeUUIDs: [record.volumeUUID], paths: [record.mountPointPath, record.externalRootPath]) {
                 outcomes.append(RemountOutcome(record: record, state: .requiresIntervention(DiskEjectionError.paused.localizedDescription)))
                 continue

@@ -1528,6 +1528,51 @@ final class DataDirScannerTests: XCTestCase {
         XCTAssertFalse(row.isMigratable)
     }
 
+    func testManualPauseIsIndependentFromMountedOnlineAndOfflineStates() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Example.app", bundleID: "com.example.test", in: workspace.appsURL)
+        let source = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.test/Data/Documents/Cache")
+        try createDirectoryWithPayload(at: source)
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        let record = ContainerMountRecord(appName: "Example", bundleIdentifier: "com.example.test", dataDirType: DataDirType.containers.rawValue,
+            mountPointPath: source.path, volumeUUID: "PAUSED", volumeName: "Paused", externalRootPath: workspace.externalRootURL.path)
+        try store.upsert(record)
+        try store.setManuallyUnmounted(true, record: record)
+        let app = AppItem(name: "Example.app", path: appURL, status: "本地")
+        for expectedStatus in [DataDirStatus.mounted, DataDirStatus.pendingMount, DataDirStatus.volumeMissing] {
+            let mounted = expectedStatus == DataDirStatus.mounted
+            let online = expectedStatus != DataDirStatus.volumeMissing
+            let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: store,
+                isMountPoint: { $0.standardizedFileURL.path == source.standardizedFileURL.path && mounted },
+                isVolumeOnline: { _ in online })
+            let items = await scanner.scanLibraryDirs(for: app)
+            let item = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+            XCTAssertEqual(item.status, expectedStatus)
+            XCTAssertTrue(item.autoMountPaused)
+            XCTAssertTrue(item.canRestore)
+            var resumed = item
+            resumed.autoMountPaused = false
+            XCTAssertNotEqual(item, resumed, "A pause-only change must refresh an otherwise unchanged row")
+        }
+    }
+
+    func testSplitAccountAggregatesPauseWithoutReplacingMountStatus() throws {
+        let home = URL(fileURLWithPath: "/Synthetic/Home")
+        let account = PartialWeChatMigrationPolicy(homeDirectory: home).accountsRoot.appendingPathComponent("wxid_fixture")
+        let members = ["msg", "business"].map { name -> DataDirItem in
+            var item = DataDirItem(name: name, path: account.appendingPathComponent(name), type: .containers,
+                priority: .optional, description: "", status: DataDirStatus.mounted)
+            item.hasMountTransferRecord = true
+            item.autoMountPaused = name == "msg"
+            return item
+        }
+        let grouped = WeChatAccountMigrationService.groupedItems(members, homeDirectory: home)
+        let row = try XCTUnwrap(grouped.first { $0.path == account })
+        XCTAssertEqual(row.status, DataDirStatus.mounted)
+        XCTAssertTrue(row.autoMountPaused)
+    }
+
     func testMountedDataRootDoesNotEnumerateBusinessChildren() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

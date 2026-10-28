@@ -103,6 +103,12 @@ struct DataDirRowView: View {
 
                 // 状态徽章
                 DataDirStatusBadge(status: item.displayedStatus)
+                if item.autoMountPaused {
+                    DataDirStatusBadge(status: DataDirStatus.mountPaused)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .help(ManualMountPauseError.paused.localizedDescription)
+                }
             }
 
             // 操作按钮
@@ -175,11 +181,17 @@ struct DataDirOperationButtons: View {
     /// 行内保留全部直接操作，次要操作使用图标以节省名称空间。
     var inline = false
 
+    private var existingContainerRecovery: Bool {
+        !classicModeActive && (item.type == .containers || item.type == .groupContainers)
+    }
+
     @ViewBuilder
     var body: some View {
         if !item.weChatSplitMembers.isEmpty {
             HStack(spacing: 6) {
-                if item.status == DataDirStatus.waitingForUnlock, let onMount {
+                if item.autoMountPaused, let onMount {
+                    migrationButton(title: item.status == DataDirStatus.mounted ? "恢复自动挂载".localized : "挂载".localized, icon: "externaldrive.fill.badge.checkmark", compact: inline) { onMount(item) }
+                } else if item.status == DataDirStatus.waitingForUnlock, let onMount {
                     migrationButton(title: "解锁".localized, icon: "lock.open") { onMount(item) }
                 } else if item.weChatSplitMembers.count < PartialWeChatMigrationPolicy.memberNames.count
                     || item.weChatSplitMembers.contains(where: { $0.status != DataDirStatus.mounted }) {
@@ -200,6 +212,29 @@ struct DataDirOperationButtons: View {
             mountRestoreButton(action: onMountRestore, compact: inline)
         } else if item.canRestore && (!item.isMigratable || item.status != DataDirStatus.needsNormalization) {
             restoreButton()
+        } else if item.status == "现有软链" && !item.isUserDirectoryLink {
+            if item.linkedDestination != nil {
+                Button(action: { onManageExistingLink(item) }) {
+                    HStack(spacing: 5) {
+                        Image(systemName: existingContainerRecovery ? "arrow.uturn.backward.circle.fill" : "slider.horizontal.3")
+                        Text(existingContainerRecovery ? "还原".localized : "链接详情".localized)
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, inline ? 8 : 10)
+                    .padding(.vertical, inline ? 7 : 5)
+                    .background(
+                        Capsule().fill(Color.teal)
+                    )
+                }
+                .buttonStyle(.plain)
+                .help(existingContainerRecovery ? "将数据目录还原到本地".localized : "查看现有软链路径，并可将其纳入 AppPorts 管理".localized)
+            } else {
+                Image(systemName: "questionmark.circle")
+                    .font(.system(size: 13))
+                    .foregroundColor(.teal.opacity(0.85))
+                    .help("检测到已有符号链接，非 AppPorts 迁移结果".localized)
+            }
         } else if !item.isMigratable {
             // 不可迁移的目录：显示禁用按钮 + tooltip
             Image(systemName: "lock.fill")
@@ -227,29 +262,6 @@ struct DataDirOperationButtons: View {
             // A legacy managed link can always be restored without first normalizing it.
             // Keep the secondary action compact inside the browser's fixed-width column.
             if item.canRestore { restoreButton(compact: inline) }
-        } else if item.status == "现有软链" {
-            if item.linkedDestination != nil {
-                Button(action: { onManageExistingLink(item) }) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "slider.horizontal.3")
-                        Text("链接详情".localized)
-                    }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, inline ? 8 : 10)
-                    .padding(.vertical, inline ? 7 : 5)
-                    .background(
-                        Capsule().fill(Color.teal)
-                    )
-                }
-                .buttonStyle(.plain)
-                .help("查看现有软链路径，并可将其纳入 AppPorts 管理".localized)
-            } else {
-                Image(systemName: "questionmark.circle")
-                    .font(.system(size: 13))
-                    .foregroundColor(.teal.opacity(0.85))
-                    .help("检测到已有符号链接，非 AppPorts 迁移结果".localized)
-            }
         } else if item.status == "待接回" {
             if item.linkedDestination != nil {
                 Button(action: { onRelinkExternalData(item) }) {
@@ -303,11 +315,11 @@ struct DataDirOperationButtons: View {
         }
     }
 
-    private func migrationButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+    private func migrationButton(title: String, icon: String, compact: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Image(systemName: icon)
-                Text(title).lineLimit(1)
+                if !compact { Text(title).lineLimit(1) }
             }
             .fixedSize(horizontal: true, vertical: true)
             .font(.system(size: 12, weight: .medium))
@@ -317,6 +329,8 @@ struct DataDirOperationButtons: View {
             .background(Capsule().fill(Color.accentColor))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .help(title)
     }
 
     private func restoreButton(compact: Bool = false) -> some View {
@@ -358,7 +372,9 @@ struct DataDirOperationButtons: View {
     @ViewBuilder
     private var mountOperationButtons: some View {
         HStack(spacing: 6) {
-            if item.status == DataDirStatus.mounted, let onUnmount {
+            if item.status == DataDirStatus.mounted, item.autoMountPaused, let onMount {
+                migrationButton(title: "恢复自动挂载".localized, icon: "play.circle", compact: inline) { onMount(item) }
+            } else if item.status == DataDirStatus.mounted, let onUnmount {
                 Button(action: { onUnmount(item) }) {
                     HStack(spacing: 5) {
                         Image(systemName: "eject.fill")
@@ -396,7 +412,9 @@ struct DataDirOperationButtons: View {
                 Image(systemName: "externaldrive.badge.xmark")
                     .font(.system(size: 13))
                     .foregroundColor(.red.opacity(0.8))
-                    .help("外置盘未连接。连接这块外部存储后会自动接回；如果已经连接仍显示此状态，数据卷可能被改名或删除，请查看挂载迁移文档里的排查步骤".localized)
+                    .help(item.autoMountPaused
+                    ? "请连接保存数据的外部存储。".localized + "\n" + ManualMountPauseError.paused.localizedDescription
+                    : "外置盘未连接。连接这块外部存储后会自动接回；如果已经连接仍显示此状态，数据卷可能被改名或删除，请查看挂载迁移文档里的排查步骤".localized)
             }
             if let onMountRestore {
                 mountRestoreButton(action: onMountRestore, compact: inline && item.status != DataDirStatus.mounted)
@@ -466,6 +484,7 @@ struct DataDirStatusBadge: View {
         case "本地":   return "internaldrive"
         case "已挂载": return "externaldrive.fill.badge.checkmark"
         case "待挂载": return "externaldrive.badge.plus"
+        case DataDirStatus.mountPaused: return "pause.circle"
         case "卷丢失": return "externaldrive.badge.xmark"
         default:       return "questionmark"
         }
@@ -479,7 +498,7 @@ struct DataDirStatusBadge: View {
         case "待接回": return .indigo
         case "本地":   return .secondary
         case "已挂载": return .purple
-        case "待挂载": return .orange
+        case "待挂载", DataDirStatus.mountPaused: return .orange
         case "卷丢失": return .red
         default:       return .gray
         }
@@ -493,7 +512,7 @@ struct DataDirStatusBadge: View {
         case "待接回": return .indigo.opacity(0.14)
         case "本地":   return Color.primary.opacity(0.05)
         case "已挂载": return .purple.opacity(0.12)
-        case "待挂载": return .orange.opacity(0.14)
+        case "待挂载", DataDirStatus.mountPaused: return .orange.opacity(0.14)
         case "卷丢失": return .red.opacity(0.12)
         default:       return .gray.opacity(0.08)
         }

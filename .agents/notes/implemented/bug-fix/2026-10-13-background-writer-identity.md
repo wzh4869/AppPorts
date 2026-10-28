@@ -29,6 +29,8 @@ Status: implemented
 
 [主动弹出外盘](../feature/2026-10-23-explicit-disk-ejection.md)把 required capability 提升到 `appports-verified-writer-v7-disk-ejection`，确保旧写入进程不能忽略新暂停文件。
 
+当前 capability 为 `appports-verified-writer-v8-manual-mount-pause`，以确保旧进程不能忽略[单卷手动暂停](2026-10-28-manual-unmount-and-link-adoption.md)。
+
 ## Alternatives considered
 
 - **拒绝同 UID 的全部不可读进程**：保守但把无关程序变成全局操作障碍。

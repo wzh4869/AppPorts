@@ -816,10 +816,18 @@ extension ContainerVolumeMigrator {
         do {
             ejection = try await DiskEjectionPauseStore(store: store).refreshed(using: disk)
             transfers = try store.transfers()
+            if ignoresRetryBackoff, let operationID,
+               let selected = transfers.first(where: { $0.operationID == operationID && $0.mode == .mount }),
+               try store.manualMountPauseBlocks(selected) {
+                return [ManualMountPauseError.retryPaused.localizedDescription]
+            }
         }
         catch { return [error.localizedDescription] }
         for transfer in transfers where transfer.mode == .mount && !transfer.isDataSwitchComplete && transfer.needsAutomaticCompletion
             && (operationID == nil || transfer.operationID == operationID) {
+            do {
+                if try store.manualMountPauseBlocks(transfer) { continue }
+            } catch { warnings.append(error.localizedDescription); continue }
             if ejection.blocks(transfer) { continue }
             if Task.isCancelled { return warnings }
             // Defer expensive residue checks only if a usable original entry
@@ -845,6 +853,9 @@ extension ContainerVolumeMigrator {
         guard let completed = try? store.transfers() else { return warnings }
         for transfer in completed where transfer.mode == .mount && transfer.isDataSwitchComplete && transfer.needsAutomaticCompletion
             && (operationID == nil || transfer.operationID == operationID) {
+            do {
+                if try store.manualMountPauseBlocks(transfer) { continue }
+            } catch { warnings.append(error.localizedDescription); continue }
             if ejection.blocks(transfer) { continue }
             if Task.isCancelled { return warnings }
             guard ignoresRetryBackoff || !CleanupRetryBackoff.shouldDefer(until: transfer.nextAutomaticRetryAt, now: CleanupRetryContext.now()) else { continue }
@@ -857,6 +868,9 @@ extension ContainerVolumeMigrator {
         }
         guard operationID == nil else { return warnings }
         for cleanup in (try? store.pendingCleanups()) ?? [] {
+            do {
+                if try store.isManuallyUnmounted(cleanup.mountRecord) { continue }
+            } catch { warnings.append(error.localizedDescription); continue }
             if ejection.blocks(volumeUUIDs: [cleanup.mountRecord.volumeUUID],
                 paths: [cleanup.localPath, cleanup.mountRecord.externalRootPath]) { continue }
             // Legacy restore staging can be required for recovering the entry.
@@ -882,6 +896,7 @@ extension ContainerVolumeMigrator {
         var warnings: [String] = []
         for material in (try? store.preservedMaterials()) ?? [] {
             do {
+                if let recovery = material.recoveryRecord, try store.manualMountPauseBlocks(recovery) { continue }
                 if try DiskEjectionPauseStore(store: store).snapshot().blocks(volumeUUIDs: [material.volumeUUID],
                     paths: material.paths, containerUUID: material.containerUUID) { continue }
             } catch { return [error.localizedDescription] }

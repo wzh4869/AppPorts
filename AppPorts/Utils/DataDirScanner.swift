@@ -1145,6 +1145,7 @@ actor DataDirScanner {
         externalRootURL: URL?
     ) {
         item.status = inspection.status
+        item.autoMountPaused = mountRecord(for: item.path).map { (try? mountStore.isManuallyUnmounted($0)) == true } ?? false
         item.linkedDestination = inspection.linkedDestination
 
         guard inspection.status == "已链接",

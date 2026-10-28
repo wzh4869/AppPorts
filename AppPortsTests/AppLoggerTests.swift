@@ -34,6 +34,41 @@ final class AppLoggerTests: XCTestCase {
         try super.tearDownWithError()
     }
 
+    func testOperationFailureExportsAssociationAndNativeCauseWithRedactedPaths() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        let recordID = UUID()
+        let failure = OperationBlockage(reason: .signaturePreparation,
+            applicationURL: URL(fileURLWithPath: "/Users/alice/Private Project/Example.app"),
+            blockingOperationID: recordID, blockingPhase: "prepared",
+            recordURL: URL(fileURLWithPath: "/Volumes/Private Backup/SignatureBackups/record.plist"),
+            underlyingError: NSError(domain: NSPOSIXErrorDomain, code: Int(EACCES)))
+        let wrapped = NSError(domain: "SyntheticWrapper", code: 99, userInfo: [NSUnderlyingErrorKey: failure as NSError])
+        logger.logOperationFailure(category: "signature", operationID: "native-attempt", error: failure, stage: "preparing")
+        logger.logOperationFailure(category: "signature", operationID: "wrapped-attempt", error: wrapped, stage: "verifying")
+        let summaries = logger.recentOperationSummariesSnapshot()
+        let native = try XCTUnwrap(summaries.first { $0.operationID == "native-attempt" })
+        let nested = try XCTUnwrap(summaries.first { $0.operationID == "wrapped-attempt" })
+        XCTAssertEqual(native.errorCode, failure.diagnosticCode)
+        XCTAssertEqual(native.details["failure_stage"], "preparing")
+        XCTAssertEqual(native.details["cause_blocking_operation_id"], recordID.uuidString)
+        XCTAssertEqual(native.details["cause_blocking_phase"], "prepared")
+        XCTAssertEqual(native.details["cause_underlying_domain"], NSPOSIXErrorDomain)
+        XCTAssertEqual(native.details["cause_underlying_code"], String(EACCES))
+        XCTAssertEqual(nested.errorCode, failure.diagnosticCode)
+        XCTAssertEqual(nested.details["cause_underlying_blocking_operation_id"], recordID.uuidString)
+        let export = root.appendingPathComponent("StructuredExport")
+        try fileManager.createDirectory(at: export, withIntermediateDirectories: false)
+        let package = try logger.buildDiagnosticPackage(in: export)
+        let log = try String(contentsOf: package.appendingPathComponent("AppPorts_Log.share-safe.txt"))
+        let json = try String(contentsOf: package.appendingPathComponent("recent-failures.json"))
+        for text in [log, json] {
+            XCTAssertTrue(text.contains(recordID.uuidString))
+            XCTAssertTrue(text.contains(failure.diagnosticCode))
+            XCTAssertFalse(text.contains("/Users/alice"))
+            XCTAssertFalse(text.contains("Private Backup"))
+        }
+    }
+
     func testRedactedDiagnosticTextMasksUserAndVolumePaths() {
         let raw = """
         home=/Users/alice/Library/Application Support/AppPorts

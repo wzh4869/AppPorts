@@ -367,6 +367,28 @@ final class AppLogger: @unchecked Sendable {
         }
     }
 
+    /// Preserve typed causes before callers reduce failures to user-facing strings.
+    nonisolated func logOperationFailure(category: String, operationID: String, error: Error,
+                                         stage: String? = nil, startedAt: Date? = nil,
+                                         details: [(String, String?)] = [], relatedURLs: [(String, URL)] = [], result: String = "failed") {
+        var current: NSError? = error as NSError
+        var diagnosticCode: String?
+        for _ in 0..<6 {
+            guard let cause = current else { break }
+            if let fields = cause.userInfo[OperationBlockage.diagnosticFieldsKey] as? [String: String],
+               let code = fields["diagnostic_code"] { diagnosticCode = code; break }
+            current = (cause.userInfo[NSUnderlyingErrorKey] as? Error).map { $0 as NSError }
+        }
+        let code = diagnosticCode ?? "OPERATION-FAILED"
+        let facts = details + [("failure_stage", stage)] + errorDetails(for: error, prefix: "cause")
+        logError(result == "success_with_warning" ? "操作收尾未完成" : "操作执行失败", error: error,
+                 context: [("operation_id", operationID), ("category", category), ("diagnostic_code", code),
+                           ("failure_stage", stage)] + details,
+                 relatedURLs: relatedURLs)
+        logOperationSummary(category: category, operationID: operationID, result: result, startedAt: startedAt,
+                            errorCode: code, details: facts)
+    }
+
     nonisolated func logOperationSummary(
         category: String,
         operationID: String,
@@ -1192,6 +1214,10 @@ final class AppLogger: @unchecked Sendable {
             ("\(prefix)_domain", nsError.domain),
             ("\(prefix)_code", String(nsError.code))
         ]
+
+        if let diagnostic = nsError.userInfo[OperationBlockage.diagnosticFieldsKey] as? [String: String] {
+            details += diagnostic.keys.sorted().map { ("\(prefix)_\($0)", diagnostic[$0]) }
+        }
 
         if let failureReason = nsError.localizedFailureReason, !failureReason.isEmpty {
             details.append(("\(prefix)_failure_reason", failureReason))

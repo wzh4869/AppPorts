@@ -328,7 +328,6 @@ actor DataDirMover {
         if let old {
             guard old.destinationIdentity.matchesFilesystemObject(externalIdentity),
                   DataPathTopology.relationship(old.destinationPath, external.path) == .same else { throw DataOperationSafety.Failure.conflict(local.path) }
-            if isSymbolicLink(at: local), DataPathTopology.relationship(local.path, external.path) == .same { return }
         }
         let adoptedEntry: DataPathIdentity?
         if isSymbolicLink(at: local), DataPathTopology.relationship(local.path, external.path) == .same {
@@ -462,7 +461,10 @@ actor DataDirMover {
         try requirePolicy(local)
         guard existingDirectory(at: source), !isSymbolicLink(at: source) else { throw DataDirError.externalNotFound(source) }
         guard isSymbolicLink(at: local), DataPathTopology.relationship(local.path, source.path) == .same else { throw DataDirError.invalidSymlink(local) }
-        if DataPathTopology.relationship(source.path, destination.path) == .same { return nil }
+        if DataPathTopology.relationship(source.path, destination.path) == .same {
+            try await createLink(localPath: local, externalPath: source)
+            return nil
+        }
         guard try !entryExists(destination) else { throw DataDirError.destinationExists(destination) }
         let old = try store.managedLink(forOriginalPath: local.path)
         let type = try managedType(for: local, external: source, indexedType: old?.dataDirType)

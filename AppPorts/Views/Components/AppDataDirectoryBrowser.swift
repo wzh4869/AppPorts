@@ -533,6 +533,12 @@ private struct AppDataDirectoryRow<Actions: View>: View {
                     .monospacedDigit()
                     .foregroundColor(isEmphasized ? .white : (row.item.size == nil ? .secondary : .primary))
                 DataDirStatusBadge(status: row.item.displayedStatus, isEmphasized: isEmphasized)
+                if row.item.autoMountPaused {
+                    DataDirStatusBadge(status: DataDirStatus.mountPaused, isEmphasized: isEmphasized)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .help(ManualMountPauseError.paused.localizedDescription)
+                }
             }
             .frame(width: DirectoryRowColumns.metadataWidth, alignment: .trailing)
 

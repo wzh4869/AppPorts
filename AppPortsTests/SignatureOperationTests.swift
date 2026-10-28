@@ -41,8 +41,13 @@ struct SignatureOperationTests {
                 try await diskImage(["detach", first.path])
                 try await diskImage(["attach", image.path, "-nobrowse", "-mountpoint", second.path])
                 app = second.appendingPathComponent("Installed.app")
-                #expect(throws: CodeSigner.SigningError.self) {
-                    try SignatureFactStore(backupDirectoryURL: fixture.backups).captureRelocation(from: app)
+                do {
+                    _ = try SignatureFactStore(backupDirectoryURL: fixture.backups).captureRelocation(from: app)
+                    Issue.record("Unretained original must block metadata reconciliation")
+                } catch let error as OperationBlockage {
+                    #expect(error.reason == .originalRetention)
+                    #expect(error.blockingOperationID == signed.operationID)
+                    #expect(error.blockingPhase == SignatureOperationRecord.Phase.committed.rawValue)
                 }
                 let warnings = await fixture.signer(officialEvidence: true, captureOfficialOriginal: true).performAutomaticMaintenance()
                 #expect(warnings.isEmpty, Comment(rawValue: warnings.joined(separator: "\n")))
@@ -157,6 +162,34 @@ struct SignatureOperationTests {
         try FileManager.default.moveItem(at: disconnected, to: folder)
         let restored = try await signer.restoreSignature(appURL: fixture.app, bundleIdentifier: fixture.identifier)
         #expect(restored.committed && restored.cleanupWarning == nil)
+    }
+
+    @Test("Committed cleanup records the typed blocker before returning a success warning")
+    func committedCleanupRetainsDiagnosticCause() async throws {
+        let fixture = try Fixture(sandboxed: true)
+        defer { fixture.remove() }
+        let blocker = OperationBlockage(reason: .backupDependency, applicationURL: fixture.app,
+            blockingOperationID: UUID(), blockingPhase: "prepared")
+        let location = try SignatureBackupStorage.prepareDirectory(fixture.root.appendingPathComponent("AppPorts Backups"))
+        let signer = fixture.signer(officialEvidence: true, captureOfficialOriginal: true,
+            synchronizeTree: { url in
+                if url.lastPathComponent.hasPrefix("original-") { throw blocker }
+                try DurableFileIO.syncTree(at: url)
+            }, backupDestination: { _, _ in location })
+        let result = try await signer.sign(appURL: fixture.app, bundleIdentifier: fixture.identifier, allowSandboxed: true)
+        #expect(result.committed)
+        #expect(result.cleanupWarning?.contains(try #require(blocker.blockingOperationID).uuidString) == true)
+        let operationID = try #require(result.operationID)
+        let summary = try #require(AppLogger.shared.recentOperationSummariesSnapshot().last {
+            $0.operationID == operationID.uuidString && $0.details["failure_stage"] == "committed_cleanup"
+        })
+        #expect(summary.result == "success_with_warning")
+        #expect(summary.errorCode == blocker.diagnosticCode)
+        #expect(summary.details["record_id"] == operationID.uuidString)
+        #expect(summary.details["application_path"] == fixture.app.path)
+        #expect(summary.details["cause_blocking_operation_id"] == blocker.blockingOperationID?.uuidString)
+        #expect(summary.details["cause_blocking_phase"] == "prepared")
+        #expect(try SignatureOperationStore(backupDirectoryURL: fixture.backups).record(id: operationID).phase == .committed)
     }
 
     @Test("A published copy is rechecked before a cold retry deletes the remaining local original")
@@ -1050,9 +1083,10 @@ struct SignatureOperationTests {
                     _ = try await signer.sign(appURL: fixture.app, bundleIdentifier: fixture.identifier, allowSandboxed: true)
                 }
                 Issue.record("An associated unreadable operation must be reported before new application work")
-            } catch let error as CodeSigner.SigningError {
-                guard case .unreadableOperationRecord(let url) = error else { throw error }
-                #expect(url.path == broken.url.path)
+            } catch let error as OperationBlockage {
+                #expect(error.reason == .signatureRecordUnreadable)
+                #expect(error.recordURL?.path == broken.url.path)
+                #expect(error.applicationURL?.resolvingSymlinksInPath().path == fixture.app.resolvingSymlinksInPath().path)
             }
         }
         #expect(await commands.signCount == 0)

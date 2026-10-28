@@ -94852,6 +94852,1502 @@
         }
       }
     },
+    "原始签名备份尚未保留完成，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يكتمل حفظ النسخة الاحتياطية للتوقيع الأصلي. لم يُنفذ هذا الإجراء. حاول لاحقًا، وإذا استمرت المشكلة فصدّر حزمة تشخيص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "N’eo ket echu mirout adkopi ar sinadur orin. N’eo ket bet sevenet an ober-mañ. Klaskit en-dro diwezhatoc’h; ma pad ar gudenn, ezporzhiit ur pakad diagnostik."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Sicherung der Originalsignatur ist noch nicht vollständig aufbewahrt. Diese Aktion wurde nicht ausgeführt. Versuche es später erneut. Exportiere bei anhaltenden Problemen ein Diagnosepaket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retention of the original signature backup is incomplete. This action was not performed. Try again later; if the issue persists, export a diagnostic package."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La konservado de la sekurkopio de la originala subskribo ne estas finita. Ĉi tiu ago ne estis farita. Reprovu poste; se la problemo daŭras, eksportu diagnozan pakaĵon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conservación de la copia de la firma original no ha terminado. Esta acción no se ha realizado. Inténtalo más tarde; si el problema persiste, exporta un paquete de diagnóstico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conservation de la sauvegarde de signature d’origine n’est pas terminée. Cette action n’a pas été effectuée. Réessayez plus tard ; si le problème persiste, exportez un paquet de diagnostic."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मूल हस्ताक्षर बैकअप का संरक्षण अधूरा है। यह कार्रवाई नहीं की गई। बाद में दोबारा प्रयास करें; समस्या बनी रहे तो निदान पैकेज निर्यात करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penyimpanan cadangan tanda tangan asli belum selesai. Tindakan ini tidak dilakukan. Coba lagi nanti; jika masalah berlanjut, ekspor paket diagnostik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La conservazione del backup della firma originale non è completa. Questa azione non è stata eseguita. Riprova più tardi; se il problema persiste, esporta un pacchetto diagnostico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元の署名バックアップの保存が完了していないため、この操作は実行されませんでした。時間をおいて再試行し、問題が続く場合は診断パッケージをエクスポートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본 서명 백업 보관이 완료되지 않아 이 작업은 실행되지 않았습니다. 나중에 다시 시도하고, 문제가 계속되면 진단 패키지를 내보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het bewaren van de oorspronkelijke handtekeningback-up is niet voltooid. Deze actie is niet uitgevoerd. Probeer het later opnieuw; exporteer een diagnosepakket als het probleem aanhoudt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowanie kopii oryginalnego podpisu nie zostało zakończone. Ta czynność nie została wykonana. Spróbuj później; jeśli problem się powtarza, wyeksportuj pakiet diagnostyczny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preservação do backup da assinatura original não foi concluída. Esta ação não foi executada. Tente novamente mais tarde; se o problema persistir, exporte um pacote de diagnóstico."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранение резервной копии исходной подписи не завершено. Это действие не выполнено. Повторите попытку позже; если проблема сохраняется, экспортируйте диагностический пакет."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การเก็บรักษาข้อมูลสำรองลายเซ็นเดิมยังไม่เสร็จสิ้น ยังไม่ได้ดำเนินการนี้ โปรดลองอีกครั้งภายหลัง หากยังเกิดปัญหา ให้ส่งออกแพ็กเกจการวินิจฉัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Özgün imza yedeğinin korunması tamamlanmadı. Bu işlem gerçekleştirilmedi. Daha sonra yeniden deneyin; sorun sürerse bir tanılama paketi dışa aktarın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc lưu giữ bản sao lưu chữ ký gốc chưa hoàn tất. Thao tác này chưa được thực hiện. Hãy thử lại sau; nếu vấn đề tiếp diễn, hãy xuất gói chẩn đoán."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原始签名备份尚未保留完成，本次未执行。请稍后重试；若持续出现，请导出诊断包。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原始簽名備份尚未保留完成，本次未執行。請稍後重試；若持續出現，請匯出診斷套件。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原始簽名備份尚未保留完成，夲佽未執荇。請稍後重試；若持續出現，請導出診斷包。"
+          }
+        }
+      }
+    },
+    "恢复自动挂载" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استئناف التحميل التلقائي"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adkregiñ gant ar sevel emgefre"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisches Einbinden fortsetzen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume automatic mounting"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daŭrigi aŭtomatan muntadon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reanudar montaje automático"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprendre le montage automatique"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्वचालित माउंटिंग फिर शुरू करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lanjutkan pemasangan otomatis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprendi montaggio automatico"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動マウントを再開"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동 마운트 재개"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch koppelen hervatten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wznów automatyczne montowanie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retomar montagem automática"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Возобновить автоматическое подключение"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดำเนินการเมานต์อัตโนมัติต่อ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik bağlamayı sürdür"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp tục tự động gắn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复自动挂载"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復自動掛載"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復洎動掛載"
+          }
+        }
+      }
+    },
+    "无法访问操作锁文件，本次未执行。请检查访问权限或导出诊断包。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يتعذر الوصول إلى ملف قفل العمليات. لم يُنفذ هذا الإجراء. تحقق من أذونات الوصول أو صدّر حزمة تشخيص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "N’haller ket tizhout restr prennañ an oberiadenn. N’eo ket bet sevenet an ober-mañ. Gwiriit an aotreoù moned pe ezporzhiit ur pakad deznaouiñ."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Sperrdatei kann nicht geöffnet werden. Diese Aktion wurde nicht ausgeführt. Prüfe die Zugriffsrechte oder exportiere ein Diagnosepaket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The operation lock file cannot be accessed. This action was not performed. Check access permissions or export a diagnostic package."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La operacia serurdosiero ne estas alirebla. Ĉi tiu ago ne estis farita. Kontrolu alirpermesojn aŭ eksportu diagnozan pakaĵon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede acceder al archivo de bloqueo. Esta acción no se ha realizado. Revisa los permisos de acceso o exporta un paquete de diagnóstico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le fichier de verrouillage est inaccessible. Cette action n’a pas été effectuée. Vérifiez les autorisations d’accès ou exportez un paquet de diagnostic."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्रवाई की लॉक फ़ाइल तक पहुँच नहीं है। यह कार्रवाई नहीं की गई। पहुँच अनुमतियाँ जाँचें या निदान पैकेज निर्यात करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File kunci operasi tidak dapat diakses. Tindakan ini tidak dilakukan. Periksa izin akses atau ekspor paket diagnostik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile accedere al file di blocco. Questa azione non è stata eseguita. Controlla i permessi di accesso o esporta un pacchetto diagnostico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作ロックファイルにアクセスできないため、この操作は実行されませんでした。アクセス権を確認するか、診断パッケージを書き出してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작업 잠금 파일에 접근할 수 없어 이 작업은 실행되지 않았습니다. 접근 권한을 확인하거나 진단 패키지를 내보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het vergrendelingsbestand is niet toegankelijk. Deze actie is niet uitgevoerd. Controleer de toegangsrechten of exporteer een diagnosepakket."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można uzyskać dostępu do pliku blokady. Ta czynność nie została wykonana. Sprawdź uprawnienia dostępu lub wyeksportuj pakiet diagnostyczny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível acessar o arquivo de bloqueio. Esta ação não foi executada. Verifique as permissões de acesso ou exporte um pacote de diagnóstico."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет доступа к файлу блокировки. Это действие не выполнено. Проверьте права доступа или экспортируйте диагностический пакет."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถเข้าถึงไฟล์ล็อกการทำงานได้ ยังไม่ได้ดำเนินการนี้ โปรดตรวจสอบสิทธิ์การเข้าถึงหรือส่งออกแพ็กเกจการวินิจฉัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İşlem kilit dosyasına erişilemiyor. Bu işlem gerçekleştirilmedi. Erişim izinlerini kontrol edin veya bir tanılama paketi dışa aktarın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể truy cập tệp khóa thao tác. Thao tác này chưa được thực hiện. Kiểm tra quyền truy cập hoặc xuất gói chẩn đoán."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法访问操作锁文件，本次未执行。请检查访问权限或导出诊断包。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法存取操作鎖定檔案，本次未執行。請檢查存取權限或匯出診斷套件。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法訪問操作鎖文件，夲佽未執荇。請檢查訪問權限或導出診斷包。"
+          }
+        }
+      }
+    },
+    "此应用仍有未完成的签名操作，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لهذا التطبيق عملية توقيع غير مكتملة. لم يُنفذ هذا الإجراء. حاول لاحقًا، وإذا استمرت المشكلة فصدّر حزمة تشخيص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un oberiadenn sinañ diechu zo evit an arload-mañ. N’eo ket bet sevenet an ober-mañ. Klaskit en-dro diwezhatoc’h; ma pad ar gudenn, ezporzhiit ur pakad diagnostik."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diese App ist ein Signierungsvorgang nicht abgeschlossen. Diese Aktion wurde nicht ausgeführt. Versuche es später erneut. Exportiere bei anhaltenden Problemen ein Diagnosepaket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app has an unfinished signing operation. This action was not performed. Try again later; if the issue persists, export a diagnostic package."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu aplikaĵo havas nefinitan subskriban operacion. Ĉi tiu ago ne estis farita. Reprovu poste; se la problemo daŭras, eksportu diagnozan pakaĵon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app tiene una operación de firma sin terminar. Esta acción no se ha realizado. Inténtalo más tarde; si el problema persiste, exporta un paquete de diagnóstico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une opération de signature reste inachevée pour cette app. Cette action n’a pas été effectuée. Réessayez plus tard ; si le problème persiste, exportez un paquet de diagnostic."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस ऐप की हस्ताक्षर कार्रवाई अधूरी है। यह कार्रवाई नहीं की गई। बाद में दोबारा प्रयास करें; समस्या बनी रहे तो निदान पैकेज निर्यात करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi ini memiliki operasi penandatanganan yang belum selesai. Tindakan ini tidak dilakukan. Coba lagi nanti; jika masalah berlanjut, ekspor paket diagnostik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app ha un’operazione di firma incompleta. Questa azione non è stata eseguita. Riprova più tardi; se il problema persiste, esporta un pacchetto diagnostico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリには未完了の署名操作があるため、この操作は実行されませんでした。時間をおいて再試行し、問題が続く場合は診断パッケージをエクスポートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 앱에 완료되지 않은 서명 작업이 있어 이 작업은 실행되지 않았습니다. 나중에 다시 시도하고, 문제가 계속되면 진단 패키지를 내보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor deze app is een ondertekening nog niet voltooid. Deze actie is niet uitgevoerd. Probeer het later opnieuw; exporteer een diagnosepakket als het probleem aanhoudt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacja ma niedokończoną operację podpisywania. Ta czynność nie została wykonana. Spróbuj później; jeśli problem się powtarza, wyeksportuj pakiet diagnostyczny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este app tem uma operação de assinatura inacabada. Esta ação não foi executada. Tente novamente mais tarde; se o problema persistir, exporte um pacote de diagnóstico."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для этого приложения есть незавершённая операция подписи. Это действие не выполнено. Повторите попытку позже; если проблема сохраняется, экспортируйте диагностический пакет."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปนี้ยังมีการลงนามที่ไม่เสร็จสิ้น ยังไม่ได้ดำเนินการนี้ โปรดลองอีกครั้งภายหลัง หากยังเกิดปัญหา ให้ส่งออกแพ็กเกจการวินิจฉัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulamanın tamamlanmamış bir imzalama işlemi var. Bu işlem gerçekleştirilmedi. Daha sonra yeniden deneyin; sorun sürerse bir tanılama paketi dışa aktarın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng này còn thao tác ký chưa hoàn tất. Thao tác này chưa được thực hiện. Hãy thử lại sau; nếu vấn đề tiếp diễn, hãy xuất gói chẩn đoán."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此应用仍有未完成的签名操作，本次未执行。请稍后重试；若持续出现，请导出诊断包。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應用程式仍有未完成的簽名操作，本次未執行。請稍後重試；若持續出現，請匯出診斷套件。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應用仍有未完成的簽名操作，夲佽未執荇。請稍後重試；若持續出現，請導出診斷包。"
+          }
+        }
+      }
+    },
+    "相关恢复材料仍被其他操作使用，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا تزال عملية أخرى تستخدم مواد الاسترداد المرتبطة. لم يُنفذ هذا الإجراء. حاول لاحقًا، وإذا استمرت المشكلة فصدّر حزمة تشخيص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implijet eo c’hoazh an danvezioù assav liammet gant un oberiadenn all. N’eo ket bet sevenet an ober-mañ. Klaskit en-dro diwezhatoc’h; ma pad ar gudenn, ezporzhiit ur pakad diagnostik."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugehörige Wiederherstellungsmaterialien werden noch von einem anderen Vorgang verwendet. Diese Aktion wurde nicht ausgeführt. Versuche es später erneut. Exportiere bei anhaltenden Problemen ein Diagnosepaket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Related recovery materials are still in use by another operation. This action was not performed. Try again later; if the issue persists, export a diagnostic package."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilataj restaŭraj materialoj estas ankoraŭ uzataj de alia operacio. Ĉi tiu ago ne estis farita. Reprovu poste; se la problemo daŭras, eksportu diagnozan pakaĵon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los materiales de recuperación asociados siguen en uso por otra operación. Esta acción no se ha realizado. Inténtalo más tarde; si el problema persiste, exporta un paquete de diagnóstico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments de récupération associés sont encore utilisés par une autre opération. Cette action n’a pas été effectuée. Réessayez plus tard ; si le problème persiste, exportez un paquet de diagnostic."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "संबंधित पुनर्प्राप्ति सामग्री किसी दूसरी कार्रवाई के उपयोग में है। यह कार्रवाई नहीं की गई। बाद में दोबारा प्रयास करें; समस्या बनी रहे तो निदान पैकेज निर्यात करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Materi pemulihan terkait masih digunakan operasi lain. Tindakan ini tidak dilakukan. Coba lagi nanti; jika masalah berlanjut, ekspor paket diagnostik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I materiali di ripristino associati sono ancora usati da un’altra operazione. Questa azione non è stata eseguita. Riprova più tardi; se il problema persiste, esporta un pacchetto diagnostico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "関連する復旧データが別の操作で使用中のため、この操作は実行されませんでした。時間をおいて再試行し、問題が続く場合は診断パッケージをエクスポートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관련 복구 자료를 다른 작업에서 사용 중이므로 이 작업은 실행되지 않았습니다. 나중에 다시 시도하고, 문제가 계속되면 진단 패키지를 내보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerelateerde herstelbestanden worden nog door een andere bewerking gebruikt. Deze actie is niet uitgevoerd. Probeer het later opnieuw; exporteer een diagnosepakket als het probleem aanhoudt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiązane materiały odzyskiwania są nadal używane przez inną operację. Ta czynność nie została wykonana. Spróbuj później; jeśli problem się powtarza, wyeksportuj pakiet diagnostyczny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os materiais de recuperação relacionados ainda estão em uso por outra operação. Esta ação não foi executada. Tente novamente mais tarde; se o problema persistir, exporte um pacote de diagnóstico."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связанные материалы восстановления всё ещё используются другой операцией. Это действие не выполнено. Повторите попытку позже; если проблема сохраняется, экспортируйте диагностический пакет."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ข้อมูลการกู้คืนที่เกี่ยวข้องยังถูกใช้งานโดยการทำงานอื่น ยังไม่ได้ดำเนินการนี้ โปรดลองอีกครั้งภายหลัง หากยังเกิดปัญหา ให้ส่งออกแพ็กเกจการวินิจฉัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İlgili kurtarma materyalleri başka bir işlem tarafından kullanılıyor. Bu işlem gerçekleştirilmedi. Daha sonra yeniden deneyin; sorun sürerse bir tanılama paketi dışa aktarın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tài liệu khôi phục liên quan vẫn đang được thao tác khác sử dụng. Thao tác này chưa được thực hiện. Hãy thử lại sau; nếu vấn đề tiếp diễn, hãy xuất gói chẩn đoán."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相关恢复材料仍被其他操作使用，本次未执行。请稍后重试；若持续出现，请导出诊断包。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相關復原材料仍被其他操作使用，本次未執行。請稍後重試；若持續出現，請匯出診斷套件。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相關恢復材料仍被其他操作使用，夲佽未執荇。請稍後重試；若持續出現，請導出診斷包。"
+          }
+        }
+      }
+    },
+    "相关记录：%@" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "السجل المرتبط: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enrolladenn liammet: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugehöriger Eintrag: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Related record: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilata registro: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registro asociado: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement associé : %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "संबंधित रिकॉर्ड: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catatan terkait: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record associato: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "関連レコード：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관련 기록: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerelateerd record: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiązany rekord: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registro relacionado: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связанная запись: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกที่เกี่ยวข้อง: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İlgili kayıt: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản ghi liên quan: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相关记录：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相關記錄：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相關記錄：%@"
+          }
+        }
+      }
+    },
+    "磁盘操作锁正被占用，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قفل عمليات القرص قيد الاستخدام. لم يُنفذ هذا الإجراء. حاول لاحقًا، وإذا استمرت المشكلة فصدّر حزمة تشخيص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implijet eo ar prennañ evit oberiadennoù ar bladenn. N’eo ket bet sevenet an ober-mañ. Klaskit en-dro diwezhatoc’h; ma pad ar gudenn, ezporzhiit ur pakad diagnostik."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Sperre für Datenträgervorgänge ist belegt. Diese Aktion wurde nicht ausgeführt. Versuche es später erneut. Exportiere bei anhaltenden Problemen ein Diagnosepaket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The disk operation lock is in use. This action was not performed. Try again later; if the issue persists, export a diagnostic package."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La seruro por diskaj operacioj estas uzata. Ĉi tiu ago ne estis farita. Reprovu poste; se la problemo daŭras, eksportu diagnozan pakaĵon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El bloqueo de operaciones de disco está en uso. Esta acción no se ha realizado. Inténtalo más tarde; si el problema persiste, exporta un paquete de diagnóstico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le verrou des opérations disque est occupé. Cette action n’a pas été effectuée. Réessayez plus tard ; si le problème persiste, exportez un paquet de diagnostic."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डिस्क कार्रवाई का लॉक उपयोग में है। यह कार्रवाई नहीं की गई। बाद में दोबारा प्रयास करें; समस्या बनी रहे तो निदान पैकेज निर्यात करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunci operasi disk sedang digunakan. Tindakan ini tidak dilakukan. Coba lagi nanti; jika masalah berlanjut, ekspor paket diagnostik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il blocco delle operazioni su disco è in uso. Questa azione non è stata eseguita. Riprova più tardi; se il problema persiste, esporta un pacchetto diagnostico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスク操作ロックが使用中のため、この操作は実行されませんでした。時間をおいて再試行し、問題が続く場合は診断パッケージをエクスポートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디스크 작업 잠금이 사용 중이므로 이 작업은 실행되지 않았습니다. 나중에 다시 시도하고, 문제가 계속되면 진단 패키지를 내보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De vergrendeling voor schijfbewerkingen is bezet. Deze actie is niet uitgevoerd. Probeer het later opnieuw; exporteer een diagnosepakket als het probleem aanhoudt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blokada operacji dyskowych jest zajęta. Ta czynność nie została wykonana. Spróbuj później; jeśli problem się powtarza, wyeksportuj pakiet diagnostyczny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bloqueio de operações do disco está em uso. Esta ação não foi executada. Tente novamente mais tarde; se o problema persistir, exporte um pacote de diagnóstico."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Блокировка дисковых операций занята. Это действие не выполнено. Повторите попытку позже; если проблема сохраняется, экспортируйте диагностический пакет."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ล็อกการทำงานกับดิสก์กำลังถูกใช้งาน ยังไม่ได้ดำเนินการนี้ โปรดลองอีกครั้งภายหลัง หากยังเกิดปัญหา ให้ส่งออกแพ็กเกจการวินิจฉัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk işlemi kilidi kullanımda. Bu işlem gerçekleştirilmedi. Daha sonra yeniden deneyin; sorun sürerse bir tanılama paketi dışa aktarın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khóa thao tác đĩa đang được sử dụng. Thao tác này chưa được thực hiện. Hãy thử lại sau; nếu vấn đề tiếp diễn, hãy xuất gói chẩn đoán."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁盘操作锁正被占用，本次未执行。请稍后重试；若持续出现，请导出诊断包。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁碟操作鎖正被佔用，本次未執行。請稍後重試；若持續出現，請匯出診斷套件。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁盤操作鎖正被佔用，夲佽未執荇。請稍後重試；若持續出現，請導出診斷包。"
+          }
+        }
+      }
+    },
+    "签名操作锁正被占用，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قفل عمليات التوقيع قيد الاستخدام. لم يُنفذ هذا الإجراء. حاول لاحقًا، وإذا استمرت المشكلة فصدّر حزمة تشخيص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implijet eo ar prennañ evit oberiadennoù sinañ. N’eo ket bet sevenet an ober-mañ. Klaskit en-dro diwezhatoc’h; ma pad ar gudenn, ezporzhiit ur pakad diagnostik."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Sperre für Signierungsvorgänge ist belegt. Diese Aktion wurde nicht ausgeführt. Versuche es später erneut. Exportiere bei anhaltenden Problemen ein Diagnosepaket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The signing operation lock is in use. This action was not performed. Try again later; if the issue persists, export a diagnostic package."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La seruro por subskribaj operacioj estas uzata. Ĉi tiu ago ne estis farita. Reprovu poste; se la problemo daŭras, eksportu diagnozan pakaĵon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El bloqueo de operaciones de firma está en uso. Esta acción no se ha realizado. Inténtalo más tarde; si el problema persiste, exporta un paquete de diagnóstico."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le verrou des opérations de signature est occupé. Cette action n’a pas été effectuée. Réessayez plus tard ; si le problème persiste, exportez un paquet de diagnostic."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हस्ताक्षर कार्रवाई का लॉक उपयोग में है। यह कार्रवाई नहीं की गई। बाद में दोबारा प्रयास करें; समस्या बनी रहे तो निदान पैकेज निर्यात करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunci operasi penandatanganan sedang digunakan. Tindakan ini tidak dilakukan. Coba lagi nanti; jika masalah berlanjut, ekspor paket diagnostik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il blocco delle operazioni di firma è in uso. Questa azione non è stata eseguita. Riprova più tardi; se il problema persiste, esporta un pacchetto diagnostico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "署名操作ロックが使用中のため、この操作は実行されませんでした。時間をおいて再試行し、問題が続く場合は診断パッケージをエクスポートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서명 작업 잠금이 사용 중이므로 이 작업은 실행되지 않았습니다. 나중에 다시 시도하고, 문제가 계속되면 진단 패키지를 내보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De vergrendeling voor ondertekening is bezet. Deze actie is niet uitgevoerd. Probeer het later opnieuw; exporteer een diagnosepakket als het probleem aanhoudt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blokada operacji podpisywania jest zajęta. Ta czynność nie została wykonana. Spróbuj później; jeśli problem się powtarza, wyeksportuj pakiet diagnostyczny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bloqueio de operações de assinatura está em uso. Esta ação não foi executada. Tente novamente mais tarde; se o problema persistir, exporte um pacote de diagnóstico."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Блокировка операций подписи занята. Это действие не выполнено. Повторите попытку позже; если проблема сохраняется, экспортируйте диагностический пакет."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ล็อกการลงนามกำลังถูกใช้งาน ยังไม่ได้ดำเนินการนี้ โปรดลองอีกครั้งภายหลัง หากยังเกิดปัญหา ให้ส่งออกแพ็กเกจการวินิจฉัย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İmzalama işlemi kilidi kullanımda. Bu işlem gerçekleştirilmedi. Daha sonra yeniden deneyin; sorun sürerse bir tanılama paketi dışa aktarın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khóa thao tác ký đang được sử dụng. Thao tác này chưa được thực hiện. Hãy thử lại sau; nếu vấn đề tiếp diễn, hãy xuất gói chẩn đoán."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签名操作锁正被占用，本次未执行。请稍后重试；若持续出现，请导出诊断包。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "簽名操作鎖正被佔用，本次未執行。請稍後重試；若持續出現，請匯出診斷套件。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "簽名操作鎖正被佔用，夲佽未執荇。請稍後重試；若持續出現，請導出診斷包。"
+          }
+        }
+      }
+    },
+    "自动挂载已暂停" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم إيقاف التحميل التلقائي مؤقتًا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ehanet eo ar sevel emgefre"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisches Einbinden pausiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic mounting paused"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aŭtomata muntado paŭzigita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montaje automático en pausa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montage automatique en pause"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्वचालित माउंटिंग रोकी गई"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemasangan otomatis dijeda"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montaggio automatico in pausa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動マウントを一時停止中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동 마운트 일시 정지됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch koppelen gepauzeerd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatyczne montowanie wstrzymane"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montagem automática em pausa"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматическое подключение приостановлено"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หยุดพักการเมานต์อัตโนมัติแล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik bağlama duraklatıldı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã tạm dừng tự động gắn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动挂载已暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動掛載已暫停"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "洎動掛載巳暫停"
+          }
+        }
+      }
+    },
+    "自动挂载已暂停。点击“挂载”可恢复。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم إيقاف التحميل التلقائي مؤقتًا. انقر على «تحميل» لاستئنافه."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ehanet eo ar sevel emgefre. Klikit war «Sevel» evit adkregiñ."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisches Einbinden ist pausiert. Klicke zum Fortsetzen auf „Einbinden“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic mounting is paused. Click “Mount” to resume."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aŭtomata muntado estas paŭzigita. Alklaku “Munti” por daŭrigi."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El montaje automático está en pausa. Haz clic en «Montar» para reanudarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le montage automatique est en pause. Cliquez sur « Monter » pour le reprendre."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्वचालित माउंटिंग रोकी गई है। फिर शुरू करने के लिए “माउंट करें” पर क्लिक करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemasangan otomatis dijeda. Klik “Pasang” untuk melanjutkan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il montaggio automatico è in pausa. Fai clic su “Monta” per riprendere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動マウントは一時停止中です。「マウント」をクリックすると再開します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동 마운트가 일시 정지되었습니다. “마운트”를 클릭하여 재개하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch koppelen is gepauzeerd. Klik op ‘Koppelen’ om te hervatten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatyczne montowanie jest wstrzymane. Kliknij „Zamontuj”, aby wznowić."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A montagem automática está em pausa. Clique em “Montar” para retomar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматическое подключение приостановлено. Нажмите «Подключить», чтобы возобновить."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หยุดพักการเมานต์อัตโนมัติแล้ว คลิก “เมานต์” เพื่อดำเนินการต่อ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik bağlama duraklatıldı. Sürdürmek için “Bağla”ya tıklayın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động gắn đã tạm dừng. Nhấp “Gắn” để tiếp tục."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动挂载已暂停。点击“挂载”可恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動掛載已暫停。點擊「掛載」可恢復。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "洎動掛載巳暫停。點擊「掛載」岢恢復。"
+          }
+        }
+      }
+    },
+    "自动挂载已暂停，本次未执行。请先恢复自动挂载后重试。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم إيقاف التحميل التلقائي مؤقتًا. لم يُنفذ هذا الطلب. استأنف التحميل التلقائي ثم أعد المحاولة."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ehanet eo ar sevel emgefre. N'eo ket bet sevenet ar goulenn-mañ. Adkrogit gant ar sevel emgefre ha klaskit en-dro."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisches Einbinden ist pausiert. Diese Aktion wurde nicht ausgeführt. Setze das automatische Einbinden fort und versuche es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic mounting is paused. This action was not performed. Resume automatic mounting and try again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aŭtomata muntado estas paŭzigita. Ĉi tiu ago ne estis farita. Daŭrigu aŭtomatan muntadon kaj reprovu."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El montaje automático está en pausa. Esta acción no se ha realizado. Reanuda el montaje automático e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le montage automatique est en pause. Cette action n’a pas été effectuée. Reprenez le montage automatique, puis réessayez."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्वचालित माउंटिंग रोकी गई है। यह कार्रवाई नहीं की गई। स्वचालित माउंटिंग फिर शुरू करके दोबारा प्रयास करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemasangan otomatis dijeda. Tindakan ini tidak dilakukan. Lanjutkan pemasangan otomatis lalu coba lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il montaggio automatico è in pausa. Questa azione non è stata eseguita. Riprendi il montaggio automatico e riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動マウントは一時停止中です。この操作は実行されませんでした。自動マウントを再開してから再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동 마운트가 일시 정지되었습니다. 이 작업은 실행되지 않았습니다. 자동 마운트를 재개한 후 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch koppelen is gepauzeerd. Deze actie is niet uitgevoerd. Hervat automatisch koppelen en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatyczne montowanie jest wstrzymane. Ta czynność nie została wykonana. Wznów automatyczne montowanie i spróbuj ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A montagem automática está em pausa. Esta ação não foi executada. Retome a montagem automática e tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматическое подключение приостановлено. Это действие не выполнено. Возобновите автоматическое подключение и повторите попытку."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หยุดพักการเมานต์อัตโนมัติแล้ว ยังไม่ได้ดำเนินการนี้ โปรดดำเนินการเมานต์อัตโนมัติต่อแล้วลองอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik bağlama duraklatıldı. Bu işlem gerçekleştirilmedi. Otomatik bağlamayı sürdürüp yeniden deneyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động gắn đã tạm dừng. Thao tác này chưa được thực hiện. Hãy tiếp tục tự động gắn rồi thử lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动挂载已暂停，本次未执行。请先恢复自动挂载后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動掛載已暫停，本次未執行。請先恢復自動掛載後重試。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "洎動掛載巳暫停，夲佽未執荇。請先恢復洎動掛載後重試。"
+          }
+        }
+      }
+    },
     "待挂载" : {
       "extractionState" : "manual",
       "localizations" : {
