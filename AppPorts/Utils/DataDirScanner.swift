@@ -904,8 +904,9 @@ actor DataDirScanner {
             guard record.bundleIdentifier == bundleID || legacyIdentityMatches else { continue }
             mountRecordsByPath[url.path] = record
             mountRecordsByPath[path] = record
+            // Offline guards hide external data even when automatic mounting is not paused.
             if recoveryInspection?.validationError == nil,
-               (try? mountStore.isManuallyUnmounted(record)) == true {
+               !isMountPoint(url) || (try? mountStore.isManuallyUnmounted(record)) == true {
                 pausedMountDirectories.insert(url)
                 // Foundation may report the /private/var spelling for a /var fixture.
                 // Resolve only the parent so the leaf cannot become a symlink exemption.

@@ -1565,7 +1565,16 @@ final class DataDirScannerTests: XCTestCase {
         try await assertPausedGuardAndAncestorSizes(mode: 0o500)
     }
 
-    private func assertPausedGuardAndAncestorSizes(mode: Int) async throws {
+    func testReadableOfflineGuardWithoutManualPauseKeepsSizesIncomplete() async throws {
+        try await assertPausedGuardAndAncestorSizes(mode: 0o500, manuallyPaused: false, volumeOnline: false)
+    }
+
+    func testReadablePendingGuardWithoutManualPauseKeepsSizesIncomplete() async throws {
+        try await assertPausedGuardAndAncestorSizes(mode: 0o500, manuallyPaused: false)
+    }
+
+    private func assertPausedGuardAndAncestorSizes(mode: Int, manuallyPaused: Bool = true,
+                                                  volumeOnline: Bool = true) async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
         let appURL = try createAppBundle(named: "Example.app", bundleID: "com.example.test", in: workspace.appsURL)
@@ -1577,18 +1586,18 @@ final class DataDirScannerTests: XCTestCase {
         let record = ContainerMountRecord(appName: "Example", bundleIdentifier: "com.example.test", dataDirType: DataDirType.containers.rawValue,
             mountPointPath: source.path, volumeUUID: "PAUSED", volumeName: "Paused", externalRootPath: workspace.externalRootURL.path)
         try store.upsert(record)
-        try store.setManuallyUnmounted(true, record: record)
+        try store.setManuallyUnmounted(manuallyPaused, record: record)
         // Prime the ancestor cache before the guard becomes unavailable.
         XCTAssertTrue(measureDirectorySize(at: parent).isComplete)
         try fileManager.setAttributes([.posixPermissions: mode], ofItemAtPath: source.path)
         defer { try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: source.path) }
         guard mode != 0 || !fileManager.isReadableFile(atPath: source.path) else { throw XCTSkip("当前进程可绕过测试目录的文件权限") }
-        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: store, isVolumeOnline: { _ in true })
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: store, isVolumeOnline: { _ in volumeOnline })
         let app = AppItem(name: "Example.app", path: appURL, status: "本地")
         let scan = await scanner.scanLibraryDirsWithDiagnostics(for: app)
         var item = try XCTUnwrap(scan.items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
-        XCTAssertTrue(item.autoMountPaused)
-        XCTAssertEqual(item.status, DataDirStatus.pendingMount)
+        XCTAssertEqual(item.autoMountPaused, manuallyPaused)
+        XCTAssertEqual(item.status, volumeOnline ? DataDirStatus.pendingMount : DataDirStatus.volumeMissing)
         XCTAssertTrue(item.canRestore)
         XCTAssertFalse(scan.readIssues.contains(where: \.requiresAttention))
         let measured = measureDataDirectorySize(for: item, pausedMountDirectories: scan.pausedMountDirectories)
@@ -1602,6 +1611,11 @@ final class DataDirScannerTests: XCTestCase {
         XCTAssertEqual(ancestor.bytes, 7)
         XCTAssertFalse(ancestor.isComplete)
         XCTAssertFalse(ancestor.readIssues.contains(where: \.requiresAttention))
+        let addedPayload = parent.appendingPathComponent("added-payload")
+        try Data("new".utf8).write(to: addedPayload)
+        let remeasured = measureDirectorySize(at: parent, pausedMountDirectories: scan.pausedMountDirectories)
+        XCTAssertEqual(remeasured.bytes, 10, "Incomplete ancestor totals must not be cached")
+        XCTAssertFalse(remeasured.isComplete)
         let total = DataDirDisplaySizeSummary(items: [item], hasReadIssues: !measured.readIssues.isEmpty)
         XCTAssertTrue(total.isIncomplete)
 
