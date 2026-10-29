@@ -36,4 +36,15 @@ struct PartialWeChatMigrationPolicy: Sendable {
     func members(of account: URL) -> [URL] {
         Self.memberNames.map { account.appendingPathComponent($0).standardizedFileURL }
     }
+
+    /// The offline exception applies to exact media entries, never aliases or
+    /// staging directories. Existing records keep it even when split mode is off.
+    func allowsOfflineReadAccess(at url: URL) -> Bool {
+        guard account(forMember: url) != nil else { return false }
+        let relative = url.standardizedFileURL.pathComponents.dropFirst(homeDirectory.pathComponents.count)
+        let expected = relative.reduce(homeDirectory.resolvingSymlinksInPath()) {
+            $0.appendingPathComponent($1)
+        }
+        return url.resolvingSymlinksInPath().standardizedFileURL.path == expected.standardizedFileURL.path
+    }
 }

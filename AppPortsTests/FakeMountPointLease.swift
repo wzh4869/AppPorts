@@ -9,14 +9,16 @@ final class FakeMountPointLease: MountPointLeasing {
         case violation(String)
         var errorDescription: String? { switch self { case .violation(let detail): return detail } }
     }
+    private let protection: MountPointLease.Protection
     private let native: MountPointLease
     private let runner: FakeDiskCommandRunner
     private let url: URL
     private let descriptor: Int32
     private let identity: DataPathIdentity
 
-    init(at url: URL, runner: FakeDiskCommandRunner) throws {
-        native = try MountPointLease(at: url)
+    init(at url: URL, runner: FakeDiskCommandRunner, protection: MountPointLease.Protection = .inaccessible) throws {
+        self.protection = protection
+        native = try MountPointLease(at: url, protection: protection)
         self.url = url
         self.runner = runner
         identity = try DataPathIdentity.capture(url)
@@ -24,7 +26,7 @@ final class FakeMountPointLease: MountPointLeasing {
         // this retained descriptor continues to inspect the locked local object.
         guard chmod(url.path, 0o700) == 0 else { throw POSIXError(.EACCES) }
         let held = open(url.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
-        let locked = chmod(url.path, 0)
+        let locked = chmod(url.path, protection.rawValue)
         guard held >= 0, locked == 0 else {
             if held >= 0 { close(held) }
             throw POSIXError(.EACCES)
@@ -39,7 +41,7 @@ final class FakeMountPointLease: MountPointLeasing {
         let physical = runner.physicalUnderlyingPath(for: url)
         guard try DataPathIdentity.capture(physical) == identity else { throw FixtureFailure.violation("Synthetic underlying identity changed: \(physical.path)") }
         var attributes = stat()
-        guard fstat(descriptor, &attributes) == 0, attributes.st_mode & 0o7777 == 0 else {
+        guard fstat(descriptor, &attributes) == 0, attributes.st_mode & 0o7777 == protection.rawValue else {
             throw FixtureFailure.violation("Synthetic underlying mode changed: \(attributes.st_mode)")
         }
         var path = [CChar](repeating: 0, count: Int(MAXPATHLEN))

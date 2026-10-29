@@ -991,8 +991,8 @@ struct DataPreparationRecoveryTests {
         let saved = fixture.local.deletingLastPathComponent().appendingPathComponent("saved-local-placeholder")
         let synchronized = SyncProbe()
         let runner = fixture.runner
-        let mover = fixture.mountMover(store: cold, makeMountPointLease: { path in
-            let lease = try runner.makeMountPointLease(at: path)
+        let mover = fixture.mountMover(store: cold, makeMountPointLease: { path, protection in
+            let lease = try runner.makeMountPointLease(at: path, protection: protection)
             if path.path == fixture.local.path {
                 if conflict == "replaced" {
                     // Keep the same parent: macOS needs access to update a
@@ -1165,7 +1165,7 @@ struct DataPreparationRecoveryTests {
                         diskRunner: (any ShellCommandRunning)? = nil,
                         mountFlags: @escaping @Sendable (URL) -> UInt32? = { _ in UInt32(MNT_DONTBROWSE) },
                         mountedVolumeUUID: (@Sendable (URL) -> String?)? = nil,
-                        makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
+                        makeMountPointLease: (@Sendable (URL, MountPointLease.Protection) throws -> any MountPointLeasing)? = nil,
                         safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
                         synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = {
                             try DurableFileIO.syncDirectory(at: $0)
@@ -1179,7 +1179,7 @@ struct DataPreparationRecoveryTests {
                 mountedVolumeUUID: mountedVolumeUUID ?? { runner.mountedUUID(at: $0) },
                 synchronizeAgent: { _ in }, availableCapacity: { _ in nil }, mountFlags: mountFlags,
                 homeDirectory: home, safetyRunner: safetyRunner,
-                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
+                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0, protection: $1) },
                 synchronizeCleanupParent: synchronizeCleanupParent)
         }
         func permissions(at path: URL) throws -> mode_t {

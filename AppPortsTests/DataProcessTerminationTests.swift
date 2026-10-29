@@ -52,7 +52,7 @@ struct DataProcessTerminationTests {
             mountedVolumePath: { $0.path.hasPrefix(external.path) ? "/SyntheticExternal" : "/" },
             mountedVolumeUUID: { runner.mountedUUID(at: $0) }, synchronizeAgent: { _ in },
             availableCapacity: { _ in nil }, mountFlags: { _ in UInt32(MNT_DONTBROWSE) },
-            homeDirectory: home, safetyRunner: SyntheticNoWritersRunner(), makeMountPointLease: { try runner.makeMountPointLease(at: $0) })
+            homeDirectory: home, safetyRunner: SyntheticNoWritersRunner(), makeMountPointLease: { try runner.makeMountPointLease(at: $0, protection: $1) })
         let item = DataDirItem(name: "Payload", path: local, type: mount ? .containers : .custom,
             priority: .recommended, description: "")
         if phase == "crash" {

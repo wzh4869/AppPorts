@@ -36,6 +36,8 @@ build 48 使用项目原有 Apple Development 身份通过 Release clean build�
 - 跨阶段自动恢复及收尾的共同规则见[由持久化事务自动完成 APFS 恢复与清理](../architecture/2026-10-12-apfs-automatic-recovery.md)。
 - 事故暴露的验证遗漏及实测层次见[隔离 APFS 验证与可比较的性能证据](../testing/2026-10-12-apfs-validation-evidence.md)。
 
+2026-10-29 的[微信离线媒体入口只读保护](2026-10-29-微信离线媒体入口只读保护.md)仅对精确 msg/business 成员采用 0500，接管这些入口的离线权限规则；原有身份、空目录和卸载前检查继续适用。
+
 ## Alternatives considered
 
 - **先卸载再检查本地目录**：可以直接看到卸载后的路径，却在检查失败时主动破坏仍可用的入口。

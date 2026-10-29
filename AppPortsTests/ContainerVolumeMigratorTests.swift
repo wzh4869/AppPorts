@@ -109,8 +109,8 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
         self.createdVolumeUUID = createdVolumeUUID
     }
 
-    func makeMountPointLease(at url: URL) throws -> any MountPointLeasing {
-        try FakeMountPointLease(at: url, runner: self)
+    func makeMountPointLease(at url: URL, protection: MountPointLease.Protection = .inaccessible) throws -> any MountPointLeasing {
+        try FakeMountPointLease(at: url, runner: self, protection: protection)
     }
 
     func physicalUnderlyingPath(for url: URL) -> URL {
@@ -608,7 +608,7 @@ struct ContainerVolumeMigratorTests {
         let record = workspace.record(mountPoint: target)
         let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
         runner.markVolumeMounted(record.volumeUUID, at: current.path)
-        let mover = workspace.makeMigrator(runner: runner, makeMountPointLease: { _ in throw POSIXError(.EPERM) })
+        let mover = workspace.makeMigrator(runner: runner, makeMountPointLease: { _, _ in throw POSIXError(.EPERM) })
 
         await #expect(throws: (any Error).self) {
             try await mover.mountVolume(record.volumeUUID, at: target, operationID: "denied-target",
@@ -3231,7 +3231,7 @@ struct ContainerVolumeMigratorTests {
             availableCapacity: @escaping @Sendable (URL) -> Int64? = { _ in nil },
             mountFlags: @escaping @Sendable (URL) -> UInt32? = { _ in UInt32(MNT_DONTBROWSE) },
             safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
-            makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
+            makeMountPointLease: (@Sendable (URL, MountPointLease.Protection) throws -> any MountPointLeasing)? = nil,
             removeMigrationBackup: @escaping @Sendable (URL) throws -> Void = { try FileCopier.removeCopy(at: $0) },
             synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
         ) -> ContainerVolumeMigrator {
@@ -3251,7 +3251,7 @@ struct ContainerVolumeMigratorTests {
                 mountFlags: mountFlags,
                 homeDirectory: rootURL.appendingPathComponent("Home"),
                 safetyRunner: safetyRunner,
-                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
+                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0, protection: $1) },
                 removeMigrationBackup: removeMigrationBackup,
                 synchronizeCleanupParent: synchronizeCleanupParent
             )

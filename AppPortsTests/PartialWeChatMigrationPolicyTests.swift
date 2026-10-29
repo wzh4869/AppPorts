@@ -65,6 +65,42 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         XCTAssertFalse(DataPathPolicy(homeDirectory: root, partialWeChatMigrationEnabled: true).evaluate(media).canMigrate)
     }
 
+    func testOfflineReadAccessOnlyMatchesExactMediaInTheSelectedContainer() {
+        for identifier in [PartialWeChatMigrationPolicy.bundleIdentifier, "com.tencent.xinWeChat.dual"] {
+            let policy = PartialWeChatMigrationPolicy(homeDirectory: home, containerIdentifier: identifier)
+            let account = policy.accountsRoot.appendingPathComponent("wxid_fixture")
+            for member in ["msg", "business"] {
+                XCTAssertTrue(policy.allowsOfflineReadAccess(at: account.appendingPathComponent(member)))
+            }
+            for relative in ["", "db_storage", "config", "msg/deeper", "business/deeper"] {
+                XCTAssertFalse(policy.allowsOfflineReadAccess(at: account.appendingPathComponent(relative)))
+            }
+            for shared in ["all_users", "config", "resource"] {
+                XCTAssertFalse(policy.allowsOfflineReadAccess(at: policy.accountsRoot.appendingPathComponent(shared + "/msg")))
+            }
+            XCTAssertFalse(policy.allowsOfflineReadAccess(at: home.appendingPathComponent("staging/msg")))
+        }
+        let dual = PartialWeChatMigrationPolicy(homeDirectory: home, containerIdentifier: "com.tencent.xinWeChat.dual")
+        XCTAssertFalse(dual.allowsOfflineReadAccess(at: account.appendingPathComponent("msg")))
+    }
+
+    func testOfflineReadAccessRejectsMediaAndAccountAliases() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).resolvingSymlinksInPath()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let policy = PartialWeChatMigrationPolicy(homeDirectory: root)
+        let account = policy.accountsRoot.appendingPathComponent("wxid_fixture")
+        let media = account.appendingPathComponent("msg")
+        for target in [account.appendingPathComponent("db_storage"), account.appendingPathComponent("business"), root.appendingPathComponent("outside")] {
+            try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+            try FileManager.default.createSymbolicLink(at: media, withDestinationURL: target)
+            XCTAssertFalse(policy.allowsOfflineReadAccess(at: media))
+            try FileManager.default.removeItem(at: media)
+        }
+        let alias = policy.accountsRoot.appendingPathComponent("wxid_alias")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: account)
+        XCTAssertFalse(policy.allowsOfflineReadAccess(at: alias.appendingPathComponent("business")))
+    }
+
     func testAppListIdentityIgnoresUUIDSizeAndRunningUpdates() {
         var first = AppItem(name: "WeChat.app", path: account, status: "本地")
         var next = AppItem(name: "WeChat.app", path: account, status: "本地")
