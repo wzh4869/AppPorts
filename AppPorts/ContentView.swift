@@ -745,25 +745,28 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 primaryNavigation
                 Spacer(minLength: 12)
-                MigrationTaskToolbarButton()
-                cacheRefreshButton
                 if mainTab == .dataDirs {
                     dataDirsToolbarControls
                         .disabled(operationState.blocksInteraction)
                 }
-                Button(action: { showAppStoreSettings = true }) {
-                    Label("设置".localized, systemImage: "gearshape")
-                        .labelStyle(.iconOnly)
-                        .font(.system(size: 14, weight: .medium))
-                        .frame(width: 32, height: 30)
-                        .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                HStack(spacing: 12) {
+                    MigrationTaskToolbarButton()
+                    cacheRefreshButton
+                    Button(action: { showAppStoreSettings = true }) {
+                        Label("设置".localized, systemImage: "gearshape")
+                            .labelStyle(.iconOnly)
+                            .font(.system(size: 14, weight: .medium))
+                            .frame(width: 32, height: 30)
+                            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundColor(.secondary)
+                    .keyboardShortcut(",", modifiers: .command)
+                    .disabled(operationState.blocksInteraction)
+                    .help("设置".localized + " (⌘,)")
+                    .accessibilityLabel("设置".localized)
                 }
-                .buttonStyle(.borderless)
-                .foregroundColor(.secondary)
-                .keyboardShortcut(",", modifiers: .command)
-                .disabled(operationState.blocksInteraction)
-                .help("设置".localized + " (⌘,)")
-                .accessibilityLabel("设置".localized)
+                .fixedSize()
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
