@@ -322,8 +322,6 @@ struct DataDirsView: View {
         }
         .sheet(isPresented: $showCleanupResolution) {
             DataCleanupResolutionSheet(transfers: dataTransfers, currentDataPaths: currentDataPaths,
-                otherIssues: pendingCleanups.map { $0.mountRecord.appName + ": " + $0.localPath }
-                    + preservedMaterials.map { $0.appName + ": " + $0.reason },
                 onRetry: { id in
                     DispatchQueue.main.async { retryPendingOperations(operationID: id) }
                 }, onChanged: { refreshOperationRecords() }, onPermissions: {

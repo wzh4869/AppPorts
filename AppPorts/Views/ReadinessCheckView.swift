@@ -69,7 +69,7 @@ struct ReadinessCheckView: View {
         HStack(spacing: 8) {
             if let footnote {
                 Text(footnote)
-                    .font(.caption)
+                    .font(AppDialogTypography.body)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -88,7 +88,7 @@ struct ReadinessCheckView: View {
                         .font(.system(size: 10, weight: .semibold))
                     Text("重新检查".localized)
                 }
-                .font(.caption)
+                .font(AppDialogTypography.body)
             }
             .buttonStyle(.plain)
             .foregroundColor(.secondary)
@@ -102,7 +102,7 @@ struct ReadinessCheckView: View {
             ProgressView()
                 .controlSize(.small)
             Text("正在检查…".localized)
-                .font(.caption)
+                .font(AppDialogTypography.body)
                 .foregroundColor(.secondary)
         }
         .settingsCardBackground()
@@ -142,7 +142,7 @@ struct ReadinessCheckSheet: View {
                     .foregroundColor(.blue)
 
                 Text("准备情况".localized)
-                    .font(.title2.bold())
+                    .font(AppDialogTypography.title)
 
                 Spacer()
 
@@ -165,6 +165,7 @@ struct ReadinessCheckSheet: View {
             }
         }
         .padding(24)
+        .appDialogTypography()
         .frame(width: 560, height: 600)
     }
 }
@@ -176,11 +177,11 @@ private struct RunningApplicationCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("当前运行的 AppPorts".localized, systemImage: "app.badge.checkmark")
-                .font(.headline)
+                .font(AppDialogTypography.title)
             Text(String(format: "版本 %@（构建 %@）".localized, application.version, application.build))
-                .font(.subheadline)
+                .font(AppDialogTypography.body)
             Text(application.url.path)
-                .font(.system(size: 12, design: .monospaced))
+                .font(AppDialogTypography.body)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 12) {
@@ -194,7 +195,7 @@ private struct RunningApplicationCard: View {
             }
             .controlSize(.small)
             Text("检查针对当前进程，无法直接比对系统授权列表中的版本。若已开启但仍被拒绝，请将此处的 AppPorts 重新添加到「完全磁盘访问权限」，退出重开后再检查。".localized)
-                .font(.caption)
+                .font(AppDialogTypography.body)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -223,14 +224,14 @@ private struct ReadinessCard: View {
                         Image(systemName: "arrow.up.right")
                             .font(.system(size: 9, weight: .bold))
                     }
-                    .font(.caption.weight(.semibold))
+                    .font(AppDialogTypography.body.weight(.semibold))
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .help("去设置授予权限".localized)
             } else {
                 Text(statusText)
-                    .font(.caption.weight(.semibold))
+                    .font(AppDialogTypography.body.weight(.semibold))
                     .foregroundColor(statusColor)
             }
         }
@@ -304,12 +305,12 @@ struct SettingsStyleCard<Accessory: View>: View {
                         .foregroundColor(iconColor)
 
                     Text(title)
-                        .font(.headline)
+                        .font(AppDialogTypography.title)
                         .foregroundColor(.primary)
                 }
 
                 Text(detail)
-                    .font(.caption)
+                    .font(AppDialogTypography.body)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

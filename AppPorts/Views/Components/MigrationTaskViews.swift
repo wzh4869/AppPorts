@@ -324,7 +324,7 @@ struct MigrationTaskDetail: View {
         TimelineView(.periodic(from: .now, by: 0.25)) { _ in
             if job.status.isFinished {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text(verbatim: job.title).font(.headline)
+                    Text(verbatim: job.title).font(AppDialogTypography.title)
                     Label(job.stateTitle, systemImage: job.status == .attention ? "exclamationmark.circle.fill" : (job.status == .incomplete ? "archivebox" : (job.status == .cancelled ? "xmark.circle" : "checkmark.circle")))
                         .foregroundStyle(job.status == .attention ? Color.orange : Color.primary)
                     MigrationOverallProgress(fraction: job.fraction)
@@ -334,7 +334,7 @@ struct MigrationTaskDetail: View {
                             .textSelection(.enabled)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    Text("处理时间".localized + "：" + taskDuration(job.elapsed)).font(.caption).foregroundStyle(.secondary)
+                    Text("处理时间".localized + "：" + taskDuration(job.elapsed)).font(AppDialogTypography.body).foregroundStyle(.secondary)
                     HStack {
                         Button("任务列表".localized) { center.detailID = nil; center.showsList = true }
                         if job.status == .attention {
@@ -350,6 +350,7 @@ struct MigrationTaskDetail: View {
                 }
                 .padding(24)
                 .frame(width: 460, height: 450)
+                .appDialogTypography()
                 .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
                             in: RoundedRectangle(cornerRadius: 16))
             } else {

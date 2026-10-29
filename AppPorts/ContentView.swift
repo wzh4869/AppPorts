@@ -1000,7 +1000,10 @@ struct ContentView: View {
                 onAction: { _ = openPanelForExternalDrive() },
                 onRefresh: { scanExternalApps(forceSizeRefresh: true) },
                 isRefreshing: externalScanState.isScanning,
-                accessory: AnyView(DiskEjectionControls(externalURL: externalDriveURL))
+                accessory: AnyView(HStack(spacing: 8) {
+                    AppLibraryImageControls { externalDriveURL = $0 }
+                    DiskEjectionControls(externalURL: externalDriveURL)
+                })
             )
 
         appListColumnHeader(sorting: $externalAppSort)
