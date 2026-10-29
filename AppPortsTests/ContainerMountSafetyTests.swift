@@ -5,16 +5,32 @@ import Testing
 
 @Suite("Container mount safety")
 struct ContainerMountSafetyTests {
-    @Test("A previously locked 000 mountpoint can be inspected and stays locked")
-    func reopensLockedMountPoint() throws {
+    @Test("Legacy and current guards become readable without allowing writes", arguments: [0, 0o500])
+    func reopensLockedMountPoint(mode: Int) throws {
         let fixture = try Fixture()
         defer { fixture.cleanup() }
-        #expect(chmod(fixture.mountPoint.path, 0) == 0)
+        #expect(chmod(fixture.mountPoint.path, mode_t(mode)) == 0)
         for _ in 0..<2 {
             let lease = try MountPointLease(at: fixture.mountPoint)
             try lease.verifyBeforeMount()
             try lease.verifyUnderlyingDirectory()
-            #expect(try fixture.mode() == 0)
+            #expect(try fixture.mode() == 0o500)
+            #expect(try FileManager.default.contentsOfDirectory(atPath: fixture.mountPoint.path).isEmpty)
+            let missing = fixture.mountPoint.appendingPathComponent("missing.db")
+            var info = stat()
+            let lookup = lstat(missing.path, &info)
+            let lookupError = errno
+            #expect(lookup == -1)
+            #expect(lookupError == ENOENT)
+            let fd = open(missing.path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
+            let writeError = errno
+            if fd >= 0 { close(fd) }
+            #expect(fd == -1)
+            #expect(writeError == EACCES)
+            let created = mkdir(fixture.mountPoint.appendingPathComponent("nested").path, 0o700)
+            let directoryError = errno
+            #expect(created == -1)
+            #expect(directoryError == EACCES)
         }
     }
 
@@ -27,7 +43,7 @@ struct ContainerMountSafetyTests {
             try await fixture.migrator.mount(record: fixture.record)
         }
         #expect(fixture.runner.commands(prefix: ["mount"]).count == 1)
-        #expect(try fixture.mode() == 0)
+        #expect(try fixture.mode() == 0o500)
     }
 
     @Test("Even a lone Finder metadata file blocks a mount overlay")
@@ -57,7 +73,7 @@ struct ContainerMountSafetyTests {
         case "content":
             #expect(chmod(fixture.mountPoint.path, 0o700) == 0)
             try Data("late data".utf8).write(to: fixture.mountPoint.appendingPathComponent("late"))
-            #expect(chmod(fixture.mountPoint.path, 0) == 0)
+            #expect(chmod(fixture.mountPoint.path, MountPointLease.protectedMode) == 0)
         case "replacement":
             let moved = fixture.root.appendingPathComponent("held-original")
             try FileManager.default.moveItem(at: fixture.mountPoint, to: moved)

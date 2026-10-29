@@ -10,6 +10,11 @@ protocol MountPointLeasing: AnyObject {
 
 final class MountPointLease: MountPointLeasing {
     enum Failure: Error { case notDirectory, notEmpty, replaced }
+    static let protectedMode: mode_t = 0o500
+
+    static func isProtectedMode(_ mode: mode_t) -> Bool {
+        mode == 0 || mode == protectedMode
+    }
     let url: URL
     private let descriptor: Int32
     private let device: dev_t
@@ -60,7 +65,9 @@ final class MountPointLease: MountPointLeasing {
             opened = openat(anchor, ".", O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
             guard opened >= 0 else { throw Self.posix() }
             try Self.requireEmpty(opened)
-            guard fchmod(anchor, 0) == 0 else { throw Self.posix() }
+            // Keep path lookup readable when the external volume disappears.
+            // Without search permission, weakly_canonical throws even for missing files.
+            guard fchmod(anchor, Self.protectedMode) == 0 else { throw Self.posix() }
         } catch {
             let restoration = fchmod(anchor, originalMode)
             if opened >= 0 { close(opened) }
@@ -94,7 +101,7 @@ final class MountPointLease: MountPointLeasing {
             .appendingPathComponent(url.lastPathComponent).path
         guard heldPath == expected else { throw Failure.replaced }
         try Self.requireEmpty(descriptor)
-        guard current.st_mode & 0o7777 == 0 else { throw Failure.replaced }
+        guard current.st_mode & 0o7777 == Self.protectedMode else { throw Failure.replaced }
     }
 
     private static func requireEmpty(_ descriptor: Int32) throws {
