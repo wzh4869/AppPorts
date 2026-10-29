@@ -7,6 +7,8 @@ struct DataMigrationTaskRecoveryView: View {
     let job: MigrationJob
     @Environment(\.dismiss) private var dismiss
     @State private var transfers: [DataTransferRecord] = []
+    @State private var pendingCleanups: [ContainerCleanupRecord] = []
+    @State private var preservedMaterials: [DataTransferMaterial] = []
     @State private var currentDataPaths: [UUID: String] = [:]
     @State private var errorMessage: String?
     @State private var loading = true
@@ -15,8 +17,9 @@ struct DataMigrationTaskRecoveryView: View {
         VStack(spacing: 0) {
             if loading {
                 ProgressView().frame(width: 460, height: 180)
-            } else if errorMessage == nil, !transfers.isEmpty {
+            } else if errorMessage == nil, !transfers.isEmpty || !pendingCleanups.isEmpty || !preservedMaterials.isEmpty {
                 DataCleanupResolutionSheet(transfers: transfers, currentDataPaths: currentDataPaths,
+                    pendingCleanups: pendingCleanups, preservedMaterials: preservedMaterials,
                     onRetry: { operationID in
                         MigrationTaskCenter.shared.submit(title: "正在继续处理".localized,
                             category: job.category,
@@ -67,6 +70,8 @@ struct DataMigrationTaskRecoveryView: View {
             if let error = inspection.validationError { throw error }
             transfers = inspection.transfers.filter { $0.retainedCopyRemovedAt == nil }
             currentDataPaths = paths
+            pendingCleanups = inspection.cleanups
+            preservedMaterials = inspection.preservedMaterials
         } catch { errorMessage = error.localizedDescription }
         loading = false
     }

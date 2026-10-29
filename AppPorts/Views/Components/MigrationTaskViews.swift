@@ -116,9 +116,11 @@ struct MigrationTaskList: View {
     @ObservedObject private var center: MigrationTaskCenter
     @State private var selection: Set<UUID> = []
     @State private var contentHeight: CGFloat = 90
+    private let isEmbedded: Bool
 
-    init(center: MigrationTaskCenter? = nil) {
+    init(center: MigrationTaskCenter? = nil, isEmbedded: Bool = false) {
         self.center = center ?? .shared
+        self.isEmbedded = isEmbedded
     }
 
     var body: some View {
@@ -130,7 +132,9 @@ struct MigrationTaskList: View {
                     selection = selection.count == center.jobs.count ? [] : Set(center.jobs.map(\.id))
                 }
                 .disabled(center.jobs.isEmpty)
-                Button("关闭".localized) { center.showsList = false }
+                if !isEmbedded {
+                    Button("关闭".localized) { center.showsList = false }
+                }
             }
             .padding(10)
             Divider()
@@ -138,16 +142,17 @@ struct MigrationTaskList: View {
                 Text("暂无迁移任务".localized)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 60)
+                    .frame(minHeight: 60, maxHeight: isEmbedded ? .infinity : 60)
             } else {
                 ScrollView {
-                    VStack(spacing: 6) {
+                    LazyVStack(spacing: isEmbedded ? 0 : 6) {
                         ForEach(Array(center.jobs.reversed())) { job in
                             MigrationTaskRow(job: job, center: center, selected: Binding(
                                 get: { selection.contains(job.id) },
                                 set: { value in
                                     if value { selection.insert(job.id) } else { selection.remove(job.id) }
-                                }))
+                                }), isEmbedded: isEmbedded)
+                            if isEmbedded { Divider() }
                         }
                     }
                     .padding(10)
@@ -155,7 +160,7 @@ struct MigrationTaskList: View {
                         Color.clear.preference(key: MigrationTaskListHeightKey.self, value: geometry.size.height)
                     })
                 }
-                .frame(height: min(contentHeight, 300))
+                .frame(maxHeight: isEmbedded ? .infinity : min(contentHeight, 300))
                 .onPreferenceChange(MigrationTaskListHeightKey.self) { contentHeight = $0 }
             }
             Divider()
@@ -177,7 +182,8 @@ struct MigrationTaskList: View {
             selection.formIntersection(Set(ids))
         }
         .controlSize(.small)
-        .frame(width: 420)
+        .frame(width: isEmbedded ? nil : 420)
+        .frame(maxWidth: isEmbedded ? .infinity : nil, maxHeight: isEmbedded ? .infinity : nil)
         .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white)
     }
 }
@@ -188,6 +194,7 @@ private struct MigrationTaskRow: View {
     @ObservedObject var job: MigrationJob
     @ObservedObject var center: MigrationTaskCenter
     @Binding var selected: Bool
+    var isEmbedded = false
 
     private var appIconURL: URL? {
         guard job.category == .apps || job.category == .appData else { return nil }
@@ -234,10 +241,10 @@ private struct MigrationTaskRow: View {
                             center.showsList = false
                             center.detailID = job.id
                         } label: {
-                            Text(verbatim: job.title).font(.system(size: 12)).lineLimit(1).truncationMode(.middle)
+                            Text(verbatim: job.displayTitle).font(.system(size: 12)).lineLimit(1).truncationMode(.middle)
                         }
                         .buttonStyle(.plain)
-                        .help(job.title + " — " + "查看任务详情".localized)
+                        .help(job.displayTitle + " — " + "查看任务详情".localized)
                         Spacer(minLength: 8)
                         Text(verbatim: job.stateTitle).font(.system(size: 12)).foregroundStyle(.secondary)
                     }
@@ -301,8 +308,8 @@ private struct MigrationTaskRow: View {
                 }
             }
             .padding(10)
-            .background(job.status == .attention ? Color.orange.opacity(0.12) : Color.primary.opacity(0.04),
-                        in: RoundedRectangle(cornerRadius: 10))
+            .background(job.status == .attention ? Color.orange.opacity(0.12) : Color.primary.opacity(isEmbedded ? 0 : 0.04),
+                        in: RoundedRectangle(cornerRadius: isEmbedded ? 0 : 10))
         }
     }
 }
@@ -324,7 +331,7 @@ struct MigrationTaskDetail: View {
         TimelineView(.periodic(from: .now, by: 0.25)) { _ in
             if job.status.isFinished {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text(verbatim: job.title).font(AppDialogTypography.title)
+                    Text(verbatim: job.displayTitle).font(AppDialogTypography.title)
                     Label(job.stateTitle, systemImage: job.status == .attention ? "exclamationmark.circle.fill" : (job.status == .incomplete ? "archivebox" : (job.status == .cancelled ? "xmark.circle" : "checkmark.circle")))
                         .foregroundStyle(job.status == .attention ? Color.orange : Color.primary)
                     MigrationOverallProgress(fraction: job.fraction)
@@ -354,7 +361,7 @@ struct MigrationTaskDetail: View {
                 .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
                             in: RoundedRectangle(cornerRadius: 16))
             } else {
-                DataDirProgressContent(title: job.title, snapshot: job.progress.snapshot(),
+                DataDirProgressContent(title: job.displayTitle, snapshot: job.progress.snapshot(),
                     overallProgress: job.fraction, actions: AnyView(actions))
             }
         }

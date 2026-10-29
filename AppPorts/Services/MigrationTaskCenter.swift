@@ -105,6 +105,11 @@ final class MigrationJob: ObservableObject, Identifiable {
     var recoveryHandler: (@MainActor (Error, RetryToken) -> Void)?
     var recoveryAction: (@MainActor () -> Void)?
 
+    /// Keep the operation and subject; the row presents running state separately.
+    var displayTitle: String {
+        title.hasPrefix("正在") ? String(title.dropFirst(2)) : title
+    }
+
     var retryToken: RetryToken { RetryToken(jobID: id, attemptID: attemptID) }
 
     init(id: UUID = UUID(), title: String, category: MigrationCategory, resources: MigrationResources,

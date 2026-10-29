@@ -1,6 +1,15 @@
 import SwiftUI
 import AppKit
 
+
+/// Neutral sidebar surface for light and dark appearances.
+enum AppListColors {
+    static let sidebar = Color(nsColor: NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(white: 0.14, alpha: 1) : NSColor(white: 0.95, alpha: 1)
+    })
+}
+
 /// Capture the existing path identity once; List reads IDs repeatedly while scrolling.
 struct AppListEntry: Identifiable {
     let id: String
@@ -44,17 +53,13 @@ struct AppListPanelStyle: ViewModifier {
 
 struct AppListFooterStyle: ViewModifier {
     func body(content: Content) -> some View {
-        VStack(spacing: 0) {
-            Divider()
-            content
-                .font(.system(size: 13, weight: .medium))
-                .controlSize(.regular)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-        }
-        .background(Color(nsColor: .controlBackgroundColor))
+        content
+            .font(.system(size: 13, weight: .medium))
+            .controlSize(.regular)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
     }
 }
 
@@ -95,18 +100,21 @@ struct AppListRowAppearance: ViewModifier {
 
 /// Disabled primary actions use a neutral surface instead of a faded accent fill.
 struct AppListPrimaryButtonStyle: ButtonStyle {
+    var isSecondary = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundColor(isEnabled ? .white : .secondary)
+            .foregroundColor(isEnabled ? (isSecondary ? .primary : .white) : .secondary)
             .padding(.horizontal, 14)
             .padding(.vertical, 4)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(isEnabled ? Color.accentColor : Color.primary.opacity(0.045))
+                    .fill(isEnabled && !isSecondary ? Color.accentColor : Color(nsColor: .controlBackgroundColor))
             )
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.primary.opacity(0.08)))
+            .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
             .opacity(isEnabled && configuration.isPressed ? 0.8 : 1)
             .scaleEffect(!reduceMotion && isEnabled && configuration.isPressed ? 0.97 : 1)
             .animation(reduceMotion ? nil : AppMotion.interaction, value: configuration.isPressed)

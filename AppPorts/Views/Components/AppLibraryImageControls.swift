@@ -28,7 +28,8 @@ final class AppLibraryImageController: ObservableObject {
     }
 
     func open(_ url: URL, onReady: @escaping (URL) -> Void) {
-        perform(onReady: onReady) { AppLibraryImageService.Record(imageURL: url) }
+        let existing = record.flatMap { $0.imagePath == url.standardizedFileURL.path ? $0 : nil }
+        perform(onReady: onReady) { existing ?? AppLibraryImageService.Record(imageURL: url) }
     }
 
     func remount(onReady: @escaping (URL) -> Void) {
@@ -83,12 +84,18 @@ final class AppLibraryImageController: ObservableObject {
 @MainActor
 struct AppLibraryImageControls: View {
     let onReady: (URL) -> Void
+    var onChooseLocation: (() -> Void)? = nil
+    var hasLocation = false
     @ObservedObject private var controller = AppLibraryImageController.shared
     @ObservedObject private var operations = AppOperationState.shared
     @State private var showsCreation = false
 
     var body: some View {
         Menu {
+            if let onChooseLocation {
+                Button(hasLocation ? "更换位置".localized : "选择文件夹".localized, action: onChooseLocation)
+                Divider()
+            }
             Button("创建 APFS 映像".localized) { showsCreation = true }
             Button("打开已有映像…".localized) { openImage() }
             if controller.record != nil {
@@ -97,10 +104,17 @@ struct AppLibraryImageControls: View {
         } label: {
             if controller.isWorking {
                 ProgressView().controlSize(.small)
+            } else if onChooseLocation != nil {
+                Image(systemName: "ellipsis")
+                    .frame(width: 28, height: 24)
+                    .contentShape(Rectangle())
             } else {
                 Text("磁盘映像".localized)
             }
         }
+        .accessibilityLabel(onChooseLocation == nil ? "磁盘映像".localized : "更换位置".localized)
+        .help(onChooseLocation == nil ? "磁盘映像".localized : "更换位置".localized)
+        .menuIndicator(onChooseLocation == nil ? .visible : .hidden)
         .menuStyle(.borderlessButton)
         .fixedSize()
         .disabled(operations.isBusy)
@@ -148,7 +162,6 @@ private struct AppLibraryImageCreationSheet: View {
             HStack {
                 Text("创建 APFS 映像".localized).font(AppDialogTypography.title)
                 Spacer()
-                Button("取消".localized) { dismiss() }.keyboardShortcut(.cancelAction)
             }
             HStack {
                 Text("存放位置".localized)
@@ -169,6 +182,7 @@ private struct AppLibraryImageCreationSheet: View {
                 .font(AppDialogTypography.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(AppDialogTypography.body) }
             HStack {
+                Button("取消".localized) { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
                 Button("创建并使用".localized) {
                     guard let directory else { return }

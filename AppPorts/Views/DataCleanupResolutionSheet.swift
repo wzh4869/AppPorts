@@ -3,6 +3,8 @@ import SwiftUI
 struct DataCleanupResolutionSheet: View {
     let transfers: [DataTransferRecord]
     var currentDataPaths: [UUID: String] = [:]
+    var pendingCleanups: [ContainerCleanupRecord] = []
+    var preservedMaterials: [DataTransferMaterial] = []
     let onRetry: (UUID?) -> Void
     let onChanged: () -> Void
     let onPermissions: () -> Void
@@ -23,10 +25,37 @@ struct DataCleanupResolutionSheet: View {
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    if visibleTransfers.isEmpty && pendingCleanups.isEmpty && preservedMaterials.isEmpty {
+                        Text("未找到待处理的迁移记录，可能已由后台完成收尾。请关闭窗口后刷新应用列表。".localized)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     ForEach(visibleTransfers) { transfer in
                         transferRow(transfer)
                         if transfer.id != visibleTransfers.last?.id {
                             Divider()
+                        }
+                    }
+                    ForEach(pendingCleanups) { cleanup in
+                        Divider()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(verbatim: cleanup.mountRecord.appName).font(AppDialogTypography.title)
+                            Text("数据操作尚未完成，现有文件已保留。请退出关联应用，连接并解锁外置盘后重试。".localized)
+                                .foregroundStyle(.secondary)
+                            retainedPath(cleanup.localPath)
+                            if let staging = cleanup.restoreStagingPath { retainedPath(staging) }
+                            retainedPath(cleanup.mountRecord.externalRootPath)
+                        }
+                    }
+                    ForEach(preservedMaterials) { material in
+                        Divider()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(verbatim: material.appName).font(AppDialogTypography.title)
+                            Text(verbatim: material.reason).font(AppDialogTypography.body).textSelection(.enabled)
+                            retainedPath(material.originalPath)
+                            ForEach(Array(Set(material.paths).subtracting([material.originalPath])).sorted(), id: \.self) { path in
+                                retainedPath(path)
+                            }
                         }
                     }
                 }
@@ -36,6 +65,9 @@ struct DataCleanupResolutionSheet: View {
                 Text(verbatim: errorMessage).font(AppDialogTypography.body).foregroundStyle(.red).textSelection(.enabled)
             }
             HStack {
+                if !pendingCleanups.isEmpty || preservedMaterials.contains(where: { $0.recoveryRecord != nil }) {
+                    Button("重试所有待处理项".localized) { dismiss(); onRetry(nil) }
+                }
                 Spacer()
                 Button("完成".localized) { dismiss() }.keyboardShortcut(.cancelAction)
             }
@@ -54,6 +86,19 @@ struct DataCleanupResolutionSheet: View {
         } message: {
             Text("所有剩余旧文件会保留在原位置，继续占用空间，不会合并或覆盖正在使用的数据。软件将停止自动清理和异常提醒，你仍可在这里打开副本或重新尝试清理。".localized)
         }
+    }
+
+    private func retainedPath(_ path: String) -> some View {
+        Text(verbatim: path)
+            .font(AppDialogTypography.body)
+            .foregroundStyle(.secondary)
+            .textSelection(.enabled)
+            .contextMenu {
+                Button("复制路径".localized) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(path, forType: .string)
+                }
+            }
     }
 
     private func transferRow(_ transfer: DataTransferRecord) -> some View {

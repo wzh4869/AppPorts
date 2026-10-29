@@ -207,9 +207,11 @@ struct DataDirsView: View {
             ZStack(alignment: .topLeading) {
                 if selectedTab == .toolDirs {
                     toolDirsContent
+                        .padding(.top, 8)
                         .transaction { $0.animation = nil }
                 } else {
                     appDirsContent
+                        .ignoresSafeArea(.container, edges: .top)
                         .transaction { $0.animation = nil }
                 }
             }
@@ -322,6 +324,7 @@ struct DataDirsView: View {
         }
         .sheet(isPresented: $showCleanupResolution) {
             DataCleanupResolutionSheet(transfers: dataTransfers, currentDataPaths: currentDataPaths,
+                pendingCleanups: pendingCleanups, preservedMaterials: preservedMaterials,
                 onRetry: { id in
                     DispatchQueue.main.async { retryPendingOperations(operationID: id) }
                 }, onChanged: { refreshOperationRecords() }, onPermissions: {
@@ -383,12 +386,6 @@ struct DataDirsView: View {
                     }
                 }
             }
-            .overlay(alignment: .top) {
-                if externalDriveURL == nil {
-                    externalDriveWarning
-                        .padding(12)
-                }
-            }
         }
     }
 
@@ -438,15 +435,7 @@ struct DataDirsView: View {
                 directoryRevealRequest = nil
                 summaryFilter = nil
                 if let app = selectedApp { scanLibraryDirs(for: app) }
-                else {
-                    directoryScanTask?.cancel()
-                    libraryScanToken = UUID()
-                    libraryItems = []
-                    libraryReadIssues = []
-                    libraryIdentityIssue = nil
-                    selectedAppIsSandboxed = false
-                    isScanning = false
-                }
+                else { clearAppDataSelection() }
             }
             .onChange(of: localApps) { newApps in
                 // 重签名/迁移后刷新 selectedApp，避免持有旧的 isResigned 等字段
@@ -555,12 +544,6 @@ struct DataDirsView: View {
                         )
                     }
                 }
-                .overlay(alignment: .top) {
-                    if externalDriveURL == nil {
-                        externalDriveWarning
-                            .padding(12)
-                    }
-                }
             }
             .frame(minWidth: 340, maxWidth: .infinity)
             .frame(maxHeight: .infinity, alignment: .top)
@@ -622,27 +605,6 @@ struct DataDirsView: View {
         .padding(.horizontal, 12)
         .padding(.top, 0)
         .padding(.bottom, 12)
-    }
-
-    private var externalDriveWarning: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "externaldrive.badge.exclamationmark")
-                .foregroundColor(.orange)
-            Text("请先选择外部存储路径".localized)
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-            Button("选择外部存储".localized) { _ = onSelectExternalDrive() }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-        }
-        .padding(10)
-        .background(Color(nsColor: .windowBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
-        }
-        .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
     }
 
     private func signatureReplacedBanner(for app: AppItem) -> some View {
@@ -1249,6 +1211,20 @@ struct DataDirsView: View {
         isScanning = false
     }
 
+    private func clearAppDataSelection() {
+        directoryScanTask?.cancel()
+        libraryScanToken = UUID()
+        libraryItems = []
+        libraryReadIssues = []
+        libraryIdentityIssue = nil
+        displayedAppDataContext = nil
+        selectedItemID = nil
+        selectedAppIsSandboxed = false
+        selectedAppIsWeChat = false
+        appDataPermissionIncomplete = false
+        isScanning = false
+    }
+
     private func reloadCurrentTab(forceToolSizeRefresh: Bool = false, useCachedAppData: Bool = false) {
         guard isActive else { return }
         if selectedTab == .appDirs {
@@ -1273,7 +1249,7 @@ struct DataDirsView: View {
             if let app = selectedApp {
                 scanLibraryDirs(for: app, useCachedResult: useCachedAppData, forceSizeRefresh: forceToolSizeRefresh)
             } else {
-                isScanning = false
+                clearAppDataSelection()
             }
         }
     }

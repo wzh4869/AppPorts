@@ -11,7 +11,7 @@ struct AppLibraryImageService: Sendable {
 
         init(imageURL: URL) {
             imagePath = imageURL.standardizedFileURL.path
-            mountPath = "/Volumes/AppPorts-" + UUID().uuidString
+            mountPath = "/Volumes/" + imageURL.deletingPathExtension().lastPathComponent
         }
     }
 
@@ -78,9 +78,11 @@ struct AppLibraryImageService: Sendable {
     func mount(_ record: Record) async throws -> (record: Record, libraryURL: URL) {
         let image = URL(fileURLWithPath: record.imagePath)
         try requireDirectory(image)
+        let mount = URL(fileURLWithPath: record.mountPath)
         guard image.pathExtension.lowercased() == "sparsebundle",
-              record.mountPath.hasPrefix("/Volumes/AppPorts-"),
-              UUID(uuidString: String(record.mountPath.dropFirst("/Volumes/AppPorts-".count))) != nil else {
+              mount.pathComponents.count == 3,
+              mount.deletingLastPathComponent().path == "/Volumes",
+              mount.standardizedFileURL.path == record.mountPath else {
             throw Failure(message: "映像记录无效，请重新打开映像。".localized)
         }
         var entries = try await attachedVolumes(for: image)
@@ -88,7 +90,7 @@ struct AppLibraryImageService: Sendable {
             // Never mount over a directory, symlink or another mounted volume.
             guard !FileManager.default.fileExists(atPath: record.mountPath),
                   (try? FileManager.default.attributesOfItem(atPath: record.mountPath)) == nil else {
-                throw Failure(message: "映像挂载位置已被占用，请在 Finder 中检查后重试。".localized)
+                throw Failure(message: "映像挂载位置已被占用，请在 Finder 中检查后重试。".localized + "\n\n" + record.mountPath)
             }
             let support = try await runner.run(executable: "/usr/sbin/diskutil",
                 arguments: ["image", "attach", "--help"], timeout: 10)

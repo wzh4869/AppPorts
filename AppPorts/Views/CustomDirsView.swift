@@ -194,7 +194,8 @@ struct CustomDirsView: View {
                 } else if localEntries.isEmpty {
                     ContentView.EmptyStateView(icon: "folder.badge.plus", text: "未添加目录迁移".localized)
                 } else {
-                    List(Array(localEntries.enumerated()), id: \.element.id, selection: $selectedLocalIDs) { indexed in
+                    List(selection: $selectedLocalIDs) {
+                        ForEach(Array(localEntries.enumerated()), id: \.element.id) { indexed in
                         let entry = indexed.element
                         CustomDirRowView(
                             entry: entry,
@@ -206,12 +207,21 @@ struct CustomDirsView: View {
                         .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                         .modifier(AppListRowAppearance(isSelected: selectedLocalIDs.contains(entry.id), index: indexed.offset))
                         .modifier(ContentView.RowSeparatorVisibility())
+                        }
+                        Color.clear.frame(height: 48)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .modifier(ContentView.RowSeparatorVisibility())
+                            .accessibilityHidden(true)
                     }
                     .listStyle(.plain)
                     .modifier(ContentView.TransparentListBackground())
                 }
             }
 
+
+        }
+        .overlay(alignment: .bottomTrailing) {
             ContentView.ActionFooter(
                 title: migrateButtonTitle,
                 icon: "arrow.right",
@@ -239,7 +249,8 @@ struct CustomDirsView: View {
                 if externalEntries.isEmpty {
                     ContentView.EmptyStateView(icon: "externaldrive.badge.plus", text: "未添加目录迁移".localized)
                 } else {
-                    List(Array(externalEntries.enumerated()), id: \.element.id, selection: $selectedExternalIDs) { indexed in
+                    List(selection: $selectedExternalIDs) {
+                        ForEach(Array(externalEntries.enumerated()), id: \.element.id) { indexed in
                         let entry = indexed.element
                         CustomDirRowView(
                             entry: entry,
@@ -251,19 +262,26 @@ struct CustomDirsView: View {
                         .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                         .modifier(AppListRowAppearance(isSelected: selectedExternalIDs.contains(entry.id), index: indexed.offset))
                         .modifier(ContentView.RowSeparatorVisibility())
+                        }
+                        Color.clear.frame(height: 48)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .modifier(ContentView.RowSeparatorVisibility())
+                            .accessibilityHidden(true)
                     }
                     .listStyle(.plain)
                     .modifier(ContentView.TransparentListBackground())
                 }
             }
 
+        }
+        .overlay(alignment: .bottomTrailing) {
             HStack(spacing: 8) {
-                Spacer(minLength: 0)
                 Button(action: restoreSelected) {
                     Label(restoreButtonTitle, systemImage: "arrow.turn.up.left")
                         .frame(minWidth: 100, minHeight: 22)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppListPrimaryButtonStyle(isSecondary: true))
                 .disabled(restorablePairs.isEmpty)
 
                 Button(action: relinkSelected) {
@@ -274,6 +292,7 @@ struct CustomDirsView: View {
                 .disabled(relinkablePairs.isEmpty)
             }
             .modifier(AppListFooterStyle())
+
         }
     }
 

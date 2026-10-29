@@ -104,6 +104,25 @@ final class LocalizationAuditTests: XCTestCase {
 
     // Image-library copy currently ships in Chinese and English; other locales use fallback.
     private let imageTranslationFallbackKeys: Set<String> = [
+        "重试所有待处理项",
+        "侧边栏宽度",
+        "已节省了 %@ 堪比黄金的存储空间",
+
+        "外观",
+        "跟随系统",
+        "浅色",
+        "深色",
+        "已迁出（估算）",
+        "橙色表示已确认在外部存储的数据大小估算；不等于实际释放空间。未连接、未完成或保留本地副本的数据不计入，色段最多占用当前空余部分。",
+
+        "本机磁盘",
+        "所在磁盘",
+        "映像内空间",
+        "使用率",
+        "已用",
+        "空余",
+        "目标存储",
+        "更换位置",
         "请输入有效的磁盘名称和 1–65536 GiB 的最大容量。",
         "请选择已挂载的外部存储或 SMB 共享目录。",
         "该位置已有同名文件，请更换名称或打开已有映像。",
