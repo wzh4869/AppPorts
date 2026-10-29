@@ -429,6 +429,7 @@ struct DataDirsView: View {
             }
             .frame(minWidth: 200, maxWidth: 280)
             .frame(maxHeight: .infinity, alignment: .top)
+            .ignoresSafeArea(.container, edges: .top)
             .onChange(of: selectedApp?.path) { _ in
                 selectedAppIsWeChat = false
                 directorySearchText = ""
@@ -547,6 +548,7 @@ struct DataDirsView: View {
             }
             .frame(minWidth: 340, maxWidth: .infinity)
             .frame(maxHeight: .infinity, alignment: .top)
+            .ignoresSafeArea(.container, edges: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .controlBackgroundColor))
@@ -556,24 +558,6 @@ struct DataDirsView: View {
 
     private var appSelectionHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("应用".localized)
-                        .font(.system(size: 13, weight: .semibold))
-                        .lineLimit(1)
-                    Text("\(localApps.filter { !$0.isFolder }.count)")
-                        .font(.system(size: 11, weight: .medium))
-                        .monospacedDigit()
-                        .foregroundColor(.secondary)
-                        .fixedSize()
-                }
-
-                Spacer(minLength: 4)
-
-            }
-            .padding(.horizontal, 10)
-            .frame(minHeight: 28)
-
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 12))
@@ -603,7 +587,7 @@ struct DataDirsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .padding(.horizontal, 12)
-        .padding(.top, 0)
+        .padding(.top, 12)
         .padding(.bottom, 12)
     }
 

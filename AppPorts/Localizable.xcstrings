@@ -69,7 +69,7 @@
         }
       }
     },
-    "已节省了 %@ 堪比黄金的存储空间" : {
+    "已节省 %@ 堪比黄金的存储空间" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
@@ -81,7 +81,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已节省了 %@ 堪比黄金的存储空间"
+            "value" : "已节省 %@ 堪比黄金的存储空间"
           }
         }
       }

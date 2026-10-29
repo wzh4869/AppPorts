@@ -106,7 +106,7 @@ final class LocalizationAuditTests: XCTestCase {
     private let imageTranslationFallbackKeys: Set<String> = [
         "重试所有待处理项",
         "侧边栏宽度",
-        "已节省了 %@ 堪比黄金的存储空间",
+        "已节省 %@ 堪比黄金的存储空间",
 
         "外观",
         "跟随系统",
