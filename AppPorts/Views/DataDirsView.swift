@@ -515,8 +515,8 @@ struct DataDirsView: View {
                         if let issue = libraryIdentityIssue {
                             appIdentityWarning(issue: issue)
                         }
-                        if !libraryReadIssues.isEmpty {
-                            directoryReadWarning(issues: libraryReadIssues)
+                        if !libraryReadFailures.isEmpty {
+                            directoryReadWarning(issues: libraryReadFailures)
                         }
                     }
                 }
@@ -549,7 +549,7 @@ struct DataDirsView: View {
                     } else if libraryItems.isEmpty {
                         if libraryIdentityIssue != nil {
                             ContentView.EmptyStateView(icon: "exclamationmark.circle", text: "无法完整识别应用数据".localized)
-                        } else if !libraryReadIssues.isEmpty {
+                        } else if !libraryReadFailures.isEmpty {
                             ContentView.EmptyStateView(icon: "exclamationmark.circle", text: "部分目录无法读取，请检查后刷新。".localized)
                         } else {
                             ContentView.EmptyStateView(icon: "folder.badge.questionmark", text: "未找到关联数据目录".localized)
@@ -855,8 +855,8 @@ struct DataDirsView: View {
                     .font(.system(size: 12))
                     .fixedSize()
             }
-            if !dotFolderReadIssues.isEmpty {
-                directoryReadWarning(issues: dotFolderReadIssues)
+            if !dotFolderReadFailures.isEmpty {
+                directoryReadWarning(issues: dotFolderReadFailures)
             }
         }
         .padding(.horizontal, 12)
@@ -879,6 +879,14 @@ struct DataDirsView: View {
             .toggleStyle(.checkbox)
             .font(.system(size: 12))
             .fixedSize()
+    }
+
+    private var libraryReadFailures: [DataDirReadIssue] {
+        libraryReadIssues.filter(\.requiresAttention)
+    }
+
+    private var dotFolderReadFailures: [DataDirReadIssue] {
+        dotFolderReadIssues.filter(\.requiresAttention)
     }
 
     private func directoryReadWarning(issues: [DataDirReadIssue]) -> some View {
@@ -1475,18 +1483,21 @@ struct DataDirsView: View {
                 guard self.libraryScanToken == scanToken else { return }
                 self.applyAppDataSnapshot(discoveredSnapshot)
             }
+            let pausedMountDirectories = result.pausedMountDirectories
             // Ordinary visits can reuse measured sizes; explicit refresh/migration cannot.
             let sizedItems = await withTaskGroup(of: (Int, DirectorySizeResult).self) { group in
                 var results: [(Int, DirectorySizeResult)] = []
                 var iterator = items.indices.makeIterator()
                 for _ in 0..<min(4, items.count) {
                     guard !Task.isCancelled, let i = iterator.next() else { break }
-                    group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh)) }
+                    group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh,
+                            pausedMountDirectories: pausedMountDirectories)) }
                 }
                 for await result in group {
                     results.append(result)
                     if !Task.isCancelled, let i = iterator.next() {
-                        group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh)) }
+                        group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh,
+                            pausedMountDirectories: pausedMountDirectories)) }
                     }
                 }
                 return results

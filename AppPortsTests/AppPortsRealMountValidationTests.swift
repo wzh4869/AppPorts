@@ -60,6 +60,51 @@ final class AppPortsRealMountValidationTests: XCTestCase {
                 [fixture.record.initialVolumeUUID.uppercased(), moved.record.volumeUUID.uppercased()],
                 "Migration must create exactly one dedicated volume")
 
+            // A real manual unmount leaves a readable, non-writable guard.
+            // Discovery must retain unknown size instead of reporting empty data.
+            let app = fixture.root.appendingPathComponent("Synthetic.app")
+            let contents = app.appendingPathComponent("Contents")
+            try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+            try PropertyListSerialization.data(fromPropertyList: [
+                "CFBundleIdentifier": "org.appports.synthetic.mount", "CFBundleName": "Synthetic",
+                "CFBundlePackageType": "APPL"
+            ], format: .xml, options: 0).write(to: contents.appendingPathComponent("Info.plist"))
+            let scanner = DataDirScanner(homeDir: fixture.home, mountStore: store)
+            let scannedApp = AppItem(name: "Synthetic.app", path: app, status: AppStatus.local)
+            try await migrator.unmount(record: moved.record)
+            try requireRealMount(!DiskUtility.isMountPoint(source), "Manual pause did not detach the volume")
+            var guardInfo = stat()
+            try requireRealMount(lstat(source.path, &guardInfo) == 0 && guardInfo.st_mode & 0o7777 == 0o500,
+                                 "Manual pause did not leave the production protection directory")
+            try requireRealMount(try FileManager.default.contentsOfDirectory(atPath: source.path).isEmpty,
+                                 "The offline guard is not readable and empty")
+            let offlineWrite = open(source.appendingPathComponent("must-not-create").path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
+            let writeError = errno
+            if offlineWrite >= 0 { close(offlineWrite) }
+            try requireRealMount(offlineWrite == -1 && writeError == EACCES,
+                                 "The offline guard accepted a local write")
+            let pausedScan = await scanner.scanLibraryDirsWithDiagnostics(for: scannedApp)
+            let pausedItem = try XCTUnwrap(pausedScan.items.first { $0.path.path == source.path })
+            try requireRealMount(pausedItem.autoMountPaused && pausedItem.status == DataDirStatus.pendingMount
+                && pausedItem.canRestore, "Pause lost the mount or recovery actions")
+            let pausedSize = measureDataDirectorySize(for: pausedItem, pausedMountDirectories: pausedScan.pausedMountDirectories)
+            let ancestorSize = measureDirectorySize(at: source.deletingLastPathComponent(),
+                pausedMountDirectories: pausedScan.pausedMountDirectories)
+            try requireRealMount(!pausedSize.isComplete && pausedSize.formattedSize == "—"
+                && !pausedSize.readIssues.isEmpty && pausedSize.readIssues.allSatisfy(\.isExpectedMountPause),
+                "A real paused guard was treated as a permission problem or complete empty data")
+            try requireRealMount(!ancestorSize.isComplete && !ancestorSize.readIssues.contains(where: \.requiresAttention)
+                && !pausedScan.readIssues.contains(where: \.requiresAttention),
+                "The paused guard still triggers the page's read-error guidance")
+            try await migrator.mount(record: moved.record, resumingManualPause: true)
+            let resumedScan = await scanner.scanLibraryDirsWithDiagnostics(for: scannedApp)
+            let resumedItem = try XCTUnwrap(resumedScan.items.first { $0.path.path == source.path })
+            let resumedSize = measureDataDirectorySize(for: resumedItem, useCache: true,
+                pausedMountDirectories: resumedScan.pausedMountDirectories)
+            try requireRealMount(DiskUtility.isMountPoint(source) && !resumedItem.autoMountPaused
+                && resumedSize.isComplete && resumedSize.bytes > 0, "Explicit mount did not resume size measurement")
+            try TreeCopySession.verifyCopy(at: source, against: original)
+
             // Reproduce a readable external root over an inaccessible local
             // parent, using only this private image and synthetic container.
             // A metadata/TCC-style access failure must precede any unmount.
@@ -171,7 +216,7 @@ final class AppPortsRealMountValidationTests: XCTestCase {
             }
             let report: [String: Any] = ["status": "passed", "nonce": fixture.record.nonce, "pid": getpid(),
                 "containerUUID": fixture.record.containerUUID, "createdVolumeUUID": moved.record.volumeUUID,
-                "realKernelMountVerified": true, "activeWritesRestored": true, "dedicatedVolumeDeleted": true,
+                "realKernelMountVerified": true, "manualPauseReadDiagnosticsVerified": true, "offlineGuardReadableAndWriteDenied": true, "activeWritesRestored": true, "dedicatedVolumeDeleted": true,
                 "reconnectedCurrentData": true,
                 "permissionDenialPreservesUsableMountAndCanRetry": true,
                 "permissionLossAfterCopyPreservesLatestData": true,

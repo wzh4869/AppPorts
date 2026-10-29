@@ -1557,6 +1557,122 @@ final class DataDirScannerTests: XCTestCase {
         }
     }
 
+    func testPausedGuardAndAncestorSizesRemainIncompleteWithoutPermissionGuidance() async throws {
+        try await assertPausedGuardAndAncestorSizes(mode: 0)
+    }
+
+    func testReadablePausedGuardAndAncestorSizesRemainIncompleteWithoutPermissionGuidance() async throws {
+        try await assertPausedGuardAndAncestorSizes(mode: 0o500)
+    }
+
+    func testReadableOfflineGuardWithoutManualPauseKeepsSizesIncomplete() async throws {
+        try await assertPausedGuardAndAncestorSizes(mode: 0o500, manuallyPaused: false, volumeOnline: false)
+    }
+
+    func testReadablePendingGuardWithoutManualPauseKeepsSizesIncomplete() async throws {
+        try await assertPausedGuardAndAncestorSizes(mode: 0o500, manuallyPaused: false)
+    }
+
+    private func assertPausedGuardAndAncestorSizes(mode: Int, manuallyPaused: Bool = true,
+                                                  volumeOnline: Bool = true) async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let appURL = try createAppBundle(named: "Example.app", bundleID: "com.example.test", in: workspace.appsURL)
+        let parent = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.test/Data/Documents")
+        let source = parent.appendingPathComponent("Cache")
+        try createDirectoryWithPayload(at: parent)
+        try fileManager.createDirectory(at: source, withIntermediateDirectories: true)
+        let store = ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        let record = ContainerMountRecord(appName: "Example", bundleIdentifier: "com.example.test", dataDirType: DataDirType.containers.rawValue,
+            mountPointPath: source.path, volumeUUID: "PAUSED", volumeName: "Paused", externalRootPath: workspace.externalRootURL.path)
+        try store.upsert(record)
+        try store.setManuallyUnmounted(manuallyPaused, record: record)
+        // Prime the ancestor cache before the guard becomes unavailable.
+        XCTAssertTrue(measureDirectorySize(at: parent).isComplete)
+        try fileManager.setAttributes([.posixPermissions: mode], ofItemAtPath: source.path)
+        defer { try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: source.path) }
+        guard mode != 0 || !fileManager.isReadableFile(atPath: source.path) else { throw XCTSkip("当前进程可绕过测试目录的文件权限") }
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, mountStore: store, isVolumeOnline: { _ in volumeOnline })
+        let app = AppItem(name: "Example.app", path: appURL, status: "本地")
+        let scan = await scanner.scanLibraryDirsWithDiagnostics(for: app)
+        var item = try XCTUnwrap(scan.items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertEqual(item.autoMountPaused, manuallyPaused)
+        XCTAssertEqual(item.status, volumeOnline ? DataDirStatus.pendingMount : DataDirStatus.volumeMissing)
+        XCTAssertTrue(item.canRestore)
+        XCTAssertFalse(scan.readIssues.contains(where: \.requiresAttention))
+        let measured = measureDataDirectorySize(for: item, pausedMountDirectories: scan.pausedMountDirectories)
+        XCTAssertFalse(measured.isComplete)
+        XCTAssertFalse(measured.readIssues.isEmpty)
+        XCTAssertTrue(measured.readIssues.allSatisfy(\.isExpectedMountPause))
+        item.applySize(measured)
+        XCTAssertEqual(item.size, "—")
+        XCTAssertTrue(item.sizeIsIncomplete)
+        let ancestor = measureDirectorySize(at: parent, pausedMountDirectories: scan.pausedMountDirectories)
+        XCTAssertEqual(ancestor.bytes, 7)
+        XCTAssertFalse(ancestor.isComplete)
+        XCTAssertFalse(ancestor.readIssues.contains(where: \.requiresAttention))
+        let addedPayload = parent.appendingPathComponent("added-payload")
+        try Data("new".utf8).write(to: addedPayload)
+        let remeasured = measureDirectorySize(at: parent, pausedMountDirectories: scan.pausedMountDirectories)
+        XCTAssertEqual(remeasured.bytes, 10, "Incomplete ancestor totals must not be cached")
+        XCTAssertFalse(remeasured.isComplete)
+        let total = DataDirDisplaySizeSummary(items: [item], hasReadIssues: !measured.readIssues.isEmpty)
+        XCTAssertTrue(total.isIncomplete)
+
+        // A genuine unreadable sibling still produces the permission action.
+        let denied = parent.deletingLastPathComponent().appendingPathComponent("Library/Caches")
+        try createDirectoryWithPayload(at: denied)
+        try fileManager.setAttributes([.posixPermissions: 0o000], ofItemAtPath: denied.path)
+        defer { try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: denied.path) }
+        let mixed = measureDirectorySize(at: parent.deletingLastPathComponent(), pausedMountDirectories: scan.pausedMountDirectories)
+        XCTAssertTrue(mixed.readIssues.contains { $0.isExpectedMountPause })
+        XCTAssertTrue(mixed.readIssues.contains { $0.requiresAttention && $0.isPermissionDenied })
+        let mixedScan = await scanner.scanLibraryDirsWithDiagnostics(for: app)
+        XCTAssertTrue(mixedScan.readIssues.contains { $0.requiresAttention && $0.isPermissionDenied })
+
+        // Explicit resume removes pause classification; fresh data is measured.
+        try fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: source.path)
+        try Data("resumed".utf8).write(to: source.appendingPathComponent("payload"))
+        try store.setManuallyUnmounted(false, record: record)
+        let resumed = await scanner.scanLibraryDirsWithDiagnostics(for: app)
+        let resumedItem = try XCTUnwrap(resumed.items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
+        XCTAssertFalse(resumedItem.autoMountPaused)
+        let refreshed = measureDataDirectorySize(for: resumedItem, useCache: true,
+                                                pausedMountDirectories: resumed.pausedMountDirectories)
+        XCTAssertTrue(refreshed.isComplete)
+        XCTAssertEqual(refreshed.bytes, 7)
+    }
+
+    func testPauseClassificationRequiresExactUnmountedRealGuard() throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let guardURL = workspace.homeURL.appendingPathComponent("Guard")
+        try fileManager.createDirectory(at: guardURL, withIntermediateDirectories: true)
+        try fileManager.setAttributes([.posixPermissions: 0o000], ofItemAtPath: guardURL.path)
+        defer { try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: guardURL.path) }
+        let denied = POSIXError(.EACCES)
+        let paused: Set<URL> = [guardURL.standardizedFileURL]
+        XCTAssertTrue(DataDirReadIssue(url: guardURL, error: denied, pausedMountDirectories: paused,
+                                       isMountPoint: { _ in false }).isExpectedMountPause)
+        XCTAssertTrue(DataDirReadIssue(url: guardURL, error: denied).requiresAttention, "No trusted pause record")
+        XCTAssertTrue(DataDirReadIssue(url: guardURL, error: denied, pausedMountDirectories: paused,
+                                       isMountPoint: { _ in true }).requiresAttention, "Paused but still mounted")
+        XCTAssertTrue(DataDirReadIssue(url: guardURL.deletingLastPathComponent(), error: denied,
+                                       pausedMountDirectories: paused).requiresAttention, "Do not exempt ancestors")
+        XCTAssertTrue(DataDirReadIssue(url: guardURL, error: POSIXError(.EIO),
+                                       pausedMountDirectories: paused).requiresAttention, "Non-permission errors remain errors")
+        try fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: guardURL.path)
+        XCTAssertTrue(DataDirReadIssue(url: guardURL, error: denied, pausedMountDirectories: paused).requiresAttention)
+        try fileManager.removeItem(at: guardURL)
+        let target = workspace.homeURL.appendingPathComponent("Target")
+        try fileManager.createDirectory(at: target, withIntermediateDirectories: true)
+        try fileManager.setAttributes([.posixPermissions: 0o000], ofItemAtPath: target.path)
+        defer { try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: target.path) }
+        try fileManager.createSymbolicLink(at: guardURL, withDestinationURL: target)
+        XCTAssertTrue(DataDirReadIssue(url: guardURL, error: denied, pausedMountDirectories: paused).requiresAttention,
+                      "A replacement symlink must not inherit pause classification")
+    }
+
     func testSplitAccountAggregatesPauseWithoutReplacingMountStatus() throws {
         let home = URL(fileURLWithPath: "/Synthetic/Home")
         let account = PartialWeChatMigrationPolicy(homeDirectory: home).accountsRoot.appendingPathComponent("wxid_fixture")

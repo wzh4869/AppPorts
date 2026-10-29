@@ -769,7 +769,7 @@ struct DataPreparationRecoveryTests {
         let parentIdentity = try #require(pending.stagingParentIdentity)
         let entryIdentity = try DataPathIdentity.capture(fixture.local)
         let entryMode = try fixture.permissions(at: fixture.local)
-        if mount { #expect(entryMode == 0) }
+        if mount { #expect(entryMode == 0o500) }
         else { #expect(pending.stagingIdentity != nil) }
         #expect(try DataPathIdentity.capture(parent).matchesFilesystemObject(parentIdentity))
         #expect(!FileManager.default.fileExists(atPath: removed.path))
@@ -859,7 +859,7 @@ struct DataPreparationRecoveryTests {
         let snapshot = try TreeCopySession.snapshot(at: source)
         let entryIdentity = try DataPathIdentity.capture(fixture.local)
         let entryMode = try fixture.permissions(at: fixture.local)
-        if scenario == "mount-offline" { #expect(entryMode == 0) }
+        if scenario == "mount-offline" { #expect(entryMode == 0o500) }
         let mounts = fixture.runner.commands(prefix: ["mount"])
         let unmounts = fixture.runner.commands(prefix: ["unmount"])
         let synchronized = SyncProbe()
@@ -972,7 +972,7 @@ struct DataPreparationRecoveryTests {
         try await fixture.mountMover().unmount(record: record)
         writer.failAfterNextRestoreIntent()
         await #expect(throws: POSIXError(.EIO)) { try await fixture.perform(restore: true, progress: nil) }
-        #expect(try fixture.permissions(at: fixture.local) == 0)
+        #expect(try fixture.permissions(at: fixture.local) == 0o500)
         if conflict == "nonempty" {
             // Model a new local write, then restore the actual guarded state
             // before calling cancellation. A locked directory is not proof of emptiness.
