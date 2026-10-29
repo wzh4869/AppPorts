@@ -207,21 +207,6 @@ final class ContainerMountStore: @unchecked Sendable {
         try read { $0.preservedMaterials.first { $0.id == id } }
     }
 
-    /// Reattach an archived journal to its exact legacy summary. The service
-    /// must still prove filesystem identities before it can remove any data.
-    func attachRecoveryRecord(_ record: DataTransferRecord, to expected: DataTransferMaterial) throws {
-        try mutate { current in
-            guard let index = current.preservedMaterials.firstIndex(of: expected),
-                  expected.recoveryRecord == nil, record.operationID == expected.id,
-                  record.originalPath == expected.originalPath, record.appName == expected.appName,
-                  record.mode == expected.mode, record.direction == expected.direction,
-                  !record.isDataSwitchComplete,
-                  Set(record.materialPaths).isSubset(of: Set(expected.paths)) else {
-                throw StoreError.conflict("Archived preparation does not match preserved material")
-            }
-            current.preservedMaterials[index].recoveryRecord = record
-        }
-    }
 
     func checkpointPreservedRemoval(_ baseline: Data, expected: DataTransferMaterial) throws -> DataTransferMaterial {
         var updated = expected
@@ -299,20 +284,11 @@ final class ContainerMountStore: @unchecked Sendable {
     func upsertManagedLink(_ link: ManagedDataLinkRecord) throws {
         try mutate { try self.putLink(link, into: &$0) }
     }
-    func removeManagedLink(forOriginalPath path: String) throws {
-        try mutate { current in
-            try self.checkLegacyMutation(path, current)
-            current.managedLinks.removeAll { DataPathTopology.relationship($0.originalPath, path) == .same }
-        }
-    }
     /// Startup only returns durable facts, including cleanupRequested; it never deletes or resumes work.
     func unfinishedTransfers() throws -> [DataTransferRecord] { try transfers() }
     func transfer(operationID: UUID) throws -> DataTransferRecord? { try read { $0.transfers.first { $0.operationID == operationID } } }
     func record(forMountPoint url: URL) -> ContainerMountRecord? {
         records().first { DataPathTopology.relationship($0.mountPointPath, url.path) == .same }
-    }
-    func recordStrict(forMountPoint url: URL) throws -> ContainerMountRecord? {
-        try recordsStrict().first { DataPathTopology.relationship($0.mountPointPath, url.path) == .same }
     }
 
     func upsert(_ record: ContainerMountRecord) throws {

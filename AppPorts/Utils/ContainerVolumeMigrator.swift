@@ -165,7 +165,6 @@ actor ContainerVolumeMigrator {
     static let neverIndexFileName = ".metadata_never_index"
     private static let managedIdentifier = "com.shimoko.AppPorts"
     private static let lockedMountPointMode: mode_t = 0o000
-    private static let openMountPointMode: mode_t = 0o700
     /// 挂载动作的尝试轮数：命令报告成功但挂载点没出现时（被系统自动挂载抢先）重来。
     static let maximumMountAttempts = 3
     /// 两次挂载尝试之间的间隔，给自动挂载留出落地时间。
@@ -2888,22 +2887,6 @@ actor ContainerVolumeMigrator {
         return true
     }
 
-    /// 1.9.0 之前的版本挂载时没带 `nobrowse`，卷会一直显示在 Finder 边栏和桌面上。
-    /// 发现这种挂载就原地补上，不用等下次插盘或开机。失败只记日志：卷照常可用，下次重挂时会带上。
-    private func hideFromFinderIfNeeded(_ mountPoint: URL) async {
-        guard let flags = mountFlags(mountPoint), flags & UInt32(MNT_DONTBROWSE) == 0 else { return }
-        do {
-            try store.recheckWriterAdmission()
-            try await disk.hideFromFinder(mountPoint: mountPoint, currentFlags: flags)
-            AppLogger.shared.logContext("已为早期挂载的容器卷补上 nobrowse", details: [("mount_point", mountPoint.path)])
-        } catch {
-            AppLogger.shared.logContext(
-                "为容器卷补 nobrowse 失败，卷仍可用，下次重挂时生效",
-                details: [("mount_point", mountPoint.path), ("error", error.localizedDescription)],
-                level: "WARN"
-            )
-        }
-    }
 
     /// 挂载/迁移后补标记。任何失败都只记日志 —— 防索引是优化，
     /// 不该让挂载本身失败（例如卷以只读方式挂上时）。

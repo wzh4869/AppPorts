@@ -93,7 +93,6 @@ struct ContentView: View {
     @State private var pendingRemainingAppsForSelfUpdater: [AppItem] = []
     @State private var selfUpdaterIsLinkIn = false // true = 链接回本地, false = 迁移到外部
 
-    @State private var pendingRemainingApps: [AppItem] = []
     
     // 进度弹窗状态
     @State private var showProgress = false
@@ -101,7 +100,6 @@ struct ContentView: View {
     @State private var progressCurrent = 0
     @State private var progressTotal = 0
     @State private var progressAppName = ""
-    @State private var isMigrating = false
     
     // App Store 外部安装引导
     @State private var masGuidanceRequest: WarningSheetRequest?
@@ -160,8 +158,6 @@ struct ContentView: View {
 
     // MARK: - Tab
     enum MainTab { case apps, dataDirs, customDirs }
-    @Namespace private var navigationSelection
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var mainTab: MainTab = .apps
     @State private var hasOpenedDataDirs = false
     @State private var hasOpenedCustomDirs = false
@@ -785,18 +781,18 @@ struct ContentView: View {
 
     private var primaryNavigation: some View {
         HStack(spacing: 2) {
-            TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps, selectionNamespace: navigationSelection) {
+            TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps) {
                 mainTab = .apps
             }
-            TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs, selectionNamespace: navigationSelection) {
+            TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs) {
                 selectedDataDirsTab = .toolDirs
                 mainTab = .dataDirs
             }
-            TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs, selectionNamespace: navigationSelection) {
+            TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs) {
                 selectedDataDirsTab = .appDirs
                 mainTab = .dataDirs
             }
-            TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs, selectionNamespace: navigationSelection) {
+            TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
                 mainTab = .customDirs
             }
         }
@@ -805,8 +801,6 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.primary.opacity(0.03))
         )
-        .animation(reduceMotion ? nil : AppMotion.page, value: mainTab)
-        .animation(reduceMotion ? nil : AppMotion.page, value: selectedDataDirsTab)
     }
 
     private var appListToolbar: some View {
@@ -1121,7 +1115,6 @@ struct ContentView: View {
         let title: String
         var systemImage: String? = nil
         let isSelected: Bool
-        let selectionNamespace: Namespace.ID
         let action: () -> Void
 
         @State private var isHovered = false
@@ -1145,7 +1138,6 @@ struct ContentView: View {
                     if isSelected {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(Color.accentColor.opacity(0.12))
-                            .matchedGeometryEffect(id: "navigationSelection", in: selectionNamespace)
                     } else {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(isHovered ? Color.primary.opacity(0.04) : .clear)
@@ -1153,7 +1145,7 @@ struct ContentView: View {
                 }
                 .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
-            .buttonStyle(AppPressButtonStyle())
+            .buttonStyle(.plain)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
             .onHover { isHovered = $0 }
             .animation(reduceMotion ? nil : AppMotion.interaction, value: isHovered)
@@ -1335,10 +1327,6 @@ struct ContentView: View {
         }
     }
 
-    private func readVersion(from appURL: URL) -> String {
-        let plist = NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist"))
-        return (plist?["CFBundleShortVersionString"] as? String) ?? ""
-    }
 
     @MainActor
     func scanExternalApps(forceSizeRefresh: Bool = false) {
@@ -1454,38 +1442,56 @@ struct ContentView: View {
         return (filled, misses)
     }
 
-    /// AppScanner 串行读取目录；每完成一项便更新大小，避免慢目录拖住所有行。
+    /// Bound independent size reads; publish each completed row immediately.
     private func computeAndStoreSizes(
         misses: [(app: AppItem, mtime: Date?)],
         isLocal: Bool,
         scanner: AppScanner,
         request: ScanRequest
     ) async {
-        for miss in misses {
-            guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
-            let bytes = await scanner.calculateDisplayedSize(for: miss.app, isLocalEntry: isLocal)
-            await MainActor.run {
-                guard self.isCurrentScan(request, isLocal: isLocal) else { return }
-                let id = miss.app.id
-                let sizeString = LocalizedByteCountFormatter.string(fromByteCount: bytes)
-                self.sizeCache[id] = CachedAppSize(size: sizeString, bytes: bytes, mtime: miss.mtime,
-                                                  isLocalPortal: isLocal && miss.app.status == AppStatus.linked)
-                if isLocal {
-                    if let index = self.localApps.firstIndex(where: { $0.id == id }) {
-                        self.localApps[index].size = sizeString
-                        self.localApps[index].sizeBytes = bytes
+        guard !Task.isCancelled,
+              await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
+        await withTaskGroup(of: (Int, Int64).self) { group in
+            var nextIndex = 0
+            for _ in 0..<min(4, misses.count) {
+                let index = nextIndex
+                let app = misses[index].app
+                group.addTask { (index, scanner.calculateDisplayedSize(for: app, isLocalEntry: isLocal)) }
+                nextIndex += 1
+            }
+            for await (index, bytes) in group {
+                let miss = misses[index]
+                let applied = await MainActor.run {
+                    guard !Task.isCancelled, self.isCurrentScan(request, isLocal: isLocal) else { return false }
+                    let id = miss.app.id
+                    let sizeString = LocalizedByteCountFormatter.string(fromByteCount: bytes)
+                    self.sizeCache[id] = CachedAppSize(size: sizeString, bytes: bytes, mtime: miss.mtime,
+                                                      isLocalPortal: isLocal && miss.app.status == AppStatus.linked)
+                    if isLocal {
+                        if let index = self.localApps.firstIndex(where: { $0.id == id }) {
+                            self.localApps[index].size = sizeString
+                            self.localApps[index].sizeBytes = bytes
+                        }
+                    } else {
+                        if let index = self.externalApps.firstIndex(where: { $0.id == id }) {
+                            self.externalApps[index].size = sizeString
+                            self.externalApps[index].sizeBytes = bytes
+                        }
                     }
-                } else {
-                    if let index = self.externalApps.firstIndex(where: { $0.id == id }) {
-                        self.externalApps[index].size = sizeString
-                        self.externalApps[index].sizeBytes = bytes
-                    }
+                    return true
+                }
+                guard applied else { group.cancelAll(); return }
+                if nextIndex < misses.count {
+                    let index = nextIndex
+                    let app = misses[index].app
+                    group.addTask { (index, scanner.calculateDisplayedSize(for: app, isLocalEntry: isLocal)) }
+                    nextIndex += 1
                 }
             }
         }
         // 空列表或全部命中缓存时也必须结束进度；过期请求不能结束新一轮扫描。
         await MainActor.run {
-            guard self.isCurrentScan(request, isLocal: isLocal) else { return }
+            guard !Task.isCancelled, self.isCurrentScan(request, isLocal: isLocal) else { return }
             if !misses.isEmpty || request.forceSizeRefresh {
                 let updatedAt = Date()
                 self.sizeCacheUpdatedAt = updatedAt
@@ -2183,22 +2189,6 @@ struct ContentView: View {
         return ownerID == 0
     }
 
-    /// 将迁移失败的底层错误转成更友好的说明：权限类错误指向“受保护应用”原因，避免直接抛出晦涩的系统错误。
-    func friendlyMigrationFailure(appName: String, error: Error) -> String {
-        let nsError = error as NSError
-        let isPermissionDenied =
-            (nsError.domain == NSCocoaErrorDomain &&
-                (nsError.code == NSFileWriteNoPermissionError || nsError.code == NSFileReadNoPermissionError)) ||
-            (nsError.domain == NSPOSIXErrorDomain &&
-                (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
-        if isPermissionDenied {
-            return String(
-                format: "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。".localized,
-                appName
-            )
-        }
-        return "\(appName): \(error.localizedDescription)"
-    }
     
     /// Resolve all version choices before creating any candidate in this batch.
     /// The service revalidates the selected source and target under its lock.

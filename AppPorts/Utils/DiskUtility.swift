@@ -455,19 +455,6 @@ struct DiskUtility: Sendable {
         return CreationContainer(uuid: uuid.uppercased(), volumes: volumes)
     }
 
-    func findAPFSVolumeDevice(named name: String, inContainer container: String) async throws -> String? {
-        let plist = try await runPlist(["apfs", "list", "-plist"])
-        guard let containers = plist["Containers"] as? [[String: Any]] else { return nil }
-        for entry in containers {
-            guard entry["ContainerReference"] as? String == container,
-                  let volumes = entry["Volumes"] as? [[String: Any]] else { continue }
-            if let match = volumes.first(where: { ($0["Name"] as? String) == name }),
-               let device = match["DeviceIdentifier"] as? String {
-                return device
-            }
-        }
-        return nil
-    }
 
     /// UUID-based inventory makes cleanup retry distinguish deletion from an
     /// unplugged drive; a transient device identifier cannot supply that proof.
@@ -600,17 +587,6 @@ struct DiskUtility: Sendable {
         _ = try await run(["-u", "-o", options, mountPoint.path], executable: Self.mountPath)
     }
 
-    /// 给早期版本挂上、没带 `nobrowse` 的卷补上这个选项，不用卸载。
-    ///
-    /// `mount -u` 会按给出的选项重设标志，只写 `nobrowse` 会把 `noowners` 等冲掉
-    /// （2026-09-25 用临时映像实测），所以把现有的标志一并写回去。
-    func hideFromFinder(mountPoint: URL, currentFlags: UInt32) async throws {
-        let arguments = ["-u", "-o", Self.updateOptions(addingNobrowseTo: currentFlags), mountPoint.path]
-        let result = try await runner.run(executable: Self.mountPath, arguments: arguments, timeout: commandTimeout)
-        guard result.status == 0, !result.timedOut else {
-            throw Failure.commandFailed(command: "mount " + arguments.joined(separator: " "), output: result.combinedText)
-        }
-    }
 
     static func updateOptions(addingNobrowseTo flags: UInt32) -> String {
         let preserved: [(Int32, String)] = [

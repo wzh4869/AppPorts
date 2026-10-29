@@ -10,7 +10,6 @@ actor OperationMaintenance {
     }
 
     private var active: RunningMaintenance?
-    private var dataActive: RunningMaintenance?
     private var lastFinishedAt: Date?
     private let perform: @Sendable () async -> [String]
 
@@ -40,24 +39,6 @@ actor OperationMaintenance {
         return await task.value
     }
 
-    /// 应用数据页的手动重试只处理数据目录，不夹带应用迁移或签名清理。
-    func runDataOperations(retryOperationID: UUID? = nil, observeProgress: (@Sendable (DataTransferProgress) async -> Void)? = nil) async -> [String] {
-        if let dataActive {
-            await observeProgress?(dataActive.progress)
-            return await dataActive.task.value
-        }
-        let progress = DataTransferProgress()
-        let task = Task.detached(priority: .utility) {
-            await progress.track { _ in
-                progress.begin(.recovering)
-                return await Self.finishDataOperations(interactive: true, retryOperationID: retryOperationID)
-            }
-        }
-        dataActive = RunningMaintenance(task: task, progress: progress)
-        defer { dataActive = nil; lastFinishedAt = Date() }
-        await observeProgress?(progress)
-        return await task.value
-    }
 
     private static func performMaintenance() async -> [String] {
         var warnings = await finishDataOperations()

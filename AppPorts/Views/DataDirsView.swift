@@ -108,9 +108,7 @@ struct DataDirsView: View {
     @State private var pendingCleanups: [ContainerCleanupRecord] = []
     @State private var dataTransfers: [DataTransferRecord] = []
     @State private var preservedMaterials: [DataTransferMaterial] = []
-    @State private var cleanupWarning: ContainerVolumeMigrator.CleanupWarning?
     @State private var currentDataPaths: [UUID: String] = [:]
-    @State private var showCleanupWarning = false
     @State private var showCleanupResolution = false
     @State private var dataCompletionWarning = ""
     @State private var showDataCompletionWarning = false
@@ -343,12 +341,6 @@ struct DataDirsView: View {
             Button("稍后".localized, role: .cancel) {}
         } message: {
             Text(dataCompletionWarning)
-        }
-        .alert("操作尚未完成".localized, isPresented: $showCleanupWarning) {
-            Button("处理异常".localized) { refreshOperationRecords(); showCleanupResolution = true }
-            Button("稍后".localized, role: .cancel) {}
-        } message: {
-            Text(cleanupWarning?.message ?? "")
         }
 
     }
@@ -2171,17 +2163,6 @@ struct DataDirsView: View {
         return true
     }
 
-    private func presentCleanupWarning(_ warning: ContainerVolumeMigrator.CleanupWarning?, additionalWarning: String? = nil) {
-        if let additionalWarning {
-            cleanupWarning = warning
-            showCleanupWarning = false
-            presentDataCompletionWarnings([warning?.message, additionalWarning])
-            return
-        }
-        guard let warning else { return }
-        cleanupWarning = warning
-        showCleanupWarning = true
-    }
 
     private func presentDataCompletionWarnings(_ warnings: [String?]) {
         dataCompletionWarning = warnings.compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "\n\n")
@@ -2261,13 +2242,6 @@ struct DataDirsView: View {
 
     // MARK: - 权限与运行检查
 
-    /// 从 localApps 中刷新 selectedApp，确保 isResigned 等字段为最新
-    private func refreshSelectedApp() {
-        if let selected = selectedApp,
-           let refreshed = localApps.first(where: { $0.path == selected.path }) {
-            selectedApp = refreshed
-        }
-    }
 
     /// 检查数据目录关联的应用是否正在运行
     ///
@@ -2298,28 +2272,6 @@ struct DataDirsView: View {
         // 当前不做强制阻断，因为工具目录通常不与单个 .app 绑定
         return nil
     }
-
-    // MARK: - 日志辅助
-
-    /// 构建关联应用的背景信息字段，供各操作日志复用
-    private func appContextFields(for explicitApp: AppItem? = nil) -> [(String, String?)] {
-        guard let app = explicitApp ?? selectedApp else { return [] }
-        let realURL = (try? resolveRealAppURL(app)) ?? app.displayURL
-        let bundleID: String? = {
-            let plistURL = realURL.appendingPathComponent("Contents/Info.plist")
-            guard let data = try? Data(contentsOf: plistURL),
-                  let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] else { return nil }
-            return plist["CFBundleIdentifier"] as? String
-        }()
-        return [
-            ("app_name", app.displayName),
-            ("app_status", app.status),
-            ("app_is_resigned", app.isResigned ? "true" : "false"),
-            ("app_bundle_id", bundleID),
-            ("app_real_path", realURL.path),
-        ]
-    }
-
 
 }
 

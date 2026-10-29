@@ -128,7 +128,7 @@ struct DataDirProgressContent: View {
             }
         }
         .padding(24)
-        .frame(width: 460, height: 420)
+        .frame(width: 460, height: 450)
         .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
                             in: RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 8)

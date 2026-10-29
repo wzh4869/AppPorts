@@ -349,7 +349,7 @@ struct MigrationTaskDetail: View {
                     }
                 }
                 .padding(24)
-                .frame(width: 460, height: 420)
+                .frame(width: 460, height: 450)
                 .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
                             in: RoundedRectangle(cornerRadius: 16))
             } else {
