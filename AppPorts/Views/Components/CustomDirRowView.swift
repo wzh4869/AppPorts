@@ -14,97 +14,76 @@ struct CustomDirRowView: View {
     let onDeleteLink: (CustomDirEntry) -> Void
     let onRemove: (CustomDirConfig) -> Void
 
-    @State private var isHovered = false
-
     private var showsDeleteLinkButton: Bool {
         entry.kind == .local
             && (entry.status == CustomDirStatus.linked || entry.status == CustomDirStatus.orphanedLink)
     }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: entry.kind == .local ? "folder.fill" : "externaldrive.fill")
-                .font(.system(size: 24))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundColor(entry.kind == .local ? .accentColor : .teal)
-                .frame(width: 32)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(entry.name)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-
-                Text(entry.url.path)
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-
-                HStack(spacing: 8) {
+        AppListColumns {
+            HStack(spacing: 10) {
+                Image(systemName: entry.kind == .local ? "folder.fill" : "externaldrive.fill")
+                    .font(.system(size: 24))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundColor(entry.kind == .local ? .accentColor : .teal)
+                    .frame(width: 32, height: 32)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(entry.name)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .help(entry.name)
+                    Text(entry.url.path)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .help(entry.url.path)
                     CustomDirStatusBadge(status: entry.status)
-
-                    if let size = entry.size {
-                        Text(size)
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    } else if entry.status != CustomDirStatus.missing {
-                        Text("计算中...".localized)
-                            .font(.system(size: 10))
-                            .foregroundColor(.secondary.opacity(0.5))
-                    }
                 }
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(entry.name) + Text(", ") + Text(CustomDirStatus.localized(entry.status)))
-
-            Spacer()
-
-            if showsDeleteLinkButton {
-                Button(action: { onDeleteLink(entry) }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                }
-                .buttonStyle(.plain)
-                .padding(6)
-                .background(Color.red.opacity(0.1))
-                .clipShape(Circle())
-                .accessibilityLabel("断开此链接并保留外部文件夹".localized)
-                .help("断开此链接并保留外部文件夹".localized)
+        } size: {
+            Text(entry.size ?? (entry.status == CustomDirStatus.missing ? "—" : "计算中...".localized))
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
+                .monospacedDigit()
+                .lineLimit(1)
+        } actions: {
+            Menu { menuItems } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
             }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .accessibilityLabel("更多操作".localized)
+            .help("更多操作".localized)
         }
-        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
         .padding(.horizontal, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(isSelected ? Color.accentColor.opacity(0.1) : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
-        )
+        .background(AppListSelectionAppearance())
         .contentShape(Rectangle())
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                isHovered = hovering
-            }
-        }
         .accessibilityElement(children: .contain)
-        .contextMenu {
-            Button("在 Finder 中显示".localized) {
-                NSWorkspace.shared.activateFileViewerSelecting([entry.url])
-            }
+        .contextMenu { menuItems }
+    }
 
-            if showsDeleteLinkButton {
-                Divider()
-                Button("断开链接".localized) {
-                    onDeleteLink(entry)
-                }
-            }
-
-            Divider()
-
-            Button("移除记录".localized) {
-                onRemove(entry.config)
-            }
+    @ViewBuilder
+    private var menuItems: some View {
+        Button("在 Finder 中显示".localized) {
+            NSWorkspace.shared.activateFileViewerSelecting([entry.url])
         }
+        if showsDeleteLinkButton {
+            Divider()
+            Button("断开链接".localized) { onDeleteLink(entry) }
+        }
+        Divider()
+        Button("移除记录".localized) { onRemove(entry.config) }
     }
 }
 

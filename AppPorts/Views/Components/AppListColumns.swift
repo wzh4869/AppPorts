@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Capture the existing path identity once; List reads IDs repeatedly while scrolling.
 struct AppListEntry: Identifiable {
@@ -110,5 +111,47 @@ struct AppListPrimaryButtonStyle: ButtonStyle {
             .scaleEffect(!reduceMotion && isEnabled && configuration.isPressed ? 0.97 : 1)
             .animation(reduceMotion ? nil : AppMotion.interaction, value: configuration.isPressed)
             .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
+/// Keep native List keyboard and multiple selection behavior while drawing selection in AppRowView.
+struct AppListSelectionAppearance: NSViewRepresentable {
+    func makeNSView(context: Context) -> SelectionView { SelectionView() }
+
+    func updateNSView(_ nsView: SelectionView, context: Context) {
+        nsView.updateSelectionAppearance()
+    }
+
+    final class SelectionView: NSView {
+        private weak var configuredTable: NSTableView?
+        private var updateScheduled = false
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            if window == nil { configuredTable = nil }
+            updateSelectionAppearance()
+        }
+
+        func updateSelectionAppearance() {
+            guard window != nil, configuredTable == nil, !updateScheduled else { return }
+            updateScheduled = true
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.updateScheduled = false
+                var ancestor = self.superview
+                while let view = ancestor {
+                    // AppKit also draws a focus ring around the right-clicked row.
+                    view.focusRingType = .none
+                    if let table = view as? NSTableView {
+                        self.configuredTable = table
+                        if table.selectionHighlightStyle != .none {
+                            table.selectionHighlightStyle = .none
+                        }
+                        return
+                    }
+                    ancestor = view.superview
+                }
+            }
+        }
     }
 }
