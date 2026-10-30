@@ -191,14 +191,7 @@ struct SidebarStorageSection: View {
                 .frame(height: 5)
                 .accessibilityLabel(title + " · " + "使用率".localized)
                 .accessibilityValue(snapshot.usedFraction.formatted(.percent))
-                HStack(spacing: 4) {
-                    Text("空余".localized)
-                    Text(LocalizedByteCountFormatter.string(fromByteCount: snapshot.available)).monospacedDigit()
-                    Spacer(minLength: 0)
-                }
-                .foregroundStyle(.secondary)
-                .help("已用".localized + " " + LocalizedByteCountFormatter.string(fromByteCount: snapshot.used)
-                      + " · " + "总容量".localized + " " + LocalizedByteCountFormatter.string(fromByteCount: snapshot.total))
+                capacitySummary(for: snapshot)
                 if let offloaded {
                     Text(String(format: "已节省 %@ 堪比黄金的存储空间".localized,
                                 LocalizedByteCountFormatter.string(fromByteCount: offloaded)))
@@ -210,6 +203,23 @@ struct SidebarStorageSection: View {
                 Text(hasRead ? "无法读取".localized : "正在检查…".localized).foregroundStyle(.secondary)
             }
         }
+    }
+
+    private func capacitySummary(for snapshot: StorageSpaceSnapshot) -> some View {
+        let availableSize: String = LocalizedByteCountFormatter.string(fromByteCount: snapshot.available)
+        let usedSize: String = LocalizedByteCountFormatter.string(fromByteCount: snapshot.used)
+        let totalSize: String = LocalizedByteCountFormatter.string(fromByteCount: snapshot.total)
+        let usedDescription: String = "已用".localized + " " + usedSize
+        let totalDescription: String = "总容量".localized + " " + totalSize
+        let helpText: String = usedDescription + " · " + totalDescription
+
+        return HStack(spacing: 4) {
+            Text("空余".localized)
+            Text(availableSize).monospacedDigit()
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(.secondary)
+        .help(helpText)
     }
 }
 
