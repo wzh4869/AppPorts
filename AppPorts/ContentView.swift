@@ -780,7 +780,9 @@ struct ContentView: View {
             primaryNavigation
             Divider()
             TabButton(title: "任务中心".localized, systemImage: "list.bullet",
-                      isSelected: mainTab == .tasks) {
+                      isSelected: mainTab == .tasks,
+                      badgeCount: migrationTasks.unfinishedCount,
+                      needsAttention: migrationTasks.hasAttention) {
                 mainTab = .tasks
             }
             Divider()
@@ -1194,6 +1196,8 @@ struct ContentView: View {
         let title: String
         var systemImage: String? = nil
         let isSelected: Bool
+        var badgeCount: Int = 0
+        var needsAttention: Bool = false
         let action: () -> Void
 
         @State private var isHovered = false
@@ -1211,6 +1215,21 @@ struct ContentView: View {
                         .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                         .lineLimit(1)
                     Spacer(minLength: 0)
+                    if needsAttention {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(Color.orange)
+                            .accessibilityLabel("需要处理".localized)
+                            .help("需要处理".localized)
+                    }
+                    if badgeCount > 0 {
+                        Text(badgeCount, format: .number)
+                            .font(.system(size: 11, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(Color.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.accentColor, in: Capsule())
+                    }
                 }
                 .foregroundColor(isSelected ? .accentColor : .secondary)
                 .padding(.horizontal, 6)
