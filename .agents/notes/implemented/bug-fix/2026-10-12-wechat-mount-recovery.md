@@ -32,11 +32,13 @@ build 48 使用项目原有 Apple Development 身份通过 Release clean build�
 
 ## Related decisions
 
+- 当前离线保护模式由[允许路径查找的只读挂载点](2026-10-30-readable-offline-mount-guards.md)接续：新租约使用 500，本文事故发生时的 000 事实保持原样。
+
 - 自身预留的未开始还原兼容基线见[旧容器重连保持原有所有权语义](../../implemented/bug-fix/2026-10-07-legacy-container-remount.md)。
 - 跨阶段自动恢复及收尾的共同规则见[由持久化事务自动完成 APFS 恢复与清理](../architecture/2026-10-12-apfs-automatic-recovery.md)。
 - 事故暴露的验证遗漏及实测层次见[隔离 APFS 验证与可比较的性能证据](../testing/2026-10-12-apfs-validation-evidence.md)。
 
-2026-10-29 的[微信离线媒体入口只读保护](2026-10-29-微信离线媒体入口只读保护.md)仅对精确 msg/business 成员采用 0500，接管这些入口的离线权限规则；原有身份、空目录和卸载前检查继续适用。
+当前[统一离线挂载保护](2026-10-30-readable-offline-mount-guards.md)对所有受管空入口采用 0500，接管离线权限规则；原有身份、空目录和卸载前检查继续适用。
 
 后台注册准入与系统设置归属见[后台挂载代理启用与应用归属](2026-10-29-后台挂载代理启用与应用归属.md)；该规则不替代卷解锁、签名或完全磁盘访问检查。
 

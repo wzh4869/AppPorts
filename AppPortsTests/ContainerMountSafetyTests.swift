@@ -5,40 +5,32 @@ import Testing
 
 @Suite("Container mount safety")
 struct ContainerMountSafetyTests {
-    @Test("A previously locked 000 mountpoint can be inspected and stays locked")
-    func reopensLockedMountPoint() throws {
-        let fixture = try Fixture()
-        defer { fixture.cleanup() }
-        #expect(chmod(fixture.mountPoint.path, 0) == 0)
-        for _ in 0..<2 {
-            let lease = try MountPointLease(at: fixture.mountPoint)
-            try lease.verifyBeforeMount()
-            try lease.verifyUnderlyingDirectory()
-            #expect(try fixture.mode() == 0)
-        }
-    }
-
-    @Test("Read-only placeholders reopen legacy modes without permitting local writes",
-          arguments: [0, 0o500])
-    func readOnlyPlaceholder(mode: Int) throws {
+    @Test("Legacy and current guards become readable without allowing writes", arguments: [0, 0o500])
+    func reopensLockedMountPoint(mode: Int) throws {
         let fixture = try Fixture()
         defer { fixture.cleanup() }
         #expect(chmod(fixture.mountPoint.path, mode_t(mode)) == 0)
         for _ in 0..<2 {
-            let lease = try MountPointLease(at: fixture.mountPoint, protection: .readOnly)
+            let lease = try MountPointLease(at: fixture.mountPoint)
             try lease.verifyBeforeMount()
             try lease.verifyUnderlyingDirectory()
             #expect(try fixture.mode() == 0o500)
-            #expect(access(fixture.mountPoint.path, R_OK | X_OK) == 0)
-            let child = fixture.mountPoint.appendingPathComponent("missing")
+            #expect(try FileManager.default.contentsOfDirectory(atPath: fixture.mountPoint.path).isEmpty)
+            let missing = fixture.mountPoint.appendingPathComponent("missing.db")
             var info = stat()
-            #expect(lstat(child.path, &info) == -1)
-            #expect(errno == ENOENT)
-            let descriptor = open(child.path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
-            let failure = errno
-            if descriptor >= 0 { close(descriptor) }
-            #expect(descriptor == -1)
-            #expect(failure == EACCES)
+            let lookup = lstat(missing.path, &info)
+            let lookupError = errno
+            #expect(lookup == -1)
+            #expect(lookupError == ENOENT)
+            let fd = open(missing.path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
+            let writeError = errno
+            if fd >= 0 { close(fd) }
+            #expect(fd == -1)
+            #expect(writeError == EACCES)
+            let created = mkdir(fixture.mountPoint.appendingPathComponent("nested").path, 0o700)
+            let directoryError = errno
+            #expect(created == -1)
+            #expect(directoryError == EACCES)
         }
     }
 
@@ -51,7 +43,7 @@ struct ContainerMountSafetyTests {
         try content.write(to: file)
         #expect(chmod(fixture.mountPoint.path, 0o500) == 0)
         #expect(throws: MountPointLease.Failure.self) {
-            _ = try MountPointLease(at: fixture.mountPoint, protection: .readOnly)
+            _ = try MountPointLease(at: fixture.mountPoint)
         }
         #expect(try fixture.mode() == 0o500)
         #expect(try Data(contentsOf: file) == content)
@@ -80,7 +72,7 @@ struct ContainerMountSafetyTests {
             try await fixture.migrator.mount(record: fixture.record)
         }
         #expect(fixture.runner.commands(prefix: ["mount"]).count == 1)
-        #expect(try fixture.mode() == 0)
+        #expect(try fixture.mode() == 0o500)
     }
 
     @Test("Even a lone Finder metadata file blocks a mount overlay")
@@ -100,18 +92,17 @@ struct ContainerMountSafetyTests {
     }
 
     @Test("The held descriptor detects late content, permission changes and path replacement",
-          arguments: ["content", "permission", "replacement"], [false, true])
-    func heldDirectoryRejectsMutation(kind: String, readOnly: Bool) throws {
+          arguments: ["content", "permission", "replacement"])
+    func heldDirectoryRejectsMutation(kind: String) throws {
         let fixture = try Fixture()
         defer { fixture.cleanup() }
-        let protection: MountPointLease.Protection = readOnly ? .readOnly : .inaccessible
-        let lease = try MountPointLease(at: fixture.mountPoint, protection: protection)
+        let lease = try MountPointLease(at: fixture.mountPoint)
         try lease.verifyBeforeMount()
         switch kind {
         case "content":
             #expect(chmod(fixture.mountPoint.path, 0o700) == 0)
             try Data("late data".utf8).write(to: fixture.mountPoint.appendingPathComponent("late"))
-            #expect(chmod(fixture.mountPoint.path, protection.rawValue) == 0)
+            #expect(chmod(fixture.mountPoint.path, MountPointLease.protectedMode) == 0)
         case "replacement":
             let moved = fixture.root.appendingPathComponent("held-original")
             try FileManager.default.moveItem(at: fixture.mountPoint, to: moved)

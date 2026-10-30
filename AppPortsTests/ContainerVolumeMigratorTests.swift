@@ -109,8 +109,8 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
         self.createdVolumeUUID = createdVolumeUUID
     }
 
-    func makeMountPointLease(at url: URL, protection: MountPointLease.Protection = .inaccessible) throws -> any MountPointLeasing {
-        try FakeMountPointLease(at: url, runner: self, protection: protection)
+    func makeMountPointLease(at url: URL) throws -> any MountPointLeasing {
+        try FakeMountPointLease(at: url, runner: self)
     }
 
     func physicalUnderlyingPath(for url: URL) -> URL {
@@ -433,6 +433,67 @@ final class FakeDiskCommandRunner: ShellCommandRunning, @unchecked Sendable {
 
 @Suite("Container volume migration", .serialized)
 struct ContainerVolumeMigratorTests {
+    @Test("Cold remount upgrades legacy guards while paused or offline, including retained migrations",
+          arguments: [false, true], [false, true])
+    func upgradeLegacyOfflineGuard(paused: Bool, retainedMigration: Bool) async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "LegacyGuard")
+        let runner = FakeDiskCommandRunner(onlineVolumes: ["VOLUME-UUID-disk7s9"])
+        runner.hideContentsOnUnmount()
+        defer { runner.stashedVolumeContents.forEach { try? FileManager.default.removeItem(at: $0) } }
+        let migrator = workspace.makeMigrator(runner: runner)
+        let record: ContainerMountRecord
+        if retainedMigration {
+            let moved = try await migrator.migrate(item: workspace.item(for: source), externalRootURL: workspace.externalRootURL,
+                appName: "Chat", bundleIdentifier: "com.example.chat", progressHandler: nil)
+            record = moved.record
+            try await migrator.unmount(record: record)
+            runner.markOffline(record.volumeUUID)
+            try #require(try !workspace.store.transfers().isEmpty)
+        } else {
+            try FileManager.default.removeItem(at: source.appendingPathComponent("payload.txt"))
+            record = makeRecord(mountPoint: source, uuid: "OFFLINE", volumeName: "AppPorts-offline", workspace: workspace)
+            try workspace.store.upsert(record)
+        }
+        try workspace.store.setManuallyUnmounted(paused, record: record)
+        try #require(chmod(source.path, 0) == 0)
+        let identity = try DataPathIdentity.capture(source)
+        let ledger = try Data(contentsOf: workspace.rootURL.appendingPathComponent("container-mounts.plist"))
+        let mounts = runner.commands(prefix: ["mount"])
+        let unmounts = runner.commands(prefix: ["unmount"])
+        let outcomes = await migrator.remountAvailableRecords()
+        #expect(outcomes.count == 1)
+        if paused {
+            guard case .requiresIntervention = outcomes.first?.state else { Issue.record("Pause must remain active"); return }
+        } else { #expect(outcomes.first?.state == .unavailable) }
+        #expect(try FileManager.default.attributesOfItem(atPath: source.path)[.posixPermissions] as? Int == 0o500)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: source.path).isEmpty)
+        #expect(try DataPathIdentity.capture(source) == identity)
+        #expect(try Data(contentsOf: workspace.rootURL.appendingPathComponent("container-mounts.plist")) == ledger)
+        #expect(runner.commands(prefix: ["mount"]) == mounts)
+        #expect(runner.commands(prefix: ["unmount"]) == unmounts)
+    }
+
+    @Test("Legacy guard upgrade preserves unexpected local contents and permissions")
+    func legacyGuardUpgradeRejectsLocalContent() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "NonemptyLegacyGuard")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        try workspace.store.setManuallyUnmounted(true, record: record)
+        try #require(chmod(source.path, 0) == 0)
+        let runner = FakeDiskCommandRunner()
+        let outcomes = await workspace.makeMigrator(runner: runner).remountAvailableRecords()
+        guard case .failed = outcomes.first?.state else { Issue.record("A nonempty legacy guard must remain blocked"); return }
+        #expect(try FileManager.default.attributesOfItem(atPath: source.path)[.posixPermissions] as? Int == 0)
+        #expect(runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(runner.commands(prefix: ["unmount"]).isEmpty)
+        try #require(chmod(source.path, 0o700) == 0)
+        #expect(try String(contentsOf: source.appendingPathComponent("payload.txt"), encoding: .utf8) == "payload")
+    }
+
     @Test("Manual unmount survives a cold store, isolates other volumes, and explicit mount resumes")
     func manualUnmountPersistsAndResumes() async throws {
         let workspace = try Workspace()
@@ -608,7 +669,7 @@ struct ContainerVolumeMigratorTests {
         let record = workspace.record(mountPoint: target)
         let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
         runner.markVolumeMounted(record.volumeUUID, at: current.path)
-        let mover = workspace.makeMigrator(runner: runner, makeMountPointLease: { _, _ in throw POSIXError(.EPERM) })
+        let mover = workspace.makeMigrator(runner: runner, makeMountPointLease: { _ in throw POSIXError(.EPERM) })
 
         await #expect(throws: (any Error).self) {
             try await mover.mountVolume(record.volumeUUID, at: target, operationID: "denied-target",
@@ -1052,9 +1113,8 @@ struct ContainerVolumeMigratorTests {
             #expect(try Data(contentsOf: file) == ledger)
             #expect(runner.calls == calls)
             #expect(try DataPathIdentity.capture(source) == sourceIdentity)
-            // Failed final mounts leave a sealed placeholder. Reading inside it
-            // would require changing the very permissions reentry must preserve.
-            #expect(try FileManager.default.attributesOfItem(atPath: source.path)[.posixPermissions] as? Int == 0)
+            // Failed final mounts leave a readable, non-writable placeholder.
+            #expect(try FileManager.default.attributesOfItem(atPath: source.path)[.posixPermissions] as? Int == 0o500)
             #expect(try FileManager.default.attributesOfItem(atPath: source.path)[.type] as? FileAttributeType == .typeDirectory)
             #expect(try TreeCopySession.snapshot(at: backup) == backupSnapshot)
             #expect(try TreeCopySession.snapshot(at: detached) == volumeSnapshot)
@@ -3231,7 +3291,7 @@ struct ContainerVolumeMigratorTests {
             availableCapacity: @escaping @Sendable (URL) -> Int64? = { _ in nil },
             mountFlags: @escaping @Sendable (URL) -> UInt32? = { _ in UInt32(MNT_DONTBROWSE) },
             safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
-            makeMountPointLease: (@Sendable (URL, MountPointLease.Protection) throws -> any MountPointLeasing)? = nil,
+            makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
             removeMigrationBackup: @escaping @Sendable (URL) throws -> Void = { try FileCopier.removeCopy(at: $0) },
             synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
         ) -> ContainerVolumeMigrator {
@@ -3251,7 +3311,7 @@ struct ContainerVolumeMigratorTests {
                 mountFlags: mountFlags,
                 homeDirectory: rootURL.appendingPathComponent("Home"),
                 safetyRunner: safetyRunner,
-                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0, protection: $1) },
+                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
                 removeMigrationBackup: removeMigrationBackup,
                 synchronizeCleanupParent: synchronizeCleanupParent
             )

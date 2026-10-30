@@ -57,4 +57,24 @@ final class AppDataScanCacheTests: XCTestCase {
         cache.store(incomplete)
         XCTAssertNil(cache.snapshot(for: context(), permission: .granted))
     }
+    func testPausedGuardCannotBecomeACompleteCachedSnapshot() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+            try? FileManager.default.removeItem(at: directory)
+        }
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: directory.path)
+        let issue = DataDirReadIssue(url: directory, error: POSIXError(.EACCES),
+            pausedMountDirectories: [directory.standardizedFileURL], isMountPoint: { _ in false })
+        XCTAssertFalse(issue.requiresAttention)
+        var cache = AppDataScanCache()
+        var incomplete = snapshot(context())
+        cache.store(incomplete)
+        incomplete.readIssues = [issue]
+        incomplete.items[0].applySize(.init(readIssues: [issue]))
+        cache.store(incomplete)
+        XCTAssertNil(cache.snapshot(for: context(), permission: .granted))
+    }
+
 }

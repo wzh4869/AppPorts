@@ -769,7 +769,7 @@ struct DataPreparationRecoveryTests {
         let parentIdentity = try #require(pending.stagingParentIdentity)
         let entryIdentity = try DataPathIdentity.capture(fixture.local)
         let entryMode = try fixture.permissions(at: fixture.local)
-        if mount { #expect(entryMode == 0) }
+        if mount { #expect(entryMode == 0o500) }
         else { #expect(pending.stagingIdentity != nil) }
         #expect(try DataPathIdentity.capture(parent).matchesFilesystemObject(parentIdentity))
         #expect(!FileManager.default.fileExists(atPath: removed.path))
@@ -859,7 +859,7 @@ struct DataPreparationRecoveryTests {
         let snapshot = try TreeCopySession.snapshot(at: source)
         let entryIdentity = try DataPathIdentity.capture(fixture.local)
         let entryMode = try fixture.permissions(at: fixture.local)
-        if scenario == "mount-offline" { #expect(entryMode == 0) }
+        if scenario == "mount-offline" { #expect(entryMode == 0o500) }
         let mounts = fixture.runner.commands(prefix: ["mount"])
         let unmounts = fixture.runner.commands(prefix: ["unmount"])
         let synchronized = SyncProbe()
@@ -972,7 +972,7 @@ struct DataPreparationRecoveryTests {
         try await fixture.mountMover().unmount(record: record)
         writer.failAfterNextRestoreIntent()
         await #expect(throws: POSIXError(.EIO)) { try await fixture.perform(restore: true, progress: nil) }
-        #expect(try fixture.permissions(at: fixture.local) == 0)
+        #expect(try fixture.permissions(at: fixture.local) == 0o500)
         if conflict == "nonempty" {
             // Model a new local write, then restore the actual guarded state
             // before calling cancellation. A locked directory is not proof of emptiness.
@@ -991,8 +991,8 @@ struct DataPreparationRecoveryTests {
         let saved = fixture.local.deletingLastPathComponent().appendingPathComponent("saved-local-placeholder")
         let synchronized = SyncProbe()
         let runner = fixture.runner
-        let mover = fixture.mountMover(store: cold, makeMountPointLease: { path, protection in
-            let lease = try runner.makeMountPointLease(at: path, protection: protection)
+        let mover = fixture.mountMover(store: cold, makeMountPointLease: { path in
+            let lease = try runner.makeMountPointLease(at: path)
             if path.path == fixture.local.path {
                 if conflict == "replaced" {
                     // Keep the same parent: macOS needs access to update a
@@ -1165,7 +1165,7 @@ struct DataPreparationRecoveryTests {
                         diskRunner: (any ShellCommandRunning)? = nil,
                         mountFlags: @escaping @Sendable (URL) -> UInt32? = { _ in UInt32(MNT_DONTBROWSE) },
                         mountedVolumeUUID: (@Sendable (URL) -> String?)? = nil,
-                        makeMountPointLease: (@Sendable (URL, MountPointLease.Protection) throws -> any MountPointLeasing)? = nil,
+                        makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
                         safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
                         synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = {
                             try DurableFileIO.syncDirectory(at: $0)
@@ -1179,7 +1179,7 @@ struct DataPreparationRecoveryTests {
                 mountedVolumeUUID: mountedVolumeUUID ?? { runner.mountedUUID(at: $0) },
                 synchronizeAgent: { _ in }, availableCapacity: { _ in nil }, mountFlags: mountFlags,
                 homeDirectory: home, safetyRunner: safetyRunner,
-                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0, protection: $1) },
+                makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
                 synchronizeCleanupParent: synchronizeCleanupParent)
         }
         func permissions(at path: URL) throws -> mode_t {

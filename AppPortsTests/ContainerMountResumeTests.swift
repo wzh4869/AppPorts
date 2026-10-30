@@ -612,7 +612,7 @@ struct ContainerMountResumeTests {
                 mountedVolumeUUID: mountedVolumeUUID ?? { runner.mountedUUID(at: $0) }, volumeUUIDMarker: volumeUUIDMarker ?? { _ in nil },
                 synchronizeAgent: { _ in }, availableCapacity: { _ in nil },
                 mountFlags: mountFlags ?? { _ in UInt32(MNT_DONTBROWSE) }, homeDirectory: root.appendingPathComponent("Home"),
-                safetyRunner: safetyRunner, makeMountPointLease: { try runner.makeMountPointLease(at: $0, protection: $1) })
+                safetyRunner: safetyRunner, makeMountPointLease: { try runner.makeMountPointLease(at: $0) })
         }
 
         @discardableResult

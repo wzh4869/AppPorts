@@ -46,7 +46,7 @@ Status: implemented
 - 显示层不提供执行授权，呈现规则见[容器归属、个人目录链接与大小显示](../feature/2026-10-01-container-ownership-presentation.md)。
 - 专用卷真实所有权的已提交建卷理由见[专用 APFS 卷通过真实所有权保留源元数据](2026-10-01-apfs-owners-volume-creation.md)。
 
-2026-10-29 的[微信离线媒体入口只读保护](../bug-fix/2026-10-29-微信离线媒体入口只读保护.md)仅对精确 msg/business 成员采用 0500，接管这些入口的离线权限规则；原有身份、空目录和卸载前检查继续适用。
+当前[统一离线挂载保护](../bug-fix/2026-10-30-readable-offline-mount-guards.md)对所有受管空入口采用 0500，接管离线权限规则；原有身份、空目录和卸载前检查继续适用。
 
 ## Alternatives considered
 

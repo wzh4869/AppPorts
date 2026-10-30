@@ -4,8 +4,9 @@ import Foundation
 /// Display-only logical sizes. Never use this traversal to authorize copying,
 /// verification or deletion; it intentionally does not read file contents.
 enum DirectorySizeTraversal {
-    static func measure(at root: URL) -> DirectorySizeResult {
+    static func measure(at root: URL, skippingDirectories: Set<URL> = []) -> DirectorySizeResult {
         var result = DirectorySizeResult()
+        let skippedPaths = Set(skippingDirectories.map { $0.standardizedFileURL.path })
         guard !Task.isCancelled else {
             return DirectorySizeResult(readIssues: [.init(url: root, error: CancellationError())])
         }
@@ -38,13 +39,26 @@ enum DirectorySizeTraversal {
             }
             let entry = node.pointee
             switch Int32(entry.fts_info) {
+            case FTS_D, FTS_DNR:
+                let url = URL(fileURLWithFileSystemRepresentation: entry.fts_path,
+                    isDirectory: true, relativeTo: nil).standardizedFileURL
+                if skippedPaths.contains(url.path) {
+                    if Int32(entry.fts_info) == FTS_D { fts_set(traversal, node, FTS_SKIP) }
+                    continue
+                }
+                if Int32(entry.fts_info) == FTS_DNR {
+                    let code = entry.fts_errno == 0 ? EIO : entry.fts_errno
+                    if entry.fts_level > 0 && code == ENOENT { continue }
+                    result.readIssues.append(.init(url: url,
+                        error: POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)))
+                }
             case FTS_F:
                 guard let info = entry.fts_statp else {
                     result.readIssues.append(.init(url: root, error: POSIXError(.EIO)))
                     continue
                 }
                 result.bytes += info.pointee.st_size
-            case FTS_DNR, FTS_ERR, FTS_NS, FTS_DC:
+            case FTS_ERR, FTS_NS, FTS_DC:
                 let code = entry.fts_errno == 0 ? EIO : entry.fts_errno
                 // Active apps can remove a temporary child during discovery.
                 if entry.fts_level > 0 && code == ENOENT { continue }

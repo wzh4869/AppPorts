@@ -315,7 +315,7 @@ extension ContainerVolumeMigrator {
                 throw DataOperationSafety.Failure.conflict(backup.path)
             }
             try safety.requireLocalRestoreParent(at: local, isMountPoint: isMountPoint)
-            if try verifiedResumeEntryExists(local) { try removeEmptyMountPoint(at: local, bundleIdentifier: transfer.bundleIdentifier) }
+            if try verifiedResumeEntryExists(local) { try removeEmptyMountPoint(at: local) }
             try requireRecoveryJournal(transfer)
             try moveTree(backup, to: local)
             try DurableFileIO.syncDirectory(at: local.deletingLastPathComponent())
@@ -724,14 +724,13 @@ extension ContainerVolumeMigrator {
                 requiresOwnership = record.ownershipPolicy == .owners || transfer.legacyRootOwnership != nil
             }
             try await mountVolume(record.volumeUUID, at: local, operationID: transfer.operationID.uuidString,
-                                  knownMountPoint: hint, requireOwnership: requiresOwnership, bundleIdentifier: record.bundleIdentifier)
+                                  knownMountPoint: hint, requireOwnership: requiresOwnership)
         }
         try await requireExpectedVolume(record.volumeUUID, at: local)
         try requireRestoredMount(transfer)
         if let flags = transfer.originalSourceMountFlags ?? transfer.legacyMountFlags {
             try requireRecoveryJournal(transfer)
-            try await restoreOriginalMountOptions(mountPoint: local, volumeUUID: record.volumeUUID, originalFlags: flags,
-                                                  bundleIdentifier: record.bundleIdentifier)
+            try await restoreOriginalMountOptions(mountPoint: local, volumeUUID: record.volumeUUID, originalFlags: flags)
         }
         try store.finishAutomaticMountRollback(transfer, preserving: "AppPorts 正在自动清理本次操作的临时数据。".localized) {
             try requireRestoredMount(transfer)
