@@ -103,6 +103,22 @@ final class MigrationSafetyRenderTests: XCTestCase {
     }
 
     @MainActor
+    func testRenderRemountInterventionWithoutTransfers() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"] else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render remount intervention recovery")
+        }
+        let output = URL(fileURLWithPath: path)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let reason = "Example Application: /Synthetic/Library/Containers/org.example/Data/Documents contains local files; remount requires attention."
+        try await render(DataCleanupResolutionSheet(transfers: [], remountInterventions: [reason],
+            onRetry: { _ in XCTFail("Rendering must not retry a migration") },
+            onChanged: { XCTFail("Rendering must not change a record") },
+            onPermissions: { XCTFail("Rendering must not open system settings") }),
+            size: NSSize(width: 620, height: 460),
+            to: output.appendingPathComponent("remount-intervention-only.png"))
+    }
+
+    @MainActor
     func testRenderAPFSRecoveryEntryPoints() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"] else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to export recovery renders")

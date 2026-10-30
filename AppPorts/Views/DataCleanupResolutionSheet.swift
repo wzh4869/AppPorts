@@ -5,6 +5,7 @@ struct DataCleanupResolutionSheet: View {
     var currentDataPaths: [UUID: String] = [:]
     var pendingCleanups: [ContainerCleanupRecord] = []
     var preservedMaterials: [DataTransferMaterial] = []
+    var remountInterventions: [String] = []
     let onRetry: (UUID?) -> Void
     let onChanged: () -> Void
     let onPermissions: () -> Void
@@ -25,7 +26,7 @@ struct DataCleanupResolutionSheet: View {
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    if visibleTransfers.isEmpty && pendingCleanups.isEmpty && preservedMaterials.isEmpty {
+                    if visibleTransfers.isEmpty && pendingCleanups.isEmpty && preservedMaterials.isEmpty && remountInterventions.isEmpty {
                         Text("未找到待处理的迁移记录，可能已由后台完成收尾。请关闭窗口后刷新应用列表。".localized)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -35,6 +36,12 @@ struct DataCleanupResolutionSheet: View {
                         if transfer.id != visibleTransfers.last?.id {
                             Divider()
                         }
+                    }
+                    ForEach(Array(remountInterventions.enumerated()), id: \.offset) { _, reason in
+                        Text(verbatim: reason)
+                            .font(AppDialogTypography.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
                     }
                     ForEach(pendingCleanups) { cleanup in
                         Divider()
@@ -65,7 +72,7 @@ struct DataCleanupResolutionSheet: View {
                 Text(verbatim: errorMessage).font(AppDialogTypography.body).foregroundStyle(.red).textSelection(.enabled)
             }
             HStack {
-                if !pendingCleanups.isEmpty || preservedMaterials.contains(where: { $0.recoveryRecord != nil }) {
+                if !pendingCleanups.isEmpty || !remountInterventions.isEmpty || preservedMaterials.contains(where: { $0.recoveryRecord != nil }) {
                     Button("重试所有待处理项".localized) { dismiss(); onRetry(nil) }
                 }
                 Spacer()

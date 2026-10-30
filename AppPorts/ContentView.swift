@@ -857,9 +857,6 @@ struct ContentView: View {
                 mainTab = .dataDirs
             }
             TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs) {
-                if mainTab != .dataDirs || selectedDataDirsTab != .appDirs {
-                    selectedDataDirsApp = nil
-                }
                 selectedDataDirsTab = .appDirs
                 mainTab = .dataDirs
             }
