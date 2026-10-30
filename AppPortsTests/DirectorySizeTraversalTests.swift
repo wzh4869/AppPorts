@@ -21,11 +21,13 @@ final class DirectorySizeTraversalTests: XCTestCase {
         let sparse = root.appendingPathComponent("sparse")
         XCTAssertTrue(manager.createFile(atPath: sparse.path, contents: nil))
         let file = try FileHandle(forWritingTo: sparse)
-        try file.truncate(atOffset: 8 * 1024 * 1024 + 17)
+        let sparseBytes: UInt64 = 8 * 1024 * 1024 + 17
+        try file.truncate(atOffset: sparseBytes)
         try file.close()
         let native = DirectorySizeTraversal.measure(at: root)
         XCTAssertTrue(native.isComplete)
-        XCTAssertEqual(native.bytes, 2 * 8193 + 8 * 1024 * 1024 + 17)
+        let expectedBytes: Int64 = 2 * 8193 + Int64(sparseBytes)
+        XCTAssertEqual(native.bytes, expectedBytes)
         XCTAssertEqual(native.bytes, try referenceSize(root))
     }
 
