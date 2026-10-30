@@ -2322,7 +2322,7 @@ actor ContainerVolumeMigrator {
                     }
                     try store.recheckWriterAdmission()
                     try TreeCopySession.removeVerifiedCopy(at: backup, against: baseline, allowPartialRemoval: deletionPreviouslyStarted,
-                        expectedVolumeUUID: expectedBackup.volumeUUID, removalID: operationID, requireSourceIdentity: true) {
+                        expectedVolumeUUID: expectedBackup.volumeUUID, removalID: operationID, requireSourceIdentity: true, willRemove: {
                         guard try self.store.transfer(operationID: operationID) == transfer,
                               try DataPathIdentity.capture(parent).matchesFilesystemObject(parentIdentity),
                               try DataPathIdentity.capture(retained).matchesFilesystemObject(expectedBackup) else {
@@ -2344,7 +2344,7 @@ actor ContainerVolumeMigrator {
                               self.isMountPoint(active) == (location.mode == .mount && location.direction == .migrate) else {
                             throw DataOperationSafety.Failure.conflict(active.path)
                         }
-                    }
+                    })
                 } else {
                     guard transfer.cleanupParentIdentity != nil else { throw DataOperationSafety.Failure.inspection(backup.path) }
                     try await requireActiveData(for: transfer, matching: location)
