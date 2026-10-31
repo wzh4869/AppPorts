@@ -10,6 +10,58 @@ import Testing
 /// `WatchPaths` 让代理在系统把外置卷挂上 `/Volumes` 时立刻再跑一次，实测能提前约 20 秒。
 final class ContainerMountAgentTests: XCTestCase {
 
+    func testDisabledAgentIsEnabledBeforeRegistrationAndVerifiedAfterwards() throws {
+        var commands: [String] = []
+        var enabled = false
+        var registered = false
+        let changed = try ContainerMountAgentInstaller.configureAgent(definitionMatches: true, writeDefinition: {
+            commands.append("write")
+        }, run: { arguments in
+            let command = arguments[0]
+            commands.append(command)
+            switch command {
+            case "enable": enabled = true; return 0
+            case "print": return registered ? 0 : 113
+            case "bootstrap": registered = enabled; return registered ? 0 : 5
+            default: return 0
+            }
+        })
+        XCTAssertTrue(changed)
+        XCTAssertEqual(commands, ["enable", "print", "bootout", "write", "bootstrap", "print"])
+    }
+
+    func testUnchangedRegisteredAgentDoesNotRestart() throws {
+        var commands: [String] = []
+        let changed = try ContainerMountAgentInstaller.configureAgent(definitionMatches: true,
+            writeDefinition: { XCTFail("An unchanged registered agent must not be rewritten") },
+            run: { commands.append($0[0]); return 0 })
+        XCTAssertFalse(changed)
+        XCTAssertEqual(commands, ["enable", "print"])
+    }
+
+    func testEnableFailurePreservesExistingRegistrationAndDefinition() {
+        var commands: [String] = []
+        XCTAssertThrowsError(try ContainerMountAgentInstaller.configureAgent(definitionMatches: false,
+            writeDefinition: { XCTFail("Enable failure must leave the definition alone") },
+            run: { commands.append($0[0]); return 5 }))
+        XCTAssertEqual(commands, ["enable"])
+    }
+
+    func testLegacyLoadSuccessWithoutRegistrationIsNotReportedAsInstalled() {
+        var commands: [String] = []
+        XCTAssertThrowsError(try ContainerMountAgentInstaller.configureAgent(definitionMatches: false,
+            writeDefinition: { commands.append("write") }, run: {
+                commands.append($0[0])
+                return ["bootstrap", "print"].contains($0[0]) ? 5 : 0
+            }))
+        XCTAssertEqual(commands, ["enable", "bootout", "write", "bootstrap", "load", "print"])
+    }
+
+    func testLegacyAgentIsAssociatedWithAppPortsInSystemSettings() {
+        let payload = ContainerMountAgentInstaller.launchAgentPayload(executablePath: "/Applications/AppPorts.app/Contents/MacOS/AppPorts")
+        XCTAssertEqual(payload["AssociatedBundleIdentifiers"] as? [String], ["com.shimoko.AppPorts"])
+    }
+
     func testReplacingSignedAppAtSamePathRefreshesAgentRegistration() throws {
         let path = "/Applications/AppPorts.app/Contents/MacOS/AppPorts"
         let old = ContainerMountAgentInstaller.launchAgentPayload(executablePath: path, signatureIdentity: "old-cdhash")

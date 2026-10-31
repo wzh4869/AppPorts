@@ -117,6 +117,8 @@ struct AppMoverApp: App {
         AppLogger.shared.logLaunchSession()
     }
     
+    @AppStorage("appAppearance") private var appAppearance = "system"
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -127,6 +129,7 @@ struct AppMoverApp: App {
                 }
             }
 
+            .preferredColorScheme(appAppearance == "system" ? nil : (appAppearance == "dark" ? .dark : .light))
             .environment(\.locale, languageManager.locale)
 
             .id(languageManager.language)
@@ -134,6 +137,7 @@ struct AppMoverApp: App {
             
 
         }
+        .windowStyle(HiddenTitleBarWindowStyle())
         .commands {
             // 原有的关于菜单
             CommandGroup(replacing: .appInfo) {
@@ -252,8 +256,19 @@ private struct MainWindowAppearance: NSViewRepresentable {
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             guard let window else { return }
+            window.styleMask.insert(.fullSizeContentView)
+            window.toolbar = nil
+            window.titleVisibility = .hidden
+            window.titlebarAppearsTransparent = true
             window.titlebarSeparatorStyle = .none
+            let isInitialWindow = AppDelegate.mainWindow !== window
             AppDelegate.mainWindow = window
+            if isInitialWindow {
+                DispatchQueue.main.async { [weak window] in
+                    guard let window, !window.styleMask.contains(.fullScreen) else { return }
+                    window.setContentSize(NSSize(width: 952, height: 624))
+                }
+            }
             // Preserve the hosting view and its in-memory state when clicking ×.
             if let closeButton = window.standardWindowButton(.closeButton) {
                 closeButton.target = self

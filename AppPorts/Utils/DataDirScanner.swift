@@ -171,43 +171,11 @@ func measureDirectorySize(
 
     guard values.isDirectory == true else { return DirectorySizeResult() }
 
-    // 枚举器遍历（单次批量遍历，替代手动递归的 contentsOfDirectory）
-    var result = DirectorySizeResult(readIssues: pausedIssues)
-    guard let enumerator = fileManager.enumerator(
-        at: url,
-        includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey],
-        options: [],
-        errorHandler: { failedURL, error in
-            // Live apps may remove temporary entries while enumeration is in
-            // progress. A missing child is no longer part of the measured tree.
-            if failedURL.standardizedFileURL != url.standardizedFileURL,
-               DataDirReadIssue.isMissingFile(error) { return true }
-            result.readIssues.append(readIssue(at: failedURL, error: error))
-            return true
-        }
-    ) else {
-        return DirectorySizeResult(readIssues: [readIssue(at: url, error: CocoaError(.fileReadUnknown))])
-    }
-
-    for case let fileURL as URL in enumerator {
-        guard !Task.isCancelled else {
-            result.readIssues.append(readIssue(at: url, error: CancellationError()))
-            return result
-        }
-        if pausedIssues.contains(where: { $0.url == fileURL.standardizedFileURL }) {
-            enumerator.skipDescendants()
-            continue
-        }
-        do {
-            let attrs = try fileURL.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey, .isSymbolicLinkKey])
-            guard attrs.isSymbolicLink != true, attrs.isRegularFile == true,
-                  let fileSize = attrs.fileSize else { continue }
-            result.bytes += Int64(fileSize)
-        } catch {
-            if DataDirReadIssue.isMissingFile(error) { continue }
-            result.readIssues.append(readIssue(at: fileURL, error: error))
-        }
-    }
+    // Native traversal retains the offline guard issues; readable placeholders
+    // must never make an ancestor's partial size complete or cacheable.
+    let skipped = Set(pausedIssues.map(\.url))
+    var result = DirectorySizeTraversal.measure(at: url, skippingDirectories: skipped)
+    result.readIssues += pausedIssues
     // 0 不写缓存：未挂载的挂载点就是一个空目录，算出来同样是 0；缓存下来会让卷挂好之后
     // 一直显示「0 字节」。空目录重新遍历的代价可以忽略，所以每次重算更安全。
     if result.isComplete && result.bytes > 0 {

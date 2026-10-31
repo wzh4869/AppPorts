@@ -34,6 +34,35 @@ struct ContainerMountSafetyTests {
         }
     }
 
+    @Test("Read-only leases preserve nonempty directories and their original permissions")
+    func readOnlyLeaseRejectsContent() throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let file = fixture.mountPoint.appendingPathComponent("payload")
+        let content = Data("preserve".utf8)
+        try content.write(to: file)
+        #expect(chmod(fixture.mountPoint.path, 0o500) == 0)
+        #expect(throws: MountPointLease.Failure.self) {
+            _ = try MountPointLease(at: fixture.mountPoint)
+        }
+        #expect(try fixture.mode() == 0o500)
+        #expect(try Data(contentsOf: file) == content)
+    }
+
+    @Test("Persisted WeChat identities select read-only media protection with split mode disabled",
+          arguments: ["com.tencent.xinWeChat", "com.tencent.xinWeChat.dual"], ["msg", "business"])
+    func failedWeChatMountKeepsReadOnlyProtection(identifier: String, member: String) async throws {
+        let fixture = try Fixture(weChatIdentifier: identifier, member: member)
+        defer { fixture.cleanup() }
+        #expect(chmod(fixture.mountPoint.path, 0) == 0)
+        fixture.runner.failWhen(prefix: ["mount"])
+        await #expect(throws: ContainerVolumeMigrator.MigrationError.self) {
+            try await fixture.migrator.mount(record: fixture.record)
+        }
+        #expect(fixture.runner.commands(prefix: ["mount"]).count == 1)
+        #expect(try fixture.mode() == 0o500)
+    }
+
     @Test("A failed mount command is not retried with writable local permissions")
     func commandFailureDoesNotOpenMountPoint() async throws {
         let fixture = try Fixture()
@@ -101,10 +130,12 @@ struct ContainerMountSafetyTests {
     private final class Fixture {
         let root: URL
         let mountPoint: URL
+        let home: URL
+        let identifier: String
         let store: ContainerMountStore
         let runner = FakeDiskCommandRunner(onlineVolumes: ["SAFETY-UUID"])
         lazy var record: ContainerMountRecord = {
-            ContainerMountRecord(appName: "Synthetic", bundleIdentifier: "test.appports.safety",
+            ContainerMountRecord(appName: "Synthetic", bundleIdentifier: identifier,
                 dataDirType: DataDirType.containers.rawValue, mountPointPath: mountPoint.path,
                 volumeUUID: "SAFETY-UUID", volumeName: "AppPorts-synthetic", externalRootPath: root.path)
         }()
@@ -115,12 +146,19 @@ struct ContainerMountSafetyTests {
                 isMountPoint: { runner.isMounted($0) }, mountedVolumePath: { _ in "/" },
                 mountedVolumeUUID: { runner.mountedUUID(at: $0) }, volumeUUIDMarker: { _ in nil },
                 synchronizeAgent: { _ in }, availableCapacity: { _ in nil },
-                mountFlags: { _ in UInt32(MNT_DONTBROWSE) })
+                mountFlags: { _ in UInt32(MNT_DONTBROWSE) }, homeDirectory: home)
         }
-        init() throws {
+        init(weChatIdentifier: String? = nil, member: String = "msg") throws {
             root = FileManager.default.temporaryDirectory.appendingPathComponent("AppPortsMountSafety-\(UUID())")
                 .resolvingSymlinksInPath()
-            mountPoint = root.appendingPathComponent("Data")
+            home = root.appendingPathComponent("Home")
+            identifier = weChatIdentifier ?? "test.appports.safety"
+            if let weChatIdentifier {
+                mountPoint = PartialWeChatMigrationPolicy(homeDirectory: home, containerIdentifier: weChatIdentifier)
+                    .accountsRoot.appendingPathComponent("wxid_fixture/" + member)
+            } else {
+                mountPoint = root.appendingPathComponent("Data")
+            }
             store = ContainerMountStore(fileURL: root.appendingPathComponent("records.plist"))
             try FileManager.default.createDirectory(at: mountPoint, withIntermediateDirectories: true)
             try store.upsert(record)

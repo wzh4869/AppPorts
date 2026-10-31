@@ -14,11 +14,11 @@ struct APFSVolumePasswordSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(isCreating ? "设置数据卷密码".localized : "解锁数据卷".localized)
-                .font(.headline)
+                .font(AppDialogTypography.title)
             Text(isCreating
                  ? "新数据卷独立加密，不会继承外置盘密码。微信拆分迁移的多个数据卷共用本次设置。".localized
                  : "输入迁移时设置的数据卷密码。30 分钟内可复用，正在执行的操作会保持到结束。".localized)
-                .font(.callout).foregroundStyle(.secondary)
+                .font(AppDialogTypography.body).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             SecureField("密码".localized, text: $passphrase)
                 .focused($passwordFocused)
@@ -31,9 +31,9 @@ struct APFSVolumePasswordSheet: View {
             }
             if isCreating && !saveToKeychain {
                 Text("请妥善保存密码，遗忘后无法恢复这些数据。".localized)
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(AppDialogTypography.body).foregroundStyle(.secondary)
             }
-            if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(.callout) }
+            if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(AppDialogTypography.body) }
             HStack {
                 Button("取消".localized) { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
@@ -63,6 +63,7 @@ struct APFSVolumePasswordSheet: View {
         }
         .textFieldStyle(.roundedBorder)
         .padding(24)
+        .appDialogTypography()
         .frame(width: 440)
         .disabled(isWorking)
         .interactiveDismissDisabled(isWorking)

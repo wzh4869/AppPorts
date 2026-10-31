@@ -1252,9 +1252,6 @@ struct AppMigrationService {
         }
     }
 
-    private func isIOSAppBundle(at appURL: URL) -> Bool {
-        fileManager.fileExists(atPath: appURL.appendingPathComponent("WrappedBundle").path)
-    }
 
     func lockExternalApp(at url: URL) {
         do {

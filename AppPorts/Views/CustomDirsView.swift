@@ -117,13 +117,16 @@ struct CustomDirsView: View {
                         Button("重试".localized) { retryPendingOperations() }
                     }.padding(12)
                 }
-                HSplitView {
+                HStack(spacing: 8) {
                     localPane
-                        .frame(minWidth: 320, maxWidth: .infinity)
+                        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+                        .modifier(AppListPanelStyle())
 
                     externalPane
-                        .frame(minWidth: 320, maxWidth: .infinity)
+                        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+                        .modifier(AppListPanelStyle())
                 }
+                .padding(6)
             }
             .disabled(operationState.blocksInteraction)
 
@@ -176,9 +179,12 @@ struct CustomDirsView: View {
                 title: "本地文件夹".localized,
                 subtitle: String(format: "%lld 个目录".localized, Int64(configs.count)),
                 icon: "folder.fill",
+                iconColumnWidth: 40,
                 actionButtonText: "＋",
                 onAction: { showAddSheet = true }
             )
+
+            directoryColumnHeader
 
             ZStack {
                 Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
@@ -188,7 +194,9 @@ struct CustomDirsView: View {
                 } else if localEntries.isEmpty {
                     ContentView.EmptyStateView(icon: "folder.badge.plus", text: "未添加目录迁移".localized)
                 } else {
-                    List(localEntries, selection: $selectedLocalIDs) { entry in
+                    List(selection: $selectedLocalIDs) {
+                        ForEach(Array(localEntries.enumerated()), id: \.element.id) { indexed in
+                        let entry = indexed.element
                         CustomDirRowView(
                             entry: entry,
                             isSelected: selectedLocalIDs.contains(entry.id),
@@ -196,14 +204,24 @@ struct CustomDirsView: View {
                             onRemove: removeConfig
                         )
                         .tag(entry.id)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                        .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+                        .modifier(AppListRowAppearance(isSelected: selectedLocalIDs.contains(entry.id), index: indexed.offset))
                         .modifier(ContentView.RowSeparatorVisibility())
+                        }
+                        Color.clear.frame(height: 48)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .modifier(ContentView.RowSeparatorVisibility())
+                            .accessibilityHidden(true)
                     }
                     .listStyle(.plain)
                     .modifier(ContentView.TransparentListBackground())
                 }
             }
 
+
+        }
+        .overlay(alignment: .bottomTrailing) {
             ContentView.ActionFooter(
                 title: migrateButtonTitle,
                 icon: "arrow.right",
@@ -219,8 +237,11 @@ struct CustomDirsView: View {
                 title: "外部文件夹".localized,
                 subtitle: String(format: "%lld 个目录".localized, Int64(configs.count)),
                 icon: "externaldrive.fill",
+                iconColumnWidth: 40,
                 tint: .teal
             )
+
+            directoryColumnHeader
 
             ZStack {
                 Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
@@ -228,7 +249,9 @@ struct CustomDirsView: View {
                 if externalEntries.isEmpty {
                     ContentView.EmptyStateView(icon: "externaldrive.badge.plus", text: "未添加目录迁移".localized)
                 } else {
-                    List(externalEntries, selection: $selectedExternalIDs) { entry in
+                    List(selection: $selectedExternalIDs) {
+                        ForEach(Array(externalEntries.enumerated()), id: \.element.id) { indexed in
+                        let entry = indexed.element
                         CustomDirRowView(
                             entry: entry,
                             isSelected: selectedExternalIDs.contains(entry.id),
@@ -236,21 +259,29 @@ struct CustomDirsView: View {
                             onRemove: removeConfig
                         )
                         .tag(entry.id)
-                        .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                        .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
+                        .modifier(AppListRowAppearance(isSelected: selectedExternalIDs.contains(entry.id), index: indexed.offset))
                         .modifier(ContentView.RowSeparatorVisibility())
+                        }
+                        Color.clear.frame(height: 48)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .modifier(ContentView.RowSeparatorVisibility())
+                            .accessibilityHidden(true)
                     }
                     .listStyle(.plain)
                     .modifier(ContentView.TransparentListBackground())
                 }
             }
 
+        }
+        .overlay(alignment: .bottomTrailing) {
             HStack(spacing: 8) {
-                Spacer(minLength: 0)
                 Button(action: restoreSelected) {
                     Label(restoreButtonTitle, systemImage: "arrow.turn.up.left")
                         .frame(minWidth: 100, minHeight: 22)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(AppListPrimaryButtonStyle(isSecondary: true))
                 .disabled(restorablePairs.isEmpty)
 
                 Button(action: relinkSelected) {
@@ -261,7 +292,26 @@ struct CustomDirsView: View {
                 .disabled(relinkablePairs.isEmpty)
             }
             .modifier(AppListFooterStyle())
+
         }
+    }
+
+    private var directoryColumnHeader: some View {
+        AppListColumns {
+            Text("名称".localized)
+        } size: {
+            Text("大小".localized)
+        } actions: {
+            Color.clear.frame(height: 1)
+        }
+        .font(.system(size: 11, weight: .medium))
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .background(Color.primary.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.bottom, 4)
     }
 
     private var migrateButtonTitle: String {

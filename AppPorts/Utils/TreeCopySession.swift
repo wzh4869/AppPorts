@@ -1004,8 +1004,15 @@ actor TreeCopySession {
     private final class ScanReadResults: @unchecked Sendable {
         private let lock = NSLock()
         private var values: [Result<CapturedNode, Error>?]
+        private var nextIndex = 0
 
         init(count: Int) { values = Array(repeating: nil, count: count) }
+        func claim() -> Int? {
+            lock.lock(); defer { lock.unlock() }
+            guard nextIndex < values.count else { return nil }
+            defer { nextIndex += 1 }
+            return nextIndex
+        }
         func set(_ value: Result<CapturedNode, Error>, at index: Int) {
             lock.lock(); defer { lock.unlock() }
             values[index] = value
@@ -1020,7 +1027,7 @@ actor TreeCopySession {
     /// Descriptors are bounded by the batch size, and remain owned until every
     /// worker has joined. No worker changes the manifest or hardlink inventory.
     nonisolated private static func captureBatch(_ reads: [ScanRead], parent: Int32,
-                                                 profile: TreeCopyProfile) throws -> ScanReadResults {
+                                                 profile: TreeCopyProfile, workerCount: Int) throws -> ScanReadResults {
         let results = ScanReadResults(count: reads.count)
         if reads.count == 1 {
             let read = reads[0]
@@ -1035,25 +1042,35 @@ actor TreeCopySession {
         let session = DataTransferSession.current
         let progress = DataTransferSession.progress
         let control = MigrationExecution.control
-        for (index, read) in reads.enumerated() {
+        // Workers pull the next file as soon as they finish; a slow file no
+        // longer stalls every subsequent group of four. Keep enumeration order
+        // in the result slots and keep scratch buffers private to each worker.
+        for _ in 0..<min(workerCount, reads.count) {
             group.enter()
             DispatchQueue.global(qos: .userInitiated).async {
                 defer { group.leave() }
-                let result = Result {
-                    try DataTransferSession.$current.withValue(session) {
-                        try DataTransferSession.$progress.withValue(progress) {
-                            try MigrationExecution.$control.withValue(control) {
-                                try $scanReadCancellation.withValue(cancellation) {
-                                    try $isParallelScanRead.withValue(true) {
-                                        try captureStableNode(fd: read.descriptor.value, parent: parent,
-                                            name: read.name, path: read.path, hardlinkGroup: nil, profile: profile)
+                let hasher = FileContentHasher()
+                DataTransferSession.$current.withValue(session) {
+                    DataTransferSession.$progress.withValue(progress) {
+                        MigrationExecution.$control.withValue(control) {
+                            $scanReadCancellation.withValue(cancellation) {
+                                $isParallelScanRead.withValue(true) {
+                                    while let index = results.claim() {
+                                        let read = reads[index]
+                                        let result = Result {
+                                            try scanReadCheckpoint()
+                                            return try captureStableNode(fd: read.descriptor.value, parent: parent,
+                                                name: read.name, path: read.path, hardlinkGroup: nil,
+                                                profile: profile, contentHasher: hasher)
+                                        }
+                                        results.set(result, at: index)
+                                        if case .failure(is CancellationError) = result { break }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                results.set(result, at: index)
             }
         }
         // Dispatch threads have no Swift task. Bridge cancellation only for
@@ -1110,7 +1127,7 @@ actor TreeCopySession {
             var pending: [ScanRead] = []
             func finishPending() throws {
                 guard !pending.isEmpty else { return }
-                let results = try captureBatch(pending, parent: fd, profile: profile)
+                let results = try captureBatch(pending, parent: fd, profile: profile, workerCount: concurrentReads)
                 for (index, read) in pending.enumerated() {
                     let captured: CapturedNode?
                     switch try results.result(at: index) {
@@ -1130,7 +1147,7 @@ actor TreeCopySession {
                 let childPath = path.isEmpty ? child : path + "/" + child
                 if concurrentReads > 1, try status(childFD.value).st_mode & S_IFMT == S_IFREG {
                     pending.append(ScanRead(descriptor: childFD, name: child, path: childPath))
-                    if pending.count == concurrentReads { try finishPending() }
+                    if pending.count == concurrentReads * 8 { try finishPending() }
                     continue
                 }
                 try finishPending()
@@ -1153,7 +1170,8 @@ actor TreeCopySession {
     /// 系统访问授权等元数据可能在首次读取时更新。只重读不稳定的节点，
     /// 每次仍检查同一个文件身份并重新读取完整内容；不放宽与原清单的比对。
     nonisolated private static func captureStableNode(fd: Int32, parent: Int32, name: String, path: String,
-                                                      hardlinkGroup: String?, profile: TreeCopyProfile) throws
+                                                      hardlinkGroup: String?, profile: TreeCopyProfile,
+                                                      contentHasher: FileContentHasher? = nil) throws
         -> (before: stat, entry: TreeCopySnapshot.Entry) {
         let identityBeforeReading = identity(try status(fd))
         for attempt in 0..<3 {
@@ -1162,7 +1180,7 @@ actor TreeCopySession {
             let before = try status(fd)
             do {
                 let entry = try captureOnce(fd: fd, parent: parent, name: name, path: path,
-                    hardlinkGroup: hardlinkGroup, profile: profile)
+                    hardlinkGroup: hardlinkGroup, profile: profile, contentHasher: contentHasher)
                 try assertStable(before, try status(fd), path: path, profile: profile)
                 return (before, entry)
             } catch TreeCopyError.sourceChanged(_) where attempt < 2 {
@@ -1184,7 +1202,8 @@ actor TreeCopySession {
     }
 
     nonisolated private static func captureOnce(fd: Int32, parent: Int32, name: String, path: String,
-                                               hardlinkGroup: String?, profile: TreeCopyProfile) throws -> TreeCopySnapshot.Entry {
+                                               hardlinkGroup: String?, profile: TreeCopyProfile,
+                                               contentHasher: FileContentHasher?) throws -> TreeCopySnapshot.Entry {
         DataTransferSession.progress?.activity(file: path.isEmpty ? name : path)
         let before = try status(fd)
         let kind: TreeCopySnapshot.Entry.Kind
@@ -1218,7 +1237,10 @@ actor TreeCopySession {
         // file here would only restate what codesign proves more cheaply. The
         // strict profile keeps the digest because data directories have no
         // other content proof.
-        let digest = kind == .file && profile.recordsContentDigests ? try sha256(fd: fd, path: path) : nil
+        let digest = kind == .file && profile.recordsContentDigests
+            ? try (contentHasher ?? FileContentHasher()).digest(fd: fd, byteCount: before.st_size, path: path,
+                checkpoint: { try scanReadCheckpoint() },
+                didRead: { DataTransferSession.progress?.activity(bytesRead: $0) }) : nil
         let target: String?
         if kind == .symbolicLink {
             var bytes = [CChar](repeating: 0, count: Int(PATH_MAX) + 1)
@@ -1355,22 +1377,6 @@ actor TreeCopySession {
             if text == nil, profile.toleratesUnsupportedACL, errno == ENOTSUP { return }
             throw posix(path)
         }
-    }
-
-    nonisolated private static func sha256(fd: Int32, path: String) throws -> Data {
-        var hasher = SHA256()
-        var buffer = [UInt8](repeating: 0, count: max(1, min(1024 * 1024, Int(clamping: try status(fd).st_size))))
-        var offset: off_t = 0
-        while true {
-            try scanReadCheckpoint()
-            let count = pread(fd, &buffer, buffer.count, offset)
-            if count < 0 { if errno == EINTR { continue }; throw posix(path) }
-            if count == 0 { break }
-            hasher.update(data: buffer.prefix(count))
-            offset += off_t(count)
-            DataTransferSession.progress?.activity(bytesRead: Int64(count))
-        }
-        return Data(hasher.finalize())
     }
 
     nonisolated private static func copyData(from source: Int32, to destination: Int32, size: Int64, path: String,

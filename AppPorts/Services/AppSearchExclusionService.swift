@@ -126,10 +126,13 @@ enum AppSearchExclusionService {
         let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey]
         let rootItems = (try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)) ?? []
         return rootItems.flatMap { item -> [URL] in
-            guard item.lastPathComponent == libraryName else { return [item] }
+            let isApplicationsDirectory = item.lastPathComponent == "Applications"
+            guard isApplicationsDirectory || item.lastPathComponent == libraryName else { return [item] }
             guard (try? item.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) != true else { return [] }
-            return ((try? fm.contentsOfDirectory(at: item, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)) ?? [])
-                .filter { $0.pathExtension == "app" }
+            let children = (try? fm.contentsOfDirectory(at: item, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)) ?? []
+            // Applications is a library root, not an app suite. Discover its
+            // children individually so local portals cannot add duplicate rows.
+            return isApplicationsDirectory ? children : children.filter { $0.pathExtension == "app" }
         }
     }
 

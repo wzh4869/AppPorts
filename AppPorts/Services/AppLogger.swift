@@ -1080,11 +1080,6 @@ final class AppLogger: @unchecked Sendable {
         writeQueue.sync { recentOperationSummaries }
     }
 
-    nonisolated func resetDiagnosticStateForTesting() {
-        writeQueue.sync {
-            recentOperationSummaries.removeAll()
-        }
-    }
 
     nonisolated private func buildLogLine(message: String, level: String) -> String {
         let timestamp = dateFormatter.string(from: Date())

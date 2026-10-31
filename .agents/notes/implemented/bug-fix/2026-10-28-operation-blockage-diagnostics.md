@@ -35,8 +35,18 @@ Release 双架构 `xcodebuild clean build` 成功。功能日志 `/tmp/AppPortsI
 
 签名锁错误的调用方断言包含 `SignatureBackupCleanupTests.respectsSignatureLock`：它持有真实文件锁，检查 `.signatureLockBusy` 并确认备份记录字节不变。合并后 CI 曾因该测试仍要求旧 `SigningError` 类型而失败；这是遗漏的测试契约更新，不通过放宽锁或删除备份不变断言修复。修正后完整运行 SignatureBackupCleanup、CodeSigner、SignatureOperation 与 OperationLock，共118项通过（13项XCTest、105项Swift Testing），日志 `/tmp/AppPortsLatest-signature-regression.log`；未将专项通过等同于远端全量CI已通过。
 
+## Task recovery presentation
+
+任务中心的数据异常窗口同时展示账本中的迁移事务、待清理副本、保留材料及 remountInterventions。仅有重挂载干预原因时也进入异常处理窗口，保留原因原文和“重试所有待处理项”；重试沿用 runManagedDataOperations，包括原有暂停、冲突及权限检查。不以缺少迁移事务推断重挂载问题已解决，不新增恢复执行器或更改账本。
+
 ## Consequences
 
 同一失败可从弹窗、任务历史和导出日志关联到已知记录，文件锁不可访问不再伪装成忙碌，成功后收尾失败也保留原始诊断。代价是维护稳定诊断码、NSError 桥接及全部语言的对应文案；这些信息属于时间点观察，不提供锁持有者证明。只有可验证的记录 ID 和应用身份进入关联字段，损坏文件中未经验证的路径单列为 recorded_application_path。
 
 本次不改变执行权限、锁调度、恢复判定和 schema；任务历史仍只是展示历史。未知或未接入界面的签名异常仍可能需要诊断后人工处理，增加具体提示不代表自动修复完成。若后续提供签名材料管理界面，再将对应提示指向真实的操作入口。
+
+## PR #102 regression verification
+
+本次两处 UI 回退修复的 arm64/x86_64 Release clean build 与 Debug 测试包构建通过。独立命名宿主专项 108 项通过，0 失败、0 跳过，覆盖任务中心、应用数据缓存、目录扫描、目录树、挂载保护及仅重挂载干预的生产弹窗渲染。构建、日志、结果包和截图位于 `/tmp/AppPortsPR102RecoveryUI/`。
+
+合成场景只有一条重挂载原因、没有事务或清理材料，实渲染确认原因可见、“重试所有待处理项”可见、空记录提示不出现；未点击维护按钮，未读取或修改真实业务数据。独立只读审查核对按钮沿用 runManagedDataOperations → remountAvailableRecords，暂停、冲突与权限保护保留。应用数据页返回仅删除清空选中应用的分支，扫描取消、上下文变化清空与权限核对不变；未做真实主窗口切页验证，未重复执行 APFS 往返或安装新版。全量回归由 PR CI 执行，不将本地专项扩大为全量通过。

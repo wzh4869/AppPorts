@@ -110,6 +110,8 @@ enum ContainerMountAgentInstaller {
         var payload: [String: Any] = [
             "Label": label,
             "ProgramArguments": [executablePath, launchArgument],
+            // Attribute the legacy agent to the app in System Settings.
+            "AssociatedBundleIdentifiers": ["com.shimoko.AppPorts"],
             "RunAtLoad": true,
             "KeepAlive": ["SuccessfulExit": false],
             "LimitLoadToSessionType": ["Aqua"],
@@ -239,26 +241,14 @@ enum ContainerMountAgentInstaller {
                                       signatureIdentity: executableSignatureIdentity(at: executablePath))
         let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
 
-        // 定义未变化时不重新加载：bootstrap 会立刻再跑一遍代理，没有必要。
-        if existing == data, runLaunchctl(["print", "gui/\(getuid())/\(label)"]) == 0 {
-            return
-        }
-
-        let launchAgentsDir = agentPlistURL.deletingLastPathComponent()
-        if !FileManager.default.fileExists(atPath: launchAgentsDir.path) {
-            try FileManager.default.createDirectory(at: launchAgentsDir, withIntermediateDirectories: true)
-        }
-
-        // 可执行路径可能已变化（应用被移动/更新），先卸载旧定义再重新加载。
-        if isInstalled {
-            runLaunchctl(["bootout", "gui/\(getuid())/\(label)"])
-        }
-        try data.write(to: agentPlistURL, options: .atomic)
-
-        guard runLaunchctl(["bootstrap", "gui/\(getuid())", agentPlistURL.path]) == 0
-                || runLaunchctl(["load", agentPlistURL.path]) == 0 else {
-            throw InstallError.launchAgentLoadFailed
-        }
+        let changed = try configureAgent(definitionMatches: existing == data, writeDefinition: {
+            let launchAgentsDir = agentPlistURL.deletingLastPathComponent()
+            if !FileManager.default.fileExists(atPath: launchAgentsDir.path) {
+                try FileManager.default.createDirectory(at: launchAgentsDir, withIntermediateDirectories: true)
+            }
+            try data.write(to: agentPlistURL, options: .atomic)
+        }, run: runLaunchctl)
+        guard changed else { return }
         AppLogger.shared.logContext(
             "容器卷自动挂载代理已安装",
             details: [
@@ -267,6 +257,30 @@ enum ContainerMountAgentInstaller {
                 ("previous_executable", recordedExecutable ?? "none")
             ]
         )
+    }
+
+    /// A successful legacy `load` does not prove the service was registered.
+    /// Keep this sequence injectable so tests never change real login services.
+    @discardableResult
+    static func configureAgent(
+        definitionMatches: Bool,
+        writeDefinition: () throws -> Void,
+        run: ([String]) -> Int32
+    ) throws -> Bool {
+        let domain = "gui/\(getuid())"
+        let service = "\(domain)/\(label)"
+        // Disabled overrides survive plist replacement and bootstrap. Enable
+        // before the fast path; on failure leave the existing definition alone.
+        guard run(["enable", service]) == 0 else { throw InstallError.launchAgentLoadFailed }
+        if definitionMatches, run(["print", service]) == 0 { return false }
+        _ = run(["bootout", service])
+        try writeDefinition()
+        guard run(["bootstrap", domain, agentPlistURL.path]) == 0
+                || run(["load", agentPlistURL.path]) == 0 else {
+            throw InstallError.launchAgentLoadFailed
+        }
+        guard run(["print", service]) == 0 else { throw InstallError.launchAgentLoadFailed }
+        return true
     }
 
     static func uninstall() {

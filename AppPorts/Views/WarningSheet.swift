@@ -102,7 +102,7 @@ struct WarningSheet: View {
                 VStack(alignment: .leading, spacing: 14) {
                     if let intro {
                         Text(intro)
-                            .font(.callout)
+                            .font(AppDialogTypography.body)
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .multilineTextAlignment(.leading)
@@ -117,7 +117,7 @@ struct WarningSheet: View {
                                     Text(bullet.text)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
-                                .font(.callout)
+                                .font(AppDialogTypography.body)
                                 .foregroundColor(.secondary)
                             }
                         }
@@ -125,7 +125,7 @@ struct WarningSheet: View {
 
                     if let detail {
                         Text(detail)
-                            .font(.callout)
+                            .font(AppDialogTypography.body)
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -136,7 +136,7 @@ struct WarningSheet: View {
                                 Text("详情请参阅文档".localized)
                                 Image(systemName: "arrow.up.right.square")
                             }
-                            .font(.callout)
+                            .font(AppDialogTypography.body)
                         }
                         .help(documentationURL.absoluteString)
                     }
@@ -154,6 +154,7 @@ struct WarningSheet: View {
             actionBar
         }
         .padding(contentPadding)
+        .appDialogTypography()
         .frame(width: sheetWidth)
     }
 
@@ -166,7 +167,7 @@ struct WarningSheet: View {
                 .foregroundColor(tint)
 
             Text(title)
-                .font(.title3.bold())
+                .font(AppDialogTypography.title)
 
             Spacer(minLength: 0)
         }

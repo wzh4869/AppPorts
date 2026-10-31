@@ -1,6 +1,295 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "使用率" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用率"
+          }
+        }
+      }
+    },
+    "侧边栏宽度" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sidebar Width"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "侧边栏宽度"
+          }
+        }
+      }
+    },
+    "外观" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外观"
+          }
+        }
+      }
+    },
+    "已用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已用"
+          }
+        }
+      }
+    },
+    "已节省 %@ 堪比黄金的存储空间" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved %@ of storage space worth its weight in gold"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已节省 %@ 堪比黄金的存储空间"
+          }
+        }
+      }
+    },
+    "已迁出（估算）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offloaded (estimated)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已迁出（估算）"
+          }
+        }
+      }
+    },
+    "所在磁盘" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volume Storage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所在磁盘"
+          }
+        }
+      }
+    },
+    "映像内空间" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Space Inside Image"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像内空间"
+          }
+        }
+      }
+    },
+    "更换位置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Location"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更换位置"
+          }
+        }
+      }
+    },
+    "本机磁盘" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac Storage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机磁盘"
+          }
+        }
+      }
+    },
+    "橙色表示已确认在外部存储的数据大小估算；不等于实际释放空间。未连接、未完成或保留本地副本的数据不计入，色段最多占用当前空余部分。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orange shows the estimated size of confirmed data on external storage, not actual reclaimed space. Disconnected, unfinished, or locally retained data is excluded. The segment is capped at current free space."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "橙色表示已确认在外部存储的数据大小估算；不等于实际释放空间。未连接、未完成或保留本地副本的数据不计入，色段最多占用当前空余部分。"
+          }
+        }
+      }
+    },
+    "浅色" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浅色"
+          }
+        }
+      }
+    },
+    "深色" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深色"
+          }
+        }
+      }
+    },
+    "目标存储" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination Storage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标存储"
+          }
+        }
+      }
+    },
+    "空余" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空余"
+          }
+        }
+      }
+    },
+    "跟随系统" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随系统"
+          }
+        }
+      }
+    },
+    "重试所有待处理项" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry All Pending Items"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试所有待处理项"
+          }
+        }
+      }
+    },
     " 可释放" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -224969,6 +225258,329 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。 ♡"
+          }
+        }
+      }
+    },
+    "请输入有效的磁盘名称和 1–65536 GiB 的最大容量。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a valid disk name and a maximum capacity of 1–65536 GiB."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入有效的磁盘名称和 1–65536 GiB 的最大容量。"
+          }
+        }
+      }
+    },
+    "请选择已挂载的外部存储或 SMB 共享目录。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a mounted external drive or SMB share folder."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择已挂载的外部存储或 SMB 共享目录。"
+          }
+        }
+      }
+    },
+    "该位置已有同名文件，请更换名称或打开已有映像。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An item with this name already exists. Choose another name or open the existing image."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该位置已有同名文件，请更换名称或打开已有映像。"
+          }
+        }
+      }
+    },
+    "映像记录无效，请重新打开映像。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The image record is invalid. Open the image again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "映像记录无效，请重新打开映像。"
+          }
+        }
+      }
+    },
+    "映像挂载位置已被占用，请在 Finder 中检查后重试。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The image mount location is occupied. Check it in Finder and try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "映像挂载位置已被占用，请在 Finder 中检查后重试。"
+          }
+        }
+      }
+    },
+    "无法核对映像对应的磁盘，请在 Finder 中检查后重试。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to verify the disk belonging to this image. Check it in Finder and try again."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法核对映像对应的磁盘，请在 Finder 中检查后重试。"
+          }
+        }
+      }
+    },
+    "无法访问所选目录或映像，请先在 Finder 中连接共享。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to access the selected folder or image. Connect the share in Finder first."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法访问所选目录或映像，请先在 Finder 中连接共享。"
+          }
+        }
+      }
+    },
+    "无法确认映像中的唯一可写 APFS 磁盘，未更改迁移目标。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to identify a single writable APFS volume in the image. The migration destination was not changed."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法确认映像中的唯一可写 APFS 磁盘，未更改迁移目标。"
+          }
+        }
+      }
+    },
+    "映像操作未完成，已有文件会保留。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The image operation did not complete. Existing files are retained."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "映像操作未完成，已有文件会保留。"
+          }
+        }
+      }
+    },
+    "打开已有映像…" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Existing Image…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开已有映像…"
+          }
+        }
+      }
+    },
+    "重新挂载映像" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mount Image Again"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新挂载映像"
+          }
+        }
+      }
+    },
+    "磁盘映像" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disk Image"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "磁盘映像"
+          }
+        }
+      }
+    },
+    "创建 APFS 映像" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create APFS Image"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建 APFS 映像"
+          }
+        }
+      }
+    },
+    "存放位置" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存放位置"
+          }
+        }
+      }
+    },
+    "磁盘名称" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disk Name"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "磁盘名称"
+          }
+        }
+      }
+    },
+    "最大容量（GiB）" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maximum Capacity (GiB)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最大容量（GiB）"
+          }
+        }
+      }
+    },
+    "映像按实际写入占用空间，可存放在已挂载的 SMB 共享中。同一映像请只在一台 Mac 上写入。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The image uses space as data is written and can be stored on a mounted SMB share. Write to an image from only one Mac at a time."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "映像按实际写入占用空间，可存放在已挂载的 SMB 共享中。同一映像请只在一台 Mac 上写入。"
+          }
+        }
+      }
+    },
+    "以后使用映像中的应用前，请先打开 AppPorts 挂载映像。退出 AppPorts 不会卸载映像。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before using apps in this image, open AppPorts to mount it. Quitting AppPorts does not unmount the image."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以后使用映像中的应用前，请先打开 AppPorts 挂载映像。退出 AppPorts 不会卸载映像。"
+          }
+        }
+      }
+    },
+    "创建并使用" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create and Use"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建并使用"
           }
         }
       }

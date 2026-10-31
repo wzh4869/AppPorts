@@ -47,9 +47,9 @@ struct SignatureRepairSheet: View {
                 AppIconView(url: app.displayURL, size: 48)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(String(format: "修复「%@」的签名".localized, app.displayName))
-                        .font(.title3.bold())
+                        .font(AppDialogTypography.title)
                     Text("先还原应用数据，再恢复原始签名。请退出应用并连接外置盘。AppPorts 会处理备份。".localized)
-                        .font(.callout)
+                        .font(AppDialogTypography.body)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -78,7 +78,7 @@ struct SignatureRepairSheet: View {
             }
             if isRestoring, !restoreProgressText.isEmpty {
                 Text(restoreProgressText)
-                    .font(.caption)
+                    .font(AppDialogTypography.body)
                     .foregroundColor(.secondary)
                     .padding(.leading, 34)
             }
@@ -121,7 +121,7 @@ struct SignatureRepairSheet: View {
                         Text(appIsOnExternalDrive
                              ? "仅在覆盖安装前需要迁回本地。使用原版备份或官方原件可以直接修复外置盘上的应用。".localized
                              : "应用本体在本地。".localized)
-                            .font(.callout)
+                            .font(AppDialogTypography.body)
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                         if appIsOnExternalDrive {
@@ -160,13 +160,13 @@ struct SignatureRepairSheet: View {
 
             if let errorMessage {
                 Text(errorMessage)
-                    .font(.caption)
+                    .font(AppDialogTypography.body)
                     .foregroundColor(.red)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let cleanupWarning {
                 Text(cleanupWarning)
-                    .font(.caption)
+                    .font(AppDialogTypography.body)
                     .foregroundColor(.orange)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -175,13 +175,14 @@ struct SignatureRepairSheet: View {
 
             HStack {
                 Link("查看完整说明".localized, destination: DocumentationLink.url(page: "macos-27"))
-                    .font(.caption)
+                    .font(AppDialogTypography.body)
                 Spacer()
                 Button(signatureRestored ? "关闭".localized : "以后再说".localized) { onDismiss() }
                     .keyboardShortcut(.cancelAction)
             }
         }
         .padding(24)
+        .appDialogTypography()
         .frame(width: 560)
         .onAppear {
             refreshSignatureState()
@@ -224,10 +225,10 @@ struct SignatureRepairSheet: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.headline)
+                    .font(AppDialogTypography.title)
                     .foregroundColor(done ? .secondary : .primary)
                 Text(detail)
-                    .font(.callout)
+                    .font(AppDialogTypography.body)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) { actions() }

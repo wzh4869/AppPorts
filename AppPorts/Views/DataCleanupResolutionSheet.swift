@@ -3,7 +3,9 @@ import SwiftUI
 struct DataCleanupResolutionSheet: View {
     let transfers: [DataTransferRecord]
     var currentDataPaths: [UUID: String] = [:]
-    let otherIssues: [String]
+    var pendingCleanups: [ContainerCleanupRecord] = []
+    var preservedMaterials: [DataTransferMaterial] = []
+    var remountInterventions: [String] = []
     let onRetry: (UUID?) -> Void
     let onChanged: () -> Void
     let onPermissions: () -> Void
@@ -15,38 +17,70 @@ struct DataCleanupResolutionSheet: View {
     @State private var updated: [UUID: DataTransferRecord.CleanupDisposition] = [:]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        let visibleTransfers = transfers.filter { $0.retainedCopyRemovedAt == nil }
+        return VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("处理异常".localized).font(.headline)
+                Text("处理异常".localized).font(AppDialogTypography.title)
                 Spacer()
                 Button("检查权限".localized) { dismiss(); onPermissions() }
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ForEach(transfers.filter { $0.retainedCopyRemovedAt == nil }) { transfer in
+                    if visibleTransfers.isEmpty && pendingCleanups.isEmpty && preservedMaterials.isEmpty && remountInterventions.isEmpty {
+                        Text("未找到待处理的迁移记录，可能已由后台完成收尾。请关闭窗口后刷新应用列表。".localized)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    ForEach(visibleTransfers) { transfer in
                         transferRow(transfer)
+                        if transfer.id != visibleTransfers.last?.id {
+                            Divider()
+                        }
+                    }
+                    ForEach(Array(remountInterventions.enumerated()), id: \.offset) { _, reason in
+                        Text(verbatim: reason)
+                            .font(AppDialogTypography.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                    }
+                    ForEach(pendingCleanups) { cleanup in
                         Divider()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(verbatim: cleanup.mountRecord.appName).font(AppDialogTypography.title)
+                            Text("数据操作尚未完成，现有文件已保留。请退出关联应用，连接并解锁外置盘后重试。".localized)
+                                .foregroundStyle(.secondary)
+                            retainedPath(cleanup.localPath)
+                            if let staging = cleanup.restoreStagingPath { retainedPath(staging) }
+                            retainedPath(cleanup.mountRecord.externalRootPath)
+                        }
                     }
-                    ForEach(Array(otherIssues.enumerated()), id: \.offset) { _, issue in
-                        Text(verbatim: issue).font(.callout).textSelection(.enabled)
-                    }
-                    if !otherIssues.isEmpty {
-                        Text("请先退出关联应用，确认外置盘已连接并解锁，再重试。权限不足时可点击“检查权限”。".localized)
-                            .font(.callout).foregroundStyle(.secondary)
-                        Button("重试待处理操作".localized) { dismiss(); onRetry(nil) }
+                    ForEach(preservedMaterials) { material in
+                        Divider()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(verbatim: material.appName).font(AppDialogTypography.title)
+                            Text(verbatim: material.reason).font(AppDialogTypography.body).textSelection(.enabled)
+                            retainedPath(material.originalPath)
+                            ForEach(Array(Set(material.paths).subtracting([material.originalPath])).sorted(), id: \.self) { path in
+                                retainedPath(path)
+                            }
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let errorMessage {
-                Text(verbatim: errorMessage).font(.callout).foregroundStyle(.red).textSelection(.enabled)
+                Text(verbatim: errorMessage).font(AppDialogTypography.body).foregroundStyle(.red).textSelection(.enabled)
             }
             HStack {
+                if !pendingCleanups.isEmpty || !remountInterventions.isEmpty || preservedMaterials.contains(where: { $0.recoveryRecord != nil }) {
+                    Button("重试所有待处理项".localized) { dismiss(); onRetry(nil) }
+                }
                 Spacer()
                 Button("完成".localized) { dismiss() }.keyboardShortcut(.cancelAction)
             }
         }
         .padding(20)
+        .appDialogTypography()
         .frame(width: 620, height: 460)
         .disabled(busy)
         .interactiveDismissDisabled(busy)
@@ -61,13 +95,26 @@ struct DataCleanupResolutionSheet: View {
         }
     }
 
+    private func retainedPath(_ path: String) -> some View {
+        Text(verbatim: path)
+            .font(AppDialogTypography.body)
+            .foregroundStyle(.secondary)
+            .textSelection(.enabled)
+            .contextMenu {
+                Button("复制路径".localized) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(path, forType: .string)
+                }
+            }
+    }
+
     private func transferRow(_ transfer: DataTransferRecord) -> some View {
         let disposition = updated[transfer.id] ?? transfer.cleanupDisposition
         let needsAdministrator = DataCleanupResolution.requiresAdministrator(transfer)
         let administratorMessage = "旧副本由管理员（root）拥有，需要授权后才能清理。当前数据未受影响。".localized
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(verbatim: transfer.appName).font(.headline)
+                Text(verbatim: transfer.appName).font(AppDialogTypography.title)
                 Spacer()
                 if disposition == .keep {
                     Text("已保留旧副本".localized).foregroundStyle(.secondary)
@@ -76,25 +123,25 @@ struct DataCleanupResolutionSheet: View {
                 }
             }
             if let path = currentDataPaths[transfer.id] {
-                Text(String(format: "当前数据：%@".localized, path)).font(.caption).textSelection(.enabled)
+                Text(String(format: "当前数据：%@".localized, path)).font(AppDialogTypography.body).textSelection(.enabled)
             } else {
-                Text(verbatim: transfer.originalPath).font(.caption).textSelection(.enabled)
+                Text(verbatim: transfer.originalPath).font(AppDialogTypography.body).textSelection(.enabled)
             }
             if needsAdministrator, disposition != .keep, transfer.recoverableReason?.contains(administratorMessage) != true {
-                Text(verbatim: administratorMessage).font(.callout)
+                Text(verbatim: administratorMessage).font(AppDialogTypography.body)
             }
             if disposition != .keep, let reason = transfer.recoverableReason {
-                Text(verbatim: reason).font(.callout).textSelection(.enabled)
+                Text(verbatim: reason).font(AppDialogTypography.body).textSelection(.enabled)
             }
             if disposition != .keep {
                 Text(transfer.isDataSwitchComplete
                     ? "数据已切换，旧副本尚未清理完。重试会重新检查，不会强制删除有差异的文件。".localized
                     : "数据操作尚未完成，现有文件已保留。请退出关联应用，连接并解锁外置盘后重试。".localized)
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(AppDialogTypography.body).foregroundStyle(.secondary)
             }
             if let path = transfer.backupPath {
                 Text(String(format: "保留的旧副本：%@".localized, path))
-                    .font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                    .font(AppDialogTypography.body).foregroundStyle(.secondary).textSelection(.enabled)
             }
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -115,7 +162,7 @@ struct DataCleanupResolutionSheet: View {
                     }
                 }
             }
-            .controlSize(.small)
+            .controlSize(.regular)
         }
     }
 

@@ -24,6 +24,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
 
     @Environment(\.locale) private var locale
+    @AppStorage("appAppearance") private var appAppearance = "system"
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
     private typealias ScanRequest = AppListScanState.Request
@@ -93,7 +94,6 @@ struct ContentView: View {
     @State private var pendingRemainingAppsForSelfUpdater: [AppItem] = []
     @State private var selfUpdaterIsLinkIn = false // true = 链接回本地, false = 迁移到外部
 
-    @State private var pendingRemainingApps: [AppItem] = []
     
     // 进度弹窗状态
     @State private var showProgress = false
@@ -101,7 +101,6 @@ struct ContentView: View {
     @State private var progressCurrent = 0
     @State private var progressTotal = 0
     @State private var progressAppName = ""
-    @State private var isMigrating = false
     
     // App Store 外部安装引导
     @State private var masGuidanceRequest: WarningSheetRequest?
@@ -159,9 +158,7 @@ struct ContentView: View {
     @State private var externalAppSort = AppListSort()
 
     // MARK: - Tab
-    enum MainTab { case apps, dataDirs, customDirs }
-    @Namespace private var navigationSelection
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    enum MainTab { case apps, dataDirs, customDirs, tasks }
     @State private var mainTab: MainTab = .apps
     @State private var hasOpenedDataDirs = false
     @State private var hasOpenedCustomDirs = false
@@ -192,6 +189,7 @@ struct ContentView: View {
 
     var body: some View {
         mainContent
+        .ignoresSafeArea(.container, edges: .top)
         .frame(minWidth: 930, minHeight: 620)
         .onAppear {
             // A unit-test host must not scan apps, refresh agents, or observe real volumes.
@@ -282,6 +280,12 @@ struct ContentView: View {
             while !Task.isCancelled {
                 do { try await Task.sleep(nanoseconds: 60_000_000_000) } catch { break }
                 remountContainerVolumes(trigger: "retry")
+            }
+        }
+        .onChange(of: migrationTasks.showsList) { showsList in
+            if showsList {
+                mainTab = .tasks
+                migrationTasks.showsList = false
             }
         }
         .onChange(of: migrationTasks.recoveryJobID) { id in
@@ -580,12 +584,14 @@ struct ContentView: View {
                     .frame(minHeight: 24)
 
                     HStack(spacing: 6) {
-                        Text(subtitle)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                            .help(subtitle)
+                        if !subtitle.isEmpty {
+                            Text(subtitle)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .help(subtitle)
+                        }
                         if let appCount {
-                            Text(verbatim: "·")
+                            if !subtitle.isEmpty { Text(verbatim: "·") }
                             Text(String(format: "%lld 个应用".localized, Int64(appCount)))
                                 .fixedSize()
                         }
@@ -615,8 +621,6 @@ struct ContentView: View {
         let action: () -> Void
 
         var body: some View {
-            HStack {
-                Spacer(minLength: 0)
                 Button(action: action) {
                     HStack(spacing: 6) {
                         Text(title)
@@ -626,7 +630,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(AppListPrimaryButtonStyle())
                 .disabled(!isEnabled)
-            }
+
             .modifier(AppListFooterStyle())
         }
     }
@@ -674,9 +678,37 @@ struct ContentView: View {
     // MARK: - 主内容（拆出以减轻 body 的类型推断负担）
 
     private var mainContent: some View {
+        SidebarSplitView {
+            sidebar
+        } content: {
+            mainPageContent
+                .frame(minWidth: 660, maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .onChange(of: mainTab) { tab in
+            if tab == .dataDirs { hasOpenedDataDirs = true }
+            if tab == .customDirs { hasOpenedCustomDirs = true }
+        }
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    private var mainPageContent: some View {
         VStack(spacing: 0) {
-            // MARK: - Top Toolbar
-            topToolbar
+            if mainTab == .apps {
+                appListToolbar
+                    .disabled(operationState.blocksInteraction)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+            }
+            if mainTab == .dataDirs, selectedDataDirsTab == .appDirs,
+               selectedDataDirsApp?.isResigned == true {
+                HStack {
+                    Spacer()
+                    dataDirsToolbarControls
+                        .disabled(operationState.blocksInteraction)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+            }
 
             if operationState.blocksInteraction, let operationTab,
                mainTab != operationTab || (mainTab == .dataDirs && selectedDataDirsTab != operationDataTab) {
@@ -698,6 +730,9 @@ struct ContentView: View {
             // operation's progress, result alerts, or batch state. Hidden pages
             // suspend their list scans through isActive.
             ZStack(alignment: .topLeading) {
+                if mainTab == .tasks {
+                    MigrationTaskList(isEmbedded: true)
+                }
                 if mainTab == .dataDirs || hasOpenedDataDirs {
                     DataDirsView(
                         isActive: mainTab == .dataDirs,
@@ -735,78 +770,100 @@ struct ContentView: View {
             }
             .clipped()
         }
-        .onChange(of: mainTab) { tab in
-            if tab == .dataDirs { hasOpenedDataDirs = true }
-            if tab == .customDirs { hasOpenedCustomDirs = true }
-        }
         .background(Color(nsColor: .controlBackgroundColor))
     }
 
-    // MARK: - 顶部工具栏（拆出以减轻 body 的类型推断负担）
+    // MARK: - 侧边栏
 
-    private var topToolbar: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                primaryNavigation
-                Spacer(minLength: 12)
-                MigrationTaskToolbarButton()
-                cacheRefreshButton
-                if mainTab == .dataDirs {
-                    dataDirsToolbarControls
-                        .disabled(operationState.blocksInteraction)
-                }
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            primaryNavigation
+            Divider()
+            TabButton(title: "任务中心".localized, systemImage: "list.bullet",
+                      isSelected: mainTab == .tasks,
+                      badgeCount: migrationTasks.unfinishedCount,
+                      needsAttention: migrationTasks.hasAttention) {
+                mainTab = .tasks
+            }
+            Divider()
+            SidebarTargetSection(directory: externalDriveURL,
+                showsTarget: true,
+                onChoose: { _ = openPanelForExternalDrive() },
+                onImageReady: { externalDriveURL = $0 })
+            Spacer(minLength: 8)
+            SidebarStorageSection(directory: externalDriveURL,
+                showsTarget: true, apps: localApps)
+            Divider()
+            HStack(spacing: 6) {
                 Button(action: { showAppStoreSettings = true }) {
                     Label("设置".localized, systemImage: "gearshape")
                         .labelStyle(.iconOnly)
-                        .font(.system(size: 14, weight: .medium))
                         .frame(width: 32, height: 30)
-                        .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
-                .buttonStyle(.borderless)
-                .foregroundColor(.secondary)
+                .buttonStyle(.plain)
                 .keyboardShortcut(",", modifiers: .command)
                 .disabled(operationState.blocksInteraction)
                 .help("设置".localized + " (⌘,)")
-                .accessibilityLabel("设置".localized)
+                cacheRefreshButton
+                Spacer(minLength: 0)
+                Button {
+                    switch appAppearance {
+                    case "system": appAppearance = "light"
+                    case "light": appAppearance = "dark"
+                    default: appAppearance = "system"
+                    }
+                } label: {
+                    Group {
+                        if appAppearance == "system" {
+                            Text(verbatim: "A").font(.system(size: 14, weight: .medium))
+                        } else {
+                            Image(systemName: appAppearance == "dark" ? "moon" : "sun.max")
+                        }
+                    }
+                    .frame(width: 32, height: 30)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help("外观".localized + " · " + appearanceTitle)
+                .accessibilityLabel("外观".localized)
+                .accessibilityValue(appearanceTitle)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-
-            if mainTab == .apps {
-                appListToolbar
-                    .disabled(operationState.blocksInteraction)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 10)
-            }
-            if mainTab != .apps { Divider() }
+            .font(.system(size: 14))
+            .foregroundColor(.primary)
         }
-        .background(Color(nsColor: .controlBackgroundColor))
+        .padding(.leading, 10)
+        .padding(.trailing, 6)
+        .padding(.vertical, 12)
+        .padding(.top, 32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppListColors.sidebar)
+    }
+
+    private var appearanceTitle: String {
+        switch appAppearance {
+        case "light": return "浅色".localized
+        case "dark": return "深色".localized
+        default: return "跟随系统".localized
+        }
     }
 
     private var primaryNavigation: some View {
-        HStack(spacing: 2) {
-            TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps, selectionNamespace: navigationSelection) {
+        VStack(spacing: 4) {
+            TabButton(title: "应用".localized, systemImage: "cube", isSelected: mainTab == .apps) {
                 mainTab = .apps
             }
-            TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs, selectionNamespace: navigationSelection) {
+            TabButton(title: "工具目录".localized, systemImage: "wrench.and.screwdriver", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .toolDirs) {
                 selectedDataDirsTab = .toolDirs
                 mainTab = .dataDirs
             }
-            TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs, selectionNamespace: navigationSelection) {
+            TabButton(title: "应用数据".localized, systemImage: "cylinder", isSelected: mainTab == .dataDirs && selectedDataDirsTab == .appDirs) {
                 selectedDataDirsTab = .appDirs
                 mainTab = .dataDirs
             }
-            TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs, selectionNamespace: navigationSelection) {
+            TabButton(title: "目录迁移".localized, systemImage: "folder.badge.gearshape", isSelected: mainTab == .customDirs) {
                 mainTab = .customDirs
             }
         }
-        .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(0.03))
-        )
-        .animation(reduceMotion ? nil : AppMotion.page, value: mainTab)
-        .animation(reduceMotion ? nil : AppMotion.page, value: selectedDataDirsTab)
     }
 
     private var appListToolbar: some View {
@@ -884,6 +941,7 @@ struct ContentView: View {
         case .apps: return localScanState.isScanning || externalScanState.isScanning
         case .dataDirs: return isDataDirsScanning
         case .customDirs: return isCustomDirsScanning
+        case .tasks: return false
         }
     }
 
@@ -893,6 +951,7 @@ struct ContentView: View {
             case .apps: scanBothAppsAtomic(forceSizeRefresh: true)
             case .dataDirs: dataDirsRefreshTrigger += 1
             case .customDirs: customDirsRefreshTrigger += 1
+            case .tasks: break
             }
         } label: {
             Group {
@@ -900,15 +959,15 @@ struct ContentView: View {
                     ProgressView().controlSize(.small)
                 } else {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 14))
                 }
             }
             .frame(width: 32, height: 30)
             .contentShape(Rectangle())
         }
-        .buttonStyle(AppPressButtonStyle())
-        .foregroundColor(.secondary)
-        .disabled(operationState.blocksInteraction || isCurrentPageRefreshing)
+        .buttonStyle(.plain)
+        .foregroundColor(.primary)
+        .disabled(operationState.blocksInteraction || isCurrentPageRefreshing || mainTab == .tasks)
         .help("刷新缓存".localized)
         .accessibilityLabel("刷新缓存".localized)
     }
@@ -947,7 +1006,8 @@ struct ContentView: View {
                         EmptyStateView(icon: "doc.text.magnifyingglass", text: "未找到匹配应用".localized)
                     }
                 } else {
-                    List(entries, selection: $selectedLocalApps) { entry in
+                    List(selection: $selectedLocalApps) {
+                        ForEach(entries) { entry in
                         let app = entry.app
                         AppRowView(
                             app: app,
@@ -969,12 +1029,22 @@ struct ContentView: View {
                             index: entry.index
                         ))
                         .modifier(RowSeparatorVisibility())
+                        }
+                        Color.clear.frame(height: 48)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .modifier(ContentView.RowSeparatorVisibility())
+                            .accessibilityHidden(true)
                     }
                     .listStyle(.plain)
                     .modifier(TransparentListBackground())
                 }
             }
 
+
+        }
+        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottomTrailing) {
             let buttonStatus = getMoveButtonTitle()
 
             ActionFooter(
@@ -984,7 +1054,6 @@ struct ContentView: View {
                 action: performMoveOut
             )
         }
-        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
         .modifier(AppListPanelStyle())
 
     }
@@ -994,16 +1063,13 @@ struct ContentView: View {
         return VStack(spacing: 0) {
             HeaderView(
                 title: "外部应用库".localized,
-                subtitle: externalDriveURL?.path ?? "未选择".localized,
+                subtitle: "",
                 icon: "externaldrive.fill",
                 iconColumnWidth: 40,
                 appCount: entries.count,
                 tint: .teal,
-                actionButtonText: "选择文件夹".localized,
-                onAction: { _ = openPanelForExternalDrive() },
                 onRefresh: { scanExternalApps(forceSizeRefresh: true) },
-                isRefreshing: externalScanState.isScanning,
-                accessory: AnyView(DiskEjectionControls(externalURL: externalDriveURL))
+                isRefreshing: externalScanState.isScanning
             )
 
         appListColumnHeader(sorting: $externalAppSort)
@@ -1024,9 +1090,6 @@ struct ContentView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
 
-                    Button("选择文件夹".localized) { openPanelForExternalDrive() }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
                 }
             } else if entries.isEmpty {
                 if externalScanState.isScanning && externalApps.isEmpty {
@@ -1037,7 +1100,8 @@ struct ContentView: View {
                     EmptyStateView(icon: "folder", text: "空文件夹".localized)
                 }
             } else {
-                List(entries, selection: $selectedExternalApps) { entry in
+                List(selection: $selectedExternalApps) {
+                    ForEach(entries) { entry in
                     let app = entry.app
                     AppRowView(
                         app: app,
@@ -1057,19 +1121,28 @@ struct ContentView: View {
                         index: entry.index
                     ))
                     .modifier(RowSeparatorVisibility())
-                }
+                    }
+                        Color.clear.frame(height: 48)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .modifier(ContentView.RowSeparatorVisibility())
+                            .accessibilityHidden(true)
+                    }
                 .listStyle(.plain)
                 .modifier(TransparentListBackground())
             }
         }
 
+
+    }
+    .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+    .overlay(alignment: .bottomTrailing) {
         HStack(spacing: 8) {
-            Spacer(minLength: 0)
             Button(action: performBatchMoveBack) {
                 Label(getMoveBackButtonTitle(), systemImage: "arrow.turn.up.left")
                     .frame(minWidth: 100, minHeight: 22)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(AppListPrimaryButtonStyle(isSecondary: true))
             .disabled(selectedExternalApps.isEmpty)
 
             Button(action: performLinkIn) {
@@ -1081,7 +1154,6 @@ struct ContentView: View {
         }
         .modifier(AppListFooterStyle())
     }
-    .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
     .modifier(AppListPanelStyle())
     }
 
@@ -1116,12 +1188,13 @@ struct ContentView: View {
         }
     }
 
-    /// Tab 切换按钮（顶部工具栏用）
+    /// 侧栏页面切换按钮。
     struct TabButton: View {
         let title: String
         var systemImage: String? = nil
         let isSelected: Bool
-        let selectionNamespace: Namespace.ID
+        var badgeCount: Int = 0
+        var needsAttention: Bool = false
         let action: () -> Void
 
         @State private var isHovered = false
@@ -1133,19 +1206,35 @@ struct ContentView: View {
                     if let systemImage {
                         Image(systemName: systemImage)
                             .font(.system(size: 14, weight: .medium))
+                            .frame(width: 20)
                     }
                     Text(title)
                         .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                         .lineLimit(1)
+                    Spacer(minLength: 0)
+                    if needsAttention {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(Color.orange)
+                            .accessibilityLabel("需要处理".localized)
+                            .help("需要处理".localized)
+                    }
+                    if badgeCount > 0 {
+                        Text(badgeCount, format: .number)
+                            .font(.system(size: 11, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(Color.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.accentColor, in: Capsule())
+                    }
                 }
                 .foregroundColor(isSelected ? .accentColor : .secondary)
-                .padding(.horizontal, 12)
-                .frame(height: 30)
+                .padding(.horizontal, 6)
+                .frame(maxWidth: .infinity, minHeight: 32)
                 .background {
                     if isSelected {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(Color.accentColor.opacity(0.12))
-                            .matchedGeometryEffect(id: "navigationSelection", in: selectionNamespace)
                     } else {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(isHovered ? Color.primary.opacity(0.04) : .clear)
@@ -1153,7 +1242,7 @@ struct ContentView: View {
                 }
                 .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
-            .buttonStyle(AppPressButtonStyle())
+            .buttonStyle(.plain)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
             .onHover { isHovered = $0 }
             .animation(reduceMotion ? nil : AppMotion.interaction, value: isHovered)
@@ -1335,10 +1424,6 @@ struct ContentView: View {
         }
     }
 
-    private func readVersion(from appURL: URL) -> String {
-        let plist = NSDictionary(contentsOf: appURL.appendingPathComponent("Contents/Info.plist"))
-        return (plist?["CFBundleShortVersionString"] as? String) ?? ""
-    }
 
     @MainActor
     func scanExternalApps(forceSizeRefresh: Bool = false) {
@@ -1454,38 +1539,56 @@ struct ContentView: View {
         return (filled, misses)
     }
 
-    /// AppScanner 串行读取目录；每完成一项便更新大小，避免慢目录拖住所有行。
+    /// Bound independent size reads; publish each completed row immediately.
     private func computeAndStoreSizes(
         misses: [(app: AppItem, mtime: Date?)],
         isLocal: Bool,
         scanner: AppScanner,
         request: ScanRequest
     ) async {
-        for miss in misses {
-            guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
-            let bytes = await scanner.calculateDisplayedSize(for: miss.app, isLocalEntry: isLocal)
-            await MainActor.run {
-                guard self.isCurrentScan(request, isLocal: isLocal) else { return }
-                let id = miss.app.id
-                let sizeString = LocalizedByteCountFormatter.string(fromByteCount: bytes)
-                self.sizeCache[id] = CachedAppSize(size: sizeString, bytes: bytes, mtime: miss.mtime,
-                                                  isLocalPortal: isLocal && miss.app.status == AppStatus.linked)
-                if isLocal {
-                    if let index = self.localApps.firstIndex(where: { $0.id == id }) {
-                        self.localApps[index].size = sizeString
-                        self.localApps[index].sizeBytes = bytes
+        guard !Task.isCancelled,
+              await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
+        await withTaskGroup(of: (Int, Int64).self) { group in
+            var nextIndex = 0
+            for _ in 0..<min(4, misses.count) {
+                let index = nextIndex
+                let app = misses[index].app
+                group.addTask { (index, scanner.calculateDisplayedSize(for: app, isLocalEntry: isLocal)) }
+                nextIndex += 1
+            }
+            for await (index, bytes) in group {
+                let miss = misses[index]
+                let applied = await MainActor.run {
+                    guard !Task.isCancelled, self.isCurrentScan(request, isLocal: isLocal) else { return false }
+                    let id = miss.app.id
+                    let sizeString = LocalizedByteCountFormatter.string(fromByteCount: bytes)
+                    self.sizeCache[id] = CachedAppSize(size: sizeString, bytes: bytes, mtime: miss.mtime,
+                                                      isLocalPortal: isLocal && miss.app.status == AppStatus.linked)
+                    if isLocal {
+                        if let index = self.localApps.firstIndex(where: { $0.id == id }) {
+                            self.localApps[index].size = sizeString
+                            self.localApps[index].sizeBytes = bytes
+                        }
+                    } else {
+                        if let index = self.externalApps.firstIndex(where: { $0.id == id }) {
+                            self.externalApps[index].size = sizeString
+                            self.externalApps[index].sizeBytes = bytes
+                        }
                     }
-                } else {
-                    if let index = self.externalApps.firstIndex(where: { $0.id == id }) {
-                        self.externalApps[index].size = sizeString
-                        self.externalApps[index].sizeBytes = bytes
-                    }
+                    return true
+                }
+                guard applied else { group.cancelAll(); return }
+                if nextIndex < misses.count {
+                    let index = nextIndex
+                    let app = misses[index].app
+                    group.addTask { (index, scanner.calculateDisplayedSize(for: app, isLocalEntry: isLocal)) }
+                    nextIndex += 1
                 }
             }
         }
         // 空列表或全部命中缓存时也必须结束进度；过期请求不能结束新一轮扫描。
         await MainActor.run {
-            guard self.isCurrentScan(request, isLocal: isLocal) else { return }
+            guard !Task.isCancelled, self.isCurrentScan(request, isLocal: isLocal) else { return }
             if !misses.isEmpty || request.forceSizeRefresh {
                 let updatedAt = Date()
                 self.sizeCacheUpdatedAt = updatedAt
@@ -2183,22 +2286,6 @@ struct ContentView: View {
         return ownerID == 0
     }
 
-    /// 将迁移失败的底层错误转成更友好的说明：权限类错误指向“受保护应用”原因，避免直接抛出晦涩的系统错误。
-    func friendlyMigrationFailure(appName: String, error: Error) -> String {
-        let nsError = error as NSError
-        let isPermissionDenied =
-            (nsError.domain == NSCocoaErrorDomain &&
-                (nsError.code == NSFileWriteNoPermissionError || nsError.code == NSFileReadNoPermissionError)) ||
-            (nsError.domain == NSPOSIXErrorDomain &&
-                (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
-        if isPermissionDenied {
-            return String(
-                format: "%@：权限不足，无法删除或替换本地副本。该应用可能来自 App Store 或归属系统（root）。建议在访达中手动迁移后，再用 AppPorts 创建链接。".localized,
-                appName
-            )
-        }
-        return "\(appName): \(error.localizedDescription)"
-    }
     
     /// Resolve all version choices before creating any candidate in this batch.
     /// The service revalidates the selected source and target under its lock.

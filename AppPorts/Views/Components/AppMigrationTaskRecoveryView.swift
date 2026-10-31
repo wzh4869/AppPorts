@@ -20,19 +20,19 @@ struct AppMigrationTaskRecoveryView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("处理应用迁移异常".localized).font(.headline)
-            Text(verbatim: job.message).font(.system(size: 12)).textSelection(.enabled)
+            Text("处理应用迁移异常".localized).font(AppDialogTypography.title)
+            Text(verbatim: job.message).font(AppDialogTypography.body).textSelection(.enabled)
             if loading {
                 ProgressView()
             } else {
                 if !message.isEmpty {
-                    Text(verbatim: message).font(.system(size: 12)).foregroundStyle(.secondary)
+                    Text(verbatim: message).font(AppDialogTypography.body).foregroundStyle(.secondary)
                 }
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         ForEach(records) { record in
                             VStack(alignment: .leading, spacing: 6) {
-                                Text(verbatim: record.appName).font(.subheadline)
+                                Text(verbatim: record.appName).font(AppDialogTypography.body)
                                 ForEach(record.pendingTasks) { task in
                                     HStack(alignment: .top) {
                                         VStack(alignment: .leading, spacing: 3) {
@@ -48,7 +48,7 @@ struct AppMigrationTaskRecoveryView: View {
                                             }
                                         }
                                     }
-                                    .font(.system(size: 12))
+                                    .font(AppDialogTypography.body)
                                 }
                                 Button("重试处理".localized) { retry(record) }
                                 HStack {
@@ -59,13 +59,13 @@ struct AppMigrationTaskRecoveryView: View {
                                         forcedOperation = .init(id: record.operationID, appName: record.appName, restore: false)
                                     }
                                 }
-                                .font(.system(size: 12))
+                                .font(AppDialogTypography.body)
                             }
                         }
                         ForEach(recordIssues) { issue in
                             VStack(alignment: .leading, spacing: 6) {
-                                Text(verbatim: issue.appName).font(.subheadline)
-                                Text(verbatim: issue.message).font(.system(size: 12))
+                                Text(verbatim: issue.appName).font(AppDialogTypography.body)
+                                Text(verbatim: issue.message).font(AppDialogTypography.body)
                                 if let id = UUID(uuidString: issue.url.deletingPathExtension().lastPathComponent) {
                                     Button("忽略错误结束任务".localized) {
                                         forcedOperation = .init(id: id, appName: issue.appName, restore: false)
@@ -83,6 +83,7 @@ struct AppMigrationTaskRecoveryView: View {
             }
         }
         .padding(20)
+        .appDialogTypography()
         .frame(width: 480)
         .task { await loadRecords() }
         .alert(item: $forcedOperation) { request in

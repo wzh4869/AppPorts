@@ -116,7 +116,7 @@ struct AppUpdateSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("发现新版本".localized).font(.headline)
+                Text("发现新版本".localized).font(AppDialogTypography.title)
                 Text(verbatim: update.version).foregroundStyle(.secondary)
                 Spacer()
             }
@@ -127,6 +127,7 @@ struct AppUpdateSheet: View {
         }
         .padding(20)
         .frame(width: 500, height: 400)
+        .appDialogTypography()
     }
 }
 

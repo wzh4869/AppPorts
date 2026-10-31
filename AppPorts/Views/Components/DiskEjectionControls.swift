@@ -4,11 +4,13 @@ import AppKit
 @MainActor
 struct DiskEjectionControls: View {
     let externalURL: URL?
+    let compact: Bool
     @ObservedObject private var controller = DiskEjectionController.shared
     @ObservedObject private var operations = AppOperationState.shared
 
-    init(externalURL: URL?, controller: DiskEjectionController? = nil) {
+    init(externalURL: URL?, controller: DiskEjectionController? = nil, compact: Bool = false) {
         self.externalURL = externalURL
+        self.compact = compact
         self._controller = ObservedObject(wrappedValue: controller ?? .shared)
     }
 
@@ -35,6 +37,7 @@ struct DiskEjectionControls: View {
             Image(systemName: controller.pauses.isEmpty ? "eject" : "pause.circle")
                 .frame(width: 26, height: 26)
         }
+        .menuIndicator(compact ? .hidden : .visible)
         .menuStyle(.borderlessButton)
         .fixedSize()
         .disabled(operations.isBusy || controller.isWorking)

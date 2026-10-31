@@ -30,7 +30,7 @@ import Foundation
 /// )
 /// ```
 ///
-/// - Note: 使用 Actor 确保所有扫描操作在后台线程串行执行，不阻塞 UI
+/// - Note: Actor 串行维护应用身份信息；只读大小统计可在后台独立并发，不阻塞 UI。
 actor AppScanner {
     private var infoPlistCache: [URL: [String: Any]] = [:]
 
@@ -80,7 +80,7 @@ actor AppScanner {
         let version: String?
     }
 
-    enum AppSizeMode {
+    enum AppSizeMode: Sendable {
         /// 解析到真实 bundle 或目录后计算内容体积。
         case logicalContent
         /// 保留本地入口结构，仅统计 symlink 或 wrapper 自身占用。
@@ -106,7 +106,8 @@ actor AppScanner {
     /// - Note:
     ///   - 普通目录：跳过内部符号链接，避免重复计算
     ///   - `.app` 包：会尽量解析入口 symlink 或 `Contents` 深层链接，得到真实体积
-    func calculateDirectorySize(at url: URL, mode: AppSizeMode = .logicalContent) -> Int64 {
+    nonisolated func calculateDirectorySize(at url: URL, mode: AppSizeMode = .logicalContent) -> Int64 {
+        guard !Task.isCancelled else { return 0 }
         let fileManager = FileManager.default
         var size: Int64 = 0
         let scanURL: URL
@@ -149,6 +150,7 @@ actor AppScanner {
 
         // 累加所有文件大小
         for case let fileURL as URL in enumerator {
+            guard !Task.isCancelled else { return size }
             fileCount += 1
             if fileCount > maxFileCount {
                 AppLogger.shared.logContext(
@@ -173,7 +175,7 @@ actor AppScanner {
     /// 根据显示场景选择应用体积计算方式。
     ///
     /// 本地列表中的“已链接”应用应显示本地入口大小，避免看起来像在本地保留了一整份实体副本。
-    func calculateDisplayedSize(for app: AppItem, isLocalEntry: Bool) -> Int64 {
+    nonisolated func calculateDisplayedSize(for app: AppItem, isLocalEntry: Bool) -> Int64 {
         let mode: AppSizeMode = (isLocalEntry && app.status == AppStatus.linked) ? .localPortal : .logicalContent
         return calculateDirectorySize(at: app.path, mode: mode)
     }
@@ -424,7 +426,7 @@ actor AppScanner {
     /// 支持两类结构：
     /// - `/Applications/Foo.app -> /somewhere/Foo.app`
     /// - 本地空壳 `.app`，其 `Contents`/`MacOS`/`Resources` 指向外部真实 bundle
-    private func resolveSizeCalculationURL(for url: URL) -> URL {
+    nonisolated private func resolveSizeCalculationURL(for url: URL) -> URL {
         // Folder Mirror：本地仅存 Stub/符号链接，体积按外部真实套件文件夹计算
         if let externalURL = AppMigrationService.folderMirrorExternalURL(at: url) {
             return externalURL
@@ -464,7 +466,7 @@ actor AppScanner {
         return url
     }
 
-    private func resolveSymlinkDestination(of url: URL) -> URL? {
+    nonisolated private func resolveSymlinkDestination(of url: URL) -> URL? {
         guard let rawPath = try? FileManager.default.destinationOfSymbolicLink(atPath: url.path) else {
             return nil
         }
@@ -618,7 +620,7 @@ actor AppScanner {
         return normalizedURL.hasPrefix(normalizedRoot + "/")
     }
 
-    private func enclosingAppBundleURL(for url: URL) -> URL {
+    nonisolated private func enclosingAppBundleURL(for url: URL) -> URL {
         var candidate = url.standardizedFileURL
 
         while true {
@@ -1280,9 +1282,6 @@ actor AppScanner {
         var signatureCheckUnavailable = false
     }
 
-    private func checkResignedStatus(bundleURL: URL?) -> Bool {
-        checkSigningStatus(bundleURL: bundleURL).isResigned
-    }
 
     /// 结合签名备份与当前签名判断：是否被 AppPorts 重签过、原始开发者签名是否已被替换。
     /// 只观察当前状态，恢复材料由显式的恢复事务清理。
@@ -1382,7 +1381,7 @@ actor AppScanner {
     }
 
     /// 解析已链接应用的外部真实路径（支持 whole-app symlink 和 stub portal）
-    private func resolveExternalRealApp(from localURL: URL) -> URL? {
+    nonisolated private func resolveExternalRealApp(from localURL: URL) -> URL? {
         // Whole-app symlink
         if let target = resolveSymlinkDestination(of: localURL) {
             return target

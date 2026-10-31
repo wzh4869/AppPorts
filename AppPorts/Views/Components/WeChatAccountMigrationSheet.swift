@@ -20,7 +20,7 @@ struct WeChatAccountMigrationSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text("微信账号迁移".localized).font(.headline)
+                Text("微信账号迁移".localized).font(AppDialogTypography.title)
                 Spacer()
                 Text(item.path.lastPathComponent).foregroundStyle(.secondary).lineLimit(1)
             }
@@ -33,13 +33,13 @@ struct WeChatAccountMigrationSheet: View {
                 if mode == .whole {
                     sizeRow("迁移整个账号目录".localized, value: sizing.total.formattedSize)
                     Text("外置盘未连接时，微信可能无法启动。".localized)
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(AppDialogTypography.body).foregroundStyle(.secondary)
                 } else {
                     sizeRow("迁移 msg + business".localized, value: sizing.media.formattedSize)
                     sizeRow("本地保留数据库等数据".localized,
                                    value: LocalizedByteCountFormatter.string(fromByteCount: sizing.retainedBytes))
                     Text("仅迁移媒体文件，数据库和配置留在本地。外置盘未连接时的文字消息可用性取决于微信版本。".localized)
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(AppDialogTypography.body).foregroundStyle(.secondary)
                 }
                 if mode == .whole ? !sizing.total.isComplete : !sizing.isComplete {
                     Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
@@ -51,7 +51,7 @@ struct WeChatAccountMigrationSheet: View {
                 HStack { ProgressView().controlSize(.small); Text("正在计算目录大小…".localized) }
             }
             Text("切换迁移方式前，需要先完整还原。其他微信数据不受此操作影响。".localized)
-                .font(.caption).foregroundStyle(.secondary)
+                .font(AppDialogTypography.body).foregroundStyle(.secondary)
             HStack {
                 Button("取消".localized) { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
@@ -61,6 +61,7 @@ struct WeChatAccountMigrationSheet: View {
             }
         }
         .padding(24)
+        .appDialogTypography()
         .frame(width: 480)
         .task {
             let account = item.path
