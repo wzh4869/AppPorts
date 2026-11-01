@@ -792,7 +792,7 @@ struct ContentView: View {
                 onImageReady: { externalDriveURL = $0 })
             Spacer(minLength: 8)
             SidebarStorageSection(directory: externalDriveURL,
-                showsTarget: true, apps: localApps)
+                showsTarget: true)
             Divider()
             HStack(spacing: 6) {
                 Button(action: { showAppStoreSettings = true }) {

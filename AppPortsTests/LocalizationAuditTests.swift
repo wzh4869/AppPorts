@@ -106,14 +106,12 @@ final class LocalizationAuditTests: XCTestCase {
     private let imageTranslationFallbackKeys: Set<String> = [
         "重试所有待处理项",
         "侧边栏宽度",
-        "已节省 %@ 堪比黄金的存储空间",
 
         "外观",
         "跟随系统",
         "浅色",
         "深色",
         "已迁出（估算）",
-        "橙色表示已确认在外部存储的数据大小估算；不等于实际释放空间。未连接、未完成或保留本地副本的数据不计入，色段最多占用当前空余部分。",
 
         "本机磁盘",
         "所在磁盘",
