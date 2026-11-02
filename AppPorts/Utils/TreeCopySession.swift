@@ -38,8 +38,12 @@ actor TreeCopySession {
     // downloaded file is opened or renamed, including our deletion rename.
     // Preserve those OS-managed tags in place; copying or comparing them as
     // application metadata causes false conflicts and can replay stale grants.
+    // Quarantine additionally marks a copied bundle as a newly downloaded app,
+    // which makes macOS 27 gate reads of the staged copy on its app
+    // assessment; a migration replica is not a download, so never replay it.
     // POSIX permissions, filesystem ACLs and application xattrs remain verified.
-    nonisolated private static let systemManagedAttributes: Set<String> = ["com.apple.provenance", "com.apple.macl"]
+    nonisolated private static let systemManagedAttributes: Set<String> =
+        ["com.apple.provenance", "com.apple.macl", "com.apple.quarantine"]
 
     // Finder display settings are disposable, not application data. Limit
     // this exception to ordinary, unshared files; never hide a same-name

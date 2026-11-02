@@ -497,7 +497,13 @@ final class AppTransferTransaction {
             for entry in snapshot.entries where entry.extendedAttributes["com.apple.quarantine"] != nil {
                 let url = entry.path.isEmpty ? candidate : candidate.appendingPathComponent(entry.path)
                 if removexattr(url.path, "com.apple.quarantine", XATTR_NOFOLLOW) != 0, errno != ENOATTR {
-                    throw Self.posix(url)
+                    // macOS 27 refuses quarantine removal even to the file's
+                    // creator, so a Sparkle-updated source can leave the marker
+                    // on the replica. The marker records an already-approved
+                    // download; keeping it is safe, failing the migration is not.
+                    guard errno == EACCES || errno == EPERM else { throw Self.posix(url) }
+                    AppLogger.shared.logContext("副本 quarantine 由系统保留",
+                        details: [("relative_path", entry.path), ("errno", String(errno))], level: "WARN")
                 }
             }
         }
