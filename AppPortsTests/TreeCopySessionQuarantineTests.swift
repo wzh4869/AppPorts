@@ -4,7 +4,7 @@ import XCTest
 
 final class TreeCopySessionQuarantineTests: XCTestCase {
     func testVerificationIgnoresQuarantineButKeepsApplicationAttributes() throws {
-        let base = URL(fileURLWithPath: "/Volumes/SanDisk/Projects/AppPorts/.tmp-diag")
+        let base = FileManager.default.temporaryDirectory
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         let root = base.appendingPathComponent("TreeCopyQuarantine-\(UUID().uuidString)", isDirectory: true)
         let source = root.appendingPathComponent("Source", isDirectory: true)

@@ -490,25 +490,8 @@ final class AppTransferTransaction {
                 try journal.save()
             }, progressHandler: progress)
         try checkpoint(.copied, journal)
-        // Preserve the historical application-only quarantine removal. It is
-        // the sole allowed metadata difference and never touches the source.
         let candidate = journal.record.candidateURL
-        if journal.record.direction == .migrate {
-            for entry in snapshot.entries where entry.extendedAttributes["com.apple.quarantine"] != nil {
-                let url = entry.path.isEmpty ? candidate : candidate.appendingPathComponent(entry.path)
-                if removexattr(url.path, "com.apple.quarantine", XATTR_NOFOLLOW) != 0, errno != ENOATTR {
-                    // macOS 27 refuses quarantine removal even to the file's
-                    // creator, so a Sparkle-updated source can leave the marker
-                    // on the replica. The marker records an already-approved
-                    // download; keeping it is safe, failing the migration is not.
-                    guard errno == EACCES || errno == EPERM else { throw Self.posix(url) }
-                    AppLogger.shared.logContext("副本 quarantine 由系统保留",
-                        details: [("relative_path", entry.path), ("errno", String(errno))], level: "WARN")
-                }
-            }
-        }
-        let expected = journal.record.direction == .migrate ? withoutQuarantine(snapshot) : snapshot
-        try TreeCopySession.verifyCopy(at: candidate, against: expected, profile: Self.copyProfile)
+        try TreeCopySession.verifyCopy(at: candidate, against: snapshot, profile: Self.copyProfile)
         try verifySignatures(journal.record, root: candidate)
         DataTransferSession.progress?.begin(.synchronizing,
             detail: "应用文件和签名已检查，正在等待存储设备确认写入完成。".localized)
@@ -1174,16 +1157,6 @@ final class AppTransferTransaction {
                 title: "正在检查新位置的应用签名".localized)
             guard try Self.signatureIsValid(at: url) else { throw Self.failure("目标应用未通过原有签名校验，原件已保留。".localized, at: url) }
         }
-    }
-
-    private func withoutQuarantine(_ snapshot: TreeCopySnapshot) -> TreeCopySnapshot {
-        TreeCopySnapshot(restoredRootOwnership: snapshot.restoredRootOwnership, ownershipCompatibility: snapshot.ownershipCompatibility,
-            entries: snapshot.entries.map { item in
-                .init(path: item.path, kind: item.kind, identity: item.identity, mode: item.mode, uid: item.uid, gid: item.gid,
-                    flags: item.flags, birthTime: item.birthTime, modificationTime: item.modificationTime,
-                    extendedAttributes: item.extendedAttributes.filter { $0.key != "com.apple.quarantine" }, resourceFork: item.resourceFork, acl: item.acl,
-                    size: item.size, digest: item.digest, linkTarget: item.linkTarget, hardlinkGroup: item.hardlinkGroup)
-            }, excludedRootEntries: snapshot.excludedRootEntries)
     }
 
     private func handle(_ error: Error, journal: Journal) throws -> AppTransferResult {

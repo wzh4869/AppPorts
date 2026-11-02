@@ -21,11 +21,11 @@ hardened 进程对该副本的 open、pread、fgetxattr、
 ## Decision
 
 - `TreeCopySession.systemManagedAttributes` 增加 `com.apple.quarantine`：
-  清单不记录、比较不参与、`applyMetadata` 不回放。与该文件对
-  provenance/macl 的既有处理及 FileCopier 的 `removeQuarantine` 语义对齐。
-- `prepareCandidate` 的移除循环对 EACCES/EPERM 降级为 WARN 日志并继续，
-  仅其他错误仍然失败。副本保留已获系统批准（0082）的 quarantine 标记
-  不影响启动与签名验证，为此终止迁移得不偿失。
+  清单不记录、比较不参与、`applyMetadata` 不回放，也不主动删除目标上的标记。
+  这与该文件对 provenance/macl 的既有处理一致，适用于应用、普通数据和容器复制。
+- `prepareCandidate` 直接使用复制器返回的清单校验副本。清单已不含 quarantine，
+  因此删除标记的循环没有处理对象，`withoutQuarantine` 转换也无作用，两者均移除。
+  副本校验、原有签名校验、同步、记账、入口切换与恢复清理流程保持不变。
 
 ## Alternatives considered
 
@@ -38,14 +38,28 @@ hardened 进程对该副本的 open、pread、fgetxattr、
 
 ## Consequences
 
-外置盘上的迁移副本此后可能携带 quarantine 标记，与 QQ/Edge 等
-历史副本的"无标记"状态不同。该标记记录的是源应用已被批准的来源，
-Gatekeeper 对副本按已批准处理；若 macOS 未来对无管理授权进程读取
-此类副本收紧，需要重新评估（当前同证书 hardened 探针实测读取正常）。
-清理路径对旧版清单（记录过 quarantine）与过滤后扫描的比较仍会报
-extended_attributes 差异并保留副本，属安全行为，由既有重试消化。
+迁移副本可能携带系统附加的 quarantine 标记，AppPorts 不保证复制源标记，
+也不主动清除目标标记；是否允许打开仍由 macOS 判断。下列两款应用的实机结果
+由 PR 作者提供，不能据此断言任意来源、任意标记状态的文件均已获系统批准。
+旧版清单即使记录过 quarantine，比较时也通过 `portableAttributes` 过滤，
+不会仅因这个标记而报 extended_attributes 差异。其他要求保留的属性、内容、
+身份或权限发生差异时，既有校验仍会拒绝继续或保留待清理副本。
 
 ## Verification
+
+### 本地清理验证
+
+- macOS 27.0.1、Xcode 27.0：arm64/x86_64 Release `xcodebuild clean build` 通过。
+- 独立测试宿主执行 `AppMigrationServiceTests` 61 项、`AppTransferTransactionTests` 76 项、
+  `ContainerVolumeMigratorTests` 93 项、`DataDirMoverTests` 50 项及 quarantine 回归 1 项，
+  共 281 项通过（含参数化用例共执行 325 次），没有失败或跳过。
+- `MigrationSigningIntegrationTests` 使用外置 APFS 卷上的独立 UUID 样本目录，3 项通过：
+  签名应用迁移和元数据保留、拒绝重签沙盒应用、应用及聊天数据库/附件往返；迁移后新增
+  数据库记录在迁回后仍存在。样本不使用已安装应用或真实聊天数据。
+- 本次未跑全量测试，未实测真实容器挂载/卸载，也未复现作者 macOS 27.2 的真实应用场景。
+  原始构建和测试结果位于 `/tmp/AppPorts-PR103-cleanup.QujOj8/`。
+
+### PR 作者提供的验证
 
 - `AppPortsTests/TreeCopySessionQuarantineTests.swift`：清单注入
   quarantine 后 `verifyCopy` 通过，注入普通应用属性仍失败，防止修复
