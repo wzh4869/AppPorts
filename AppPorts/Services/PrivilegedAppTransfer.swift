@@ -253,6 +253,8 @@ enum AppPortsEntryPoint {
     static func main() {
         if PrivilegedAppTransfer.runIfRequested() { return }
         if PrivilegedDataCleanup.runIfRequested() { return }
+        // Keep the probe's JSON stdout free of SwiftUI initialization and writer-registration logs.
+        AppLibraryImageFileAccess.runIfRequested()
         AppMoverApp.main()
     }
 }

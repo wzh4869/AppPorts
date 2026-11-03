@@ -143,14 +143,17 @@ private actor ImageAttachFixture: ShellCommandRunning {
     private var attached = false
     private var failPostAttachRead: Bool
     private let allowMount: Bool
+    private let contentHint: String
     private(set) var attachCount = 0
     private(set) var detached = false
     private(set) var mounted = false
-    init(image: String, initiallyAttached: Bool = false, failPostAttachRead: Bool = false, allowMount: Bool = false) {
+    init(image: String, initiallyAttached: Bool = false, failPostAttachRead: Bool = false, allowMount: Bool = false,
+         contentHint: String = "Apple_APFS") {
         self.image = image
         attached = initiallyAttached
         self.failPostAttachRead = failPostAttachRead
         self.allowMount = allowMount
+        self.contentHint = contentHint
     }
 
     func run(executable: String, arguments: [String], timeout: TimeInterval) async throws -> ShellCommandResult {
@@ -162,10 +165,9 @@ private actor ImageAttachFixture: ShellCommandRunning {
             }
             value = ["images": attached ? [["image-path": image, "system-entities": [
                 ["dev-entry": "/dev/disk99"],
-                ["dev-entry": "/dev/disk99s1", "content-hint": "Apple_APFS"]]]] : []]
+                ["dev-entry": "/dev/disk99s1", "content-hint": contentHint]]]] : []]
         } else if arguments == ["apfs", "list", "-plist"] {
-            var volume = ["DeviceIdentifier": "disk100s1"]
-            if mounted { volume["MountPoint"] = "/Volumes/Apps" }
+            let volume = ["DeviceIdentifier": "disk100s1"]
             value = ["Containers": [["PhysicalStores": [["DeviceIdentifier": "disk99s1"]], "Volumes": [volume]]]]
         } else if arguments == ["image", "attach", "--help"] {
             return ShellCommandResult(status: 0, standardOutput: Data("--noMount".utf8), standardError: Data(), timedOut: false)
@@ -175,7 +177,8 @@ private actor ImageAttachFixture: ShellCommandRunning {
             attachCount += 1
         } else if arguments.first == "info", arguments.count == 3 {
             value = arguments.last == "/dev/disk100s1"
-                ? ["FilesystemType": "apfs", "VolumeUUID": uuid, "WritableVolume": true] : [:]
+                ? ["FilesystemType": "apfs", "VolumeUUID": uuid, "WritableMedia": true,
+                   "WritableVolume": mounted] : [:]
             if mounted, arguments.last == "/dev/disk100s1" { value["MountPoint"] = "/Volumes/Apps" }
         } else if arguments == ["detach", "/dev/disk99"] {
             detached = true
@@ -183,7 +186,7 @@ private actor ImageAttachFixture: ShellCommandRunning {
         } else if arguments.first == "mount" {
             mounted = true
             #expect(allowMount, "An unverified image must never be mounted")
-            #expect(arguments == ["mount", "-mountPoint", "/Volumes/Apps", "/dev/disk100s1"])
+            #expect(arguments == ["mount", "/dev/disk100s1"])
         } else {
             Issue.record("Unexpected command")
             throw CocoaError(.featureUnsupported)
@@ -278,19 +281,24 @@ extension AppLibraryImageRecoveryRegressionTests {
         #expect(await !runner.detached)
     }
 
-    @Test func existingUnmountedImageWithoutSavedUUIDIsNotAdopted() async {
+    @Test(arguments: ["Apple_APFS", "7C3457EF-0000-11AA-AA11-00306543ECAC"])
+    func selectedUnmountedImageWithoutSavedUUIDIsMounted(contentHint: String) async throws {
         let record = AppLibraryImageService.Record(imageURL: URL(fileURLWithPath: "/fixture/Apps.sparsebundle"))
-        let runner = ImageAttachFixture(image: record.imagePath, initiallyAttached: true)
+        let runner = ImageAttachFixture(image: record.imagePath, initiallyAttached: true, allowMount: true,
+                                       contentHint: contentHint)
         let files = AppLibraryImageFileAccess(inspect: { request in
-            guard case .source = request else { throw CocoaError(.featureUnsupported) }
-            return .init(value: true)
+            switch request {
+            case .source: return .init(value: true)
+            case .occupied: return .init(value: false)
+            case .capture(let record): return .init(record: record)
+            default: throw CocoaError(.featureUnsupported)
+            }
         })
-        do {
-            _ = try await AppLibraryImageService(runner: runner, files: files).mount(record)
-            Issue.record("An unknown attachment must not be adopted")
-        } catch { }
+        let uuid = runner.uuid
+        let result = try await AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid }, files: files).mount(record)
+        #expect(result.record.volumeUUID == uuid)
         #expect(await runner.attachCount == 0)
-        #expect(await !runner.mounted)
+        #expect(await runner.mounted)
         #expect(await !runner.detached)
     }
 

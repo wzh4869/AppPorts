@@ -102,11 +102,8 @@ struct AppLibraryImageService: Sendable {
         }
         guard let devices, !devices.isEmpty else { throw identityFailure() }
         do {
-            let candidate = try await identifiedVolume(devices, expectedUUID: record.volumeUUID)
-            // A previous attempt may have attached successfully before its
-            // inventory read failed. Resume only with a persisted APFS identity;
-            // never attach a second writer or adopt an unknown unmounted image.
-            guard !wasAttached || candidate.mount != nil || record.volumeUUID != nil else { throw identityFailure() }
+            let candidate = try await identifiedVolume(devices, expectedUUID: record.volumeUUID,
+                                                       preferredMount: record.mountPath)
             if let existing = candidate.mount, record.libraryPath != nil,
                existing != record.mountPath { throw identityFailure() }
             var updated = try await files.captured(record)
@@ -115,11 +112,14 @@ struct AppLibraryImageService: Sendable {
             if candidate.mount == nil {
                 try await requireVacantMount(record.mountPath)
                 try Task.checkCancellation()
-                _ = try await command("/usr/sbin/diskutil", ["mount", "-mountPoint", record.mountPath, candidate.device], timeout: 600)
+                // Let Disk Arbitration create the mount directory. -mountPoint
+                // requires an existing directory, conflicting with vacancy checks.
+                _ = try await command("/usr/sbin/diskutil", ["mount", candidate.device], timeout: 600)
             }
             guard let entries = try await attachedVolumes(for: image) else { throw identityFailure() }
             let verified = try await verifiedVolume(entries, expectedUUID: candidate.uuid)
-            guard candidate.mount != nil || verified.url.path == record.mountPath else { throw identityFailure() }
+            guard record.libraryPath == nil || verified.url.path == record.mountPath else { throw identityFailure() }
+            updated.mountPath = verified.url.path
             updated.volumeUUID = verified.uuid
             updated.libraryPath = verified.url.path
             AppLogger.shared.logContext("应用库映像已挂载并核对身份",
@@ -158,7 +158,8 @@ struct AppLibraryImageService: Sendable {
         guard var devices = try Self.attachedDevices(data: await command("/usr/bin/hdiutil", ["info", "-plist"], readOnly: true), image: image) else { return nil }
         // Unmounted APFS images may expose only the physical store in hdiutil.
         // Resolve synthesized volumes through that store, never by volume name.
-        for store in devices where store.contentHint == "Apple_APFS" {
+        for store in devices where store.contentHint == "Apple_APFS"
+            || store.contentHint?.caseInsensitiveCompare("7C3457EF-0000-11AA-AA11-00306543ECAC") == .orderedSame {
             let data = try await command("/usr/sbin/diskutil", ["apfs", "list", "-plist"], readOnly: true)
             guard let plist = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
                   let containers = plist["Containers"] as? [[String: Any]] else { throw identityFailure() }
@@ -188,7 +189,7 @@ struct AppLibraryImageService: Sendable {
         return devices
     }
 
-    private func identifiedVolume(_ devices: [ImageDevice], expectedUUID: String?) async throws -> (device: String, uuid: String, mount: String?) {
+    private func identifiedVolume(_ devices: [ImageDevice], expectedUUID: String?, preferredMount: String) async throws -> (device: String, uuid: String, mount: String?) {
         var matches: [(String, String, String?)] = []
         for entry in devices {
             guard entry.device.hasPrefix("/dev/disk") else { throw identityFailure() }
@@ -197,12 +198,20 @@ struct AppLibraryImageService: Sendable {
             guard info["FilesystemType"] as? String == "apfs" else { continue }
             guard let uuid = info["VolumeUUID"] as? String, UUID(uuidString: uuid) != nil else { throw identityFailure() }
             if let expectedUUID, uuid.caseInsensitiveCompare(expectedUUID) != .orderedSame { continue }
-            guard info["WritableVolume"] as? Bool != false else { throw identityFailure() }
             let point = (info["MountPoint"] as? String).flatMap { $0.isEmpty ? nil : $0 }
-            guard point == entry.mount, point == nil || point!.hasPrefix("/Volumes/") else { throw identityFailure() }
+            // An unmounted APFS volume reports WritableVolume=false even on
+            // writable media. Verify volume writability after mounting it.
+            guard point == nil ? info["WritableMedia"] as? Bool == true
+                : info["WritableVolume"] as? Bool == true else { continue }
+            // APFS inventories may omit MountPoint; diskutil info is the
+            // current source of truth for each device belonging to this image.
+            guard point == nil || point!.hasPrefix("/Volumes/") else { continue }
             matches.append((entry.device, uuid, point))
         }
-        guard matches.count == 1, let result = matches.first else { throw identityFailure() }
+        // A selected image may contain several usable volumes. Prefer the
+        // existing library mount, then keep device order stable across reads.
+        let ordered = matches.sorted { $0.0.localizedStandardCompare($1.0) == .orderedAscending }
+        guard let result = ordered.first(where: { $0.2 == preferredMount }) ?? ordered.first else { throw identityFailure() }
         return result
     }
 
@@ -216,12 +225,22 @@ struct AppLibraryImageService: Sendable {
         _ = try await command("/usr/bin/hdiutil", ["detach", root.device], timeout: 30)
     }
 
-    /// nil means detached. Unmounted attachments are never attached a second
-    /// time; only a verified persisted APFS identity allows mounting in place.
+    /// nil means detached. Existing attachments are reused without attaching a second writer.
     private func attachedVolumes(for image: URL) async throws -> [[String: String]]? {
-        try await imageDevices(for: image)?.compactMap { entry in
-            entry.mount.map { ["device": entry.device, "mount": $0] }
+        guard let devices = try await imageDevices(for: image) else { return nil }
+        var entries: [[String: String]] = []
+        for entry in devices {
+            var point = entry.mount
+            if point == nil {
+                let data = try await command("/usr/sbin/diskutil", ["info", "-plist", entry.device], readOnly: true)
+                guard let info = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
+                    throw identityFailure()
+                }
+                point = info["MountPoint"] as? String
+            }
+            if let point, !point.isEmpty { entries.append(["device": entry.device, "mount": point]) }
         }
+        return entries
     }
 
     static func attachedVolumes(data: Data, image: URL) throws -> [[String: String]]? {
@@ -257,21 +276,21 @@ struct AppLibraryImageService: Sendable {
         var candidates: [(URL, String)] = []
         for entry in entries {
             guard let device = entry["device"], let point = entry["mount"],
-                  point.hasPrefix("/Volumes/"), device.hasPrefix("/dev/disk") else { throw identityFailure() }
+                  device.hasPrefix("/dev/disk") else { throw identityFailure() }
             let data = try await command("/usr/sbin/diskutil", ["info", "-plist", device], readOnly: true)
             guard let info = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
             else { throw identityFailure() }
             guard info["FilesystemType"] as? String == "apfs" else { continue }
-            guard let uuid = info["VolumeUUID"] as? String, UUID(uuidString: uuid) != nil,
-                  info["MountPoint"] as? String == point,
-                  info["WritableVolume"] as? Bool == true else { throw identityFailure() }
+            guard let uuid = info["VolumeUUID"] as? String, UUID(uuidString: uuid) != nil else { throw identityFailure() }
             if let expectedUUID, uuid.caseInsensitiveCompare(expectedUUID) != .orderedSame { continue }
+            guard point.hasPrefix("/Volumes/"), info["MountPoint"] as? String == point,
+                  info["WritableVolume"] as? Bool == true else { throw identityFailure() }
             let url = URL(fileURLWithPath: point)
             guard try await currentMountedUUID(at: url)?.caseInsensitiveCompare(uuid) == .orderedSame else { throw identityFailure() }
             candidates.append((url, uuid))
         }
-        guard candidates.count == 1 else { throw identityFailure() }
-        return candidates[0]
+        guard let candidate = candidates.first else { throw identityFailure() }
+        return candidate
     }
 
     func currentMountedUUID(at url: URL) async throws -> String? {
@@ -279,8 +298,10 @@ struct AppLibraryImageService: Sendable {
         return try await files.mountedUUID(at: url)
     }
 
-    private func identityFailure() -> Failure {
-        Failure(message: "无法确认映像中的唯一可写 APFS 磁盘，未更改迁移目标。".localized)
+    private func identityFailure(line: UInt = #line) -> Failure {
+        AppLogger.shared.logContext("应用库映像核对失败",
+            details: [("check_line", String(line))], level: "ERROR")
+        return Failure(message: "映像操作未完成，已有文件会保留。".localized)
     }
 
     private func command(_ executable: String, _ arguments: [String], timeout: TimeInterval = 30,
