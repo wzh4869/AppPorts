@@ -61,7 +61,8 @@ struct AppLibraryImageTests {
         defer { try? FileManager.default.removeItem(at: image) }
         let uuid = UUID().uuidString
         let runner = MountedImageRunner(image: image, uuid: uuid, writable: writable)
-        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid })
+        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid },
+            files: AppLibraryImageFileAccess(inspect: { try AppLibraryImageFileAccess.evaluate($0) }))
         let record = AppLibraryImageService.Record(imageURL: image)
         do {
             let result = try await service.mount(record)
@@ -80,7 +81,8 @@ struct AppLibraryImageTests {
         defer { try? FileManager.default.removeItem(at: image) }
         let uuid = UUID().uuidString
         let runner = MountedImageRunner(image: image, uuid: uuid, writable: true)
-        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid })
+        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid },
+            files: AppLibraryImageFileAccess(inspect: { try AppLibraryImageFileAccess.evaluate($0) }))
         var record = AppLibraryImageService.Record(imageURL: image)
         record.volumeUUID = UUID().uuidString
         await #expect(throws: (any Error).self) { try await service.mount(record) }

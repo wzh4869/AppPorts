@@ -339,6 +339,7 @@ struct ContentView: View {
                 UserDefaults.standard.removeObject(forKey: "ExternalDrivePath")
                 stopMonitoringExternal()
             }
+            AppLibraryAgentSync.shared.selectionDidChange()
             scanBothAppsAtomic()
 
             // macOS >= 15.1: 检查外部磁盘的 Applications 目录
