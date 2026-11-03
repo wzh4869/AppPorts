@@ -173,6 +173,44 @@ enum AppLibraryImageRecovery {
         defaults.synchronize()
     }
 
+    /// Launch preparation is explicit to one image and does not change the selected library.
+    static func restoreForLaunch(_ original: AppLibraryImageService.Record,
+                                 service: AppLibraryImageService,
+                                 ejection: DiskEjectionPauseStore.Snapshot) async throws -> AppLibraryImageService.Record {
+        guard !ejection.blocks(volumeUUIDs: [original.backingVolumeUUID], paths: [original.imagePath]) else {
+            throw DiskEjectionError.paused
+        }
+        var record = original
+        if let address = record.networkShareURL {
+            guard let remote = URL(string: address), sanitizedShareURL(remote)?.absoluteString == address,
+                  let relative = record.imageRelativePath, validRelativePath(relative) else { throw CocoaError(.fileReadCorruptFile) }
+            var root = try await service.files.mountedShare(for: remote)
+            if root == nil {
+                try await connectShare(remote)
+                root = try await service.files.mountedShare(for: remote)
+            }
+            guard let root else { throw CocoaError(.fileNoSuchFile) }
+            record.imagePath = root.appendingPathComponent(relative).path
+        }
+        record = try await service.files.resolved(record)
+        guard !ejection.blocks(volumeUUIDs: [record.backingVolumeUUID], paths: [record.imagePath]) else { throw DiskEjectionError.paused }
+        if record.imagePath != original.imagePath {
+            let inventory = try await AppLibraryImageFileAccess.readCommand(runner: service.runner,
+                executable: "/usr/bin/hdiutil", arguments: ["info", "-plist"], timeout: 10)
+            guard inventory.status == 0, !inventory.timedOut, !inventory.outputWasTruncated,
+                  try AppLibraryImageService.attachedVolumes(data: inventory.standardOutput,
+                    image: URL(fileURLWithPath: original.imagePath)) == nil else { throw CocoaError(.fileWriteFileExists) }
+        }
+        let expected = original.libraryPath ?? original.mountPath
+        if let uuid = original.volumeUUID,
+           try await service.currentMountedUUID(at: URL(fileURLWithPath: expected))?.caseInsensitiveCompare(uuid) == .orderedSame {
+            return record
+        }
+        let mounted = try await service.mount(record)
+        guard mounted.libraryURL.path == expected else { throw CocoaError(.fileWriteFileExists) }
+        return mounted.record
+    }
+
     private static func connectShare(_ remote: URL) async throws {
         guard let executable = Bundle.main.executableURL else { throw CocoaError(.executableNotLoadable) }
         let result = try await ProcessCommandRunner().run(executable: executable.path,

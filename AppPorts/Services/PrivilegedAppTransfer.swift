@@ -255,6 +255,8 @@ enum AppPortsEntryPoint {
         if PrivilegedDataCleanup.runIfRequested() { return }
         // Keep the probe's JSON stdout free of SwiftUI initialization and writer-registration logs.
         AppLibraryImageFileAccess.runIfRequested()
+        AppLibraryImageRecovery.runNetworkMountIfRequested()
+        PortalImageLaunchPreparation.runIfRequested()
         AppMoverApp.main()
     }
 }

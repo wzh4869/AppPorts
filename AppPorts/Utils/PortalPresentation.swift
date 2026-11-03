@@ -3,7 +3,7 @@ import Foundation
 /// Produces only the display metadata of a macOS portal. Call on a private staging
 /// bundle, then sign and install the bundle before registering it with the system.
 enum PortalPresentation {
-    static let formatVersion = 7
+    static let formatVersion = 8
     static let versionKey = "AppPortsPortalFormatVersion"
 
     static func needsRefresh(local: [String: Any], external: [String: Any]) -> Bool {
@@ -143,6 +143,13 @@ enum PortalPresentation {
             }
         }
         plist["AppPortsTargetBundleIdentifier"] = plist["CFBundleIdentifier"]
+        plist[PortalImageLaunchPreparation.helperKey] = Bundle.main.executableURL?.path
+        plist.removeValue(forKey: PortalImageLaunchPreparation.imageKey)
+        if let image = AppLibraryImageRecovery.loadRecord(),
+           PortalImageLaunchPreparation.contains(externalContents.deletingLastPathComponent().path,
+                                                 in: image.libraryPath ?? image.mountPath) {
+            plist[PortalImageLaunchPreparation.imageKey] = try JSONEncoder().encode(image)
+        }
         if let uuid = try? externalContents.deletingLastPathComponent().resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString {
             plist["AppPortsTargetVolumeUUID"] = uuid
         }

@@ -135,7 +135,6 @@ struct AppMoverApp: App {
             AppLogger.shared.logError("当前 AppPorts 未取得写入资格", error: error,
                 errorCode: "WRITER-ADMISSION-FAILED")
         }
-        AppLibraryImageRecovery.runNetworkMountIfRequested()
         // 以后台挂载代理身份启动时不创建任何窗口，重挂载完成后直接退出。
         if ContainerMountAgentInstaller.isRunningAsAgent {
             ContainerMountAgentInstaller.runAgentAndExit()

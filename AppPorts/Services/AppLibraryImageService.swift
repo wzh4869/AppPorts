@@ -215,6 +215,20 @@ struct AppLibraryImageService: Sendable {
         return result
     }
 
+    /// Scope launch-time data mounts to devices actually backed by this image.
+    func volumeUUIDs(in record: Record) async throws -> Set<String> {
+        guard let devices = try await imageDevices(for: URL(fileURLWithPath: record.imagePath)) else { throw identityFailure() }
+        var result = Set<String>()
+        for entry in devices {
+            let data = try await command("/usr/sbin/diskutil", ["info", "-plist", entry.device], readOnly: true)
+            guard let info = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { throw identityFailure() }
+            if info["FilesystemType"] as? String == "apfs", let uuid = info["VolumeUUID"] as? String {
+                result.insert(uuid.uppercased())
+            }
+        }
+        return result
+    }
+
     private func detachOwnedImage(_ image: URL, devices: [ImageDevice]) async throws {
         guard let current = try await imageDevices(for: image) else { return }
         guard Set(current.map(\.device)) == Set(devices.map(\.device)),
