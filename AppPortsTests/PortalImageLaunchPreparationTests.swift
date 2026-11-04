@@ -23,6 +23,55 @@ struct PortalImageLaunchPreparationTests {
             volumeName: "Video Data", externalRootPath: root, createdAt: Date())
     }
 
+    @Test func ordinaryPortalDropsHelperEvenWhenAnotherApplicationUsesAnImage() throws {
+        let metadata = try PortalImageLaunchPreparation.metadata(targetPath: "/Volumes/Physical/Video.app",
+            identifier: identifier, previous: [PortalImageLaunchPreparation.helperKey: "/old/AppPorts"],
+            current: image(), mounts: [mount(identifier: "org.example.other")], links: [],
+            helperURL: URL(fileURLWithPath: "/temporary/AppPorts"))
+        #expect(metadata == .init())
+        var info: [String: Any] = [PortalImageLaunchPreparation.helperKey: "/old/AppPorts"]
+        #expect(!metadata.matches(info))
+        try metadata.apply(to: &info)
+        #expect(info[PortalImageLaunchPreparation.helperKey] == nil)
+        #expect(metadata.matches(info))
+    }
+
+    @Test func dataMigrationAddsPreparationAndRestoreRemovesIt() throws {
+        let record = image()
+        let helper = URL(fileURLWithPath: "/Applications/AppPorts.app/Contents/MacOS/AppPorts")
+        let prepared = try PortalImageLaunchPreparation.metadata(targetPath: "/Volumes/Physical/Video.app",
+            identifier: identifier, previous: [:], current: record, mounts: [mount()], links: [], helperURL: helper)
+        #expect(prepared.helperPath == helper.path)
+        #expect(prepared.image == nil)
+        var info: [String: Any] = [:]
+        #expect(!prepared.matches(info))
+        try prepared.apply(to: &info)
+        #expect(prepared.matches(info))
+        let restored = try PortalImageLaunchPreparation.metadata(targetPath: "/Volumes/Physical/Video.app",
+            identifier: identifier, previous: info, current: record, mounts: [], links: [], helperURL: helper)
+        #expect(restored == .init())
+        #expect(!restored.matches(info))
+    }
+
+    @Test func existingApplicationImageSurvivesSelectionChanges() throws {
+        let oldImage = image()
+        var previous: [String: Any] = [:]
+        try PortalImageLaunchPreparation.Metadata(helperPath: "/Applications/AppPorts.app/Contents/MacOS/AppPorts",
+            image: oldImage).apply(to: &previous)
+        let metadata = try PortalImageLaunchPreparation.metadata(targetPath: "/Volumes/Apps/Video.app",
+            identifier: identifier, previous: previous, current: nil, mounts: [], links: [],
+            helperURL: URL(fileURLWithPath: "/Applications/AppPorts.app/Contents/MacOS/AppPorts"))
+        #expect(metadata.image == oldImage)
+        #expect(metadata.matches(previous))
+    }
+
+    @Test func temporaryBuildCannotPublishAnImageHelperPath() {
+        #expect(throws: AppInstallationLocation.Failure.self) {
+            try PortalImageLaunchPreparation.metadata(targetPath: "/Volumes/Apps/Video.app", identifier: identifier,
+                previous: [:], current: image(), mounts: [], links: [], helperURL: URL(fileURLWithPath: "/tmp/AppPorts"))
+        }
+    }
+
     @Test func physicalStorageAndUnrelatedApplicationsDoNotProduceMountPlans() {
         let record = image()
         let request = PortalImageLaunchPreparation.Request(identifier: identifier,

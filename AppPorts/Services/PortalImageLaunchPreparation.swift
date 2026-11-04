@@ -19,6 +19,47 @@ enum PortalImageLaunchPreparation {
         let links: [ManagedDataLinkRecord]
     }
 
+    struct Metadata: Equatable {
+        var helperPath: String?
+        var image: AppLibraryImageService.Record?
+
+        func matches(_ info: [String: Any]) -> Bool {
+            guard info[helperKey] as? String == helperPath else { return false }
+            guard let data = info[imageKey] as? Data else { return image == nil }
+            return (try? JSONDecoder().decode(AppLibraryImageService.Record.self, from: data)) == image
+        }
+
+        func apply(to info: inout [String: Any]) throws {
+            info[helperKey] = helperPath
+            info[imageKey] = try image.map { try JSONEncoder().encode($0) }
+        }
+    }
+
+    static func metadata(targetPath: String, identifier: String, previous: [String: Any]) throws -> Metadata {
+        let store = ContainerMountStore.shared
+        return try metadata(targetPath: targetPath, identifier: identifier, previous: previous,
+            current: AppLibraryImageRecovery.loadRecord(), mounts: store.recordsStrict(), links: store.managedLinks(),
+            helperURL: Bundle.main.executableURL ?? Bundle.main.bundleURL)
+    }
+
+    static func metadata(targetPath: String, identifier: String, previous: [String: Any],
+                         current: AppLibraryImageService.Record?, mounts: [ContainerMountRecord],
+                         links: [ManagedDataLinkRecord], helperURL: URL) throws -> Metadata {
+        let saved = try (previous[imageKey] as? Data).map {
+            try JSONDecoder().decode(AppLibraryImageService.Record.self, from: $0)
+        }
+        let appImage = [current, saved].compactMap { $0 }.first {
+            contains(targetPath, in: $0.libraryPath ?? $0.mountPath)
+        }
+        let request = Request(identifier: identifier, targetPath: targetPath, image: appImage)
+        guard !plans(for: request, current: current, mounts: mounts, links: links).isEmpty else {
+            return Metadata()
+        }
+        // Browsing from a debug build must not replace a working portal with a temporary helper path.
+        try AppInstallationLocation.require(helperURL)
+        return Metadata(helperPath: helperURL.path, image: appImage)
+    }
+
     static func contains(_ path: String, in root: String) -> Bool {
         let parent = URL(fileURLWithPath: root).standardizedFileURL.pathComponents
         let child = URL(fileURLWithPath: path).standardizedFileURL.pathComponents

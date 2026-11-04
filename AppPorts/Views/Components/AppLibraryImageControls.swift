@@ -23,6 +23,7 @@ final class AppLibraryImageController: ObservableObject {
     }
 
     func create(directory: URL, name: String, capacityGiB: Int, onReady: @escaping (URL) -> Void) {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         perform(onReady: onReady) {
             let record = try await self.service.create(in: directory, name: name, capacityGiB: capacityGiB)
             // Save before attachment so a failed mount can be retried without
@@ -33,6 +34,7 @@ final class AppLibraryImageController: ObservableObject {
     }
 
     func open(_ url: URL, onReady: @escaping (URL) -> Void) {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         perform(onReady: onReady) {
             self.record.flatMap { $0.imagePath == url.standardizedFileURL.path ? $0 : nil }
                 ?? AppLibraryImageService.Record(imageURL: url)
@@ -40,10 +42,12 @@ final class AppLibraryImageController: ObservableObject {
     }
 
     func remount(onReady: @escaping (URL) -> Void) {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         perform(onReady: onReady) { self.record }
     }
 
     func restoreIfSelected(onReady: @escaping (URL) -> Void) {
+        guard AppInstallationLocation.isAllowed() else { return }
         reloadRecord()
         guard !attemptedRestore, AppLibraryImageRecovery.selectedRecord(defaults: defaults) != nil,
               !AppOperationState.shared.isBusy else { return }
@@ -74,6 +78,7 @@ final class AppLibraryImageController: ObservableObject {
             }
             defer { lock.release() }
             do {
+                try AppInstallationLocation.require()
                 // The agent may have rebased or upgraded the record while we waited.
                 self.reloadRecord()
                 guard let record = try await prepare() else { return }
@@ -115,7 +120,10 @@ struct AppLibraryImageControls: View {
                 Button(hasLocation ? "更换位置".localized : "选择文件夹".localized, action: onChooseLocation)
                 Divider()
             }
-            Button("创建 APFS 映像".localized) { showsCreation = true }
+            Button("创建 APFS 映像".localized) {
+                guard AppInstallationLocation.confirmIfNeeded() else { return }
+                showsCreation = true
+            }
             Button("打开已有映像…".localized) { openImage() }
             if controller.record != nil {
                 Button("重新挂载映像".localized) { controller.remount(onReady: onReady) }
@@ -158,6 +166,7 @@ struct AppLibraryImageControls: View {
     }
 
     private func openImage() {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         let panel = NSOpenPanel()
         panel.canChooseFiles = true
         panel.canChooseDirectories = false

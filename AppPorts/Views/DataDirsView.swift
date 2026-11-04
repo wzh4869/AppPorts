@@ -1482,6 +1482,7 @@ struct DataDirsView: View {
     // MARK: - 迁移 / 还原 确认
 
     private func askMigrate(_ item: DataDirItem) {
+        if selectedTab == .appDirs, !AppInstallationLocation.confirmIfNeeded() { return }
         if !item.weChatSplitMembers.isEmpty {
             weChatMigrationMode = .split
             checkMountMigrationDestination(for: item, destination: externalDriveURL)
@@ -1740,6 +1741,7 @@ struct DataDirsView: View {
 
     private func performMigrate(_ item: DataDirItem, to dest: URL, associatedApp: AppItem? = nil) {
         let app = associatedApp ?? (selectedTab == .appDirs ? selectedApp : nil)
+        if app != nil, !AppInstallationLocation.confirmIfNeeded() { return }
         let preparation = appDataPreparation(for: app, destination: dest)
         submitDataTask(item, title: String(format: "正在迁移「%@」".localized, item.name),
                        destinations: [dest.appendingPathComponent(item.path.lastPathComponent)], associatedApp: associatedApp) { progress in
@@ -1839,6 +1841,7 @@ struct DataDirsView: View {
     // MARK: - 挂载迁移（沙盒应用容器数据）
 
     private func askMountMigrate(_ item: DataDirItem) {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         if partialWeChatMigrationEnabled, selectedWeChatPolicy.isAccount(item.path) {
             if requestAssociatedAppExit(for: item, continuing: { askMountMigrate(item) }) { return }
             weChatMigrationItem = item
@@ -1849,13 +1852,7 @@ struct DataDirsView: View {
     }
 
     private func checkMountMigrationDestination(for item: DataDirItem, destination: URL?) {
-        // 直接从下载文件夹或安装包里打开时，macOS 把 AppPorts 放在退出即消失的临时路径上；
-        // 登录代理必须指向一个固定的程序，开机后才有人把卷挂回来。
-        if ContainerMountAgentInstaller.isRunningFromTemporaryLocation {
-            errorMessage = "AppPorts 当前从临时位置运行（直接从下载文件夹或安装包里打开时，macOS 会这样处理）。挂载迁移需要在每次登录后自动重新挂载，请先把 AppPorts 拖到「应用程序」文件夹，再从那里打开。".localized
-            showError = true
-            return
-        }
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         if requestAssociatedAppExit(for: item, continuing: { checkMountMigrationDestination(for: item, destination: destination) }) { return }
         guard !isCheckingMountDestination else { return }
         isCheckingMountDestination = true
@@ -1925,6 +1922,7 @@ struct DataDirsView: View {
     private func performMountMigrate(_ item: DataDirItem, encryption: APFSVolumeEncryption.Credentials? = nil,
                                      retrying: MigrationJob.RetryToken? = nil) {
         if let retrying, !MigrationTaskCenter.shared.canRetry(retrying) { return }
+        if retrying == nil, !AppInstallationLocation.confirmIfNeeded() { return }
         if retrying == nil, weChatMigrationMode == .split, selectedWeChatPolicy.isAccount(item.path) {
             performWeChatSplitOperation(item, restoring: false, encryption: encryption, retrying: retrying)
             return

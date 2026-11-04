@@ -16,6 +16,7 @@ final class PortalPresentationTests: XCTestCase {
             XCTAssertEqual(result["AppPortsTargetBundleIdentifier"] as? String, "org.example.app")
             XCTAssertEqual(result["AppPortsTargetVolumeUUID"] as? String, try source.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString)
             XCTAssertEqual(result["LSUIElement"] as? Bool, true)
+            XCTAssertNil(result[PortalImageLaunchPreparation.helperKey])
             XCTAssertNil(result["SUFeedURL"])
             XCTAssertEqual(result["CFBundleIconName"] as? String, "AppIcon")
             XCTAssertEqual(try Data(contentsOf: destination.appendingPathComponent("Resources/Assets.car")), Data("assets".utf8))

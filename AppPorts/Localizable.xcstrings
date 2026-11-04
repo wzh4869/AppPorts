@@ -1,6 +1,57 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "请先将 AppPorts 放入“应用程序”文件夹" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move AppPorts to the Applications folder first"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先将 AppPorts 放入“应用程序”文件夹"
+          }
+        }
+      }
+    },
+    "请移动 AppPorts，并从“应用程序”文件夹重新打开后，再继续此操作。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move AppPorts to the Applications folder, then reopen it from there before continuing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请移动 AppPorts，并从“应用程序”文件夹重新打开后，再继续此操作。"
+          }
+        }
+      }
+    },
+    "打开应用程序文件夹" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Applications Folder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开应用程序文件夹"
+          }
+        }
+      }
+    },
     " 可释放" : {
       "extractionState" : "manual",
       "localizations" : {
