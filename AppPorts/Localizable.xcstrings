@@ -1,6 +1,57 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "找不到 AppPorts？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't find AppPorts?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到 AppPorts？"
+          }
+        }
+      }
+    },
+    "把图标拖入“完全磁盘访问权限”列表，再打开开关。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the icon into the “Full Disk Access” list, then turn on the switch."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把图标拖入“完全磁盘访问权限”列表，再打开开关。"
+          }
+        }
+      }
+    },
+    "将 AppPorts 图标拖入系统设置的应用列表" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the AppPorts icon into the application list in System Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 AppPorts 图标拖入系统设置的应用列表"
+          }
+        }
+      }
+    },
     "请先将 AppPorts 放入“应用程序”文件夹" : {
       "extractionState" : "manual",
       "localizations" : {

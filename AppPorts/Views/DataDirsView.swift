@@ -2084,7 +2084,7 @@ struct DataDirsView: View {
         if DataOperationIssue.needsAccessPermission(error) {
             actions.append(WarningAction("访问权限设置".localized) {
                 if let retryToken, !MigrationTaskCenter.shared.canRetry(retryToken) { return }
-                if let url = LaunchReadinessChecker.Item.Action.fullDiskAccess.settingsURLs.first { NSWorkspace.shared.open(url) }
+                FullDiskAccessGuide.shared.openSettings()
                 // Keep the same operation available when the user returns.
                 presentAPFSFailure(error, item: item, record: record, retryToken: retryToken, retry: retry)
             })

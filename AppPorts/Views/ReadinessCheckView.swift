@@ -122,6 +122,10 @@ struct ReadinessCheckView: View {
     }
 
     private func openSettings(for action: LaunchReadinessChecker.Item.Action) {
+        if action == .fullDiskAccess {
+            FullDiskAccessGuide.shared.openSettings()
+            return
+        }
         for url in action.settingsURLs where NSWorkspace.shared.open(url) {
             return
         }

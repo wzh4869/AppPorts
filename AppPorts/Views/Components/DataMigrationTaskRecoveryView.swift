@@ -32,9 +32,7 @@ struct DataMigrationTaskRecoveryView: View {
                                 return warnings.isEmpty ? nil : warnings.joined(separator: "\n\n")
                             })
                     }, onChanged: { Task { await loadRecords() } }, onPermissions: {
-                        if let url = LaunchReadinessChecker.Item.Action.fullDiskAccess.settingsURLs.first {
-                            NSWorkspace.shared.open(url)
-                        }
+                        FullDiskAccessGuide.shared.openSettings()
                     })
             } else {
                 VStack(alignment: .leading, spacing: 16) {
