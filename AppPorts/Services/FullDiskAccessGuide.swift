@@ -100,8 +100,17 @@ final class FullDiskAccessGuide {
         let maxX = max(visibleFrame.maxX - width - inset, minX)
         let x = min(max(reference.minX, minX), maxX)
         let below = reference.minY - panelSize.height - gap
-        let y = below >= visibleFrame.minY + inset ? below
-            : min(reference.maxY + gap, visibleFrame.maxY - panelSize.height - inset)
+        let above = reference.maxY + gap
+        let y: CGFloat
+        if below >= visibleFrame.minY + inset {
+            y = below
+        } else if above + panelSize.height <= visibleFrame.maxY - inset {
+            y = above
+        } else {
+            // A nearly full-height window leaves no room outside it. Overlay its
+            // bottom edge so the title bar and window controls stay uncovered.
+            y = max(reference.minY, visibleFrame.minY) + inset
+        }
         return NSRect(x: x, y: y, width: width, height: panelSize.height).integral
     }
 

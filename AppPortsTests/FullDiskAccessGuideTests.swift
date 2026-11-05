@@ -25,6 +25,42 @@ final class FullDiskAccessGuideTests: XCTestCase {
         }
     }
 
+    func testGuideOverlaysTheBottomOfANearlyFullHeightSettingsWindow() {
+        // Reported layout: no room above or below the window on a 900-point display.
+        let screen = NSRect(x: 0, y: 0, width: 1440, height: 875)
+        let settings = NSRect(x: 362, y: 10, width: 715, height: 860)
+        let frame = FullDiskAccessGuide.attachedFrame(to: settings, visibleFrame: screen)
+        XCTAssertTrue(screen.contains(frame))
+        XCTAssertEqual(frame.minY, settings.minY + 12)
+        XCTAssertEqual(frame.minX, settings.minX)
+        XCTAssertFalse(frame.intersects(Self.titleBar(of: settings)))
+    }
+
+    func testGuideNeverCoversTheSettingsTitleBar() {
+        let screens = [
+            NSRect(x: 0, y: 0, width: 1280, height: 775),
+            NSRect(x: 0, y: 0, width: 1440, height: 875),
+            NSRect(x: -1920, y: 100, width: 1920, height: 1055)
+        ]
+        for screen in screens {
+            for width in [480.0, 715.0] {
+                for height in stride(from: 320.0, through: screen.height, by: 23) {
+                    for offset in stride(from: 0.0, through: screen.height - height, by: 29) {
+                        let settings = NSRect(x: screen.minX + 100, y: screen.minY + offset, width: width, height: height)
+                        let frame = FullDiskAccessGuide.attachedFrame(to: settings, visibleFrame: screen)
+                        XCTAssertTrue(screen.contains(frame), "\(frame) leaves \(screen) for \(settings)")
+                        XCTAssertFalse(frame.intersects(Self.titleBar(of: settings)), "\(frame) covers the title bar of \(settings)")
+                    }
+                }
+            }
+        }
+    }
+
+    /// System Settings draws its title bar, window controls and toolbar in the top 52 points.
+    private static func titleBar(of window: NSRect) -> NSRect {
+        NSRect(x: window.minX, y: window.maxY - 52, width: window.width, height: 52)
+    }
+
     func testApplicationDragPublishesAFileURLWithoutChangingPermissionState() throws {
         let url = URL(fileURLWithPath: "/Applications/AppPorts.app")
         var completions = 0
