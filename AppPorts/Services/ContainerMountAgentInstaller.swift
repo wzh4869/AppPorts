@@ -315,6 +315,7 @@ enum ContainerMountAgentInstaller {
 
     /// 代理入口：恢复容器卷后恢复选中的应用库映像；容器卷没就位就等 `/Volumes` 的真实变化再试，
     /// 直到全部就位、或用完等待窗口（`ContainerRemountLoop.Policy.window`）。
+    /// 还在等的容器卷位于选中映像内时，第一轮后立即接回映像并在同一轮重试，不等满窗口。
     static func runAgentAndExit() -> Never {
         // 启动行：既是排障锚点，也是「开机时序」自查脚本判定代理何时被 launchd 拉起的依据，
         // 所以无论这一轮有没有活干都要留下（pid 行里的 `[pid:…]` 已经有进程号了）。
@@ -333,27 +334,24 @@ enum ContainerMountAgentInstaller {
             // 后台代理没有界面，不能弹管理员授权框；旧系统上会以 privilegeRequired 失败并留给 AppPorts 启动时处理。
             let migrator = ContainerVolumeMigrator(disk: DiskUtility(administratorRunner: nil))
             var attemptIndex = 0
+            var imageRecovered = false
             let result = await ContainerRemountLoop.run(
                 attempt: {
                     defer { attemptIndex += 1 }
                     // 第一轮可能碰上主应用正在做挂载迁移，值得等满；之后的轮次只象征性等一下，
                     // 免得代理和主应用互相让路谁都不动。
                     let timeout = attemptIndex == 0 ? OperationLock.agentWaitTimeout : Self.retryLockTimeout
-                    return await remountAttempt(migrator: migrator, lockTimeout: timeout)
+                    let image = AppLibraryImageRecovery.selectedRecord()
+                    return await remountRecoveringLibraryImage(
+                        libraryRoot: image.map { $0.libraryPath ?? $0.mountPath },
+                        imageRecovered: &imageRecovered,
+                        remount: { await remountAttempt(migrator: migrator, lockTimeout: timeout) },
+                        recoverImage: { await recoverSelectedLibraryImage() })
                 },
                 waitForChange: { await monitor.waitForNextChange(timeout: $0) }
             )
             // A slow/offline NAS must not delay the existing container recovery.
-            let imageLock = OperationLock()
-            if await imageLock.acquire(timeout: OperationLock.agentWaitTimeout) {
-                do {
-                    let ejection = try DiskEjectionPauseStore().snapshot()
-                    await AppLibraryImageRecovery.recoverSelected(ejection: ejection)
-                } catch {
-                    AppLogger.shared.logError("读取弹出暂停状态失败，跳过映像恢复", error: error)
-                }
-                imageLock.release()
-            }
+            if !imageRecovered { await recoverSelectedLibraryImage() }
             reportAgentResult(result)
             semaphore.signal()
         }
@@ -362,6 +360,42 @@ enum ContainerMountAgentInstaller {
         semaphore.wait()
         AppLogger.shared.log("容器卷自动挂载代理退出")
         exit(0)
+    }
+
+    /// Container volumes created inside the selected library image appear only
+    /// after the image is attached. When a pass still waits for such a volume,
+    /// recover the image once and retry within the same cycle instead of waiting
+    /// out the remount window. Other pending volumes keep the original order.
+    static func remountRecoveringLibraryImage(
+        libraryRoot: String?,
+        imageRecovered: inout Bool,
+        remount: () async -> ContainerRemountLoop.Attempt,
+        recoverImage: () async -> Void
+    ) async -> ContainerRemountLoop.Attempt {
+        let attempt = await remount()
+        guard !imageRecovered, let libraryRoot, case .results(let outcomes) = attempt else { return attempt }
+        let waiting = ContainerRemountLoop.pendingRecords(in: outcomes).filter {
+            PortalImageLaunchPreparation.contains($0.record.externalRootPath, in: libraryRoot)
+        }
+        guard !waiting.isEmpty else { return attempt }
+        imageRecovered = true
+        AppLogger.shared.logContext("容器卷位于应用库映像中，先接回映像再重试挂载",
+            details: [("pending", String(waiting.count)), ("library_path", libraryRoot)])
+        await recoverImage()
+        return await remount()
+    }
+
+    /// Hold OperationLock only around recovery of the selected library image.
+    private static func recoverSelectedLibraryImage() async {
+        let imageLock = OperationLock()
+        guard await imageLock.acquire(timeout: OperationLock.agentWaitTimeout) else { return }
+        defer { imageLock.release() }
+        do {
+            let ejection = try DiskEjectionPauseStore().snapshot()
+            await AppLibraryImageRecovery.recoverSelected(ejection: ejection)
+        } catch {
+            AppLogger.shared.logError("读取弹出暂停状态失败，跳过映像恢复", error: error)
+        }
     }
 
     /// 重试轮次里拿锁的等待时长。
