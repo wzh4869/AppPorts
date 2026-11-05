@@ -216,4 +216,73 @@ struct AppLibraryImageRecoveryTests {
         #expect(try ContainerMountAgentInstaller.requiresAgent(store: store, imageSelected: true))
         #expect(try !ContainerMountAgentInstaller.requiresAgent(store: store, imageSelected: false))
     }
+
+    private static func shareRecord(uuid: String) -> AppLibraryImageService.Record {
+        var record = AppLibraryImageService.Record(imageURL: URL(fileURLWithPath: "/Volumes/Share/Apps.sparsebundle"))
+        record.volumeUUID = uuid
+        record.libraryPath = "/Volumes/Apps"
+        record.networkShareURL = "smb://nas.local/Share"
+        record.imageRelativePath = "Apps.sparsebundle"
+        return record
+    }
+
+    /// Launch readiness may only read: share lookup and library UUID, never hdiutil or a reconnect.
+    private static func launchService(runner: RecoveryInspectionRunner, share: String?, resolvedPath: String? = nil,
+                                      mounted: String?) -> AppLibraryImageService {
+        AppLibraryImageService(runner: runner, mountedUUID: { $0.path == "/Volumes/Apps" ? mounted : nil },
+            files: AppLibraryImageFileAccess(inspect: { request in
+                switch request {
+                case .share:
+                    return .init(path: share)
+                case .resolve(var record):
+                    record.imagePath = resolvedPath ?? record.imagePath
+                    return .init(record: record)
+                default:
+                    Issue.record("Launch readiness must not run \(request)")
+                    throw CocoaError(.featureUnsupported)
+                }
+            }))
+    }
+
+    @Test func launchReadinessAcceptsOnlyTheRecordedMountedShareImage() async throws {
+        let uuid = UUID().uuidString
+        let record = Self.shareRecord(uuid: uuid)
+        let runner = RecoveryInspectionRunner()
+        let none = DiskEjectionPauseStore.Snapshot(pauses: [])
+        #expect(try await AppLibraryImageRecovery.isMountedForLaunch(record,
+            service: Self.launchService(runner: runner, share: "/Volumes/Share", mounted: uuid.lowercased()), ejection: none))
+        // Offline share, share remounted elsewhere, foreign library volume, or no verified UUID.
+        for (share, mounted) in [(nil, uuid), ("/Volumes/Share 1", uuid), ("/Volumes/Share", UUID().uuidString),
+                                 ("/Volumes/Share", nil)] as [(String?, String?)] {
+            #expect(try await AppLibraryImageRecovery.isMountedForLaunch(record,
+                service: Self.launchService(runner: runner, share: share, mounted: mounted), ejection: none) == false)
+        }
+        var unverified = record
+        unverified.volumeUUID = nil
+        #expect(try await AppLibraryImageRecovery.isMountedForLaunch(unverified,
+            service: Self.launchService(runner: runner, share: "/Volumes/Share", mounted: uuid), ejection: none) == false)
+        #expect(await runner.calls == 0)
+    }
+
+    @Test func launchReadinessDefersMovedOrPausedLocalImages() async throws {
+        let uuid = UUID().uuidString
+        var record = AppLibraryImageService.Record(imageURL: URL(fileURLWithPath: "/fixture/USB/Library.sparsebundle"))
+        record.volumeUUID = uuid
+        record.libraryPath = "/Volumes/Apps"
+        record.backingVolumeUUID = "VOLUME-USB"
+        record.imageRelativePath = "Library.sparsebundle"
+        let runner = RecoveryInspectionRunner()
+        let none = DiskEjectionPauseStore.Snapshot(pauses: [])
+        #expect(try await AppLibraryImageRecovery.isMountedForLaunch(record,
+            service: Self.launchService(runner: runner, share: nil, mounted: uuid), ejection: none))
+        #expect(try await AppLibraryImageRecovery.isMountedForLaunch(record,
+            service: Self.launchService(runner: runner, share: nil, resolvedPath: "/fixture/USB 1/Library.sparsebundle",
+                                        mounted: uuid), ejection: none) == false)
+        let disk = ExternalDiskInventory.Disk(deviceIdentifier: "disk99", connectionID: "fixture:99", displayName: "USB",
+            volumeUUIDs: ["VOLUME-USB"], containerUUIDs: [], mountPaths: ["/fixture/USB"])
+        let paused = DiskEjectionPauseStore.Snapshot(pauses: [DiskEjectionPauseStore.Pause(disk: disk)])
+        #expect(try await AppLibraryImageRecovery.isMountedForLaunch(record,
+            service: Self.launchService(runner: runner, share: nil, mounted: uuid), ejection: paused) == false)
+        #expect(await runner.calls == 0)
+    }
 }

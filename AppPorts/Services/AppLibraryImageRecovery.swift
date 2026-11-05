@@ -211,6 +211,26 @@ enum AppLibraryImageRecovery {
         return mounted.record
     }
 
+    /// Read-only launch check: true only when `restoreForLaunch` would return
+    /// without connecting, attaching or mounting. Storage that reappeared at
+    /// another path still needs that method's attachment checks.
+    static func isMountedForLaunch(_ record: AppLibraryImageService.Record,
+                                   service: AppLibraryImageService,
+                                   ejection: DiskEjectionPauseStore.Snapshot) async throws -> Bool {
+        guard let uuid = record.volumeUUID,
+              !ejection.blocks(volumeUUIDs: [record.backingVolumeUUID], paths: [record.imagePath]) else { return false }
+        var current = record
+        if let address = record.networkShareURL {
+            guard let remote = URL(string: address), sanitizedShareURL(remote)?.absoluteString == address,
+                  let relative = record.imageRelativePath, validRelativePath(relative),
+                  let root = try await service.files.mountedShare(for: remote) else { return false }
+            current.imagePath = root.appendingPathComponent(relative).path
+        }
+        guard try await service.files.resolved(current).imagePath == record.imagePath else { return false }
+        let library = URL(fileURLWithPath: record.libraryPath ?? record.mountPath)
+        return try await service.currentMountedUUID(at: library)?.caseInsensitiveCompare(uuid) == .orderedSame
+    }
+
     private static func connectShare(_ remote: URL) async throws {
         guard let executable = Bundle.main.executableURL else { throw CocoaError(.executableNotLoadable) }
         let result = try await ProcessCommandRunner().run(executable: executable.path,

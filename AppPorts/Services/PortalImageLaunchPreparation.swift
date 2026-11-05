@@ -110,6 +110,36 @@ enum PortalImageLaunchPreparation {
         }
     }
 
+    /// Read-only checks that run before the operation lock. None may connect,
+    /// attach, mount or write.
+    struct Readiness {
+        var imageMounted: (AppLibraryImageService.Record) async throws -> Bool
+        var volumeUUIDs: (AppLibraryImageService.Record) async throws -> Set<String>
+        var dataMounted: (ContainerMountRecord) async throws -> Bool
+        var verifyLink: (ManagedDataLinkRecord) async throws -> Void
+    }
+
+    /// True only when `execute` would find every image, data volume and link
+    /// already in place. Any doubt returns false so the locked path decides.
+    static func isPrepared(_ plans: [Plan], readiness: Readiness) async -> Bool {
+        do {
+            for plan in plans {
+                guard try await readiness.imageMounted(plan.image) else { return false }
+                if !plan.mounts.isEmpty {
+                    let uuids = try await readiness.volumeUUIDs(plan.image)
+                    for record in plan.mounts {
+                        guard uuids.contains(record.volumeUUID.uppercased()),
+                              try await readiness.dataMounted(record) else { return false }
+                    }
+                }
+                for link in plan.links { try await readiness.verifyLink(link) }
+            }
+            return true
+        } catch {
+            return false
+        }
+    }
+
     static func readRequest(portal: URL) throws -> Request {
         let contents = portal.appendingPathComponent("Contents")
         let data = try Data(contentsOf: contents.appendingPathComponent("Info.plist"))
@@ -134,9 +164,21 @@ enum PortalImageLaunchPreparation {
         let initial = plans(for: request, current: AppLibraryImageRecovery.loadRecord(),
                             mounts: try store.recordsStrict(), links: try store.managedLinks())
         guard !initial.isEmpty else { return false }
+        if await isAlreadyPrepared(initial, store: store) {
+            AppLogger.shared.logContext("启动准备：映像及数据已就绪，跳过操作锁",
+                details: [("bundle_id", request.identifier)], level: "TRACE")
+            return true
+        }
         try WriterAdmission.registerCurrentWriter()
         let lock = OperationLock()
-        guard await lock.acquire(timeout: 5) else { throw lock.diagnosticFailure(scope: .global) }
+        guard await lock.acquire(timeout: 5) else {
+            let failure = lock.diagnosticFailure(scope: .global)
+            // The portal keeps its storage prompt; the log tells a busy lock from offline storage.
+            AppLogger.shared.logContext("启动准备未取得操作锁，映像或数据尚未就绪", details: [
+                ("bundle_id", request.identifier), ("reason", String(describing: failure.reason)),
+                ("waited_seconds", "5")], level: "WARN")
+            throw failure
+        }
         defer { lock.release() }
         // A migration or the login agent may have changed records while we waited.
         let latest = plans(for: request, current: AppLibraryImageRecovery.loadRecord(),
@@ -152,18 +194,7 @@ enum PortalImageLaunchPreparation {
                     try await migrator.mount(record: record)
                     try await migrator.requireExpectedVolume(record.volumeUUID, at: record.mountPointURL)
                 },
-                verifyLink: { link in
-                    let original = URL(fileURLWithPath: link.originalPath)
-                    let raw = try FileManager.default.destinationOfSymbolicLink(atPath: original.path)
-                    let destination = URL(fileURLWithPath: raw, relativeTo: original.deletingLastPathComponent()).standardizedFileURL
-                    guard destination.path == link.destinationPath else { throw CocoaError(.fileReadUnknown) }
-                    let result = try await service.files.inspect(.source(.init(imageURL: destination)))
-                    guard result.value == true,
-                          let expectedUUID = link.destinationIdentity.volumeUUID,
-                          result.uuid?.caseInsensitiveCompare(expectedUUID) == .orderedSame else {
-                        throw CocoaError(.fileReadUnknown)
-                    }
-                }))
+                verifyLink: { try await verifyLink($0, files: service.files) }))
             return true
         } catch let pending as ShellCommandUnconfirmedTermination {
             // A timed-out writer still owns the operation lock until it exits.
@@ -171,6 +202,32 @@ enum PortalImageLaunchPreparation {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
             throw pending
+        }
+    }
+
+    /// Another migration may hold the global lock for minutes. Storage already
+    /// in place needs no writer, so it is verified read-only before waiting.
+    private static func isAlreadyPrepared(_ plans: [Plan], store: ContainerMountStore) async -> Bool {
+        guard let ejection = try? DiskEjectionPauseStore(store: store).snapshot() else { return false }
+        let service = AppLibraryImageService(runner: LaunchCommandRunner())
+        let migrator = ContainerVolumeMigrator(disk: DiskUtility(runner: LaunchCommandRunner(), administratorRunner: nil), store: store)
+        return await isPrepared(plans, readiness: Readiness(
+            imageMounted: { try await AppLibraryImageRecovery.isMountedForLaunch($0, service: service, ejection: ejection) },
+            volumeUUIDs: { try await service.volumeUUIDs(in: $0) },
+            dataMounted: { await migrator.isMountedAsRecorded($0) },
+            verifyLink: { try await verifyLink($0, files: service.files) }))
+    }
+
+    private static func verifyLink(_ link: ManagedDataLinkRecord, files: AppLibraryImageFileAccess) async throws {
+        let original = URL(fileURLWithPath: link.originalPath)
+        let raw = try FileManager.default.destinationOfSymbolicLink(atPath: original.path)
+        let destination = URL(fileURLWithPath: raw, relativeTo: original.deletingLastPathComponent()).standardizedFileURL
+        guard destination.path == link.destinationPath else { throw CocoaError(.fileReadUnknown) }
+        let result = try await files.inspect(.source(.init(imageURL: destination)))
+        guard result.value == true,
+              let expectedUUID = link.destinationIdentity.volumeUUID,
+              result.uuid?.caseInsensitiveCompare(expectedUUID) == .orderedSame else {
+            throw CocoaError(.fileReadUnknown)
         }
     }
 

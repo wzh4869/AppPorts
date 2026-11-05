@@ -139,4 +139,58 @@ struct PortalImageLaunchPreparationTests {
         }
         #expect(await events.values.isEmpty)
     }
+
+    private func link() -> ManagedDataLinkRecord {
+        ManagedDataLinkRecord(operationID: UUID(), originalPath: "/fixture/Library/Video",
+            destinationPath: "/Volumes/Apps/Data/Video", destinationIdentity: DataPathIdentity(device: 1, inode: 2),
+            appName: "Video", bundleIdentifier: identifier, dataDirType: DataDirType.dotFolder.rawValue)
+    }
+
+    private func readiness(failing step: String? = nil, events: LaunchPreparationEvents,
+                           uuids: Set<String>) -> PortalImageLaunchPreparation.Readiness {
+        PortalImageLaunchPreparation.Readiness(
+            imageMounted: { _ in await events.add("image"); return step != "image" },
+            volumeUUIDs: { _ in
+                await events.add("inventory")
+                if step == "inventory" { throw CocoaError(.fileReadUnknown) }
+                return step == "foreign" ? [] : uuids
+            },
+            dataMounted: { _ in await events.add("data"); return step != "data" },
+            verifyLink: { _ in
+                await events.add("link")
+                if step == "link" { throw CocoaError(.fileReadUnknown) }
+            })
+    }
+
+    @Test func storageAlreadyInPlaceSkipsTheLockedPath() async {
+        let data = mount()
+        let events = LaunchPreparationEvents()
+        let plan = PortalImageLaunchPreparation.Plan(image: image(), mounts: [data], links: [link()])
+        let ready = await PortalImageLaunchPreparation.isPrepared([plan],
+            readiness: readiness(events: events, uuids: [data.volumeUUID.uppercased()]))
+        #expect(ready)
+        #expect(await events.values == ["image", "inventory", "data", "link"])
+    }
+
+    @Test(arguments: ["image", "inventory", "foreign", "data", "link"])
+    func anyDoubtLeavesPreparationToTheLockedPath(step: String) async {
+        let data = mount()
+        let events = LaunchPreparationEvents()
+        let plan = PortalImageLaunchPreparation.Plan(image: image(), mounts: [data], links: [link()])
+        let ready = await PortalImageLaunchPreparation.isPrepared([plan],
+            readiness: readiness(failing: step, events: events, uuids: [data.volumeUUID.uppercased()]))
+        #expect(!ready)
+        // Later checks never run after the first doubt.
+        let expected: [String: [String]] = ["image": ["image"], "inventory": ["image", "inventory"],
+            "foreign": ["image", "inventory"], "data": ["image", "inventory", "data"],
+            "link": ["image", "inventory", "data", "link"]]
+        #expect(await events.values == expected[step])
+    }
+
+    @Test func imagesWithoutDataSkipTheVolumeInventory() async {
+        let events = LaunchPreparationEvents()
+        let plan = PortalImageLaunchPreparation.Plan(image: image(), mounts: [], links: [])
+        #expect(await PortalImageLaunchPreparation.isPrepared([plan], readiness: readiness(events: events, uuids: [])))
+        #expect(await events.values == ["image"])
+    }
 }
