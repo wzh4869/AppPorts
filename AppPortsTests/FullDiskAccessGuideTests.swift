@@ -84,13 +84,15 @@ final class FullDiskAccessGuideTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let originalLanguage = LanguageManager.shared.language
         defer { LanguageManager.shared.language = originalLanguage }
-        for language in ["zh-Hans", "en"] {
+        for language in ["zh-Hans", "en", "de", "fr", "ja", "ar"] {
             LanguageManager.shared.language = language
             for dark in [false, true] {
                 let appearance = try XCTUnwrap(NSAppearance(named: dark ? .darkAqua : .aqua))
                 let host = NSHostingView(rootView: FullDiskAccessGuideView(applicationURL: Bundle.main.bundleURL,
                     onDragEnded: { _ in XCTFail("Rendering must not perform a drag") })
-                    .environment(\.colorScheme, dark ? .dark : .light))
+                    .environment(\.colorScheme, dark ? .dark : .light)
+                    .environment(\.locale, Locale(identifier: language))
+                    .environment(\.layoutDirection, language == "ar" ? .rightToLeft : .leftToRight))
                 let window = NSWindow(contentRect: NSRect(x: -10_000, y: 0, width: 480, height: FullDiskAccessGuide.panelSize.height),
                     styleMask: [.borderless], backing: .buffered, defer: false)
                 window.isReleasedWhenClosed = false
