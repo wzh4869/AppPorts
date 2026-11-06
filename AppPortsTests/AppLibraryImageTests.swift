@@ -31,17 +31,24 @@ private struct MountedImageRunner: ShellCommandRunning {
     let image: URL
     let uuid: String
     let writable: Bool?
+    var additionalVolume = false
     let point = "/Volumes/AppPorts-Fixture"
 
     func run(executable: String, arguments: [String], timeout: TimeInterval) async throws -> ShellCommandResult {
         let value: [String: Any]
         if executable == "/usr/bin/hdiutil", arguments == ["info", "-plist"] {
-            value = ["images": [["image-path": image.path, "system-entities": [
-                ["dev-entry": "/dev/disk99s1", "mount-point": point]]]]]
+            var entities = [["dev-entry": "/dev/disk99s1", "mount-point": point]]
+            if additionalVolume {
+                entities.append(["dev-entry": "/dev/disk99s2", "mount-point": "/fixture/Containers/Data"])
+            }
+            value = ["images": [["image-path": image.path, "system-entities": entities]]]
         } else if executable == "/usr/sbin/diskutil", arguments == ["info", "-plist", "/dev/disk99s1"] {
             var info: [String: Any] = ["FilesystemType": "apfs", "MountPoint": point, "VolumeUUID": uuid]
             if let writable { info["WritableVolume"] = writable }
             value = info
+        } else if executable == "/usr/sbin/diskutil", arguments == ["info", "-plist", "/dev/disk99s2"], additionalVolume {
+            value = ["FilesystemType": "apfs", "MountPoint": "/fixture/Containers/Data",
+                     "VolumeUUID": "D84EB631-D8F7-4F2C-A055-501364CC1005", "WritableVolume": true]
         } else {
             Issue.record("An already attached image must not be attached again")
             throw CocoaError(.featureUnsupported)
@@ -61,7 +68,8 @@ struct AppLibraryImageTests {
         defer { try? FileManager.default.removeItem(at: image) }
         let uuid = UUID().uuidString
         let runner = MountedImageRunner(image: image, uuid: uuid, writable: writable)
-        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid })
+        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid },
+            files: AppLibraryImageFileAccess(inspect: { try AppLibraryImageFileAccess.evaluate($0) }))
         let record = AppLibraryImageService.Record(imageURL: image)
         do {
             let result = try await service.mount(record)
@@ -73,17 +81,25 @@ struct AppLibraryImageTests {
         }
     }
 
-    @Test func writableImageStillRejectsAReplacedVolume() async throws {
+    @Test(arguments: [false, true])
+    func mountedImageUsesSavedVolumeWhenOtherWritableVolumesExist(replaced: Bool) async throws {
         let image = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
             .appendingPathComponent(UUID().uuidString + ".sparsebundle")
         try FileManager.default.createDirectory(at: image, withIntermediateDirectories: false)
         defer { try? FileManager.default.removeItem(at: image) }
         let uuid = UUID().uuidString
-        let runner = MountedImageRunner(image: image, uuid: uuid, writable: true)
-        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid })
+        let runner = MountedImageRunner(image: image, uuid: uuid, writable: true, additionalVolume: true)
+        let service = AppLibraryImageService(runner: runner, mountedUUID: { _ in uuid },
+            files: AppLibraryImageFileAccess(inspect: { try AppLibraryImageFileAccess.evaluate($0) }))
         var record = AppLibraryImageService.Record(imageURL: image)
-        record.volumeUUID = UUID().uuidString
-        await #expect(throws: (any Error).self) { try await service.mount(record) }
+        record.volumeUUID = replaced ? UUID().uuidString : uuid
+        if replaced {
+            await #expect(throws: (any Error).self) { try await service.mount(record) }
+        } else {
+            let result = try await service.mount(record)
+            #expect(result.record.volumeUUID == uuid)
+            #expect(result.libraryURL.path == runner.point)
+        }
     }
 
     @Test func createsSparsebundleThroughModernBackendWithExactByteCapacity() async throws {

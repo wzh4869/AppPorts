@@ -3,7 +3,7 @@ import Foundation
 /// Produces only the display metadata of a macOS portal. Call on a private staging
 /// bundle, then sign and install the bundle before registering it with the system.
 enum PortalPresentation {
-    static let formatVersion = 7
+    static let formatVersion = 8
     static let versionKey = "AppPortsPortalFormatVersion"
 
     static func needsRefresh(local: [String: Any], external: [String: Any]) -> Bool {
@@ -14,7 +14,8 @@ enum PortalPresentation {
 
     /// Source and destination are the respective Contents directories. Returns
     /// recoverable presentation warnings; an invalid plist or write failure throws.
-    static func write(from externalContents: URL, to stagedContents: URL) throws -> [String] {
+    static func write(from externalContents: URL, to stagedContents: URL,
+                      launchPreparation: PortalImageLaunchPreparation.Metadata? = nil) throws -> [String] {
         let fm = FileManager.default
         let data = try Data(contentsOf: externalContents.appendingPathComponent("Info.plist"))
         guard var plist = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
@@ -34,8 +35,10 @@ enum PortalPresentation {
         // Refresh starts with a copy of the old portal. Remove only previous
         // presentation resources so removed translations cannot override new names.
         let oldInfo = stagedContents.appendingPathComponent("Info.plist")
+        var previousInfo: [String: Any] = [:]
         if let oldData = try? Data(contentsOf: oldInfo),
            let old = try? PropertyListSerialization.propertyList(from: oldData, format: nil) as? [String: Any] {
+            previousInfo = old
             var obsolete = old["AppPortsPresentationResources"] as? [String] ?? []
             if let icon = old["CFBundleIconFile"] as? String {
                 obsolete.append((icon as NSString).pathExtension.isEmpty ? icon + ".icns" : icon)
@@ -143,6 +146,10 @@ enum PortalPresentation {
             }
         }
         plist["AppPortsTargetBundleIdentifier"] = plist["CFBundleIdentifier"]
+        let preparation = try launchPreparation ?? PortalImageLaunchPreparation.metadata(
+            targetPath: externalContents.deletingLastPathComponent().path,
+            identifier: plist["CFBundleIdentifier"] as? String ?? "", previous: previousInfo)
+        try preparation.apply(to: &plist)
         if let uuid = try? externalContents.deletingLastPathComponent().resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString {
             plist["AppPortsTargetVolumeUUID"] = uuid
         }

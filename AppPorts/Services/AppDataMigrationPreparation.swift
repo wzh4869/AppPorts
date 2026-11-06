@@ -13,6 +13,7 @@ struct AppDataMigrationPreparation: Sendable {
     }
 
     func refresh(_ item: DataDirItem, progress: DataTransferProgress) async throws -> DataDirItem {
+        try AppInstallationLocation.require()
         let control = MigrationExecution.control
         let worker = Task.detached(priority: .userInitiated) { [self] in
             try await control?.checkpointAsync()

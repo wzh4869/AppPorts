@@ -369,3 +369,100 @@ struct ContainerMountAgentExecutablePathTests {
         )
     }
 }
+
+private actor AgentOrderingEvents {
+    private(set) var values: [String] = []
+    func add(_ value: String) { values.append(value) }
+}
+
+@Suite("Container mount agent library image ordering")
+struct ContainerMountAgentImageOrderingTests {
+    private static let library = "/Volumes/Apps"
+
+    private static func outcome(_ state: ContainerVolumeMigrator.RemountOutcome.State,
+                                root: String = library) -> ContainerVolumeMigrator.RemountOutcome {
+        ContainerVolumeMigrator.RemountOutcome(
+            record: ContainerMountRecord(appName: "Video", bundleIdentifier: "org.example.video",
+                dataDirType: DataDirType.containers.rawValue, mountPointPath: "/fixture/Containers/\(UUID().uuidString)",
+                volumeUUID: UUID().uuidString, volumeName: "Video Data", externalRootPath: root),
+            state: state)
+    }
+
+    private static func run(first: ContainerRemountLoop.Attempt, retry: ContainerRemountLoop.Attempt = .results([]),
+                            libraryRoot: String? = library, alreadyRecovered: Bool = false)
+        async -> (attempt: ContainerRemountLoop.Attempt, recovered: Bool, events: [String]) {
+        let events = AgentOrderingEvents()
+        var recovered = alreadyRecovered
+        var remounts = 0
+        let attempt = await ContainerMountAgentInstaller.remountRecoveringLibraryImage(
+            libraryRoot: libraryRoot, imageRecovered: &recovered,
+            remount: {
+                remounts += 1
+                await events.add("remount")
+                return remounts == 1 ? first : retry
+            },
+            recoverImage: { await events.add("image") })
+        return (attempt, recovered, await events.values)
+    }
+
+    @Test("A volume inside the selected image recovers the image and retries in the same cycle",
+          arguments: [ContainerVolumeMigrator.RemountOutcome.State.unavailable, .failed("not found")])
+    func imageHostedVolumeRecoversImageFirst(state: ContainerVolumeMigrator.RemountOutcome.State) async {
+        let settled = Self.outcome(.mounted)
+        let result = await Self.run(first: .results([Self.outcome(state)]), retry: .results([settled]))
+        #expect(result.events == ["remount", "image", "remount"])
+        #expect(result.recovered)
+        guard case .results(let outcomes) = result.attempt else {
+            Issue.record("The retried pass must be returned to the loop")
+            return
+        }
+        #expect(outcomes.map(\.state) == [.mounted])
+    }
+
+    @Test("Volumes outside the image, settled volumes and deferred passes keep the original order")
+    func otherOutcomesDoNotRecoverTheImage() async {
+        let cases: [ContainerRemountLoop.Attempt] = [
+            .results([Self.outcome(.unavailable, root: "/Volumes/Physical")]),
+            .results([Self.outcome(.unavailable, root: "/Volumes/Apps-other")]),
+            .results([Self.outcome(.alreadyMounted), Self.outcome(.mounted)]),
+            .results([Self.outcome(.requiresIntervention("conflict"))]),
+            .results([]),
+            .deferred
+        ]
+        for first in cases {
+            let result = await Self.run(first: first)
+            #expect(result.events == ["remount"])
+            #expect(!result.recovered)
+        }
+    }
+
+    @Test("The image is recovered at most once per agent round and only while selected")
+    func recoveryIsBoundedToTheSelectedImage() async {
+        let pending = ContainerRemountLoop.Attempt.results([Self.outcome(.unavailable)])
+        let repeated = await Self.run(first: pending, alreadyRecovered: true)
+        #expect(repeated.events == ["remount"])
+        let unselected = await Self.run(first: pending, libraryRoot: nil)
+        #expect(unselected.events == ["remount"])
+        #expect(!unselected.recovered)
+    }
+
+    @Test("The remount loop settles without waiting once the image exposes the volume")
+    func loopDoesNotWaitOutTheWindow() async {
+        var recovered = false
+        var imageAttached = false
+        let result = await ContainerRemountLoop.run(
+            attempt: {
+                await ContainerMountAgentInstaller.remountRecoveringLibraryImage(
+                    libraryRoot: Self.library, imageRecovered: &recovered,
+                    remount: { .results([Self.outcome(imageAttached ? .mounted : .unavailable)]) },
+                    recoverImage: { imageAttached = true })
+            },
+            waitForChange: { _ in
+                Issue.record("An image-hosted volume must not wait for /Volumes changes")
+                return nil
+            })
+        #expect(result.reason == .settled)
+        #expect(result.cycles == 1)
+        #expect(recovered)
+    }
+}

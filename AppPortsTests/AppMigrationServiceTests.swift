@@ -1492,6 +1492,27 @@ final class AppMigrationServiceTests: XCTestCase {
         try assertPortalSignature(local)
     }
 
+    func testRefreshRemovesUnneededHelperWithoutAnApplicationVersionChange() throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let external = workspace.externalRootURL.appendingPathComponent("Example.app")
+        let local = workspace.localAppsURL.appendingPathComponent("Example.app")
+        try createAppBundle(at: external)
+        let service = makeService(dockShortcutUpdater: { _, _ in 0 })
+        try service.linkApp(appToLink: AppItem(name: "Example.app", path: external, status: AppStatus.unlinked), destinationURL: local)
+        let plistURL = local.appendingPathComponent("Contents/Info.plist")
+        var previous = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: plistURL), format: nil) as? [String: Any])
+        previous[PortalImageLaunchPreparation.helperKey] = "/missing/AppPorts.app/Contents/MacOS/AppPorts"
+        try PropertyListSerialization.data(fromPropertyList: previous, format: .xml, options: 0).write(to: plistURL)
+        XCTAssertTrue(service.refreshStubPortal(at: local, from: external))
+        let refreshed = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: plistURL), format: nil) as? [String: Any])
+        XCTAssertNil(refreshed[PortalImageLaunchPreparation.helperKey])
+        XCTAssertEqual(refreshed["CFBundleVersion"] as? String, previous["CFBundleVersion"] as? String)
+        XCTAssertFalse(service.refreshStubPortal(at: local, from: external))
+        try assertStubPortal(local, pointsTo: external)
+        try assertPortalSignature(local)
+    }
+
     func testOldScanCannotRefreshAfterDeleteAndRelinkOfSamePath() throws {
         let w = try makeWorkspace()
         defer { cleanupWorkspace(w.rootURL) }

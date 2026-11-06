@@ -1736,6 +1736,7 @@ actor ContainerVolumeMigrator {
         }
         let compatibleRestores = try await remountCompatibleRestoreIDs(record: record)
         let requiresOwnership = record.ownershipPolicy == .owners
+        // `isMountedAsRecorded` mirrors these acceptance checks for lock-free launch preparation.
         if isMountPoint(mountPoint) {
             try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
             if try store.remountIntervention(forVolumeUUID: record.volumeUUID) != nil {
@@ -1763,6 +1764,32 @@ actor ContainerVolumeMigrator {
             "容器卷已挂载",
             details: [("operation_id", operationID), ("volume", record.volumeName), ("mount_point", mountPoint.path)]
         )
+    }
+
+    /// Read-only counterpart of `mount(record:)` for a volume that is already in
+    /// place: true only when that call would accept the record without mounting,
+    /// recovering or changing records. Launch preparation calls this without the
+    /// operation lock, so any doubt returns false and leaves the decision to the
+    /// locked path. Keep in step with the mounted branch of `mountRecordedVolume`.
+    func isMountedAsRecorded(_ record: ContainerMountRecord) async -> Bool {
+        let mountPoint = record.mountPointURL
+        do {
+            guard try !store.isManuallyUnmounted(record),
+                  try !DiskEjectionPauseStore(store: store).snapshot().blocks(volumeUUIDs: [record.volumeUUID],
+                      paths: [record.mountPointPath, record.externalRootPath]),
+                  try store.recordsStrict().contains(record),
+                  isMountPoint(mountPoint),
+                  try store.remountIntervention(forVolumeUUID: record.volumeUUID) == nil else { return false }
+            try safety.requireExistingMigrationPolicy(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
+            _ = try ownedMigrationTransferIDs(for: record)
+            // Pending restore intents need the overlap checks of the locked path.
+            guard try await remountCompatibleRestoreIDs(record: record).isEmpty else { return false }
+            try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
+            if record.ownershipPolicy == .owners { try requireOwners(at: mountPoint) }
+            return true
+        } catch {
+            return false
+        }
     }
 
     /// 卷现在挂在哪。

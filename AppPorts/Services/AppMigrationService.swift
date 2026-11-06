@@ -2158,7 +2158,16 @@ struct AppMigrationService {
             return false
         }
 
-        guard force || PortalPresentation.needsRefresh(local: localPlist, external: extPlist) else { return false }
+        let preparation: PortalImageLaunchPreparation.Metadata
+        do {
+            preparation = try PortalImageLaunchPreparation.metadata(targetPath: externalURL.path,
+                identifier: extPlist["CFBundleIdentifier"] as? String ?? "", previous: localPlist)
+        } catch {
+            AppLogger.shared.logError("无法刷新应用启动准备信息，保留现有入口", error: error)
+            return false
+        }
+        guard force || PortalPresentation.needsRefresh(local: localPlist, external: extPlist)
+            || !preparation.matches(localPlist) else { return false }
         let stageURL = localURL.deletingLastPathComponent()
             .appendingPathComponent(".appports-refresh-\(UUID().uuidString).app")
         do {
@@ -2175,7 +2184,8 @@ struct AppMigrationService {
                                    resourcesDir: stagedContents.appendingPathComponent("Resources"),
                                    externalURL: externalURL)
             try stage.recordGeneratedFiles(replacing: ["Contents/MacOS/launcher", "Contents/Resources/real_app_path.txt"])
-            for warning in try PortalPresentation.write(from: externalContents, to: stageURL.appendingPathComponent("Contents")) {
+            for warning in try PortalPresentation.write(from: externalContents, to: stageURL.appendingPathComponent("Contents"),
+                                                        launchPreparation: preparation) {
                 AppLogger.shared.log(warning, level: "WARN")
             }
             try stage.recordPresentationFiles()

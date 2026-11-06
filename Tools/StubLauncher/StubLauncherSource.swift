@@ -27,6 +27,10 @@ final class AppDelegate: NSObject {
     private var pendingRequests = 0
     private var failed = false
     private var finished = false
+    private var storagePrepared = false
+    private var preparingStorage = false
+    private var waitingRequests: [[URL]] = []
+    private var preparationLease: ApplicationLaunchGate.Lease?
     private let startedAt = ProcessInfo.processInfo.systemUptime
 
     func readRealAppPath() -> String {
@@ -117,6 +121,10 @@ final class AppDelegate: NSObject {
 
     private func openRealApplication(urls: [URL]) {
         receivedOpenRequest = true
+        guard storagePrepared else {
+            prepareStorage(urls: urls)
+            return
+        }
         logger.notice("Forwarding launch; URLs: \(urls.count), elapsed ms: \(Int((ProcessInfo.processInfo.systemUptime - self.startedAt) * 1000))")
         let path = readRealAppPath()
         guard !path.isEmpty, FileManager.default.fileExists(atPath: path) else {
@@ -167,6 +175,70 @@ final class AppDelegate: NSObject {
             NSWorkspace.shared.open(urls, withApplicationAt: applicationURL,
                                     configuration: configuration, completionHandler: completion)
         }
+    }
+
+    private func prepareStorage(urls: [URL]) {
+        guard !failed else { return }
+        waitingRequests.append(urls)
+        guard !preparingStorage else { return }
+        preparingStorage = true
+        // Old portals retain their previous behavior until refreshed by AppPorts.
+        guard let helper = Bundle.main.object(forInfoDictionaryKey: "AppPortsLaunchHelperPath") as? String else {
+            finishPreparation(succeeded: true)
+            return
+        }
+        do {
+            guard let identifier = Bundle.main.object(forInfoDictionaryKey: "AppPortsTargetBundleIdentifier") as? String,
+                  !identifier.isEmpty else { throw ApplicationLaunchGate.Failure.inspection }
+            // Hold protection before attaching storage, through final launch completion.
+            preparationLease = try ApplicationLaunchGate.acquire(bundleIdentifier: identifier, migrating: false)
+        } catch {
+            failed = true
+            waitingRequests.removeAll()
+            showDialog(message: ApplicationLaunchGate.message(busy: (error as? ApplicationLaunchGate.Failure) == .busy),
+                       button: PortalLocalizedStrings.text("好"))
+            terminateIfFinished()
+            return
+        }
+        pendingRequests += 1
+        let portalPath = Bundle.main.bundleURL.path
+        DispatchQueue.global(qos: .userInitiated).async {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: helper)
+            process.arguments = ["--prepare-image-launch", portalPath]
+            process.standardInput = FileHandle.nullDevice
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            let succeeded: Bool
+            do {
+                try process.run()
+                process.waitUntilExit()
+                // 2 means the request uses no managed image; keep physical-disk behavior.
+                succeeded = process.terminationStatus == 0 || process.terminationStatus == 2
+            } catch {
+                self.logger.error("Image launch helper unavailable: \(String(describing: error), privacy: .public)")
+                succeeded = false
+            }
+            DispatchQueue.main.async {
+                self.pendingRequests -= 1
+                self.finishPreparation(succeeded: succeeded)
+            }
+        }
+    }
+
+    private func finishPreparation(succeeded: Bool) {
+        preparingStorage = false
+        let requests = waitingRequests
+        waitingRequests.removeAll()
+        guard succeeded else {
+            failed = true
+            showExternalDiskMissing()
+            terminateIfFinished()
+            return
+        }
+        storagePrepared = true
+        for urls in requests where !failed { openRealApplication(urls: urls) }
+        terminateIfFinished()
     }
 
     private func terminateIfFinished() {

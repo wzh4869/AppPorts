@@ -1,6 +1,828 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "找不到 AppPorts？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't find AppPorts?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到 AppPorts？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到 AppPorts？"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿No encuentras AppPorts?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous ne trouvez pas AppPorts ?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não consegue encontrar AppPorts?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non riesci a trovare AppPorts?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie können AppPorts nicht finden?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts が見つかりませんか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts를 찾을 수 없나요?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не можете найти AppPorts?"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يمكن العثور على AppPorts؟"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts नहीं मिल रहा?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tìm thấy AppPorts?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่พบ AppPorts?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts'ları bulamıyor musunuz?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunt u AppPorts niet vinden?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie możesz znaleźć AppPorts?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat menemukan AppPorts?"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne povas trovi AppPorts?"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠁⠝⠄⠞ ⠋⠊⠝⠙ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠦"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找⑧↘ AppPorts？"
+          }
+        }
+      }
+    },
+    "把图标拖入“完全磁盘访问权限”列表，再打开开关。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the icon into the “Full Disk Access” list, then turn on the switch."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把图标拖入“完全磁盘访问权限”列表，再打开开关。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將圖示拖入「完整磁碟存取」清單中，然後開啟開關。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastre el icono a la lista \"Acceso total al disco\" y luego active el interruptor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser l'icône dans la liste « Accès complet au disque », puis activez le commutateur."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste o ícone para a lista “Acesso total ao disco” e ligue a chave."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina l'icona nell'elenco \"Accesso completo al disco\", quindi attiva l'interruttore."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziehen Sie das Symbol in die Liste „Vollständiger Festplattenzugriff“ und schalten Sie dann den Schalter ein."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンを「フルディスクアクセス」リストにドラッグし、スイッチをオンにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아이콘을 \"전체 디스크 액세스\" 목록으로 드래그한 다음 스위치를 켜십시오."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите значок в список «Полный доступ к диску», затем включите переключатель."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب الأيقونة إلى قائمة «الوصول الكامل إلى القرص»، ثم شغّل المفتاح."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आइकन को \"पूर्ण डिस्क एक्सेस\" सूची में खींचें, फिर स्विच चालू करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kéo biểu tượng vào danh sách “Full Disk Access”, sau đó bật công tắc."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลากไอคอนไปที่รายการ “การเข้าถึงดิสก์แบบเต็ม” จากนั้นเปิดสวิตช์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simgeyi “Tam Disk Erişimi” listesine sürükleyin, ardından anahtarı açın."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep het pictogram naar de lijst \"Volledige schijftoegang\" en zet vervolgens de schakelaar aan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij ikonę na listę „Pełny dostęp do dysku”, a następnie włącz przełącznik."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seret ikon ke dalam daftar “Akses Disk Penuh”, lalu hidupkan sakelar."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trenu la ikonon en la liston \"Plena Disko-Aliro\", tiam ŝaltu la ŝaltilon."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠗⠁⠛ ⠞⠓⠑ ⠊⠉⠕⠝ ⠊⠝⠞⠕ ⠞⠓⠑ ⠦⠠⠋⠥⠇⠇ ⠠⠙⠊⠎⠅ ⠠⠁⠉⠉⠑⠎⠎⠴ ⠇⠊⠎⠞⠂ ⠞⠓⠑⠝ ⠞⠥⠗⠝ ⠕⠝ ⠞⠓⠑ ⠎⠺⠊⠞⠉⠓⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把圖標拖入“唍洤磁盤訪問權限”列表，再打開開關。"
+          }
+        }
+      }
+    },
+    "将 AppPorts 图标拖入系统设置的应用列表" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the AppPorts icon into the application list in System Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 AppPorts 图标拖入系统设置的应用列表"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將AppPorts圖示拖曳至「系統設定」中的應用程式清單中"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastre el ícono de AppPorts a la lista de aplicaciones en Configuración del sistema"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser l'icône AppPorts dans la liste des applications dans Paramètres système"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste o ícone AppPorts para a lista de aplicativos nas configurações do sistema"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina l'icona AppPorts nell'elenco delle applicazioni in Impostazioni di sistema"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziehen Sie das AppPorts-Symbol in die Anwendungsliste in den Systemeinstellungen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts アイコンをシステム設定のアプリケーション リストにドラッグします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 아이콘을 시스템 설정의 애플리케이션 목록으로 드래그하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите значок AppPorts в список приложений в настройках системы."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب أيقونة AppPorts إلى قائمة التطبيقات في إعدادات النظام"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम सेटिंग्स में AppPorts आइकन को एप्लिकेशन सूची में खींचें"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kéo biểu tượng AppPorts vào danh sách ứng dụng trong Cài đặt hệ thống"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลากไอคอน AppPorts ลงในรายการแอปพลิเคชันในการตั้งค่าระบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts simgesini Sistem Ayarlarındaki uygulama listesine sürükleyin"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep het AppPorts-pictogram naar de lijst met applicaties in Systeeminstellingen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij ikonę AppPorts na listę aplikacji w Ustawieniach systemu"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seret ikon AppPorts ke dalam daftar aplikasi di Pengaturan Sistem"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trenu la ikonon de AppPorts en la aplikliston en Sistemaj Agordoj"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠗⠁⠛ ⠞⠓⠑ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠉⠕⠝ ⠊⠝⠞⠕ ⠞⠓⠑ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠊⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 AppPorts 圖標拖入繫統設寘の應詠列表"
+          }
+        }
+      }
+    },
+    "请先将 AppPorts 放入“应用程序”文件夹" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move AppPorts to the Applications folder first"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先将 AppPorts 放入“应用程序”文件夹"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "首先將 AppPorts 移到應用程式資料夾"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero mueva AppPorts a la carpeta Aplicaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacez d'abord AppPorts vers le dossier Applications"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mova AppPorts para a pasta Aplicativos primeiro"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta prima AppPorts nella cartella Applicazioni"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschieben Sie AppPorts zunächst in den Anwendungsordner"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まず AppPorts をアプリケーション フォルダーに移動します"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "먼저 AppPorts를 응용 프로그램 폴더로 이동하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сначала переместите AppPorts в папку «Приложения»."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انقل AppPorts إلى مجلد التطبيقات أولاً"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सबसे पहले AppPorts को एप्लिकेशन फ़ोल्डर में ले जाएँ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trước tiên hãy di chuyển AppPorts vào thư mục Ứng dụng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้าย AppPorts ไปยังโฟลเดอร์ Applications ก่อน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts'ları önce Uygulamalar klasörüne taşıyın"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats AppPorts eerst naar de map Programma's"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najpierw przenieś AppPorts do folderu Aplikacje"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pindahkan AppPorts ke folder Aplikasi terlebih dahulu"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unue movu AppPorts al la dosierujo de Aplikoj"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠕⠧⠑ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠞⠕ ⠞⠓⠑ ⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝⠎ ⠋⠕⠇⠙⠑⠗ ⠋⠊⠗⠎⠞"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先將 AppPorts 放入“應詠程序”攵件夹"
+          }
+        }
+      }
+    },
+    "请移动 AppPorts，并从“应用程序”文件夹重新打开后，再继续此操作。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move AppPorts to the Applications folder, then reopen it from there before continuing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请移动 AppPorts，并从“应用程序”文件夹重新打开后，再继续此操作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將 AppPorts 移至「應用程式」資料夾，然後從那裡重新開啟它，然後再繼續。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mueva AppPorts a la carpeta Aplicaciones, luego vuelva a abrirla desde allí antes de continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacez AppPorts vers le dossier Applications, puis rouvrez-le à partir de là avant de continuer."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mova AppPorts para a pasta Aplicativos e reabra-o antes de continuar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta AppPorts nella cartella Applicazioni, quindi riaprila da lì prima di continuare."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschieben Sie AppPorts in den Anwendungsordner und öffnen Sie es von dort aus erneut, bevor Sie fortfahren."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts をアプリケーション フォルダーに移動し、そこから再度開いてから続行します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts를 응용 프로그램 폴더로 이동한 다음 계속하기 전에 거기에서 다시 엽니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переместите AppPorts в папку «Приложения», затем снова откройте его оттуда, прежде чем продолжить."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انقل AppPorts إلى مجلد التطبيقات، ثم أعد فتحه من هناك قبل المتابعة."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts को एप्लिकेशन फ़ोल्डर में ले जाएं, फिर जारी रखने से पहले इसे वहां से दोबारा खोलें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển AppPorts vào thư mục Ứng dụng, sau đó mở lại từ đó trước khi tiếp tục."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้าย AppPorts ไปยังโฟลเดอร์ Applications จากนั้นเปิดใหม่อีกครั้งจากที่นั่นก่อนดำเนินการต่อ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts'ları Uygulamalar klasörüne taşıyın ve devam etmeden önce oradan yeniden açın."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats AppPorts naar de map Programma's en open het vanaf daar opnieuw voordat u verdergaat."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenieś AppPorts do folderu Aplikacje, a następnie otwórz go ponownie przed kontynuowaniem."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pindahkan AppPorts ke folder Aplikasi, lalu buka kembali dari sana sebelum melanjutkan."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movu AppPorts al la dosierujo de Aplikoj, tiam remalfermu ĝin de tie antaŭ ol daŭrigi."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠕⠧⠑ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠞⠕ ⠞⠓⠑ ⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝⠎ ⠋⠕⠇⠙⠑⠗⠂ ⠞⠓⠑⠝ ⠗⠑⠕⠏⠑⠝ ⠊⠞ ⠋⠗⠕⠍ ⠞⠓⠑⠗⠑ ⠃⠑⠋⠕⠗⠑ ⠉⠕⠝⠞⠊⠝⠥⠊⠝⠛⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請迻動 AppPorts，並苁“應詠程序”攵件夹重噺打開後，再繼續此操莋。"
+          }
+        }
+      }
+    },
+    "打开应用程序文件夹" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Applications Folder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开应用程序文件夹"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟應用程式資料夾"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir carpeta Aplicaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le dossier Applications"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir pasta Aplicativos"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri cartella Applicazioni"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordner Programme öffnen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリケーションフォルダを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "응용 프로그램 폴더 열기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть папку «Приложения»"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فتح مجلد التطبيقات"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एप्लिकेशन फ़ोल्डर खोलें"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở thư mục Ứng dụng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดโฟลเดอร์แอปพลิเคชัน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulamalar klasörünü aç"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open map Programma’s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz folder Aplikacje"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka folder Aplikasi"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfermi la dosierujon Aplikaĵoj"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠕⠏⠑⠝ ⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝⠎ ⠠⠋⠕⠇⠙⠑⠗"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開應詠程序攵件夹"
+          }
+        }
+      }
+    },
     " 可释放" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -408,143 +1230,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "--deep 簽洺失敗，囙退↘表层簽洺"
-          }
-        }
-      }
-    },
-    ", " : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "، "
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠂ "
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "、"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
-          }
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : ", "
           }
         }
       }
@@ -35082,6 +35767,126 @@
             "state" : "translated",
             "value" : "以后使用映像中的应用前，请先打开 AppPorts 挂载映像。退出 AppPorts 不会卸载映像。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用映像中的應用程式前，請先開啟 AppPorts 掛載映像。結束 AppPorts 不會卸載映像。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de usar aplicaciones en esta imagen, abra AppPorts para montarlas. Salir de AppPorts no desmonta la imagen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avant d'utiliser des applications dans cette image, ouvrez AppPorts pour la monter. Quitter AppPorts ne démonte pas l'image."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de usar os aplicativos nesta imagem, abra AppPorts para montá-lo. Sair do AppPorts não desmonta a imagem."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prima di utilizzare le app in questa immagine, apri AppPorts per montarla. L'uscita da AppPorts non smonta l'immagine."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bevor Sie Apps in diesem Image verwenden, öffnen Sie AppPorts, um es bereitzustellen. Durch das Beenden von AppPorts wird die Bereitstellung des Images nicht aufgehoben."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このイメージ内のアプリを使用する前に、AppPorts を開いてマウントします。 AppPorts を終了してもイメージはアンマウントされません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 이미지에서 앱을 사용하기 전에 AppPorts를 열어 탑재하세요. AppPorts를 종료해도 이미지가 마운트 해제되지 않습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прежде чем использовать приложения из этого образа, откройте AppPorts, чтобы смонтировать их. Выход из AppPorts не отключает образ."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قبل استخدام التطبيقات الموجودة في صورة القرص هذه، افتح AppPorts لتركيبها. لا يؤدي إنهاء AppPorts إلى إلغاء تركيب صورة القرص."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस छवि में ऐप्स का उपयोग करने से पहले, इसे माउंट करने के लिए AppPorts खोलें। AppPorts छोड़ने से छवि अनमाउंट नहीं होती."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trước khi sử dụng các ứng dụng trong hình ảnh này, hãy mở AppPorts để gắn kết nó. Việc thoát AppPorts không ngắt kết nối hình ảnh."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ก่อนที่จะใช้แอปในภาพนี้ ให้เปิด AppPorts เพื่อติดตั้ง การออกจาก AppPorts จะไม่ยกเลิกการต่อเชื่อมอิมเมจ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu görüntüdeki uygulamaları kullanmadan önce eklemek için AppPorts'u açın. AppPorts'tan çıkmak görüntünün bağlantısını kesmez."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voordat u apps in deze afbeelding gebruikt, opent u AppPorts om deze te koppelen. Als u AppPorts afsluit, wordt de afbeelding niet ontkoppeld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przed użyciem aplikacji przedstawionych na tym obrazie otwórz AppPorts, aby je zamontować. Zamknięcie AppPorts nie powoduje odmontowania obrazu."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sebelum menggunakan aplikasi di gambar ini, buka AppPorts untuk memasangnya. Keluar dari AppPorts tidak melepas gambar."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antaŭ ol uzi programojn en ĉi tiu bildo, malfermu AppPorts por munti ĝin. Forlasi AppPorts ne malmuntas la bildon."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠃⠑⠋⠕⠗⠑ ⠥⠎⠊⠝⠛ ⠁⠏⠏⠎ ⠊⠝ ⠞⠓⠊⠎ ⠊⠍⠁⠛⠑⠂ ⠕⠏⠑⠝ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠞⠕ ⠍⠕⠥⠝⠞ ⠊⠞⠲ ⠠⠟⠥⠊⠞⠞⠊⠝⠛ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠙⠕⠑⠎ ⠝⠕⠞ ⠥⠝⠍⠕⠥⠝⠞ ⠞⠓⠑ ⠊⠍⠁⠛⠑⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以後使詠映像㊥の應詠前，請先打開 AppPorts 挂载映像。退絀 AppPorts ⑧會卸载映像。"
+          }
         }
       }
     },
@@ -36469,11 +37274,131 @@
             "state" : "translated",
             "value" : "使用率"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用途"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisation"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilizzo"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzung"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用法"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용법"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использование"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاستخدام"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपयोग"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cách sử dụng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การใช้งาน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kullanım"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użycie"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penggunaan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzado"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠎⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使詠率"
+          }
         }
       }
     },
     "侧边栏宽度" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -36485,6 +37410,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "侧边栏宽度"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "側邊欄寬度"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancho de la barra lateral"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Largeur de la barre latérale"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Largura da barra lateral"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Larghezza della barra laterale"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breite der Seitenleiste"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サイドバーの幅"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사이드바 너비"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ширина боковой панели"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض الشريط الجانبي"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "साइडबार की चौड़ाई"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiều rộng thanh bên"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ความกว้างของแถบด้านข้าง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kenar Çubuğu Genişliği"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breedte zijbalk"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szerokość paska bocznego"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lebar Bilah Sisi"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flankmenuo Larĝo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠊⠙⠑⠃⠁⠗ ⠠⠺⠊⠙⠞⠓"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "側边栏寬度"
           }
         }
       }
@@ -38134,7 +39179,7 @@
       }
     },
     "保留的旧副本：%@" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -43081,6 +44126,126 @@
             "state" : "translated",
             "value" : "最大容量（GiB）"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大容量 (GiB)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capacidad máxima (GiB)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capacité maximale (GiB)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capacidade Máxima (GiB)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capacità massima (GiB)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximale Kapazität (GiB)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大容量 (GiB)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대 용량(GiB)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Максимальная емкость (GiB)"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "السعة القصوى (GiB)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अधिकतम क्षमता (GiB)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Công suất tối đa (GiB)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ความจุสูงสุด (GiB)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimum Kapasite (GiB)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximale capaciteit (GiB)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksymalna pojemność (GiB)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapasitas Maksimum (GiB)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimuma Kapacito (GiB)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠁⠭⠊⠍⠥⠍ ⠠⠉⠁⠏⠁⠉⠊⠞⠽ ⠐⠣⠠⠛⠊⠠⠃⠐⠜"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大容量（GiB）"
+          }
         }
       }
     },
@@ -45153,6 +46318,126 @@
             "state" : "translated",
             "value" : "创建 APFS 映像"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建立APFS鏡像"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear imagen APFS"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer une image APFS"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar imagem APFS"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea immagine APFS"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen Sie ein APFS-Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APFSイメージの作成"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APFS 이미지 생성"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создать образ APFS"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء صورة APFS"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APFS छवि बनाएं"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tạo hình ảnh APFS"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สร้างภาพ APFS"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "APFS Görüntüsü Oluştur"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak een APFS-afbeelding"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utwórz obraz APFS"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buat Gambar APFS"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kreu APFS-bildon"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠗⠑⠁⠞⠑ ⠠⠁⠠⠏⠠⠋⠠⠎ ⠠⠊⠍⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建 APFS 映像"
+          }
         }
       }
     },
@@ -45443,6 +46728,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "创建并使用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "創建和使用"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear y usar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer et utiliser"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar e usar"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea e usa"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen und verwenden"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作成して使用する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "생성 및 사용"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создавать и использовать"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء واستخدام"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बनाएं और उपयोग करें"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tạo và sử dụng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สร้างและใช้งาน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oluşturun ve Kullanın"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maken en gebruiken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twórz i używaj"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buat dan Gunakan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kreu kaj Uzu"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠗⠑⠁⠞⠑ ⠁⠝⠙ ⠠⠥⠎⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建並使詠"
           }
         }
       }
@@ -52435,7 +53840,7 @@
       }
     },
     "原始签名备份尚未保留完成，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -63807,7 +65212,7 @@
       }
     },
     "外观" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -63816,6 +65221,126 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外观"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外觀"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apariencia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apparence"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparência"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aspetto"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aussehen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外観"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "외관"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Внешний вид"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المظهر"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दिखावट"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngoại hình"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลักษณะที่ปรากฏ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görünüm"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uiterlijk"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wygląd"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penampilan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aspekto"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠑⠁⠗⠁⠝⠉⠑"
+          }
+        },
+        "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "外观"
@@ -68085,6 +69610,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "存放位置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地點"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emplacement"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localização"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizione"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Расположение"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الموقع"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्थान"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vị trí"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ที่ตั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konum"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Locatie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokalizacja"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokasi"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loko"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠕⠉⠁⠞⠊⠕⠝"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "邨放位寘"
           }
         }
       }
@@ -79339,6 +80984,126 @@
             "state" : "translated",
             "value" : "已用"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "二手"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisé"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usado"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usato"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebraucht"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中古品"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중고"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Б/у"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مستعملة"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रयुक्त"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "đã qua sử dụng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้แล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kullanılmış"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruikt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używany"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digunakan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzita"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠎⠑⠙"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已詠"
+          }
         }
       }
     },
@@ -80160,23 +81925,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已讀取 %@"
-          }
-        }
-      }
-    },
-    "已迁出（估算）" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Offloaded (estimated)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已迁出（估算）"
           }
         }
       }
@@ -94847,7 +96595,7 @@
       }
     },
     "当前数据：%@" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -101286,7 +103034,7 @@
       }
     },
     "恢复自动挂载" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -102668,6 +104416,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "所在磁盘"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁碟空間"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espacio del volumen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage du volume"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armazenamento do volume"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spazio del volume"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speicher des Volumes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ボリュームの容量"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "볼륨 저장 공간"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Хранилище тома"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مساحة تخزين وحدة التخزين"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "वॉल्यूम संग्रहण"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dung lượng ổ đĩa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "พื้นที่จัดเก็บของโวลุ่ม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Birim depolama alanı"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volumeopslag"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pamięć woluminu"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penyimpanan volume"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volumena stokado"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠧⠕⠇⠥⠍⠑ ⠠⠎⠞⠕⠗⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所╪磁盤"
           }
         }
       }
@@ -104193,6 +106061,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开已有映像…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟現有影像..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir imagen existente..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir l’image existante…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir imagem existente…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri immagine esistente..."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorhandenes Bild öffnen…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "既存のイメージを開きます…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기존 이미지 열기…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть существующее изображение…"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فتح الصورة الموجودة..."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मौजूदा छवि खोलें…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở hình ảnh hiện có…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดภาพที่มีอยู่..."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mevcut Resmi Aç…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestaande afbeelding openen…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz istniejący obraz…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Gambar yang Ada…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfermu Ekzistantan Bildon..."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠕⠏⠑⠝ ⠠⠑⠭⠊⠎⠞⠊⠝⠛ ⠠⠊⠍⠁⠛⠑⠲⠲⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開已有映像…"
           }
         }
       }
@@ -110089,7 +112077,7 @@
       }
     },
     "授权清理旧副本" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -122707,6 +124695,126 @@
             "state" : "translated",
             "value" : "无法核对映像对应的磁盘，请在 Finder 中检查后重试。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法驗證屬於該映像的磁碟。在 Finder 中檢查並重試。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede verificar el disco que pertenece a esta imagen. Compruébalo en Finder y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de vérifier le disque appartenant à cette image. Vérifiez-le dans le Finder et réessayez."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar o disco pertencente a esta imagem. Verifique no Finder e tente novamente."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile verificare il disco appartenente a questa immagine. Controllalo nel Finder e riprova."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der zu diesem Image gehörende Datenträger konnte nicht überprüft werden. Überprüfen Sie es im Finder und versuchen Sie es erneut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このイメージに属するディスクを確認できません。 Finder で確認して、もう一度試してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 이미지에 속한 디스크를 확인할 수 없습니다. Finder에서 확인하고 다시 시도해 보세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Невозможно проверить принадлежность диска к этому образу. Проверьте его в Finder и повторите попытку."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير قادر على التحقق من القرص الذي ينتمي إلى هذه الصورة. تحقق من ذلك في Finder وحاول مرة أخرى."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस छवि से संबंधित डिस्क को सत्यापित करने में असमर्थ. इसे Finder में जांचें और पुनः प्रयास करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác minh đĩa thuộc về hình ảnh này. Hãy kiểm tra nó trong Finder và thử lại."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถตรวจสอบดิสก์ที่เป็นของอิมเมจนี้ได้ ตรวจสอบใน Finder แล้วลองอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu görüntüye ait disk doğrulanamıyor. Finder'da kontrol edip tekrar deneyin."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan de schijf die bij deze image hoort niet verifiëren. Controleer het in Finder en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można zweryfikować dysku należącego do tego obrazu. Sprawdź to w Finderze i spróbuj ponownie."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat memverifikasi disk milik gambar ini. Periksa di Finder dan coba lagi."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblas kontroli la diskon apartenantan al ĉi tiu bildo. Kontrolu ĝin en Finder kaj provu denove."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠝⠁⠃⠇⠑ ⠞⠕ ⠧⠑⠗⠊⠋⠽ ⠞⠓⠑ ⠙⠊⠎⠅ ⠃⠑⠇⠕⠝⠛⠊⠝⠛ ⠞⠕ ⠞⠓⠊⠎ ⠊⠍⠁⠛⠑⠲ ⠠⠉⠓⠑⠉⠅ ⠊⠞ ⠊⠝ ⠠⠋⠊⠝⠙⠑⠗ ⠁⠝⠙ ⠞⠗⠽ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法核對映像對應の磁盤，請╪ Finder ㊥檢查後重試。"
+          }
         }
       }
     },
@@ -124233,6 +126341,126 @@
             "state" : "translated",
             "value" : "无法确认映像中的唯一可写 APFS 磁盘，未更改迁移目标。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法辨識映像中的單一可寫入 APFS 磁碟區。遷移目的地沒有改變。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede identificar un único volumen APFS grabable en la imagen. El destino de la migración no fue cambiado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'identifier un seul volume APFS inscriptible dans l'image. La destination de la migration n'a pas été modifiée."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível identificar um único volume APFS gravável na imagem. O destino da migração não foi alterado."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile identificare un singolo volume APFS scrivibile nell'immagine. La destinazione della migrazione non è stata modificata."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es kann kein einzelnes beschreibbares APFS-Volume im Image identifiziert werden. Das Migrationsziel wurde nicht geändert."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イメージ内で単一の書き込み可能な APFS ボリュームを識別できません。移行先は変更されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지에서 쓰기 가능한 단일 APFS 볼륨을 식별할 수 없습니다. 마이그레이션 대상이 변경되지 않았습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Невозможно идентифицировать в образе ни один доступный для записи том APFS. Место назначения миграции не изменилось."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير قادر على تحديد وحدة تخزين APFS واحدة قابلة للكتابة في الصورة. لم يتم تغيير وجهة الترحيل."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छवि में एक भी लिखने योग्य APFS वॉल्यूम की पहचान करने में असमर्थ। प्रवासन गंतव्य नहीं बदला गया."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác định một ổ APFS có thể ghi trong hình ảnh. Đích di chuyển không thay đổi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถระบุวอลุ่ม APFS ที่เขียนได้เดี่ยวในรูปภาพ ปลายทางการย้ายข้อมูลไม่เปลี่ยนแปลง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntüde tek bir yazılabilir APFS birimi tanımlanamıyor. Taşıma hedefi değişmedi."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan geen enkel beschrijfbaar APFS-volume in de afbeelding identificeren. De migratiebestemming is niet gewijzigd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można zidentyfikować na obrazie pojedynczego woluminu APFS z możliwością zapisu. Miejsce docelowe migracji nie zostało zmienione."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat mengidentifikasi satu volume APFS yang dapat ditulisi dalam gambar. Tujuan migrasi tidak diubah."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblas identigi ununuran skribeblan APFS-volumon en la bildo. La migradcelloko ne estis ŝanĝita."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠝⠁⠃⠇⠑ ⠞⠕ ⠊⠙⠑⠝⠞⠊⠋⠽ ⠁ ⠎⠊⠝⠛⠇⠑ ⠺⠗⠊⠞⠁⠃⠇⠑ ⠠⠁⠠⠏⠠⠋⠠⠎ ⠧⠕⠇⠥⠍⠑ ⠊⠝ ⠞⠓⠑ ⠊⠍⠁⠛⠑⠲ ⠠⠞⠓⠑ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠺⠁⠎ ⠝⠕⠞ ⠉⠓⠁⠝⠛⠑⠙⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法確認映像㊥の唯一可寫 APFS 磁盤，未哽改遷迻目標。"
+          }
         }
       }
     },
@@ -125348,11 +127576,131 @@
             "state" : "translated",
             "value" : "无法访问所选目录或映像，请先在 Finder 中连接共享。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法存取選定的資料夾或影像。首先在 Finder 中連接共享。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede acceder a la carpeta o imagen seleccionada. Primero conecte el recurso compartido en Finder."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'accéder au dossier ou à l'image sélectionné. Connectez d’abord le partage dans le Finder."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível acessar a pasta ou imagem selecionada. Conecte o compartilhamento no Finder primeiro."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile accedere alla cartella o all'immagine selezionata. Connetti prima la condivisione nel Finder."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf den ausgewählten Ordner oder das ausgewählte Bild kann nicht zugegriffen werden. Verbinden Sie die Freigabe zunächst im Finder."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したフォルダーまたは画像にアクセスできません。まず Finder で共有を接続します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 폴더나 이미지에 접근할 수 없습니다. 먼저 Finder에서 공유를 연결하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Невозможно получить доступ к выбранной папке или изображению. Сначала подключите общий ресурс в Finder."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير قادر على الوصول إلى المجلد أو الصورة المحددة. قم بتوصيل المشاركة في Finder أولاً."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चयनित फ़ोल्डर या छवि तक पहुँचने में असमर्थ. पहले Finder में शेयर को कनेक्ट करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể truy cập thư mục hoặc hình ảnh đã chọn. Kết nối chia sẻ trong Finder trước."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถเข้าถึงโฟลเดอร์หรือรูปภาพที่เลือกได้ เชื่อมต่อการแชร์ใน Finder ก่อน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilen klasöre veya resme erişilemiyor. Paylaşımı önce Finder'a bağlayın."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan geen toegang krijgen tot de geselecteerde map of afbeelding. Verbind eerst het aandeel in Finder."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można uzyskać dostępu do wybranego folderu lub obrazu. Najpierw podłącz udział w Finderze."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat mengakses folder atau gambar yang dipilih. Hubungkan bagian di Finder terlebih dahulu."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblas aliri la elektitan dosierujon aŭ bildon. Unue konektu la parton en Finder."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠝⠁⠃⠇⠑ ⠞⠕ ⠁⠉⠉⠑⠎⠎ ⠞⠓⠑ ⠎⠑⠇⠑⠉⠞⠑⠙ ⠋⠕⠇⠙⠑⠗ ⠕⠗ ⠊⠍⠁⠛⠑⠲ ⠠⠉⠕⠝⠝⠑⠉⠞ ⠞⠓⠑ ⠎⠓⠁⠗⠑ ⠊⠝ ⠠⠋⠊⠝⠙⠑⠗ ⠋⠊⠗⠎⠞⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法訪問所選目錄或映像，請先╪ Finder ㊥連啑共享。"
+          }
         }
       }
     },
     "无法访问操作锁文件，本次未执行。请检查访问权限或导出诊断包。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -129738,7 +132086,7 @@
       }
     },
     "旧副本由管理员（root）拥有，需要授权后才能清理。当前数据未受影响。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -131121,6 +133469,126 @@
             "state" : "translated",
             "value" : "映像内空间"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影像內部空間"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagen interior del espacio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espace à l’intérieur de l’image"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espaço dentro da imagem"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spazio all'interno dell'immagine"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raum im Bild"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像内のスペース"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지 내부 공간"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пространство внутри изображения"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الفضاء داخل الصورة"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छवि के अंदर अंतरिक्ष"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không gian bên trong hình ảnh"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "พื้นที่ภายในรูปภาพ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İçerideki Boşluk Görüntüsü"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruimte binnen afbeelding"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przestrzeń wewnątrz obrazu"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruang Di Dalam Gambar"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spaco Interne Bildo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠏⠁⠉⠑ ⠠⠊⠝⠎⠊⠙⠑ ⠠⠊⠍⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像内空間"
+          }
         }
       }
     },
@@ -131137,6 +133605,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "映像挂载位置已被占用，请在 Finder 中检查后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鏡像掛載位置被佔用。在 Finder 中檢查並重試。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ubicación de montaje de la imagen está ocupada. Compruébalo en Finder y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'emplacement de montage de l'image est occupé. Vérifiez-le dans le Finder et réessayez."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O local de montagem da imagem está ocupado. Verifique no Finder e tente novamente."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La posizione di montaggio dell'immagine è occupata. Controllalo nel Finder e riprova."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Image-Mount-Speicherort ist belegt. Überprüfen Sie es im Finder und versuchen Sie es erneut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イメージのマウント場所が占有されています。 Finder で確認して、もう一度試してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지 마운트 위치가 사용 중입니다. Finder에서 확인하고 다시 시도해 보세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Место для монтирования образа занято. Проверьте его в Finder и повторите попытку."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "موقع تحميل الصورة مشغول. تحقق من ذلك في Finder وحاول مرة أخرى."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छवि माउंट स्थान पर कब्जा कर लिया गया है। इसे Finder में जांचें और पुनः प्रयास करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vị trí gắn hình ảnh đã bị chiếm dụng. Hãy kiểm tra nó trong Finder và thử lại."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตำแหน่งเมานต์อิมเมจถูกครอบครอง ตรวจสอบใน Finder แล้วลองอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntü bağlama konumu dolu. Finder'da kontrol edip tekrar deneyin."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De beeldmontagelocatie is bezet. Controleer het in Finder en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miejsce montażu obrazu jest zajęte. Sprawdź to w Finderze i spróbuj ponownie."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokasi pemasangan gambar sudah terisi. Periksa di Finder dan coba lagi."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La bilda munta loko estas okupata. Kontrolu ĝin en Finder kaj provu denove."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠊⠍⠁⠛⠑ ⠍⠕⠥⠝⠞ ⠇⠕⠉⠁⠞⠊⠕⠝ ⠊⠎ ⠕⠉⠉⠥⠏⠊⠑⠙⠲ ⠠⠉⠓⠑⠉⠅ ⠊⠞ ⠊⠝ ⠠⠋⠊⠝⠙⠑⠗ ⠁⠝⠙ ⠞⠗⠽ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像挂载位寘已被占詠，請╪ Finder ㊥檢查後重試。"
           }
         }
       }
@@ -131155,6 +133743,126 @@
             "state" : "translated",
             "value" : "映像按实际写入占用空间，可存放在已挂载的 SMB 共享中。同一映像请只在一台 Mac 上写入。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像依實際寫入量佔用空間，可存放於已掛載的 SMB 共享資料夾。同一映像請僅由一台 Mac 寫入。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La imagen utiliza espacio a medida que se escriben los datos y se puede almacenar en un recurso compartido SMB montado. Escribe en una imagen desde una sola Mac a la vez."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'image utilise de l'espace lors de l'écriture des données et peut être stockée sur un partage SMB monté. Écrivez sur une image à partir d’un seul Mac à la fois."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A imagem usa espaço enquanto os dados são gravados e pode ser armazenada em um compartilhamento SMB montado. Escreva em uma imagem de apenas um Mac por vez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'immagine utilizza lo spazio durante la scrittura dei dati e può essere archiviata in una condivisione SMB montata. Scrivi su un'immagine da un solo Mac alla volta."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Image belegt beim Schreiben von Daten Speicherplatz und kann auf einer eingebundenen SMB-Freigabe gespeichert werden. Schreiben Sie immer nur von einem Mac gleichzeitig auf dasselbe Image."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イメージはデータの書き込み時にスペースを使用し、マウントされた SMB 共有に保存できます。一度に 1 台の Mac からのみイメージに書き込みます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지는 데이터가 기록될 때 공간을 사용하며 탑재된 SMB 공유에 저장할 수 있습니다. 한 번에 하나의 Mac에서만 이미지에 쓸 수 있습니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Образ использует пространство при записи данных и может храниться на подключенном общем ресурсе SMB. Записывайте изображения только с одного Mac одновременно."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تستخدم الصورة المساحة أثناء كتابة البيانات ويمكن تخزينها على مشاركة SMB مثبتة. الكتابة على صورة من جهاز Mac واحد فقط في المرة الواحدة."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेटा लिखते समय छवि स्थान का उपयोग करती है और इसे माउंटेड SMB शेयर पर संग्रहीत किया जा सकता है। एक समय में केवल एक मैक से छवि पर लिखें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hình ảnh sử dụng không gian khi dữ liệu được ghi và có thể được lưu trữ trên một chia sẻ SMB được gắn kết. Mỗi lần chỉ ghi vào một hình ảnh từ một máy Mac."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รูปภาพใช้พื้นที่ในการเขียนข้อมูลและสามารถจัดเก็บไว้ในการแชร์ SMB ที่เมาท์ได้ เขียนลงในรูปภาพจาก Mac เครื่องเดียวในแต่ละครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntü, veri yazılırken alan kullanır ve takılı bir SMB paylaşımında saklanabilir. Aynı anda yalnızca bir Mac'ten bir görüntüye yazın."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De afbeelding gebruikt ruimte terwijl gegevens worden geschreven en kan worden opgeslagen op een gekoppelde SMB-share. Schrijf vanaf slechts één Mac tegelijk naar een afbeelding."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obraz zajmuje miejsce podczas zapisywania danych i może być przechowywany w zamontowanym udziale SMB. Zapisuj na obrazie tylko z jednego komputera Mac w danym momencie."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gambar menggunakan ruang saat data ditulis dan dapat disimpan di share SMB yang terpasang. Menulis ke gambar hanya dari satu Mac dalam satu waktu."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La bildo uzas spacon kiam datumoj estas skribitaj kaj povas esti konservita sur muntita SMB-akcio. Skribu al bildo de nur unu Mac samtempe."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠊⠍⠁⠛⠑ ⠥⠎⠑⠎ ⠎⠏⠁⠉⠑ ⠁⠎ ⠙⠁⠞⠁ ⠊⠎ ⠺⠗⠊⠞⠞⠑⠝ ⠁⠝⠙ ⠉⠁⠝ ⠃⠑ ⠎⠞⠕⠗⠑⠙ ⠕⠝ ⠁ ⠍⠕⠥⠝⠞⠑⠙ ⠠⠎⠠⠍⠠⠃ ⠎⠓⠁⠗⠑⠲ ⠠⠺⠗⠊⠞⠑ ⠞⠕ ⠁⠝ ⠊⠍⠁⠛⠑ ⠋⠗⠕⠍ ⠕⠝⠇⠽ ⠕⠝⠑ ⠠⠍⠁⠉ ⠁⠞ ⠁ ⠞⠊⠍⠑⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像按實際寫入占詠空間，可邨放╪已挂载の SMB 共享㊥。茼一映像請只╪一台 Mac 上寫入。"
+          }
         }
       }
     },
@@ -131172,6 +133880,126 @@
             "state" : "translated",
             "value" : "映像操作未完成，已有文件会保留。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影像操作未完成。現有文件將被保留。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La operación de imagen no se completó. Los archivos existentes se conservan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'opération d'image n'a pas abouti. Les fichiers existants sont conservés."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A operação de imagem não foi concluída. Os arquivos existentes são mantidos."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'operazione sull'immagine non è stata completata. I file esistenti vengono conservati."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Bildvorgang wurde nicht abgeschlossen. Vorhandene Dateien bleiben erhalten."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イメージ操作が完了しませんでした。既存のファイルは保持されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지 작업이 완료되지 않았습니다. 기존 파일은 유지됩니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Операция с изображением не завершена. Существующие файлы сохраняются."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم تكتمل عملية الصورة. يتم الاحتفاظ بالملفات الموجودة."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छवि कार्रवाई पूर्ण नहीं हुई. मौजूदा फ़ाइलें बरकरार रखी जाती हैं."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thao tác hình ảnh chưa hoàn tất. Các tập tin hiện có được giữ lại."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การทำงานของรูปภาพไม่เสร็จสมบูรณ์ ไฟล์ที่มีอยู่จะถูกเก็บไว้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntü işlemi tamamlanmadı. Mevcut dosyalar korunur."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De beeldbewerking is niet voltooid. Bestaande bestanden blijven behouden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operacja obrazu nie została ukończona. Istniejące pliki zostaną zachowane."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pengoperasian gambar tidak selesai. File yang ada dipertahankan."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La bildoperacio ne finiĝis. Ekzistantaj dosieroj estas konservitaj."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠊⠍⠁⠛⠑ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠙⠊⠙ ⠝⠕⠞ ⠉⠕⠍⠏⠇⠑⠞⠑⠲ ⠠⠑⠭⠊⠎⠞⠊⠝⠛ ⠋⠊⠇⠑⠎ ⠁⠗⠑ ⠗⠑⠞⠁⠊⠝⠑⠙⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像操莋未唍成，已有攵件會葆畱。"
+          }
         }
       }
     },
@@ -131188,6 +134016,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "映像记录无效，请重新打开映像。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影像記錄無效。再次打開圖像。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El registro de imagen no es válido. Abre la imagen nuevamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'enregistrement d'image n'est pas valide. Ouvrez à nouveau l'image."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O registro da imagem é inválido. Abra a imagem novamente."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il record dell'immagine non è valido. Apri di nuovo l'immagine."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Bilddatensatz ist ungültig. Öffnen Sie das Bild erneut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像レコードが無効です。もう一度画像を開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지 기록이 유효하지 않습니다. 이미지를 다시 엽니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись изображения недействительна. Откройте изображение еще раз."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سجل الصورة غير صالح. افتح الصورة مرة أخرى."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छवि रिकॉर्ड अमान्य है. छवि को दोबारा खोलें."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản ghi hình ảnh không hợp lệ. Mở lại hình ảnh."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกภาพไม่ถูกต้อง เปิดภาพอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntü kaydı geçersiz. Görüntüyü tekrar açın."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het beeldrecord is ongeldig. Open de afbeelding opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rekord obrazu jest nieprawidłowy. Otwórz obraz ponownie."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rekaman gambar tidak valid. Buka gambar lagi."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La bildregistro estas nevalida. Malfermu la bildon denove."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠊⠍⠁⠛⠑ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠊⠝⠧⠁⠇⠊⠙⠲ ⠠⠕⠏⠑⠝ ⠞⠓⠑ ⠊⠍⠁⠛⠑ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像記錄無效，請重噺打開映像。"
           }
         }
       }
@@ -134497,6 +137445,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更换位置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改地點"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer d'emplacement"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alterar local"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia posizione"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort ändern"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "場所を変更する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치 변경"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменить местоположение"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تغيير الموقع"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्थान बदलें"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thay đổi vị trí"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปลี่ยนสถานที่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konumu Değiştir"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Locatie wijzigen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmień lokalizację"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubah Lokasi"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ŝanĝi Lokon"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠓⠁⠝⠛⠑ ⠠⠇⠕⠉⠁⠞⠊⠕⠝"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "哽換位寘"
           }
         }
       }
@@ -142461,6 +145529,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本机磁盘"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac 儲存"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almacenamiento Mac"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage Mac"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armazenamento Mac"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiviazione Mac"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac-Speicher"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac ストレージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "맥 스토리지"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac-хранилище"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تخزين ماك"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैक भंडारण"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ nhớ Mac"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ที่เก็บข้อมูล Mac"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac Depolama"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac-opslag"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pamięć masowa Maca"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penyimpanan Mac"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac Stokado"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠁⠉ ⠠⠎⠞⠕⠗⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夲机磁盤"
           }
         }
       }
@@ -163568,7 +166756,7 @@
       }
     },
     "此应用仍有未完成的签名操作，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -171790,7 +174978,7 @@
       }
     },
     "浅色" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -171799,6 +174987,126 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浅色"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "光"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lumière"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luz"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luce"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licht"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빛"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Свет"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ضوء"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रोशनी"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ánh sáng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เบา"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Işık"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licht"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Światło"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ringan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lumo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠊⠛⠓⠞"
+          }
+        },
+        "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "浅色"
@@ -171944,7 +175252,7 @@
       }
     },
     "深色" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -171953,6 +175261,126 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深色"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "黑暗"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "oscuro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sombre"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuro"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buio"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dunkel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗い"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어둠"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Темный"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الظلام"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अंधेरा"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tối"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มืด"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karanlık"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donker"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciemny"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelap"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mallumo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠁⠗⠅"
+          }
+        },
+        "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "深色"
@@ -172372,7 +175800,7 @@
       }
     },
     "清理旧副本失败：%@\n%@" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -178277,6 +181705,126 @@
             "state" : "translated",
             "value" : "目标存储"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目的地儲存"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almacenamiento de destino"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage de destination"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armazenamento de destino"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiviazione di destinazione"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zielspeicher"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宛先ストレージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 저장소"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Место назначения"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تخزين الوجهة"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गंतव्य भंडारण"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu trữ đích"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การจัดเก็บปลายทาง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef Depolama"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestemmingsopslag"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magazyn docelowy"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penyimpanan Tujuan"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinita Stokado"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠠⠎⠞⠕⠗⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標邨存"
+          }
         }
       }
     },
@@ -179788,7 +183336,7 @@
       }
     },
     "相关恢复材料仍被其他操作使用，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -179925,7 +183473,7 @@
       }
     },
     "相关记录：%@" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -181719,6 +185267,126 @@
             "state" : "translated",
             "value" : "磁盘名称"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁碟名稱"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del disco"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom du disque"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome do disco"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome del disco"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Festplattenname"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスク名"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디스크 이름"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя диска"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسم القرص"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डिस्क का नाम"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tên đĩa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชื่อดิสก์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk Adı"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schijfnaam"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nazwa dysku"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nama Disk"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diska Nomo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠊⠎⠅ ⠠⠝⠁⠍⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁盤名稱"
+          }
         }
       }
     },
@@ -182273,7 +185941,7 @@
       }
     },
     "磁盘操作锁正被占用，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -182422,6 +186090,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "磁盘映像"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁碟映像"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagen de disco"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image disque"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagem de disco"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immagine del disco"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk-Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスクイメージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디스크 이미지"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Образ диска"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "صورة القرص"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डिस्क छवि"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hình ảnh đĩa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดิสก์อิมเมจ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk Görüntüsü"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schijfimage"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obraz dysku"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gambar Disk"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diska Bildo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠊⠎⠅ ⠠⠊⠍⠁⠛⠑"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁盤映像"
           }
         }
       }
@@ -183532,6 +187320,126 @@
           }
         },
         "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空余"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponível"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponibile"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空き容量"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용 가능"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Свободно"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متاح"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Còn trống"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "พื้นที่ว่าง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boş"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschikbaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wolne"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tersedia"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libera"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠋⠗⠑⠑"
+          }
+        },
+        "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "空余"
@@ -186555,7 +190463,7 @@
       }
     },
     "签名操作锁正被占用，本次未执行。请稍后重试；若持续出现，请导出诊断包。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -190940,7 +194848,7 @@
       }
     },
     "自动挂载已暂停" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -191077,7 +194985,7 @@
       }
     },
     "自动挂载已暂停，本次未执行。请先恢复自动挂载后重试。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -191214,7 +195122,7 @@
       }
     },
     "自动挂载已暂停。点击“挂载”可恢复。" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -194925,6 +198833,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "该位置已有同名文件，请更换名称或打开已有映像。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "具有此名稱的項目已存在。選擇其他名稱或開啟現有映像。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe un elemento con este nombre. Elija otro nombre o abra la imagen existente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un élément portant ce nom existe déjà. Choisissez un autre nom ou ouvrez l'image existante."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já existe um item com este nome. Escolha outro nome ou abra a imagem existente."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esiste già un elemento con questo nome. Scegli un altro nome o apri l'immagine esistente."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Element mit diesem Namen existiert bereits. Wählen Sie einen anderen Namen oder öffnen Sie das vorhandene Bild."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この名前のアイテムはすでに存在します。別の名前を選択するか、既存のイメージを開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 이름을 가진 항목이 이미 존재합니다. 다른 이름을 선택하거나 기존 이미지를 엽니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Элемент с таким именем уже существует. Выберите другое имя или откройте существующее изображение."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يوجد بالفعل عنصر بهذا الاسم. اختر اسمًا آخر أو افتح الصورة الموجودة."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस नाम का एक आइटम पहले से मौजूद है. कोई अन्य नाम चुनें या मौजूदा छवि खोलें."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một mục có tên này đã tồn tại. Chọn tên khác hoặc mở hình ảnh hiện có."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มีรายการชื่อนี้อยู่แล้ว เลือกชื่ออื่นหรือเปิดรูปภาพที่มีอยู่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu ada sahip bir öğe zaten mevcut. Başka bir ad seçin veya mevcut görseli açın."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er bestaat al een item met deze naam. Kies een andere naam of open de bestaande afbeelding."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Element o tej nazwie już istnieje. Wybierz inną nazwę lub otwórz istniejący obraz."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item dengan nama ini sudah ada. Pilih nama lain atau buka gambar yang ada."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ero kun ĉi tiu nomo jam ekzistas. Elektu alian nomon aŭ malfermu la ekzistantan bildon."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠝ ⠊⠞⠑⠍ ⠺⠊⠞⠓ ⠞⠓⠊⠎ ⠝⠁⠍⠑ ⠁⠇⠗⠑⠁⠙⠽ ⠑⠭⠊⠎⠞⠎⠲ ⠠⠉⠓⠕⠕⠎⠑ ⠁⠝⠕⠞⠓⠑⠗ ⠝⠁⠍⠑ ⠕⠗ ⠕⠏⠑⠝ ⠞⠓⠑ ⠑⠭⠊⠎⠞⠊⠝⠛ ⠊⠍⠁⠛⠑⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该位寘已有茼名攵件，請哽換名稱或打開已有映像。"
           }
         }
       }
@@ -199738,6 +203766,126 @@
             "state" : "translated",
             "value" : "请输入有效的磁盘名称和 1–65536 GiB 的最大容量。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入有效的磁碟名稱和最大容量（1–65536 GiB）。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingrese un nombre de disco válido y una capacidad máxima de 1 a 65536 GiB."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrez un nom de disque valide et une capacité maximale de 1 à 65 536 GiB."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insira um nome de disco válido e uma capacidade máxima de 1 a 65.536 GiB."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci un nome disco valido e una capacità massima compresa tra 1 e 65536 GiB."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geben Sie einen gültigen Festplattennamen und eine maximale Kapazität von 1–65536 GiB ein."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効なディスク名と最大容量 1 ～ 65536 GiB を入力します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "유효한 디스크 이름과 최대 용량(1~65536GiB)을 입력하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите допустимое имя диска и максимальную емкость 1–65536 GiB."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل اسم قرص صالحًا وسعة قصوى تبلغ 1–65536 GiB."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक वैध डिस्क नाम और 1-65536 GiB की अधिकतम क्षमता दर्ज करें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhập tên đĩa hợp lệ và dung lượng tối đa 1–65536 GiB."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ป้อนชื่อดิสก์ที่ถูกต้องและความจุสูงสุด 1–65536 GiB"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçerli bir disk adı ve maksimum 1-65536 GiB kapasite girin."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer een geldige schijfnaam in en een maximale capaciteit van 1–65536 GiB."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wprowadź prawidłową nazwę dysku i maksymalną pojemność 1–65536 GiB."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masukkan nama disk yang valid dan kapasitas maksimum 1–65536 GiB."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enigu validan diskonomon kaj maksimuman kapaciton de 1–65536 GiB."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠑⠝⠞⠑⠗ ⠁ ⠧⠁⠇⠊⠙ ⠙⠊⠎⠅ ⠝⠁⠍⠑ ⠁⠝⠙ ⠁ ⠍⠁⠭⠊⠍⠥⠍ ⠉⠁⠏⠁⠉⠊⠞⠽ ⠕⠋ ⠼⠁⠤⠼⠋⠑⠑⠉⠋ ⠠⠛⠊⠠⠃⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請输入有效の磁盤名稱啝 1–65536 GiB の最大容量。"
+          }
         }
       }
     },
@@ -200439,6 +204587,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请选择已挂载的外部存储或 SMB 共享目录。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇已安裝的外部磁碟機或 SMB 共用資料夾。"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elija una unidad externa montada o una carpeta compartida SMB."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un lecteur externe monté ou un dossier de partage SMB."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha uma unidade externa montada ou uma pasta de compartilhamento SMB."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli un'unità esterna montata o una cartella condivisa SMB."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie ein bereitgestelltes externes Laufwerk oder einen SMB-Freigabeordner."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マウントされた外部ドライブまたは SMB 共有フォルダーを選択します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "탑재된 외부 드라이브 또는 SMB 공유 폴더를 선택합니다."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите подключенный внешний диск или общую папку SMB."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر محرك أقراص خارجي مثبتًا أو مجلد مشاركة SMB."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "माउंटेड एक्सटर्नल ड्राइव या SMB शेयर फ़ोल्डर चुनें।"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn ổ đĩa ngoài được gắn hoặc thư mục chia sẻ SMB."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกไดรฟ์ภายนอกที่ติดตั้งหรือโฟลเดอร์แชร์ SMB"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takılı bir harici sürücü veya SMB paylaşım klasörünü seçin."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kies een gekoppelde externe schijf of een SMB-deelmap."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz zamontowany dysk zewnętrzny lub folder udostępniony SMB."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih drive eksternal yang terpasang atau folder berbagi SMB."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elektu muntitan eksteran diskon aŭ SMB-dividan dosierujon."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠓⠕⠕⠎⠑ ⠁ ⠍⠕⠥⠝⠞⠑⠙ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠕⠗ ⠠⠎⠠⠍⠠⠃ ⠎⠓⠁⠗⠑ ⠋⠕⠇⠙⠑⠗⠲"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請選擇已挂载の外荹邨存或 SMB 共享目錄。"
           }
         }
       }
@@ -203047,7 +207315,7 @@
       }
     },
     "跟随系统" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -203059,6 +207327,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跟随系统"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟隨系統"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Système"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie im System"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定に従う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정 따르기"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как в системе"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حسب النظام"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम के अनुसार"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo hệ thống"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตามระบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeem"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jak w systemie"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikuti sistem"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laŭ la sistemo"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠽⠎⠞⠑⠍"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟隨繫統"
           }
         }
       }
@@ -219382,6 +223770,126 @@
             "state" : "translated",
             "value" : "重新挂载映像"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再次安裝映像"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar imagen nuevamente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monter l'image à nouveau"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monte a imagem novamente"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montare nuovamente l'immagine"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mounten Sie das Bild erneut"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イメージを再度マウントする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지 다시 마운트"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снова смонтировать образ"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جبل الصورة مرة أخرى"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छवि को फिर से माउंट करें"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gắn hình ảnh lại"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมานต์อิมเมจอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntüyü Tekrar Monte Et"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afbeelding opnieuw monteren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamontuj obraz ponownie"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasang Gambar Lagi"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monto Bildo Denove"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠕⠥⠝⠞ ⠠⠊⠍⠁⠛⠑ ⠠⠁⠛⠁⠊⠝"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重噺挂载映像"
+          }
         }
       }
     },
@@ -221305,7 +225813,7 @@
       }
     },
     "重试所有待处理项" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -221317,6 +225825,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重试所有待处理项"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重試所有待處理項目"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar todos los elementos pendientes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer tous les éléments en attente"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar novamente todos os itens pendentes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova tutti gli elementi in sospeso"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle ausstehenden Elemente erneut versuchen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての保留中のアイテムを再試行する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보류 중인 모든 항목을 다시 시도하세요."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить все ожидающие элементы"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أعد محاولة كافة العناصر المعلقة"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सभी लंबित आइटम पुनः प्रयास करें"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử lại tất cả các mục đang chờ xử lý"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลองรายการที่ค้างอยู่ทั้งหมดอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tüm Bekleyen Öğeleri Yeniden Dene"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer alle openstaande items opnieuw"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spróbuj ponownie dla wszystkich oczekujących elementów"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coba Lagi Semua Item yang Tertunda"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprovi ĉiujn pritraktatajn aĵojn"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠞⠗⠽ ⠠⠁⠇⠇ ⠠⠏⠑⠝⠙⠊⠝⠛ ⠠⠊⠞⠑⠍⠎"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重試所有待處理項"
           }
         }
       }

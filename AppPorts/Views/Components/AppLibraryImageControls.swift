@@ -9,15 +9,21 @@ final class AppLibraryImageController: ObservableObject {
     @Published var errorMessage: String?
     @Published private(set) var record: AppLibraryImageService.Record?
     private var attemptedRestore = false
-    private let service = AppLibraryImageService()
+    private let service: AppLibraryImageService
+    private let defaults: UserDefaults
 
-    init() {
-        if let data = UserDefaults.standard.data(forKey: AppLibraryImageService.preferenceKey) {
-            record = try? JSONDecoder().decode(AppLibraryImageService.Record.self, from: data)
-        }
+    init(defaults: UserDefaults = .standard, service: AppLibraryImageService = AppLibraryImageService()) {
+        self.defaults = defaults
+        self.service = service
+        reloadRecord()
+    }
+
+    func reloadRecord() {
+        record = AppLibraryImageRecovery.loadRecord(defaults: defaults)
     }
 
     func create(directory: URL, name: String, capacityGiB: Int, onReady: @escaping (URL) -> Void) {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         perform(onReady: onReady) {
             let record = try await self.service.create(in: directory, name: name, capacityGiB: capacityGiB)
             // Save before attachment so a failed mount can be retried without
@@ -28,30 +34,34 @@ final class AppLibraryImageController: ObservableObject {
     }
 
     func open(_ url: URL, onReady: @escaping (URL) -> Void) {
-        let existing = record.flatMap { $0.imagePath == url.standardizedFileURL.path ? $0 : nil }
-        perform(onReady: onReady) { existing ?? AppLibraryImageService.Record(imageURL: url) }
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
+        perform(onReady: onReady) {
+            self.record.flatMap { $0.imagePath == url.standardizedFileURL.path ? $0 : nil }
+                ?? AppLibraryImageService.Record(imageURL: url)
+        }
     }
 
     func remount(onReady: @escaping (URL) -> Void) {
-        guard let record else { return }
-        perform(onReady: onReady) { record }
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
+        perform(onReady: onReady) { self.record }
     }
 
     func restoreIfSelected(onReady: @escaping (URL) -> Void) {
-        guard !attemptedRestore, let record,
-              UserDefaults.standard.string(forKey: "ExternalDrivePath") == (record.libraryPath ?? record.mountPath),
+        guard AppInstallationLocation.isAllowed() else { return }
+        reloadRecord()
+        guard !attemptedRestore, AppLibraryImageRecovery.selectedRecord(defaults: defaults) != nil,
               !AppOperationState.shared.isBusy else { return }
         attemptedRestore = true
-        remount(onReady: onReady)
+        perform(onReady: onReady) { AppLibraryImageRecovery.selectedRecord(defaults: self.defaults) }
     }
 
     private func save(_ record: AppLibraryImageService.Record) throws {
-        UserDefaults.standard.set(try JSONEncoder().encode(record), forKey: AppLibraryImageService.preferenceKey)
+        try AppLibraryImageRecovery.save(record, defaults: defaults)
         self.record = record
     }
 
     private func perform(onReady: @escaping (URL) -> Void,
-                         prepare: @escaping () async throws -> AppLibraryImageService.Record) {
+                         prepare: @escaping () async throws -> AppLibraryImageService.Record?) {
         let operations = AppOperationState.shared
         guard !isWorking, let token = operations.begin() else { return }
         isWorking = true
@@ -61,11 +71,25 @@ final class AppLibraryImageController: ObservableObject {
                 self.isWorking = false
                 operations.finish(token)
             }
+            let lock = OperationLock()
+            guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else {
+                self.errorMessage = lock.diagnosticFailure(scope: .global).localizedDescription
+                return
+            }
+            defer { lock.release() }
             do {
-                let record = try await prepare()
+                try AppInstallationLocation.require()
+                // The agent may have rebased or upgraded the record while we waited.
+                self.reloadRecord()
+                guard let record = try await prepare() else { return }
                 let mounted = try await self.service.mount(record)
                 try self.save(mounted.record)
+                // Persist selection before registering the agent; SwiftUI's
+                // onChange callback may otherwise run after this operation ends.
+                self.defaults.set(mounted.libraryURL.path, forKey: "ExternalDrivePath")
                 onReady(mounted.libraryURL)
+                self.defaults.synchronize()
+                ContainerMountAgentInstaller.installIfNeeded()
             } catch let pending as ShellCommandUnconfirmedTermination {
                 self.errorMessage = pending.localizedDescription
                 // A deadline is not proof that an image writer stopped. Keep
@@ -96,7 +120,10 @@ struct AppLibraryImageControls: View {
                 Button(hasLocation ? "更换位置".localized : "选择文件夹".localized, action: onChooseLocation)
                 Divider()
             }
-            Button("创建 APFS 映像".localized) { showsCreation = true }
+            Button("创建 APFS 映像".localized) {
+                guard AppInstallationLocation.confirmIfNeeded() else { return }
+                showsCreation = true
+            }
             Button("打开已有映像…".localized) { openImage() }
             if controller.record != nil {
                 Button("重新挂载映像".localized) { controller.remount(onReady: onReady) }
@@ -139,6 +166,7 @@ struct AppLibraryImageControls: View {
     }
 
     private func openImage() {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
         let panel = NSOpenPanel()
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
@@ -177,8 +205,6 @@ private struct AppLibraryImageCreationSheet: View {
                     .frame(width: 100)
             }
             Text("映像按实际写入占用空间，可存放在已挂载的 SMB 共享中。同一映像请只在一台 Mac 上写入。".localized)
-                .font(AppDialogTypography.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            Text("以后使用映像中的应用前，请先打开 AppPorts 挂载映像。退出 AppPorts 不会卸载映像。".localized)
                 .font(AppDialogTypography.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(AppDialogTypography.body) }
             HStack {
