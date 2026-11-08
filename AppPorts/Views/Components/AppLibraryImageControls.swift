@@ -52,7 +52,7 @@ final class AppLibraryImageController: ObservableObject {
         guard !attemptedRestore, AppLibraryImageRecovery.selectedRecord(defaults: defaults) != nil,
               !AppOperationState.shared.isBusy else { return }
         attemptedRestore = true
-        perform(onReady: onReady) { AppLibraryImageRecovery.selectedRecord(defaults: self.defaults) }
+        perform(onReady: onReady, resumesImage: false) { AppLibraryImageRecovery.selectedRecord(defaults: self.defaults) }
     }
 
     private func save(_ record: AppLibraryImageService.Record) throws {
@@ -60,7 +60,7 @@ final class AppLibraryImageController: ObservableObject {
         self.record = record
     }
 
-    private func perform(onReady: @escaping (URL) -> Void,
+    private func perform(onReady: @escaping (URL) -> Void, resumesImage: Bool = true,
                          prepare: @escaping () async throws -> AppLibraryImageService.Record?) {
         let operations = AppOperationState.shared
         guard !isWorking, let token = operations.begin() else { return }
@@ -82,8 +82,11 @@ final class AppLibraryImageController: ObservableObject {
                 // The agent may have rebased or upgraded the record while we waited.
                 self.reloadRecord()
                 guard let record = try await prepare() else { return }
+                let pauses = DiskEjectionPauseStore()
+                if !resumesImage, try pauses.snapshot().blocksImage(record) { return }
                 let mounted = try await self.service.mount(record)
                 try self.save(mounted.record)
+                if resumesImage { try pauses.resumeImage(mounted.record) }
                 // Persist selection before registering the agent; SwiftUI's
                 // onChange callback may otherwise run after this operation ends.
                 self.defaults.set(mounted.libraryURL.path, forKey: "ExternalDrivePath")

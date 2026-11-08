@@ -115,7 +115,7 @@ enum AppLibraryImageRecovery {
         var record = original
         let expectedRecord = original
         do {
-            guard !ejection.blocks(volumeUUIDs: [record.backingVolumeUUID], paths: [record.imagePath]) else { return }
+            guard !ejection.blocksImage(record) else { return }
             let shareLocation = findShare ?? { try await service.files.mountedShare(for: $0) }
             if let address = record.networkShareURL, let remote = URL(string: address),
                sanitizedShareURL(remote)?.absoluteString == address,
@@ -135,7 +135,7 @@ enum AppLibraryImageRecovery {
             let alreadyMounted = record.volumeUUID.map { actualUUID?.caseInsensitiveCompare($0) == .orderedSame } ?? false
             if alreadyMounted, record.backingVolumeUUID != nil || record.networkShareURL != nil { return }
             record = try await service.files.resolved(record)
-            guard !ejection.blocks(volumeUUIDs: [record.backingVolumeUUID], paths: [record.imagePath]) else { return }
+            guard !ejection.blocksImage(record) else { return }
             if record.imagePath != expectedRecord.imagePath {
                 // Both USB and SMB may reappear at another /Volumes path.
                 // An old device attachment must not become a second writer.
@@ -177,8 +177,8 @@ enum AppLibraryImageRecovery {
     static func restoreForLaunch(_ original: AppLibraryImageService.Record,
                                  service: AppLibraryImageService,
                                  ejection: DiskEjectionPauseStore.Snapshot) async throws -> AppLibraryImageService.Record {
-        guard !ejection.blocks(volumeUUIDs: [original.backingVolumeUUID], paths: [original.imagePath]) else {
-            throw DiskEjectionError.paused
+        guard !ejection.blocksImage(original) else {
+            throw ManualMountPauseError.retryPaused
         }
         var record = original
         if let address = record.networkShareURL {
@@ -193,7 +193,7 @@ enum AppLibraryImageRecovery {
             record.imagePath = root.appendingPathComponent(relative).path
         }
         record = try await service.files.resolved(record)
-        guard !ejection.blocks(volumeUUIDs: [record.backingVolumeUUID], paths: [record.imagePath]) else { throw DiskEjectionError.paused }
+        guard !ejection.blocksImage(record) else { throw ManualMountPauseError.retryPaused }
         if record.imagePath != original.imagePath {
             let inventory = try await AppLibraryImageFileAccess.readCommand(runner: service.runner,
                 executable: "/usr/bin/hdiutil", arguments: ["info", "-plist"], timeout: 10)
@@ -218,7 +218,7 @@ enum AppLibraryImageRecovery {
                                    service: AppLibraryImageService,
                                    ejection: DiskEjectionPauseStore.Snapshot) async throws -> Bool {
         guard let uuid = record.volumeUUID,
-              !ejection.blocks(volumeUUIDs: [record.backingVolumeUUID], paths: [record.imagePath]) else { return false }
+              !ejection.blocksImage(record) else { return false }
         var current = record
         if let address = record.networkShareURL {
             guard let remote = URL(string: address), sanitizedShareURL(remote)?.absoluteString == address,

@@ -223756,19 +223756,413 @@
         }
       }
     },
-    "重新挂载映像" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mount Image Again"
+    "卸载映像" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاء تحميل الصورة"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重新挂载映像"
+        "br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⠠⠥⠝⠍⠕⠥⠝⠞ ⠠⠊⠍⠁⠛⠑"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image aushängen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmount Image"
+          }
+        },
+        "eo": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Malmunti diskobildon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desmontar imagen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Démonter l’image"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इमेज अनमाउंट करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lepas image"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smonta immagine"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "イメージをアンマウント"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 마운트 해제"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schijfkopie ontkoppelen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odłącz obraz"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desmontar imagem"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить образ"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลิกเมานต์อิมเมจ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmajın bağlantısını kes"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngắt kết nối ảnh đĩa"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "卸载映像"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "卸載映像"
+          }
+        },
+        "zh-martian": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "卸載映像"
+          }
+        }
+      }
+    },
+    "卸载映像并暂停自动挂载，选择“重新挂载映像”可恢复。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يلغي تحميل الصورة ويوقف التحميل التلقائي مؤقتًا. اختر «تحميل الصورة مجددًا» للاستئناف."
+          }
+        },
+        "br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⠠⠥⠝⠍⠕⠥⠝⠞ ⠞⠓⠑ ⠊⠍⠁⠛⠑ ⠁⠝⠙ ⠏⠁⠥⠎⠑ ⠁⠥⠞⠕⠍⠁⠞⠊⠉ ⠍⠕⠥⠝⠞⠊⠝⠛⠲ ⠠⠉⠓⠕⠕⠎⠑ ⠦⠠⠍⠕⠥⠝⠞ ⠠⠊⠍⠁⠛⠑ ⠠⠁⠛⠁⠊⠝⠴ ⠞⠕ ⠗⠑⠎⠥⠍⠑⠲"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hängt das Image aus und pausiert das automatische Einbinden. Wähle „Image erneut einbinden“, um es fortzusetzen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmount the image and pause automatic mounting. Choose “Mount Image Again” to resume."
+          }
+        },
+        "eo": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Malmuntu la diskobildon kaj paŭzigu aŭtomatan muntadon. Elektu “Remunti diskobildon” por daŭrigi."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desmonta la imagen y pausa el montaje automático. Elige «Volver a montar imagen» para reanudarlo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Démonte l’image et suspend le montage automatique. Choisissez «Remonter l’image» pour le réactiver."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इमेज अनमाउंट करें और अपने आप माउंट होना रोकें। फिर से शुरू करने के लिए “इमेज फिर से माउंट करें” चुनें।"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melepas image dan menjeda pemasangan otomatis. Pilih “Pasang image lagi” untuk melanjutkan."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smonta l’immagine e sospende il montaggio automatico. Scegli «Monta di nuovo immagine» per riprenderlo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "イメージをアンマウントし、自動マウントを一時停止します。「イメージを再マウント」で再開できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 마운트를 해제하고 자동 마운트를 일시 중지합니다. 다시 시작하려면 “이미지 다시 마운트”를 선택하세요."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ontkoppelt de schijfkopie en pauzeert automatisch koppelen. Kies ‘Schijfkopie opnieuw koppelen’ om dit te hervatten."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odłącza obraz i wstrzymuje automatyczne montowanie. Wybierz „Zamontuj obraz ponownie”, aby je wznowić."
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desmonta a imagem e pausa a montagem automática. Escolha «Montar imagem novamente» para retomar."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключает образ и приостанавливает автоматическое подключение. Для возобновления выберите «Подключить образ снова»."
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลิกเมานต์อิมเมจและพักการเมานต์อัตโนมัติ เลือก “เมานต์อิมเมจอีกครั้ง” เพื่อดำเนินการต่อ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmajın bağlantısını keser ve otomatik bağlamayı duraklatır. Sürdürmek için “İmajı yeniden bağla” seçeneğini seçin."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ngắt kết nối ảnh đĩa và tạm dừng tự động gắn. Chọn “Gắn lại ảnh đĩa” để tiếp tục."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "卸载映像并暂停自动挂载，选择“重新挂载映像”可恢复。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "卸載映像並暫停自動掛載，選擇「重新掛載映像」即可恢復。"
+          }
+        },
+        "zh-martian": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "卸載映像並暫停自動掛載，選擇“重噺掛載映像”可恢復。"
+          }
+        }
+      }
+    },
+    "重新挂载映像" : {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحميل الصورة مجددًا"
+          }
+        },
+        "br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⠠⠍⠕⠥⠝⠞ ⠠⠊⠍⠁⠛⠑ ⠠⠁⠛⠁⠊⠝"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image erneut einbinden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mount Image Again"
+          }
+        },
+        "eo": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remunti diskobildon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a montar imagen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remonter l’image"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इमेज फिर से माउंट करें"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasang image lagi"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monta di nuovo immagine"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "イメージを再マウント"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 다시 마운트"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schijfkopie opnieuw koppelen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zamontuj obraz ponownie"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Montar imagem novamente"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключить образ снова"
+          }
+        },
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เมานต์อิมเมจอีกครั้ง"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmajı yeniden bağla"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gắn lại ảnh đĩa"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新挂载映像"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新掛載映像"
+          }
+        },
+        "zh-martian": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重噺掛載映像"
           }
         },
         "zh-Hant" : {

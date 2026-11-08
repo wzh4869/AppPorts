@@ -229,6 +229,32 @@ struct AppLibraryImageService: Sendable {
         return result
     }
 
+    /// Caller holds OperationLock. Detach only the selected image, never its backing disk/share.
+    func unmount(_ record: Record, pauses: DiskEjectionPauseStore) async throws {
+        guard let expected = record.volumeUUID, UUID(uuidString: expected) != nil else { throw identityFailure() }
+        let image = URL(fileURLWithPath: record.imagePath)
+        guard let devices = try await imageDevices(for: image) else {
+            try pauses.pauseImage(record, volumeUUIDs: [], mountPaths: [])
+            return
+        }
+        _ = try await identifiedVolume(devices, expectedUUID: expected,
+                                      preferredMount: record.libraryPath ?? record.mountPath)
+        let uuids = try await volumeUUIDs(in: record)
+        // Persist before dispatch: denial, busy files and partial unmounts must not trigger remount.
+        try pauses.pauseImage(record, volumeUUIDs: uuids, mountPaths: Set(devices.compactMap(\.mount)))
+        do {
+            try await detachOwnedImage(image, devices: devices)
+        } catch let pending as ShellCommandUnconfirmedTermination {
+            // A timed-out detach may still be writing. Keep the caller's lock
+            // until it exits, just as attachment and creation do.
+            while (try? ProcessCommandRunner.isRunning(pending.process)) != false {
+                await Task.detached { try? await Task.sleep(nanoseconds: 1_000_000_000) }.value
+            }
+            throw pending
+        }
+        guard try await imageDevices(for: image) == nil else { throw identityFailure() }
+    }
+
     private func detachOwnedImage(_ image: URL, devices: [ImageDevice]) async throws {
         guard let current = try await imageDevices(for: image) else { return }
         guard Set(current.map(\.device)) == Set(devices.map(\.device)),
