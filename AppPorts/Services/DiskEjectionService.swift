@@ -9,12 +9,16 @@ struct DiskEjectionService: Sendable {
     let physicalState: @Sendable (String) -> PhysicalDiskState
     let mountedDevices: @Sendable () throws -> Set<String>
     let requestFinderEject: @Sendable (URL) async throws -> Void
+    let selectedImage: @Sendable () -> AppLibraryImageService.Record?
+    let imageService: AppLibraryImageService
 
     init(disk: DiskUtility = DiskUtility(administratorRunner: nil), store: ContainerMountStore = .shared,
          inventory: (@Sendable () async throws -> ExternalDiskInventory)? = nil,
          physicalState: @escaping @Sendable (String) -> PhysicalDiskState = { PhysicalDiskState.query($0) },
          mountedDevices: @escaping @Sendable () throws -> Set<String> = { Set(try DiskUtility.kernelMountTable().keys) },
-         requestFinderEject: @escaping @Sendable (URL) async throws -> Void = { try await Self.ejectUsingFinder($0) }) {
+         requestFinderEject: @escaping @Sendable (URL) async throws -> Void = { try await Self.ejectUsingFinder($0) },
+         selectedImage: @escaping @Sendable () -> AppLibraryImageService.Record? = { AppLibraryImageRecovery.selectedRecord() },
+         imageService: AppLibraryImageService = AppLibraryImageService()) {
         self.disk = disk
         self.physicalState = physicalState
         self.mountedDevices = mountedDevices
@@ -23,6 +27,8 @@ struct DiskEjectionService: Sendable {
         self.makeLock = { OperationLock(fileURL: lockURL) }
         self.inventory = inventory ?? { try await disk.ejectionInventory() }
         self.requestFinderEject = requestFinderEject
+        self.selectedImage = selectedImage
+        self.imageService = imageService
     }
 
     /// Finder's eject event is asynchronous: returning is not proof of ejection.
@@ -33,6 +39,12 @@ struct DiskEjectionService: Sendable {
             throw lock.admissionFailureReason.map { DiskEjectionError.finder($0) } ?? .busy
         }
         defer { lock.release() }
+        if pauseID == nil, let url, let image = selectedImage(),
+           PortalImageLaunchPreparation.contains(url.path, in: image.libraryPath ?? image.mountPath) {
+            try await imageService.unmount(image, pauses: pauses)
+            AppLogger.shared.log("应用库映像已卸载，自动挂载保持暂停", level: "INFO")
+            return
+        }
         let inventory = try await inventory()
         let current = try pauses.reconcile(inventory)
         let target: ExternalDiskInventory.Disk
@@ -80,6 +92,7 @@ struct DiskEjectionService: Sendable {
 final class DiskEjectionController: ObservableObject {
     static let shared = DiskEjectionController()
     @Published private(set) var pauses: [DiskEjectionPauseStore.Pause] = []
+    @Published private(set) var imagePauses: [DiskEjectionPauseStore.ImagePause] = []
     @Published private(set) var connectionStates: [String: PhysicalDiskState] = [:]
     @Published private(set) var isRequestingEjection = false
     private var availableDisks: [ExternalDiskInventory.Disk] = []
@@ -132,6 +145,7 @@ final class DiskEjectionController: ObservableObject {
 
     private struct Observation: Sendable {
         let pauses: [DiskEjectionPauseStore.Pause]
+        let imagePauses: [DiskEjectionPauseStore.ImagePause]
         let states: [String: PhysicalDiskState]
         let disks: [ExternalDiskInventory.Disk]
         let needsRetry: Bool
@@ -174,11 +188,12 @@ final class DiskEjectionController: ObservableObject {
                         let physical = direct == .unknown && disk != nil ? PhysicalDiskState.online : direct
                         return (pause.connectionID, PhysicalDiskState.observed(physical: physical, disk: disk, mountedDevices: mounts))
                     })
-                    return Observation(pauses: saved.pauses, states: states, disks: inventory?.disks ?? [],
+                    return Observation(pauses: saved.pauses, imagePauses: saved.images, states: states, disks: inventory?.disks ?? [],
                         needsRetry: !acquired || errorMessage != nil || states.values.contains(.unknown), error: errorMessage)
                 }.value
                 guard revision == self.revision else { refreshAgain = true; continue }
                 pauses = result.pauses
+                imagePauses = result.imagePauses
                 connectionStates = result.states
                 availableDisks = result.disks
                 needsRefresh = result.needsRetry

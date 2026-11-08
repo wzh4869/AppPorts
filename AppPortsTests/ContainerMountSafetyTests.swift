@@ -127,6 +127,45 @@ struct ContainerMountSafetyTests {
         #expect(result.outcomes.first?.state == .requiresIntervention("conflict"))
     }
 
+    @Test("Lock-free launch readiness accepts only what mount(record:) leaves untouched")
+    func launchReadinessMirrorsMountedAcceptance() async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let migrator = fixture.migrator
+        #expect(await migrator.isMountedAsRecorded(fixture.record) == false)
+        fixture.runner.markVolumeMounted("SAFETY-UUID", at: fixture.mountPoint.path)
+        #expect(await migrator.isMountedAsRecorded(fixture.record))
+        try await migrator.mount(record: fixture.record)
+
+        try fixture.store.setRemountIntervention(volumeUUID: "SAFETY-UUID", reason: "conflict")
+        #expect(await migrator.isMountedAsRecorded(fixture.record) == false)
+        await #expect(throws: (any Error).self) { try await migrator.mount(record: fixture.record) }
+        try fixture.store.setRemountIntervention(volumeUUID: "SAFETY-UUID", reason: nil)
+
+        try fixture.store.setManuallyUnmounted(true, record: fixture.record)
+        #expect(await migrator.isMountedAsRecorded(fixture.record) == false)
+        await #expect(throws: ManualMountPauseError.self) { try await migrator.mount(record: fixture.record) }
+        try fixture.store.setManuallyUnmounted(false, record: fixture.record)
+
+        #expect(await migrator.isMountedAsRecorded(fixture.record))
+        #expect(fixture.runner.commands(prefix: ["mount"]).isEmpty)
+        #expect(fixture.runner.commands(prefix: ["unmount"]).isEmpty)
+    }
+
+    @Test("A foreign volume or a removed record is never launch-ready")
+    func launchReadinessRejectsForeignVolumesAndStaleRecords() async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        fixture.runner.markVolumeMounted("FOREIGN-UUID", at: fixture.mountPoint.path)
+        #expect(await fixture.migrator.isMountedAsRecorded(fixture.record) == false)
+
+        let other = try Fixture()
+        defer { other.cleanup() }
+        other.runner.markVolumeMounted("SAFETY-UUID", at: other.mountPoint.path)
+        try other.store.remove(mountPointPath: other.record.mountPointPath)
+        #expect(await other.migrator.isMountedAsRecorded(other.record) == false)
+    }
+
     private final class Fixture {
         let root: URL
         let mountPoint: URL

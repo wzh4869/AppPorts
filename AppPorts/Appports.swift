@@ -45,6 +45,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             ("update_allows_termination", String(AppUpdateController.shared.allowsTermination)),
             ("busy", String(AppOperationState.shared.isBusy))
         ])
+        if !AppOperationState.shared.isBusy || AppUpdateController.shared.allowsTermination {
+            if AppLibraryAgentSync.shared.finishBeforeTerminating({ [weak self] completed in
+                guard completed else {
+                    AppUpdateController.shared.cancelInstallationForTerminationRefusal()
+                    sender.reply(toApplicationShouldTerminate: false)
+                    AppLogger.shared.log("退出等待后台挂载配置超时，配置继续同步，本次取消退出", level: "WARN")
+                    let alert = NSAlert()
+                    alert.messageText = "还有任务尚未结束".localized
+                    alert.informativeText = "其他程序正在处理磁盘，请稍后重试。".localized
+                    alert.addButton(withTitle: "返回".localized)
+                    sender.activate(ignoringOtherApps: true)
+                    alert.runModal()
+                    return
+                }
+                guard let self else {
+                    sender.reply(toApplicationShouldTerminate: false)
+                    return
+                }
+                switch self.applicationShouldTerminate(sender) {
+                case .terminateNow: sender.reply(toApplicationShouldTerminate: true)
+                case .terminateCancel: sender.reply(toApplicationShouldTerminate: false)
+                case .terminateLater: break
+                @unknown default: sender.reply(toApplicationShouldTerminate: false)
+                }
+            }) { return .terminateLater }
+        }
         if AppUpdateController.shared.allowsTermination { return .terminateNow }
         AppUpdateController.shared.cancelInstallationForTerminationRefusal()
         if AppOperationState.shared.isBusy {

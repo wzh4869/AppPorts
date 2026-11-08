@@ -10,7 +10,7 @@ import Security
 ///
 /// 挂载到容器路径需要 Full Disk Access，普通脚本做不到；代理直接运行 AppPorts 自身的
 /// 可执行文件并带 `--mount-agent` 参数，沿用主应用的 TCC 授权。挂载或恢复任务存在时安装，
-/// 最后一项还原和清理完成后自动卸载。
+/// 当前选中的应用库映像也由此代理恢复；全部受管任务结束后自动卸载。
 enum ContainerMountAgentInstaller {
 
     static let label = "com.shimoko.AppPorts.container-mount"
@@ -60,9 +60,28 @@ enum ContainerMountAgentInstaller {
         }
     }
 
+    /// Selection can return to a recorded image after the idle worker uninstalled itself.
+    /// Wait outside the UI thread and reread the current selection only after acquiring the lock.
+    static func synchronizeSelection(lock: OperationLock = OperationLock(),
+                                     synchronize: (@Sendable () -> Void)? = nil) async {
+        guard synchronize != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        while !Task.isCancelled {
+            if await lock.acquire(timeout: OperationLock.appWaitTimeout) {
+                defer { lock.release() }
+                guard !Task.isCancelled else { return }
+                if let synchronize { synchronize() } else { installIfNeeded() }
+                return
+            }
+            guard lock.diagnosticFailure(scope: .global).reason == .globalLockBusy, !Task.isCancelled else { return }
+            do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
+        }
+    }
+
     /// A restore temporarily removes its mount record before switching. Its
     /// transaction must keep the restart/reconnect worker installed throughout.
-    static func requiresAgent(store: ContainerMountStore) throws -> Bool {
+    static func requiresAgent(store: ContainerMountStore,
+                              imageSelected: Bool = AppLibraryImageRecovery.selectedRecord() != nil) throws -> Bool {
+        if imageSelected { return true }
         if try !store.recordsStrict().isEmpty { return true }
         return try store.transfers().contains { $0.mode == .mount }
     }
@@ -106,7 +125,8 @@ enum ContainerMountAgentInstaller {
     /// （exit 0）不会被反复重启。原来的 `ProcessType: Background` 也去掉了：它等于主动
     /// 告诉 launchd "我不急"，与这里的意图相反。
     /// 抽成纯函数是为了能被测试守住，避免哪天被改回去。
-    static func launchAgentPayload(executablePath: String, signatureIdentity: String? = nil) -> [String: Any] {
+    static func launchAgentPayload(executablePath: String, signatureIdentity: String? = nil,
+                                   recoverImages: Bool = false) -> [String: Any] {
         var payload: [String: Any] = [
             "Label": label,
             "ProgramArguments": [executablePath, launchArgument],
@@ -120,6 +140,7 @@ enum ContainerMountAgentInstaller {
         // Rebootstrap after an in-place update too. launchd binds its managed
         // launch constraint to the signing identity seen at registration.
         if let signatureIdentity { payload["AppPortsSignatureIdentity"] = signatureIdentity }
+        if recoverImages { payload["StartInterval"] = 60 }
         return payload
     }
 
@@ -238,7 +259,8 @@ enum ContainerMountAgentInstaller {
             throw InstallError.temporaryLocation
         }
         let plist = launchAgentPayload(executablePath: executablePath,
-                                      signatureIdentity: executableSignatureIdentity(at: executablePath))
+                                      signatureIdentity: executableSignatureIdentity(at: executablePath),
+                                      recoverImages: AppLibraryImageRecovery.selectedRecord() != nil)
         let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
 
         let changed = try configureAgent(definitionMatches: existing == data, writeDefinition: {
@@ -291,8 +313,9 @@ enum ContainerMountAgentInstaller {
         AppLogger.shared.log("容器卷自动挂载代理已卸载")
     }
 
-    /// 代理入口：重挂载所有在线的记录；没就位就等 `/Volumes` 的真实变化再试，
+    /// 代理入口：恢复容器卷后恢复选中的应用库映像；容器卷没就位就等 `/Volumes` 的真实变化再试，
     /// 直到全部就位、或用完等待窗口（`ContainerRemountLoop.Policy.window`）。
+    /// 还在等的容器卷位于选中映像内时，第一轮后立即接回映像并在同一轮重试，不等满窗口。
     static func runAgentAndExit() -> Never {
         // 启动行：既是排障锚点，也是「开机时序」自查脚本判定代理何时被 launchd 拉起的依据，
         // 所以无论这一轮有没有活干都要留下（pid 行里的 `[pid:…]` 已经有进程号了）。
@@ -311,16 +334,24 @@ enum ContainerMountAgentInstaller {
             // 后台代理没有界面，不能弹管理员授权框；旧系统上会以 privilegeRequired 失败并留给 AppPorts 启动时处理。
             let migrator = ContainerVolumeMigrator(disk: DiskUtility(administratorRunner: nil))
             var attemptIndex = 0
+            var imageRecovered = false
             let result = await ContainerRemountLoop.run(
                 attempt: {
                     defer { attemptIndex += 1 }
                     // 第一轮可能碰上主应用正在做挂载迁移，值得等满；之后的轮次只象征性等一下，
                     // 免得代理和主应用互相让路谁都不动。
                     let timeout = attemptIndex == 0 ? OperationLock.agentWaitTimeout : Self.retryLockTimeout
-                    return await remountAttempt(migrator: migrator, lockTimeout: timeout)
+                    let image = AppLibraryImageRecovery.selectedRecord()
+                    return await remountRecoveringLibraryImage(
+                        libraryRoot: image.map { $0.libraryPath ?? $0.mountPath },
+                        imageRecovered: &imageRecovered,
+                        remount: { await remountAttempt(migrator: migrator, lockTimeout: timeout) },
+                        recoverImage: { await recoverSelectedLibraryImage() })
                 },
                 waitForChange: { await monitor.waitForNextChange(timeout: $0) }
             )
+            // A slow/offline NAS must not delay the existing container recovery.
+            if !imageRecovered { await recoverSelectedLibraryImage() }
             reportAgentResult(result)
             semaphore.signal()
         }
@@ -329,6 +360,42 @@ enum ContainerMountAgentInstaller {
         semaphore.wait()
         AppLogger.shared.log("容器卷自动挂载代理退出")
         exit(0)
+    }
+
+    /// Container volumes created inside the selected library image appear only
+    /// after the image is attached. When a pass still waits for such a volume,
+    /// recover the image once and retry within the same cycle instead of waiting
+    /// out the remount window. Other pending volumes keep the original order.
+    static func remountRecoveringLibraryImage(
+        libraryRoot: String?,
+        imageRecovered: inout Bool,
+        remount: () async -> ContainerRemountLoop.Attempt,
+        recoverImage: () async -> Void
+    ) async -> ContainerRemountLoop.Attempt {
+        let attempt = await remount()
+        guard !imageRecovered, let libraryRoot, case .results(let outcomes) = attempt else { return attempt }
+        let waiting = ContainerRemountLoop.pendingRecords(in: outcomes).filter {
+            PortalImageLaunchPreparation.contains($0.record.externalRootPath, in: libraryRoot)
+        }
+        guard !waiting.isEmpty else { return attempt }
+        imageRecovered = true
+        AppLogger.shared.logContext("容器卷位于应用库映像中，先接回映像再重试挂载",
+            details: [("pending", String(waiting.count)), ("library_path", libraryRoot)])
+        await recoverImage()
+        return await remount()
+    }
+
+    /// Hold OperationLock only around recovery of the selected library image.
+    private static func recoverSelectedLibraryImage() async {
+        let imageLock = OperationLock()
+        guard await imageLock.acquire(timeout: OperationLock.agentWaitTimeout) else { return }
+        defer { imageLock.release() }
+        do {
+            let ejection = try DiskEjectionPauseStore().snapshot()
+            await AppLibraryImageRecovery.recoverSelected(ejection: ejection)
+        } catch {
+            AppLogger.shared.logError("读取弹出暂停状态失败，跳过映像恢复", error: error)
+        }
     }
 
     /// 重试轮次里拿锁的等待时长。
