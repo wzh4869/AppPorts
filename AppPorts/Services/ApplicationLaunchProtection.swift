@@ -28,7 +28,9 @@ enum ApplicationLaunchProtection {
     static func detached<T: Sendable>(priority: TaskPriority, operation: @escaping @Sendable () async throws -> T) async throws -> T {
         let context = held
         return try await Task.detached(priority: priority) {
-            try await $held.withValue(context, operation: operation)
+            try await $held.withValue(context) {
+                try await operation()
+            }
         }.value
     }
 }

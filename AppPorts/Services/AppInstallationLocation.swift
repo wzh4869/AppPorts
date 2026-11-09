@@ -21,7 +21,7 @@ enum AppInstallationLocation {
     @MainActor
     static func confirmIfNeeded(applicationURL: URL = Bundle.main.bundleURL,
                                 homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
-                                present: () -> Void = presentGuidance) -> Bool {
+                                present: @MainActor () -> Void = presentGuidance) -> Bool {
         guard !isAllowed(applicationURL, homeDirectory: homeDirectory) else { return true }
         present()
         return false
