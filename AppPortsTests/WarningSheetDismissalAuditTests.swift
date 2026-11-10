@@ -73,6 +73,25 @@ final class WarningSheetDismissalAuditTests: XCTestCase {
         }
     }
 
+    func testStorageLimitationConfirmationSkipsCapabilityRecheck() throws {
+        let contentViewURL = try repositoryRootURL()
+            .appendingPathComponent("AppPorts/ContentView.swift")
+        let content = try String(contentsOf: contentViewURL, encoding: .utf8)
+
+        guard let methodRange = content.range(of: "private func makeStorageLimitationRequest(") else {
+            XCTFail("未找到 ContentView.makeStorageLimitationRequest")
+            return
+        }
+        let tail = String(content[methodRange.lowerBound...])
+        let methodBody = tail.components(separatedBy: "\n    private func ").first ?? tail
+
+        XCTAssertTrue(
+            methodBody.contains("skipStorageLimitationCheck: true"),
+            "makeStorageLimitationRequest 的「仍要迁移」回调在关闭弹窗（storageLimitationRequest = nil）后"
+                + "调用 proceedWithMigration 时必须传入 skipStorageLimitationCheck: true，否则会再次触发存储能力弹窗死循环"
+        )
+    }
+
     private func hasNonNilAssignment(to name: String, in source: String) throws -> Bool {
         // This is a source audit, not a Swift parser or a reachability proof.
         let code = source.components(separatedBy: .newlines)

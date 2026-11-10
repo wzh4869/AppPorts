@@ -2081,9 +2081,14 @@ struct ContentView: View {
     }
 
     /// 校验通过后的迁移收尾：先处理目标存储能力提示，再处理自更新应用确认。
-    func proceedWithMigration(validApps: [AppItem], dest: URL) {
+    func proceedWithMigration(
+        validApps: [AppItem],
+        dest: URL,
+        skipStorageLimitationCheck: Bool = false
+    ) {
         // 目标盘存不住应用需要的元数据时先说明代价；只提示，不阻断。
-        if storageLimitationRequest == nil,
+        if !skipStorageLimitationCheck,
+           storageLimitationRequest == nil,
            let capabilities = StorageCapabilityProbe.probe(destination: dest),
            !capabilities.missing.isEmpty {
             pendingStorageLimitationApps = validApps
@@ -2185,7 +2190,11 @@ struct ContentView: View {
                     let apps = pendingStorageLimitationApps
                     pendingStorageLimitationApps = []
                     storageLimitationRequest = nil
-                    proceedWithMigration(validApps: apps, dest: dest)
+                    proceedWithMigration(
+                        validApps: apps,
+                        dest: dest,
+                        skipStorageLimitationCheck: true
+                    )
                 }
             ]
         )
