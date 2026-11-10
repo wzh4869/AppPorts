@@ -4,7 +4,7 @@ AppPorts 的實現與文件使用了以下專案。使用或分發時，請遵�
 
 ## AppPorts {#section-1}
 
-AppPorts 使用 [Apache License 2.0](https://github.com/wzh4869/AppPorts/blob/main/LICENSE)。應用圖示由本專案製作。
+AppPorts 使用 [Apache License 2.0](https://github.com/wzh4869/AppPorts/blob/main/LICENSE)。應用圖示由本專案製作。許可全文與 [NOTICE](https://github.com/wzh4869/AppPorts/blob/main/NOTICE)（版權歸屬：AppPorts © 2025–2026 shimoko.com）隨應用程式一起散布，原始碼副本分別為儲存庫根目錄的 `LICENSE` 和 `NOTICE`；應用程式「關於」視窗中的「Apache License 2.0」連結指向儲存庫中的同一份文字。
 
 ## 參考與使用的第三方專案 {#section-2}
 
@@ -17,6 +17,12 @@ Software: Pearcleaner
 License: Apache 2.0 with Commons Clause
 Licensor: alienator88
 ```
+
+## 應用內的第三方程式碼 {#third-party-code}
+
+完全磁碟訪問權限引導中的圖示拖曳與浮動視窗定位改編自 [DogSC](https://github.com/laogou717/dogsc)，對應提交 `567fd6ed3bf113227dcf3e815f87ce60f0b69497`。DogSC 以 MIT 許可釋出，版權歸 2026 神煩老狗所有。
+
+完整的 MIT 許可文字隨 AppPorts 一起散布，原始碼副本位於 [AppPorts/Resources/DogSC-LICENSE.txt](https://github.com/wzh4869/AppPorts/blob/main/AppPorts/Resources/DogSC-LICENSE.txt)。應用程式「關於」視窗中的「開放原始碼授權條款」連結指向本頁。
 
 ## 文件站 {#section-3}
 

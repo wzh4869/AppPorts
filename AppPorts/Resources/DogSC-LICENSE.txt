@@ -1,6 +1,7 @@
 Portions of the Full Disk Access guide are adapted from DogSC.
 https://github.com/laogou717/dogsc
 Source commit: 567fd6ed3bf113227dcf3e815f87ce60f0b69497
+Listed at: https://docs-appports.shimoko.com/docs/licenses
 
 MIT License
 
