@@ -233740,6 +233740,965 @@
           }
         }
       }
+    },
+    "待核对" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بحاجة إلى التحقق"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠝⠑⠑⠙⠎ ⠠⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu prüfen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs Verification"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrolenda"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendiente de comprobar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À vérifier"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जाँच आवश्यक"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perlu diperiksa"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da verificare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인 필요"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te controleren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do sprawdzenia"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por verificar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требует проверки"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รอตรวจสอบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrol edilmeli"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cần kiểm tra"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待核对"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待核對"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待核對"
+          }
+        }
+      }
+    },
+    "App 管理允许更新或删除其他应用。请在「系统设置 › 隐私与安全性 › App 管理」中核对 AppPorts 的开关。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسمح إدارة التطبيقات للتطبيقات بتحديث التطبيقات الأخرى أو حذفها. تحقق من مفتاح AppPorts في إعدادات النظام > الخصوصية والأمان > إدارة التطبيقات."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞ ⠁⠇⠇⠕⠺⠎ ⠁⠏⠏⠎ ⠞⠕ ⠥⠏⠙⠁⠞⠑ ⠕⠗ ⠙⠑⠇⠑⠞⠑ ⠕⠞⠓⠑⠗ ⠁⠏⠏⠎⠲ ⠠⠉⠓⠑⠉⠅ ⠞⠓⠑ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠎⠺⠊⠞⠉⠓ ⠊⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎ > ⠠⠏⠗⠊⠧⠁⠉⠽ & ⠠⠎⠑⠉⠥⠗⠊⠞⠽ > ⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit der App-Verwaltung können Apps andere Apps aktualisieren oder löschen. Überprüfen Sie den AppPorts-Schalter unter Systemeinstellungen > Datenschutz und Sicherheit > App-Verwaltung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Management allows apps to update or delete other apps. Check the AppPorts switch in System Settings > Privacy & Security > App Management."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apadministrado permesas al aplikaĵoj ĝisdatigi aŭ forigi aliajn programojn. Kontrolu la AppPorts-ŝaltilon en Sistemaj Agordoj > Privateco kaj Sekureco > App Administrado."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La administración de aplicaciones permite que las aplicaciones actualicen o eliminen otras aplicaciones. Verifique el interruptor AppPorts en Configuración del sistema > Privacidad y seguridad > Administración de aplicaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La gestion des applications permet aux applications de mettre à jour ou de supprimer d'autres applications. Vérifiez le commutateur AppPorts dans Paramètres système > Confidentialité et sécurité > Gestion des applications."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप प्रबंधन ऐप्स को अन्य ऐप्स को अपडेट करने या हटाने की अनुमति देता है। सिस्टम सेटिंग्स > गोपनीयता और सुरक्षा > ऐप प्रबंधन में ऐपपोर्ट्स स्विच की जाँच करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manajemen Aplikasi memungkinkan aplikasi memperbarui atau menghapus aplikasi lain. Periksa sakelar AppPorts di Pengaturan Sistem > Privasi & Keamanan > Manajemen Aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestione app consente alle app di aggiornare o eliminare altre app. Controlla l'interruttore AppPorts in Impostazioni di sistema > Privacy e sicurezza > Gestione app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ管理では、アプリが他のアプリを更新または削除できるようになります。 [システム設定] > [プライバシーとセキュリティ] > [アプリ管理] で AppPorts スイッチを確認します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 관리를 사용하면 앱이 다른 앱을 업데이트하거나 삭제할 수 있습니다. 시스템 설정 > 개인 정보 보호 및 보안 > 앱 관리에서 AppPorts 스위치를 확인하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Met App-beheer kunnen apps andere apps bijwerken of verwijderen. Controleer de AppPorts-schakelaar in Systeeminstellingen > Privacy en beveiliging > App-beheer."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzanie aplikacjami umożliwia aplikacjom aktualizowanie lub usuwanie innych aplikacji. Sprawdź przełącznik AppPorts w Ustawieniach systemowych > Prywatność i bezpieczeństwo > Zarządzanie aplikacjami."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O gerenciamento de aplicativos permite que aplicativos atualizem ou excluam outros aplicativos. Verifique a opção AppPorts em Configurações do sistema > Privacidade e segurança > Gerenciamento de aplicativos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление приложениями позволяет приложениям обновлять или удалять другие приложения. Проверьте переключатель AppPorts в разделе «Настройки системы» > «Конфиденциальность и безопасность» > «Управление приложениями»."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การจัดการแอปอนุญาตให้แอปอัปเดตหรือลบแอปอื่นๆ ตรวจสอบสวิตช์ AppPorts ในการตั้งค่าระบบ > ความเป็นส่วนตัวและความปลอดภัย > การจัดการแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama Yönetimi, uygulamaların diğer uygulamaları güncellemesine veya silmesine olanak tanır. Sistem Ayarları > Gizlilik ve Güvenlik > Uygulama Yönetimi bölümünde AppPorts anahtarını kontrol edin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản lý ứng dụng cho phép các ứng dụng cập nhật hoặc xóa các ứng dụng khác. Kiểm tra công tắc AppPorts trong Cài đặt hệ thống > Quyền riêng tư & Bảo mật > Quản lý ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 管理允许更新或删除其他应用。请在「系统设置 › 隐私与安全性 › App 管理」中核对 AppPorts 的开关。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 管理允許更新或刪除其他應用程式。請在「系統設定 › 隱私權與安全性 › App 管理」中核對 AppPorts 的開關。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 管理允許哽噺或刪除其他應詠。請╪「繫統設寘 › 隱私與安洤性 › App 管理」㊥核對 AppPorts の開關。"
+          }
+        }
+      }
+    },
+    "把图标拖入“App 管理”列表，再打开开关。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب الرمز إلى قائمة إدارة التطبيقات، ثم قم بتشغيل المفتاح."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠗⠁⠛ ⠞⠓⠑ ⠊⠉⠕⠝ ⠊⠝⠞⠕ ⠞⠓⠑ ⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞ ⠇⠊⠎⠞⠂ ⠞⠓⠑⠝ ⠞⠥⠗⠝ ⠕⠝ ⠞⠓⠑ ⠎⠺⠊⠞⠉⠓⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziehen Sie das Symbol in die App-Verwaltungsliste und schalten Sie dann den Schalter ein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag the icon into the App Management list, then turn on the switch."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trenu la piktogramon en la liston de App Administrado, tiam ŝaltu la ŝaltilon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastre el ícono a la lista de Administración de aplicaciones y luego active el interruptor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser l'icône dans la liste de gestion des applications, puis activez le commutateur."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आइकन को ऐप प्रबंधन सूची में खींचें, फिर स्विच चालू करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seret ikon ke dalam daftar Manajemen Aplikasi, lalu hidupkan sakelar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina l'icona nell'elenco Gestione app, quindi attiva l'interruttore."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アイコンをアプリ管理リストにドラッグし、スイッチをオンにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아이콘을 앱 관리 목록으로 드래그한 다음 스위치를 켜세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep het pictogram naar de app-beheerlijst en zet vervolgens de schakelaar aan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij ikonę na listę Zarządzanie aplikacjami, a następnie włącz przełącznik."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste o ícone para a lista de gerenciamento de aplicativos e ligue o botão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите значок в список «Управление приложениями», затем включите переключатель."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลากไอคอนไปที่รายการการจัดการแอพ จากนั้นเปิดสวิตช์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simgeyi Uygulama Yönetimi listesine sürükleyin ve ardından anahtarı açın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kéo biểu tượng vào danh sách Quản lý ứng dụng, sau đó bật công tắc."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把图标拖入“App 管理”列表，再打开开关。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把圖示拖入「App 管理」列表，再打開開關。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把圖標拖入“App 管理”列表，再打開開關。"
+          }
+        }
+      }
+    },
+    "无法确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر التأكد"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠝⠁⠃⠇⠑ ⠞⠕ ⠉⠕⠝⠋⠊⠗⠍"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht feststellbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to confirm"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblas konfirmi"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede confirmar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible à confirmer"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पुष्टि नहीं हो सकी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat memastikan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile confermare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인할 수 없음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet te bevestigen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można potwierdzić"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível confirmar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось проверить"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยืนยันไม่ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doğrulanamıyor"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác nhận"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法确认"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法確認"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法確認"
+          }
+        }
+      }
+    },
+    "当前 AppPorts 已获准更新或删除其他应用。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يُسمح لنسخة AppPorts هذه بتحديث التطبيقات الأخرى أو حذفها."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠉⠕⠏⠽ ⠕⠋ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠎ ⠁⠇⠇⠕⠺⠑⠙ ⠞⠕ ⠥⠏⠙⠁⠞⠑ ⠕⠗ ⠙⠑⠇⠑⠞⠑ ⠕⠞⠓⠑⠗ ⠁⠏⠏⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Kopie von AppPorts darf andere Apps aktualisieren oder löschen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This copy of AppPorts is allowed to update or delete other apps."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu AppPorts rajtas ĝisdatigi aŭ forigi aliajn aplikaĵojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta copia de AppPorts tiene permiso para actualizar o eliminar otras apps."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette copie d’AppPorts peut mettre à jour ou supprimer d’autres apps."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस AppPorts को अन्य ऐप अपडेट करने या हटाने की अनुमति है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ini diizinkan memperbarui atau menghapus app lain."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa copia di AppPorts può aggiornare o eliminare altre app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の AppPorts は、ほかのアプリの更新や削除を許可されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 AppPorts는 다른 앱을 업데이트하거나 삭제할 수 있도록 허용되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze AppPorts mag andere apps bijwerken of verwijderen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta kopia AppPorts może aktualizować lub usuwać inne aplikacje."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta cópia do AppPorts tem permissão para atualizar ou excluir outros apps."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этому экземпляру AppPorts разрешено обновлять или удалять другие приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ที่กำลังใช้งานได้รับอนุญาตให้อัปเดตหรือลบแอปอื่น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu AppPorts’un diğer uygulamaları güncellemesine veya silmesine izin veriliyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts hiện tại được phép cập nhật hoặc xóa các ứng dụng khác."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前 AppPorts 已获准更新或删除其他应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前 AppPorts 已獲准更新或刪除其他應用程式。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當前 AppPorts 已獲准更新或刪除其怹應用。"
+          }
+        }
+      }
+    },
+    "当前 AppPorts 未获准更新或删除其他应用。请在系统设置的「App 管理」中开启权限。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يُسمح لنسخة AppPorts هذه بتحديث التطبيقات الأخرى أو حذفها. فعّل إدارة التطبيقات في إعدادات النظام."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠉⠕⠏⠽ ⠕⠋ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠎ ⠝⠕⠞ ⠁⠇⠇⠕⠺⠑⠙ ⠞⠕ ⠥⠏⠙⠁⠞⠑ ⠕⠗ ⠙⠑⠇⠑⠞⠑ ⠕⠞⠓⠑⠗ ⠁⠏⠏⠎⠲ ⠠⠑⠝⠁⠃⠇⠑ ⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞ ⠊⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Kopie von AppPorts darf andere Apps nicht aktualisieren oder löschen. Aktiviere die App-Verwaltung in den Systemeinstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This copy of AppPorts is not allowed to update or delete other apps. Enable App Management in System Settings."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu AppPorts ne rajtas ĝisdatigi aŭ forigi aliajn aplikaĵojn. Ebligu administradon de aplikaĵoj en Sistemaj Agordoj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta copia de AppPorts no tiene permiso para actualizar o eliminar otras apps. Activa Gestión de apps en Ajustes del Sistema."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette copie d’AppPorts ne peut pas mettre à jour ou supprimer d’autres apps. Activez Gestion des apps dans Réglages Système."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस AppPorts को अन्य ऐप अपडेट करने या हटाने की अनुमति नहीं है। सिस्टम सेटिंग्स में ऐप प्रबंधन की अनुमति चालू करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ini tidak diizinkan memperbarui atau menghapus app lain. Aktifkan Manajemen App di Pengaturan Sistem."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa copia di AppPorts non può aggiornare o eliminare altre app. Abilita Gestione app in Impostazioni di Sistema."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の AppPorts は、ほかのアプリの更新や削除を許可されていません。システム設定の「App管理」で権限を有効にしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 AppPorts는 다른 앱을 업데이트하거나 삭제할 수 있도록 허용되지 않았습니다. 시스템 설정에서 앱 관리 권한을 켜세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze AppPorts mag andere apps niet bijwerken of verwijderen. Schakel Appbeheer in bij Systeeminstellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta kopia AppPorts nie może aktualizować ani usuwać innych aplikacji. Włącz zarządzanie aplikacjami w Ustawieniach systemowych."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta cópia do AppPorts não tem permissão para atualizar ou excluir outros apps. Ative Gerenciamento de apps nos Ajustes do Sistema."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этому экземпляру AppPorts не разрешено обновлять или удалять другие приложения. Включите управление приложениями в Системных настройках."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ที่กำลังใช้งานไม่ได้รับอนุญาตให้อัปเดตหรือลบแอปอื่น เปิดสิทธิ์การจัดการแอปในการตั้งค่าระบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu AppPorts’un diğer uygulamaları güncellemesine veya silmesine izin verilmiyor. Sistem Ayarları’nda Uygulama Yönetimi’ni etkinleştirin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts hiện tại không được phép cập nhật hoặc xóa các ứng dụng khác. Bật quyền Quản lý ứng dụng trong Cài đặt hệ thống."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前 AppPorts 未获准更新或删除其他应用。请在系统设置的「App 管理」中开启权限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前 AppPorts 未獲准更新或刪除其他應用程式。請在系統設定的「App 管理」中開啟權限。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當前 AppPorts 未獲准更新或刪除其怹應用。請在系統設置的「App 管理」中開啟權限。"
+          }
+        }
+      }
+    },
+    "无法读取当前 AppPorts 的 App 管理授权状态。请在系统设置中核对。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذرت قراءة إذن إدارة التطبيقات لنسخة AppPorts هذه. تحقق من إعدادات النظام."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠝⠁⠃⠇⠑ ⠞⠕ ⠗⠑⠁⠙ ⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞ ⠁⠥⠞⠓⠕⠗⠊⠵⠁⠞⠊⠕⠝ ⠋⠕⠗ ⠞⠓⠊⠎ ⠉⠕⠏⠽ ⠕⠋ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲ ⠠⠉⠓⠑⠉⠅ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Berechtigung zur App-Verwaltung für diese Kopie von AppPorts lässt sich nicht lesen. Prüfe die Systemeinstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to read App Management authorization for this copy of AppPorts. Check System Settings."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblas legi la permeson administri aplikaĵojn por ĉi tiu AppPorts. Kontrolu Sistemajn Agordojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede leer el permiso de Gestión de apps de esta copia de AppPorts. Comprueba Ajustes del Sistema."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de lire l’autorisation de gestion des apps de cette copie d’AppPorts. Vérifiez Réglages Système."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस AppPorts की ऐप प्रबंधन अनुमति पढ़ी नहीं जा सकी। सिस्टम सेटिंग्स में जाँचें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat membaca izin Manajemen App untuk AppPorts ini. Periksa Pengaturan Sistem."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile leggere il permesso di gestione app di questa copia di AppPorts. Controlla Impostazioni di Sistema."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の AppPorts の App管理の許可状態を読み取れません。システム設定で確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 AppPorts의 앱 관리 권한 상태를 읽을 수 없습니다. 시스템 설정에서 확인하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De toestemming voor appbeheer van deze AppPorts kan niet worden gelezen. Controleer Systeeminstellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można odczytać uprawnienia tej kopii AppPorts do zarządzania aplikacjami. Sprawdź Ustawienia systemowe."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler a permissão de gerenciamento de apps desta cópia do AppPorts. Verifique os Ajustes do Sistema."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось прочитать разрешение на управление приложениями для этого экземпляра AppPorts. Проверьте Системные настройки."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อ่านสถานะสิทธิ์การจัดการแอปของ AppPorts ที่กำลังใช้งานไม่ได้ โปรดตรวจสอบในการตั้งค่าระบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu AppPorts’un uygulama yönetimi izni okunamıyor. Sistem Ayarları’nı kontrol edin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể đọc trạng thái quyền Quản lý ứng dụng của AppPorts hiện tại. Kiểm tra Cài đặt hệ thống."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取当前 AppPorts 的 App 管理授权状态。请在系统设置中核对。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取目前 AppPorts 的 App 管理授權狀態。請在系統設定中核對。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取當前 AppPorts 的 App 管理授權狀態。請在系統設置中核對。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

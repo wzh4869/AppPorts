@@ -61,6 +61,13 @@ final class FullDiskAccessGuideTests: XCTestCase {
         NSRect(x: window.minX, y: window.maxY - 52, width: window.width, height: 52)
     }
 
+    func testGuidanceUsesTheSelectedPermissionList() {
+        XCTAssertEqual(LaunchReadinessChecker.Item.Action.fullDiskAccess.guideInstruction,
+                       "把图标拖入“完全磁盘访问权限”列表，再打开开关。".localized)
+        XCTAssertEqual(LaunchReadinessChecker.Item.Action.appManagement.guideInstruction,
+                       "把图标拖入“App 管理”列表，再打开开关。".localized)
+    }
+
     func testApplicationDragPublishesAFileURLWithoutChangingPermissionState() throws {
         let url = URL(fileURLWithPath: "/Applications/AppPorts.app")
         var completions = 0
@@ -76,6 +83,55 @@ final class FullDiskAccessGuideTests: XCTestCase {
         XCTAssertEqual(completions, 0)
     }
 
+    func testRenderPermissionAttentionControls() async throws {
+        guard let output = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"] else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT for permission attention visual review")
+        }
+        let directory = URL(fileURLWithPath: output)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let originalLanguage = LanguageManager.shared.language
+        defer { LanguageManager.shared.language = originalLanguage }
+        let levels: [LaunchReadinessChecker.Item.Level?] = [nil, .failed, .warning, .ok]
+        let attentionItems = [LaunchReadinessChecker.appManagementItem(state: .denied),
+                              LaunchReadinessChecker.appManagementItem(state: .unknown)]
+        let attention = ["", PermissionReadiness.attentionText(for: [attentionItems[0]]),
+                         PermissionReadiness.attentionText(for: [attentionItems[1]]), ""]
+        for language in ["zh-Hans", "en", "de", "fr", "ja", "ar"] {
+            LanguageManager.shared.language = language
+            for dark in [false, true] {
+                let appearance = try XCTUnwrap(NSAppearance(named: dark ? .darkAqua : .aqua))
+                let host = NSHostingView(rootView: VStack(spacing: 12) {
+                    ForEach(levels.indices, id: \.self) { index in
+                        HStack {
+                            Text(["正在检查…", "需要授权", "待核对", "已就绪"][index].localized)
+                                .frame(width: 150, alignment: .leading)
+                            PermissionSettingsButton(level: levels[index], attentionText: attention[index]) { XCTFail("Rendering must not open settings") }
+                            Spacer()
+                            PermissionCheckButton(level: levels[index], attentionText: attention[index]) { XCTFail("Rendering must not open permission checks") }
+                        }
+                    }
+                }.padding(20).background(dark ? Color.black : Color.white)
+                    .environment(\.colorScheme, dark ? .dark : .light)
+                    .environment(\.locale, Locale(identifier: language))
+                    .environment(\.layoutDirection, language == "ar" ? .rightToLeft : .leftToRight))
+                let window = NSWindow(contentRect: NSRect(x: -10_000, y: 0, width: 400, height: 220),
+                    styleMask: [.borderless], backing: .buffered, defer: false)
+                window.isReleasedWhenClosed = false
+                window.appearance = appearance
+                window.contentView = host
+                window.orderFront(nil)
+                defer { window.close() }
+                host.frame = NSRect(x: 0, y: 0, width: 400, height: 220)
+                host.layoutSubtreeIfNeeded()
+                try await Task.sleep(nanoseconds: 150_000_000)
+                let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
+                appearance.performAsCurrentDrawingAppearance { host.cacheDisplay(in: host.bounds, to: bitmap) }
+                let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                try png.write(to: directory.appendingPathComponent("permission-attention-\(language)-\(dark ? "dark" : "light").png"))
+            }
+        }
+    }
+
     func testRenderGuideInBothAppearancesAndLanguages() async throws {
         guard let output = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"] else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT for permission guide visual review")
@@ -86,29 +142,53 @@ final class FullDiskAccessGuideTests: XCTestCase {
         defer { LanguageManager.shared.language = originalLanguage }
         for language in ["zh-Hans", "en", "de", "fr", "ja", "ar"] {
             LanguageManager.shared.language = language
-            for dark in [false, true] {
-                let appearance = try XCTUnwrap(NSAppearance(named: dark ? .darkAqua : .aqua))
-                let host = NSHostingView(rootView: FullDiskAccessGuideView(applicationURL: Bundle.main.bundleURL,
-                    onDragEnded: { _ in XCTFail("Rendering must not perform a drag") })
-                    .environment(\.colorScheme, dark ? .dark : .light)
-                    .environment(\.locale, Locale(identifier: language))
-                    .environment(\.layoutDirection, language == "ar" ? .rightToLeft : .leftToRight))
-                let window = NSWindow(contentRect: NSRect(x: -10_000, y: 0, width: 480, height: FullDiskAccessGuide.panelSize.height),
-                    styleMask: [.borderless], backing: .buffered, defer: false)
-                window.isReleasedWhenClosed = false
-                window.appearance = appearance
-                window.contentView = host
-                window.orderFront(nil)
-                defer { window.close() }
-                host.frame = NSRect(x: 0, y: 0, width: 480, height: FullDiskAccessGuide.panelSize.height)
-                host.layoutSubtreeIfNeeded()
-                try await Task.sleep(nanoseconds: 150_000_000)
-                host.displayIfNeeded()
-                let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-                appearance.performAsCurrentDrawingAppearance { host.cacheDisplay(in: host.bounds, to: bitmap) }
-                let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
-                XCTAssertGreaterThan(png.count, 1000)
-                try png.write(to: directory.appendingPathComponent("permission-\(language)-\(dark ? "dark" : "light").png"))
+            for permission in [LaunchReadinessChecker.Item.Action.fullDiskAccess, .appManagement] {
+                for dark in [false, true] {
+                    let appearance = try XCTUnwrap(NSAppearance(named: dark ? .darkAqua : .aqua))
+                    let host = NSHostingView(rootView: FullDiskAccessGuideView(applicationURL: Bundle.main.bundleURL, permission: permission,
+                        onDragEnded: { _ in XCTFail("Rendering must not perform a drag") })
+                        .environment(\.colorScheme, dark ? .dark : .light)
+                        .environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar" ? .rightToLeft : .leftToRight))
+                    let window = NSWindow(contentRect: NSRect(x: -10_000, y: 0, width: 480, height: FullDiskAccessGuide.panelSize.height),
+                        styleMask: [.borderless], backing: .buffered, defer: false)
+                    window.isReleasedWhenClosed = false
+                    window.appearance = appearance
+                    window.contentView = host
+                    window.orderFront(nil)
+                    defer { window.close() }
+                    host.frame = NSRect(x: 0, y: 0, width: 480, height: FullDiskAccessGuide.panelSize.height)
+                    host.layoutSubtreeIfNeeded()
+                    try await Task.sleep(nanoseconds: 150_000_000)
+                    host.displayIfNeeded()
+                    let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
+                    appearance.performAsCurrentDrawingAppearance { host.cacheDisplay(in: host.bounds, to: bitmap) }
+                    let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                    XCTAssertGreaterThan(png.count, 1000)
+                    try png.write(to: directory.appendingPathComponent("permission-\(permission == .appManagement ? "app-management" : "full-disk")-\(language)-\(dark ? "dark" : "light").png"))
+                    if permission == .appManagement {
+                        let states: [AppManagementPermission.State] = [.granted, .denied, .unknown]
+                        let card = NSHostingView(rootView: VStack(spacing: 12) {
+                            ForEach(states.indices, id: \.self) { index in
+                                ReadinessCard(item: LaunchReadinessChecker.appManagementItem(state: states[index]), onAction: { _ in
+                                    XCTFail("Rendering must not open System Settings")
+                                })
+                            }
+                        }.padding().background(dark ? Color.black : Color.white)
+                            .environment(\.colorScheme, dark ? .dark : .light)
+                            .environment(\.locale, Locale(identifier: language))
+                            .environment(\.layoutDirection, language == "ar" ? .rightToLeft : .leftToRight))
+                        window.setContentSize(NSSize(width: 520, height: 560))
+                        window.contentView = card
+                        card.frame = NSRect(x: 0, y: 0, width: 520, height: 560)
+                        card.layoutSubtreeIfNeeded()
+                        try await Task.sleep(nanoseconds: 150_000_000)
+                        let bitmap = try XCTUnwrap(card.bitmapImageRepForCachingDisplay(in: card.bounds))
+                        appearance.performAsCurrentDrawingAppearance { card.cacheDisplay(in: card.bounds, to: bitmap) }
+                        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+                        try png.write(to: directory.appendingPathComponent("readiness-\(language)-\(dark ? "dark" : "light").png"))
+                    }
+                }
             }
         }
     }

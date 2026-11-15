@@ -116,19 +116,14 @@ struct ReadinessCheckView: View {
             let result = await LaunchReadinessChecker().check()
             await MainActor.run {
                 items = result
+                PermissionReadiness.shared.update(from: result)
                 isChecking = false
             }
         }
     }
 
     private func openSettings(for action: LaunchReadinessChecker.Item.Action) {
-        if action == .fullDiskAccess {
-            FullDiskAccessGuide.shared.openSettings()
-            return
-        }
-        for url in action.settingsURLs where NSWorkspace.shared.open(url) {
-            return
-        }
+        FullDiskAccessGuide.shared.openSettings(for: action)
     }
 }
 
@@ -210,7 +205,7 @@ private struct RunningApplicationCard: View {
 // MARK: - 卡片
 
 /// 准备情况里的一张卡片，缺权限时右侧是可点击的「去授权」。
-private struct ReadinessCard: View {
+struct ReadinessCard: View {
     let item: LaunchReadinessChecker.Item
     let onAction: (LaunchReadinessChecker.Item.Action) -> Void
 
@@ -222,17 +217,25 @@ private struct ReadinessCard: View {
             detail: item.detail
         ) {
             if let action = item.action {
-                Button(action: { onAction(action) }) {
-                    HStack(spacing: 3) {
-                        Text(action == .fullDiskAccess ? "打开系统设置".localized : "去授权".localized)
-                        Image(systemName: "arrow.up.right")
-                            .font(.system(size: 9, weight: .bold))
+                VStack(alignment: .trailing, spacing: 6) {
+                    if action == .appManagement {
+                        Text(statusText)
+                            .font(AppDialogTypography.body)
+                            .foregroundColor(statusColor)
                     }
-                    .font(AppDialogTypography.body.weight(.semibold))
+                    Button(action: { onAction(action) }) {
+                        HStack(spacing: 3) {
+                            Text("打开系统设置".localized)
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 9, weight: .bold))
+                        }
+                        .font(AppDialogTypography.body.weight(.semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .help("去设置授予权限".localized)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .help("去设置授予权限".localized)
+                .fixedSize(horizontal: true, vertical: false)
             } else {
                 Text(statusText)
                     .font(AppDialogTypography.body.weight(.semibold))
@@ -252,7 +255,7 @@ private struct ReadinessCard: View {
     private var statusText: String {
         switch item.level {
         case .ok: return "已就绪".localized
-        case .warning: return "注意".localized
+        case .warning: return item.action == .appManagement ? "无法确认".localized : "注意".localized
         case .failed: return "需要授权".localized
         }
     }

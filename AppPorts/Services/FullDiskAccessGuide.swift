@@ -13,19 +13,19 @@ final class FullDiskAccessGuide {
     private var hasSeenSettings = false
     private var missingSamples = 0
 
-    func openSettings() {
+    func openSettings(for permission: LaunchReadinessChecker.Item.Action = .fullDiskAccess) {
         guard AppInstallationLocation.confirmIfNeeded(),
-              let url = LaunchReadinessChecker.Item.Action.fullDiskAccess.settingsURLs.first,
-              NSWorkspace.shared.open(url) else { return }
-        show(applicationURL: Bundle.main.bundleURL)
+              permission.settingsURLs.contains(where: { NSWorkspace.shared.open($0) }) else { return }
+        show(applicationURL: Bundle.main.bundleURL, permission: permission)
     }
 
-    private func show(applicationURL: URL) {
+    private func show(applicationURL: URL, permission: LaunchReadinessChecker.Item.Action) {
         hide()
         let panel = self.panel ?? makePanel()
         self.panel = panel
         let host = NSHostingController(rootView: FullDiskAccessGuideView(
             applicationURL: applicationURL,
+            permission: permission,
             onDragEnded: { [weak self] accepted in self?.applicationDragEnded(accepted: accepted) }))
         if #available(macOS 13.0, *) {
             host.sizingOptions = []

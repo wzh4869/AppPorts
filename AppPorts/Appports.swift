@@ -257,9 +257,7 @@ struct AppMoverApp: App {
             // 赞助菜单
             CommandMenu("赞助".localized) {
                 Button("赞助 AppPorts".localized) {
-                    if let url = URL(string: "https://docs-appports.shimoko.com/sponsor.html") {
-                        NSWorkspace.shared.open(url)
-                    }
+                    NSWorkspace.shared.open(DocumentationLink.url(page: "sponsor"))
                 }
             }
 

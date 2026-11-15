@@ -95,7 +95,7 @@ struct LaunchReadinessChecker: Sendable {
     /// 检测用到的外部依赖；测试注入假实现，避免依赖真机状态。
     struct Probe: Sendable {
         var fullDiskAccessState: @Sendable () -> FullDiskAccessState
-        var hasAppManagementPermission: @Sendable () -> Bool
+        var appManagementState: @Sendable () -> AppManagementPermission.State
         var externalDrivePath: @Sendable () -> String?
         var externalDriveState: @Sendable (_ path: String) async -> ExternalDriveState
     }
@@ -120,7 +120,7 @@ struct LaunchReadinessChecker: Sendable {
 
         return Self.items(
             fullDiskAccessState: probe.fullDiskAccessState(),
-            hasAppManagementPermission: probe.hasAppManagementPermission(),
+            appManagementState: probe.appManagementState(),
             externalDriveState: driveState
         )
     }
@@ -128,17 +128,17 @@ struct LaunchReadinessChecker: Sendable {
     /// 纯函数版本：把已检测到的状态映射成检查项，方便测试。
     static func items(
         fullDiskAccessState: FullDiskAccessState,
-        hasAppManagementPermission: Bool,
+        appManagementState: AppManagementPermission.State,
         externalDriveState: ExternalDriveState
     ) -> [Item] {
         [
             fullDiskAccessItem(state: fullDiskAccessState),
-            appManagementItem(granted: hasAppManagementPermission),
+            appManagementItem(state: appManagementState),
             externalDriveItem(state: externalDriveState)
         ]
     }
 
-    private static func fullDiskAccessItem(state: FullDiskAccessState) -> Item {
+    static func fullDiskAccessItem(state: FullDiskAccessState) -> Item {
         switch state {
         case .denied:
             return Item(
@@ -167,22 +167,26 @@ struct LaunchReadinessChecker: Sendable {
         }
     }
 
-    private static func appManagementItem(granted: Bool) -> Item {
-        guard granted else {
-            return Item(
-                id: ItemID.appManagement,
-                level: .failed,
-                title: "App 管理权限".localized,
-                detail: "迁移应用需要替换 /Applications 里的本地副本。请在「系统设置 › 隐私与安全性 › App 管理」里允许 AppPorts。".localized,
-                action: .appManagement
-            )
+    static func appManagementItem(state: AppManagementPermission.State) -> Item {
+        let level: Item.Level
+        let detail: String
+        switch state {
+        case .granted:
+            level = .ok
+            detail = "当前 AppPorts 已获准更新或删除其他应用。".localized
+        case .denied:
+            level = .failed
+            detail = "当前 AppPorts 未获准更新或删除其他应用。请在系统设置的「App 管理」中开启权限。".localized
+        case .unknown:
+            level = .warning
+            detail = "无法读取当前 AppPorts 的 App 管理授权状态。请在系统设置中核对。".localized
         }
         return Item(
             id: ItemID.appManagement,
-            level: .ok,
+            level: level,
             title: "App 管理权限".localized,
-            detail: "已授予，可以替换 /Applications 里的应用。".localized,
-            action: nil
+            detail: detail,
+            action: .appManagement
         )
     }
 
@@ -290,18 +294,6 @@ struct LaunchReadinessChecker: Sendable {
         return (metadata.st_mode & S_IFMT) == S_IFREG ? 0 : EINVAL
     }
 
-    /// 往 `/Applications` 写一个临时文件来判断 App 管理权限，与「应用数据」页的判断方式一致。
-    static func hasAppManagementPermission() -> Bool {
-        let testFile = URL(fileURLWithPath: "/Applications/.appports-permission-test")
-        do {
-            try Data().write(to: testFile, options: .atomic)
-            try FileManager.default.removeItem(at: testFile)
-            return true
-        } catch {
-            return false
-        }
-    }
-
     /// 读取外部存储路径所在卷的文件系统类型。
     static func externalDriveState(atPath path: String, disk: DiskUtility = DiskUtility()) async -> ExternalDriveState {
         guard FileManager.default.fileExists(atPath: path) else { return .unavailable(path: path) }
@@ -319,7 +311,7 @@ extension LaunchReadinessChecker.Probe {
     /// 真机上的检测实现。
     static let live = LaunchReadinessChecker.Probe(
         fullDiskAccessState: { LaunchReadinessChecker.fullDiskAccessState() },
-        hasAppManagementPermission: { LaunchReadinessChecker.hasAppManagementPermission() },
+        appManagementState: { AppManagementPermission.state() },
         externalDrivePath: { UserDefaults.standard.string(forKey: LaunchReadinessChecker.externalDrivePathKey) },
         externalDriveState: { path in await LaunchReadinessChecker.externalDriveState(atPath: path) }
     )
@@ -328,6 +320,15 @@ extension LaunchReadinessChecker.Probe {
 // MARK: - 系统设置入口
 
 extension LaunchReadinessChecker.Item.Action {
+    var guideInstruction: String {
+        switch self {
+        case .fullDiskAccess:
+            return "把图标拖入“完全磁盘访问权限”列表，再打开开关。".localized
+        case .appManagement:
+            return "把图标拖入“App 管理”列表，再打开开关。".localized
+        }
+    }
+
     /// 对应的「系统设置」面板；旧系统没有「App 管理」面板时退回「隐私与安全性」首页。
     var settingsURLs: [URL] {
         let rawValues: [String]
@@ -336,7 +337,7 @@ extension LaunchReadinessChecker.Item.Action {
             rawValues = ["x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"]
         case .appManagement:
             rawValues = [
-                "x-apple.systempreferences:com.apple.preference.security?Privacy_AppManagement",
+                "x-apple.systempreferences:com.apple.preference.security?Privacy_AppBundles",
                 "x-apple.systempreferences:com.apple.preference.security"
             ]
         }

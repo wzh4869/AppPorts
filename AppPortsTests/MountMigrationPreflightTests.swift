@@ -140,7 +140,7 @@ struct MountMigrationPreflightTests {
     func guideAnchors() {
         let kinds = [makeGuidance(.notAPFS(filesystem: "exfat")), makeGuidance(.encrypted)]
             .flatMap(\.actions).map(\.kind)
-        #expect(kinds.contains(.openGuide(page: "why-apfs", anchor: "prepare-apfs")))
+        #expect(kinds.contains(.openGuide(page: "storage-guide", anchor: "prepare-apfs")))
         let encrypted = makeGuidance(.encrypted)
         #expect(encrypted.isReady)
         #expect(encrypted.actions.contains { $0.kind == .migrate && $0.isPrimary })
@@ -155,19 +155,21 @@ struct MountMigrationPreflightTests {
 
     @Test("Documentation links follow the interface language")
     func documentationLinks() {
-        #expect(DocumentationLink.url(page: "why-apfs", anchor: "prepare-apfs", language: "zh-Hans").absoluteString
-                == "https://docs-appports.shimoko.com/why-apfs.html#prepare-apfs")
-        #expect(DocumentationLink.url(page: "why-apfs", language: "zh-Hant").absoluteString
-                == "https://docs-appports.shimoko.com/zh-Hant/why-apfs.html")
+        #expect(DocumentationLink.url(page: "storage-guide", anchor: "prepare-apfs", language: "zh-Hans").absoluteString
+                == "https://docs-appports.shimoko.com/docs/storage-guide#prepare-apfs")
+        #expect(DocumentationLink.url(page: "storage-guide", language: "zh-Hant").absoluteString
+                == "https://docs-appports.shimoko.com/zh-Hant/docs/storage-guide")
         // The published site only ships zh-Hans, zh-Hant and en. Any other
         // interface language must fall back to the English edition instead of a
         // locale directory that was never built (which would 404).
-        #expect(DocumentationLink.url(page: "datamigrae/mount-migration", language: "ja").absoluteString
-                == "https://docs-appports.shimoko.com/en/datamigrae/mount-migration.html")
+        #expect(DocumentationLink.url(page: "datamigrae/operation", language: "ja").absoluteString
+                == "https://docs-appports.shimoko.com/en/docs/datamigrae/operation")
         #expect(DocumentationLink.url(page: "storage-capabilities", anchor: "summary", language: "en").absoluteString
-                == "https://docs-appports.shimoko.com/en/storage-capabilities.html#summary")
+                == "https://docs-appports.shimoko.com/en/docs/storage-capabilities#summary")
         #expect(DocumentationLink.url(page: "storage-capabilities", anchor: "summary", language: "zh-Hans").absoluteString
-                == "https://docs-appports.shimoko.com/storage-capabilities.html#summary")
+                == "https://docs-appports.shimoko.com/docs/storage-capabilities#summary")
+        #expect(DocumentationLink.url(page: "storage-capabilities", anchor: "degraded", language: "zh-Hant").absoluteString
+                == "https://docs-appports.shimoko.com/zh-Hant/docs/storage-capabilities#degraded")
         #expect(DocumentationLink.sitePrefix(for: "de-DE") == "en/")
         #expect(DocumentationLink.sitePrefix(for: "zh-Hant-TW") == "zh-Hant/")
         #expect(DocumentationLink.sitePrefix(for: "zh-martian") == "")

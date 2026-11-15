@@ -52,6 +52,53 @@ final class AppTransferTransactionTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testUpdaterConfirmationUsesTheApplicationInsteadOfCachedScanFlags() throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("App.app")
+        try makeApp(source)
+        try FileManager.default.createDirectory(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"),
+                                                withIntermediateDirectories: true)
+        let app = item(source)
+        XCTAssertFalse(app.hasSelfUpdater)
+        var choices: [Bool] = []
+        let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [app], service: w.service()) { choices.append($0) })
+        XCTAssertEqual(request.actions.map(\.title), ["非锁定迁移".localized, "锁定迁移".localized])
+        XCTAssertTrue(choices.isEmpty)
+        request.onCancel()
+        XCTAssertTrue(choices.isEmpty)
+        request.actions[0].handler()
+        request.actions[1].handler()
+        XCTAssertEqual(choices, [false, true])
+        try FileManager.default.removeItem(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"))
+        XCTAssertNil(ContentView.updateProtectionRequest(for: [app], service: w.service()) { _ in XCTFail("No automatic choice") })
+    }
+
+    func testExplicitUpdaterLockChoiceSurvivesMigrationAndRestore() async throws {
+        for shouldLock in [false, true] {
+            let w = try Workspace(); defer { w.cleanup() }
+            let source = w.local.appendingPathComponent("App.app")
+            let destination = w.external.appendingPathComponent("App.app")
+            try makeApp(source)
+            try FileManager.default.createDirectory(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"),
+                                                    withIntermediateDirectories: true)
+            let service = w.service()
+            XCTAssertEqual(service.selfUpdatingApplications(in: [item(source)]).count, 1)
+            let result = try await service.moveAndLink(appToMove: item(source), destinationURL: destination,
+                isRunning: false, lockExternal: shouldLock, progressHandler: nil)
+            XCTAssertTrue(result.isComplete, result.pendingMessage ?? "")
+            let locked = try SignatureSnapshot.info(at: destination).st_flags & UInt32(UF_IMMUTABLE) != 0
+            XCTAssertEqual(locked, shouldLock)
+            XCTAssertTrue(try XCTUnwrap(StorageCapabilityProbe.probe(destination: destination)).missing.isEmpty)
+            let restored = try await service.moveBack(app: item(destination), localDestinationURL: source, progressHandler: nil)
+            XCTAssertTrue(restored.transferResult.isComplete, restored.warnings.joined(separator: "\n"))
+            XCTAssertEqual(try payload(source), "payload")
+            XCTAssertEqual(try SignatureSnapshot.info(at: source).st_flags & UInt32(UF_IMMUTABLE), 0)
+            XCTAssertEqual(service.selfUpdatingApplications(in: [item(source)]).count, 1)
+            XCTAssertTrue(try w.store.records().isEmpty)
+        }
+    }
+
     func testPermissionDeniedExchangeUsesAuthorizedVerifiedOperation() async throws {
         let w = try Workspace(); defer { w.cleanup() }
         let source = w.local.appendingPathComponent("App.app")

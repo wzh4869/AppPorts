@@ -6,6 +6,7 @@ import SwiftUI
 
 struct FullDiskAccessGuideView: View {
     let applicationURL: URL
+    var permission: LaunchReadinessChecker.Item.Action = .fullDiskAccess
     let onDragEnded: (Bool) -> Void
     @Environment(\.colorScheme) private var colorScheme
     @State private var hovered = false
@@ -18,7 +19,7 @@ struct FullDiskAccessGuideView: View {
                 .onHover { hovered = $0 }
             VStack(alignment: .leading, spacing: 7) {
                 Text("找不到 AppPorts？".localized).font(AppDialogTypography.title)
-                Text("把图标拖入“完全磁盘访问权限”列表，再打开开关。".localized)
+                Text(permission.guideInstruction)
                     .font(AppDialogTypography.body)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

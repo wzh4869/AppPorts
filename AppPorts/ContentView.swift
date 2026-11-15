@@ -90,9 +90,6 @@ struct ContentView: View {
     // 自更新应用迁移确认（Sparkle/Electron，锁定模式保护）
     @State private var selfUpdaterRequest: WarningSheetRequest?
     @State private var appReplacementRequest: WarningSheetRequest?
-    @State private var pendingSelfUpdaterApps: [AppItem] = []
-    @State private var pendingRemainingAppsForSelfUpdater: [AppItem] = []
-    @State private var selfUpdaterIsLinkIn = false // true = 链接回本地, false = 迁移到外部
 
     
     // 进度弹窗状态
@@ -178,6 +175,7 @@ struct ContentView: View {
     @State private var signatureRestoreSourceRequest: WarningSheetRequest?
     @State private var signatureRepairReminderApps: [SignatureReplacedApp] = []
     @State private var hasShownSignatureRepairReminder = false
+    @ObservedObject private var permissionReadiness = PermissionReadiness.shared
     @State private var localAppFilter: LocalAppFilter = .all
 
     enum LocalAppFilter { case all, signatureReplaced }
@@ -194,6 +192,7 @@ struct ContentView: View {
         .onAppear {
             // A unit-test host must not scan apps, refresh agents, or observe real volumes.
             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+            permissionReadiness.refresh()
             isVisible = true
             if !hasRestoredSizeCache {
                 let snapshot = AppSizeCacheStore.shared.load()
@@ -252,6 +251,10 @@ struct ContentView: View {
                     }
                 }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+            permissionReadiness.refresh()
         }
         .onReceive(
             NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
@@ -796,15 +799,10 @@ struct ContentView: View {
                 showsTarget: true)
             Divider()
             HStack(spacing: 6) {
-                Button(action: { showAppStoreSettings = true }) {
-                    Label("设置".localized, systemImage: "gearshape")
-                        .labelStyle(.iconOnly)
-                        .frame(width: 32, height: 30)
+                PermissionSettingsButton(level: permissionReadiness.level, attentionText: permissionReadiness.attentionText) {
+                    showAppStoreSettings = true
                 }
-                .buttonStyle(.plain)
-                .keyboardShortcut(",", modifiers: .command)
                 .disabled(operationState.blocksInteraction)
-                .help("设置".localized + " (⌘,)")
                 cacheRefreshButton
                 Spacer(minLength: 0)
                 Button {
@@ -1884,7 +1882,7 @@ struct ContentView: View {
     }
 
     @discardableResult
-    func moveAndLink(appToMove: AppItem, destinationURL: URL, lockExternal: Bool = true,
+    func moveAndLink(appToMove: AppItem, destinationURL: URL, lockExternal: Bool = false,
                      replacementChoice: AppMigrationService.ReplacementChoice? = nil,
                      progressHandler: FileCopier.ProgressHandler?) async throws -> AppTransferResult {
         let service = AppMigrationService()
@@ -1900,7 +1898,7 @@ struct ContentView: View {
     }
 
     private func enqueueAppTransfer(_ app: AppItem, destination: URL, restoring: Bool = false,
-                                    wholeSymlink: Bool = false, lockExternal: Bool = true,
+                                    wholeSymlink: Bool = false, lockExternal: Bool = false,
                                     replacementChoice: AppMigrationService.ReplacementChoice? = nil,
                                     presentDetails: Bool = true) {
         let title = (restoring ? "正在还原应用".localized : "正在迁移应用".localized) + " · " + app.displayName
@@ -1943,15 +1941,19 @@ struct ContentView: View {
 
     func performMoveOutWholeSymlink(_ app: AppItem) {
         guard let dest = externalDriveURL else { return }
-        confirmUnrecognizedAppReplacements(apps: [app], destination: dest) { choices in
-            executeMoveOutWholeSymlink(app, destination: dest, replacementChoice: choices[app.id])
+        confirmUpdateProtection(for: [app]) { lockExternal in
+            confirmUnrecognizedAppReplacements(apps: [app], destination: dest) { choices in
+                executeMoveOutWholeSymlink(app, destination: dest, lockExternal: lockExternal,
+                                           replacementChoice: choices[app.id])
+            }
         }
     }
 
     private func executeMoveOutWholeSymlink(_ app: AppItem, destination: URL,
+                                            lockExternal: Bool,
                                             replacementChoice: AppMigrationService.ReplacementChoice?) {
         enqueueAppTransfer(app, destination: AppSearchExclusionService.destination(for: app, in: destination),
-                           wholeSymlink: true, replacementChoice: replacementChoice)
+                           wholeSymlink: true, lockExternal: lockExternal, replacementChoice: replacementChoice)
     }
 
     func linkApp(appToLink: AppItem, destinationURL: URL) async throws {
@@ -2096,18 +2098,9 @@ struct ContentView: View {
             return
         }
 
-        // 检查是否包含自更新应用（Sparkle/Electron）
-        let selfUpdaterApps = validApps.filter { $0.hasSelfUpdater }
-        if !selfUpdaterApps.isEmpty {
-            pendingSelfUpdaterApps = selfUpdaterApps
-            pendingRemainingAppsForSelfUpdater = validApps.filter { !($0.hasSelfUpdater) }
-            selfUpdaterIsLinkIn = false
-            selfUpdaterRequest = makeSelfUpdaterRequest()
-            return
+        confirmUpdateProtection(for: validApps) { lockExternal in
+            executeBatchMove(apps: validApps, destination: dest, lockExternal: lockExternal)
         }
-
-        // 直接迁移符合条件的应用
-        executeBatchMove(apps: validApps, destination: dest)
     }
 
     /// 组装「App Store 应用外部安装」引导弹窗的内容快照。
@@ -2242,37 +2235,30 @@ struct ContentView: View {
     }
 
     /// 组装「自更新应用迁移」确认弹窗的内容快照。
-    private func makeSelfUpdaterRequest() -> WarningSheetRequest {
-        let names = pendingSelfUpdaterApps.map { $0.displayName }.joined(separator: "、")
+    private func confirmUpdateProtection(for apps: [AppItem], onChoice: @escaping (Bool) -> Void) {
+        guard let request = Self.updateProtectionRequest(for: apps, service: AppMigrationService(), onChoice: onChoice) else {
+            onChoice(false)
+            return
+        }
+        selfUpdaterRequest = request
+    }
+
+    static func updateProtectionRequest(for apps: [AppItem], service: AppMigrationService,
+                                        onChoice: @escaping (Bool) -> Void) -> WarningSheetRequest? {
+        let updatingApps = service.selfUpdatingApplications(in: apps)
+        guard !updatingApps.isEmpty else { return nil }
+        let names = updatingApps.map { $0.displayName }.joined(separator: "、")
         return WarningSheetRequest(
             title: "自更新应用迁移".localized,
             icon: "arrow.triangle.2.circlepath",
             tint: .orange,
             intro: String(format: "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\n\n%@\n\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\n\n建议选择锁定迁移以保护数据安全。".localized, names),
-            onCancel: {
-                pendingSelfUpdaterApps = []
-                pendingRemainingAppsForSelfUpdater = []
-            },
             actions: [
                 WarningAction("非锁定迁移".localized) {
-                    let allApps = pendingSelfUpdaterApps + pendingRemainingAppsForSelfUpdater
-                    if selfUpdaterIsLinkIn {
-                        executeBatchLinkIn(apps: allApps, lockExternal: false)
-                    } else if let dest = externalDriveURL {
-                        executeBatchMove(apps: allApps, destination: dest, lockExternal: false)
-                    }
-                    pendingSelfUpdaterApps = []
-                    pendingRemainingAppsForSelfUpdater = []
+                    onChoice(false)
                 },
                 WarningAction("锁定迁移".localized, style: .preferred) {
-                    let allApps = pendingSelfUpdaterApps + pendingRemainingAppsForSelfUpdater
-                    if selfUpdaterIsLinkIn {
-                        executeBatchLinkIn(apps: allApps, lockExternal: true)
-                    } else if let dest = externalDriveURL {
-                        executeBatchMove(apps: allApps, destination: dest, lockExternal: true)
-                    }
-                    pendingSelfUpdaterApps = []
-                    pendingRemainingAppsForSelfUpdater = []
+                    onChoice(true)
                 }
             ]
         )
@@ -2332,7 +2318,7 @@ struct ContentView: View {
     }
 
     /// 批量迁移应用
-    func executeBatchMove(apps: [AppItem], destination: URL, lockExternal: Bool = true,
+    func executeBatchMove(apps: [AppItem], destination: URL, lockExternal: Bool,
                           replacementChoices: [String: AppMigrationService.ReplacementChoice]? = nil) {
         guard !apps.isEmpty else { return }
         guard let replacementChoices else {
@@ -2356,17 +2342,9 @@ struct ContentView: View {
 
         guard !validApps.isEmpty else { return }
 
-        // 检查是否包含自更新应用
-        let selfUpdaterApps = validApps.filter { $0.hasSelfUpdater }
-        if !selfUpdaterApps.isEmpty {
-            pendingSelfUpdaterApps = selfUpdaterApps
-            pendingRemainingAppsForSelfUpdater = validApps.filter { !($0.hasSelfUpdater) }
-            selfUpdaterIsLinkIn = true
-            selfUpdaterRequest = makeSelfUpdaterRequest()
-            return
+        confirmUpdateProtection(for: validApps) { lockExternal in
+            executeBatchLinkIn(apps: validApps, lockExternal: lockExternal)
         }
-
-        executeBatchLinkIn(apps: validApps, lockExternal: true)
     }
 
     private func executeBatchLinkIn(apps: [AppItem], lockExternal: Bool) {
@@ -2380,7 +2358,7 @@ struct ContentView: View {
                     try await MigrationExecution.control?.checkpointAsync()
                     let service = AppMigrationService()
                     try await service.linkAppWhenReady(appToLink: app, destinationURL: destination)
-                    if lockExternal && app.needsLock { service.lockExternalApp(at: app.path) }
+                    if lockExternal && service.needsUpdateProtection(app) { service.lockExternalApp(at: app.path) }
                     await MainActor.run { recordCompletedTransfer(.linkedIn(app, localDestination: destination)) }
                     return nil
                 }, completion: { scanBothAppsAtomic() })

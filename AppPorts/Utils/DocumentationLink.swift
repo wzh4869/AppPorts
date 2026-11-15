@@ -21,12 +21,12 @@ enum DocumentationLink {
     ]
 
     /// - Parameters:
-    ///   - page: 不带扩展名的页面路径，如 `why-apfs`、`datamigrae/mount-migration`
+    ///   - page: 不带扩展名的页面路径，如 `storage-guide`、`datamigrae/operation`
     ///   - anchor: 页面内的显式锚点
     ///   - language: 界面语言代码；默认取当前设置
     static func url(page: String, anchor: String? = nil, language: String = currentLanguage) -> URL {
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
-        components.path = "/" + sitePrefix(for: language) + page + ".html"
+        components.path = "/" + sitePrefix(for: language) + "docs/" + page
         components.fragment = anchor
         return components.url ?? baseURL
     }

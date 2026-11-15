@@ -547,7 +547,7 @@ struct AppMigrationService {
         try requireIdentity(identity, at: destinationURL)
     }
 
-    private func needsUpdateProtection(_ app: AppItem) -> Bool {
+    func needsUpdateProtection(_ app: AppItem) -> Bool {
         if !app.usesFolderOperation { return needsUchgLock(at: app.path) }
         return ((try? fileManager.contentsOfDirectory(at: app.path, includingPropertiesForKeys: nil)) ?? [])
             .filter { $0.pathExtension.lowercased() == "app" }.contains { needsUchgLock(at: $0) }
@@ -1315,6 +1315,17 @@ struct AppMigrationService {
         return isSparkleApp(at: appURL)
             || (isElectronApp(at: appURL) && hasElectronUpdater(at: appURL))
             || hasCustomUpdater(at: appURL)
+    }
+
+    /// Confirmation uses the same on-disk detector as execution, not scan-time flags.
+    func selfUpdatingApplications(in apps: [AppItem]) -> [AppItem] {
+        apps.filter { app in
+            guard app.usesFolderOperation else { return hasSelfUpdater(at: app.path) }
+            let children = (try? fileManager.contentsOfDirectory(at: app.path,
+                includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+            return children.filter { $0.pathExtension.lowercased() == "app" }
+                .contains { hasSelfUpdater(at: $0) }
+        }
     }
 
     /// 是否需要 uchg 锁定（仅 Sparkle/Electron 有更新器的应用，原生自更新 app 不锁定）

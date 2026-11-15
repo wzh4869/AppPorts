@@ -439,7 +439,7 @@ struct AboutView: View {
                             }
                         }
                     }
-                    Link(destination: URL(string: "https://docs-appports.shimoko.com/sponsor.html")!) {
+                    Link(destination: DocumentationLink.url(page: "sponsor")) {
                         Text("赞助 AppPorts".localized)
                     }
                 }

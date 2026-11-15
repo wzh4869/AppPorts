@@ -76,3 +76,5 @@ ExFAT/FAT 不支持 `renameatx_np` 的 `RENAME_EXCL` 与 `RENAME_SWAP`（两者�
 `AppPortsTests/TreeCopySessionTests`、`TreeCopyOwnershipTests`、`AppTransferTransactionTests` 共 108 例通过；`MigrationSigningIntegrationTests`、`DataMigrationBackupCleanupTests`、`DataTransferRecoveryTests`、`DataTransferCompletionTests`、`AppMigrationServiceTests`、`AppListTransferTests` 共 60 例通过；`FileCopierTests`、`DataDirTreeTests`、`DataTransferProcessLockTests`、`DataTransferStoreTests` 共 43 例通过。Release 构建通过。
 
 新增回归风险点：删除路径与基线 profile 必须一致。`AppTransferTransaction.remove` 与 `verify` 均显式传 `Self.copyProfile`，任一漏传会让清理失败并留下 `unclaimedPaths`，表现为"应用暂存目录待清理"。
+
+后继 [准备检查与迁移锁定判定](../bug-fix/2026-11-15-准备检查与迁移锁定判定.md) 将提示探针移出应用包，并把访问失败归为未知；复制 profile、签名及清理证明不变。

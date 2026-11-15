@@ -64,6 +64,7 @@ struct AppStoreSettingsView: View {
     /// 环境变量：用于关闭弹窗
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var operationState = AppOperationState.shared
+    @ObservedObject private var permissionReadiness = PermissionReadiness.shared
 
     private var isMASExternalSupported: Bool { AppMigrationService.isMASExternalInstallSupported }
 
@@ -85,6 +86,7 @@ struct AppStoreSettingsView: View {
         .sheet(isPresented: $showReadinessCheck) {
             ReadinessCheckSheet()
         }
+        .onAppear { permissionReadiness.refresh() }
         .sheet(isPresented: $showClassicModeAcknowledgement) {
             classicModeAcknowledgementSheet
         }
@@ -351,7 +353,7 @@ struct AppStoreSettingsView: View {
 
                 Spacer()
 
-                Button("检查".localized) {
+                PermissionCheckButton(level: permissionReadiness.level, attentionText: permissionReadiness.attentionText) {
                     showReadinessCheck = true
                 }
             }

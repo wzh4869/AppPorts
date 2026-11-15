@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 import Darwin
 import Testing
 @testable import AppPorts
@@ -15,11 +16,12 @@ struct LaunchReadinessCheckerTests {
 
     // MARK: 检查项映射
 
-    @Test("三项都满足时全部通过")
+    @Test("权限和外部存储均就绪，App 管理仍提供设置入口")
     func allSatisfied() {
         let items = LaunchReadinessChecker.items(
             fullDiskAccessState: .granted,
-            hasAppManagementPermission: true,
+            appManagementState: .granted,
+
             externalDriveState: .apfs
         )
 
@@ -29,14 +31,17 @@ struct LaunchReadinessCheckerTests {
             LaunchReadinessChecker.ItemID.externalDrive
         ])
         #expect(items.allSatisfy { $0.level == .ok })
-        #expect(items.allSatisfy { $0.action == nil })
+        #expect(items.filter { $0.id != LaunchReadinessChecker.ItemID.appManagement }.allSatisfy { $0.action == nil })
+        #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }?.level == .ok)
+        #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }?.action == .appManagement)
     }
 
     @Test("缺少完全磁盘访问权限时报失败并给出设置入口")
     func missingFullDiskAccess() throws {
         let items = LaunchReadinessChecker.items(
             fullDiskAccessState: .denied,
-            hasAppManagementPermission: true,
+            appManagementState: .granted,
+
             externalDriveState: .apfs
         )
 
@@ -50,7 +55,8 @@ struct LaunchReadinessCheckerTests {
     func unknownFullDiskAccess() throws {
         let items = LaunchReadinessChecker.items(
             fullDiskAccessState: .unknown,
-            hasAppManagementPermission: true,
+            appManagementState: .granted,
+
             externalDriveState: .apfs
         )
         let item = try #require(items.first { $0.id == LaunchReadinessChecker.ItemID.fullDiskAccess })
@@ -58,17 +64,94 @@ struct LaunchReadinessCheckerTests {
         #expect(item.action == .fullDiskAccess)
     }
 
-    @Test("缺少 App 管理权限时报失败并给出设置入口")
-    func missingAppManagement() {
+    @Test("App 管理不从完全磁盘访问状态推断授权",
+          arguments: [LaunchReadinessChecker.FullDiskAccessState.granted, .denied, .unknown],
+          [AppManagementPermission.State.granted, .denied, .unknown])
+    func appManagementIsIndependent(fullDiskAccess: LaunchReadinessChecker.FullDiskAccessState,
+                                    appManagement: AppManagementPermission.State) throws {
         let items = LaunchReadinessChecker.items(
-            fullDiskAccessState: .granted,
-            hasAppManagementPermission: false,
+            fullDiskAccessState: fullDiskAccess,
+            appManagementState: appManagement,
             externalDriveState: .apfs
         )
+        let item = try #require(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement })
+        let expected: LaunchReadinessChecker.Item.Level
+        switch appManagement {
+        case .granted: expected = .ok
+        case .denied: expected = .failed
+        case .unknown: expected = .warning
+        }
+        #expect(item.level == expected)
+        #expect(item.action == .appManagement)
+    }
 
-        let item = items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }
-        #expect(item?.level == .failed)
-        #expect(item?.action == .appManagement)
+    @Test("系统预检只认明确授权或拒绝，其余结果无法确认")
+    func appManagementPreflightResults() {
+        #expect(AppManagementPermission.state(query: { 0 }) == .granted)
+        #expect(AppManagementPermission.state(query: { 1 }) == .denied)
+        #expect(AppManagementPermission.state(query: { 2 }) == .unknown)
+        #expect(AppManagementPermission.state(query: { -1 }) == .unknown)
+        #expect(AppManagementPermission.state(query: { 99 }) == .unknown)
+        #expect(AppManagementPermission.state(query: { nil }) == .unknown)
+    }
+
+    @Test("App 管理状态变化同步到提示点和实际权限名称")
+    @MainActor
+    func attentionTracksAppManagement() {
+        let readiness = PermissionReadiness()
+        for (state, expected) in [(AppManagementPermission.State.denied, LaunchReadinessChecker.Item.Level.failed),
+                                  (.unknown, .warning), (.granted, .ok)] {
+            readiness.update(from: LaunchReadinessChecker.items(
+                fullDiskAccessState: .granted,
+                appManagementState: state,
+                externalDriveState: .notSelected))
+            #expect(readiness.level == expected)
+            if state == .granted {
+                #expect(readiness.attentionText.isEmpty)
+            } else {
+                #expect(readiness.attentionText.contains("App 管理权限".localized))
+                #expect(!readiness.attentionText.contains("完全磁盘访问权限".localized))
+            }
+        }
+        readiness.update(from: LaunchReadinessChecker.items(
+            fullDiskAccessState: .denied,
+            appManagementState: .unknown,
+            externalDriveState: .apfs))
+        #expect(readiness.level == .failed)
+        #expect(readiness.attentionText.contains("完全磁盘访问权限".localized))
+        #expect(readiness.attentionText.contains("App 管理权限".localized))
+    }
+
+    @Test("权限提示跟随实际读取结果更新，App 管理已授权时不阻止清除提示")
+    @MainActor
+    func permissionAttentionTracksAccessResults() throws {
+        let workspace = try TemporaryWorkspace()
+        defer { workspace.cleanup() }
+        let file = workspace.root.appendingPathComponent("readable.db")
+        try Data("x".utf8).write(to: file)
+        let readiness = PermissionReadiness()
+        var updates: [LaunchReadinessChecker.Item.Level?] = []
+        let observation = readiness.$level.sink { updates.append($0) }
+        defer { observation.cancel() }
+
+        for permission in [0o000, 0o600] {
+            try FileManager.default.setAttributes([.posixPermissions: permission], ofItemAtPath: file.path)
+            readiness.update(from: LaunchReadinessChecker.items(
+                fullDiskAccessState: LaunchReadinessChecker.fullDiskAccessState(candidatePaths: [file.path]),
+                appManagementState: .granted,
+                externalDriveState: .notSelected))
+        }
+        #expect(readiness.level == .ok)
+        #expect(readiness.attentionText.isEmpty)
+        try FileManager.default.removeItem(at: file)
+        readiness.update(from: LaunchReadinessChecker.items(
+            fullDiskAccessState: LaunchReadinessChecker.fullDiskAccessState(candidatePaths: [file.path]),
+            appManagementState: .granted,
+            externalDriveState: .apfs))
+        #expect(readiness.level == .warning)
+        #expect(!readiness.attentionText.isEmpty)
+        readiness.update(from: [])
+        #expect(updates == [nil, .failed, .ok, .warning])
     }
 
     // MARK: 外部存储
@@ -138,7 +221,7 @@ struct LaunchReadinessCheckerTests {
         let recorder = PathRecorder()
         let checker = LaunchReadinessChecker(probe: LaunchReadinessChecker.Probe(
             fullDiskAccessState: { .granted },
-            hasAppManagementPermission: { true },
+            appManagementState: { .denied },
             externalDrivePath: { "/Volumes/TestDrive" },
             externalDriveState: { path in
                 await recorder.record(path)
@@ -149,6 +232,7 @@ struct LaunchReadinessCheckerTests {
         let items = await checker.check()
         let probedPaths = await recorder.paths
         #expect(probedPaths == ["/Volumes/TestDrive"])
+        #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }?.level == .failed)
         #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.externalDrive }?.level == .warning)
     }
 
@@ -157,7 +241,7 @@ struct LaunchReadinessCheckerTests {
         let recorder = PathRecorder()
         let checker = LaunchReadinessChecker(probe: LaunchReadinessChecker.Probe(
             fullDiskAccessState: { .granted },
-            hasAppManagementPermission: { true },
+            appManagementState: { .granted },
             externalDrivePath: { nil },
             externalDriveState: { path in
                 await recorder.record(path)
@@ -175,7 +259,7 @@ struct LaunchReadinessCheckerTests {
     func checkTreatsEmptyPathAsNotSelected() async {
         let checker = LaunchReadinessChecker(probe: LaunchReadinessChecker.Probe(
             fullDiskAccessState: { .granted },
-            hasAppManagementPermission: { true },
+            appManagementState: { .granted },
             externalDrivePath: { "" },
             externalDriveState: { _ in .apfs }
         ))
@@ -352,7 +436,7 @@ struct LaunchReadinessCheckerTests {
 
         let appManagement = LaunchReadinessChecker.Item.Action.appManagement.settingsURLs
         #expect(appManagement.count == 2)
-        #expect(appManagement[0].absoluteString.contains("Privacy_AppManagement"))
+        #expect(appManagement[0].absoluteString == "x-apple.systempreferences:com.apple.preference.security?Privacy_AppBundles")
     }
 
     // MARK: 辅助
@@ -360,7 +444,8 @@ struct LaunchReadinessCheckerTests {
     private func driveItem(state: LaunchReadinessChecker.ExternalDriveState) -> LaunchReadinessChecker.Item? {
         LaunchReadinessChecker.items(
             fullDiskAccessState: .granted,
-            hasAppManagementPermission: true,
+            appManagementState: .granted,
+
             externalDriveState: state
         ).first { $0.id == LaunchReadinessChecker.ItemID.externalDrive }
     }

@@ -223,7 +223,7 @@ struct MountMigrationGuidance: Equatable {
                 detail: paths,
                 actions: [
                     Action(kind: .chooseDestination, title: "选择其他位置".localized, isPrimary: false),
-                    Action(kind: .openGuide(page: "why-apfs", anchor: "prepare-apfs"), title: "查看准备方法".localized, isPrimary: false)
+                    Action(kind: .openGuide(page: "storage-guide", anchor: "prepare-apfs"), title: "查看准备方法".localized, isPrimary: false)
                 ],
                 cancelTitle: "保留现状".localized
             )

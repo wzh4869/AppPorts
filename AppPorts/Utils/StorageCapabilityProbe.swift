@@ -56,79 +56,68 @@ extension StorageCapabilities {
 }
 
 enum StorageCapabilityProbe {
-    /// - Parameter destination: a location inside the target volume. The probe
-    ///   walks up to the nearest existing directory so it works before the
-    ///   destination folder itself is created.
-    /// - Returns: nil when the volume cannot be inspected at all, in which case
-    ///   the caller should not warn (an unreadable probe is not evidence).
+    /// Probe beside an application bundle, never inside its signed or locked tree.
+    /// nil means the check could not run; access errors do not prove a missing capability.
     static func probe(destination: URL) -> StorageCapabilities? {
-        guard let directory = existingAncestor(of: destination),
-              let descriptor = open(directory, O_RDONLY | O_DIRECTORY | O_NOFOLLOW) as Int32?,
-              descriptor >= 0 else { return nil }
+        guard let directory = existingAncestor(outsideApplicationAt: destination) else { return nil }
+        let descriptor = open(directory, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
+        guard descriptor >= 0 else { return nil }
         defer { _ = close(descriptor) }
-
         let prefix = ".appports-probe-\(UUID().uuidString)"
 
-        func makeEntry(_ suffix: String) -> Int32 {
-            openat(descriptor, prefix + suffix, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
-        }
-        func removeEntry(_ suffix: String) {
-            _ = unlinkat(descriptor, prefix + suffix, 0)
-        }
-
-        var capabilities = StorageCapabilities(
-            supportsACL: false, supportsHardlinks: false,
-            supportsResourceFork: false, supportsPermissions: false)
-
-        // ACL: writing an empty extended ACL is the same call the copier makes
-        // for an entry that has none.
-        if let fd = makeEntry("-acl") as Int32?, fd >= 0 {
-            if let empty = acl_init(0) {
-                capabilities.supportsACL = acl_set_fd_np(fd, empty, ACL_TYPE_EXTENDED) == 0
-                acl_free(UnsafeMutableRawPointer(empty))
-            }
-            _ = close(fd)
-            removeEntry("-acl")
-        }
-
-        // Hardlinks: two names for one inode.
-        if let first = makeEntry("-link1") as Int32?, first >= 0 {
-            _ = close(first)
-            capabilities.supportsHardlinks =
-                linkat(descriptor, prefix + "-link1", descriptor, prefix + "-link2", 0) == 0
-            removeEntry("-link1")
-            removeEntry("-link2")
-        }
-
-        // Resource fork: a named stream the copier writes as an xattr.
-        if let fd = makeEntry("-fork") as Int32?, fd >= 0 {
-            capabilities.supportsResourceFork =
-                fsetxattr(fd, ResourceForkStream.attributeName, nil, 0, 0, 0) == 0
-            _ = close(fd)
-            removeEntry("-fork")
-        }
-
-        // Permissions: whether a non-default mode survives a round trip.
-        if let fd = makeEntry("-perm") as Int32?, fd >= 0 {
-            _ = close(fd)
-            _ = fchmodat(descriptor, prefix + "-perm", 0o640, 0)
+        guard let acl = probeFile(in: descriptor, name: prefix + "-acl", operation: { fd in
+            guard let empty = acl_init(0) else { return nil }
+            defer { acl_free(UnsafeMutableRawPointer(empty)) }
+            return supported(acl_set_fd_np(fd, empty, ACL_TYPE_EXTENDED))
+        }), let hardlinks = probeFile(in: descriptor, name: prefix + "-link1", operation: { _ in
+            defer { _ = unlinkat(descriptor, prefix + "-link2", 0) }
+            return supported(linkat(descriptor, prefix + "-link1", descriptor, prefix + "-link2", 0))
+        }), let resourceFork = probeFile(in: descriptor, name: prefix + "-fork", operation: { fd in
+            supported(fsetxattr(fd, ResourceForkStream.attributeName, nil, 0, 0, 0))
+        }), let permissions = probeFile(in: descriptor, name: prefix + "-perm", operation: { fd in
+            guard let changed = supported(fchmod(fd, 0o640)) else { return nil }
+            guard changed else { return false }
             var info = stat()
-            if fstatat(descriptor, prefix + "-perm", &info, AT_SYMLINK_NOFOLLOW) == 0 {
-                capabilities.supportsPermissions = info.st_mode & 0o777 == 0o640
-            }
-            removeEntry("-perm")
-        }
+            guard fstat(fd, &info) == 0 else { return nil }
+            return info.st_mode & 0o777 == 0o640
+        }) else { return nil }
 
-        return capabilities
+        return StorageCapabilities(supportsACL: acl, supportsHardlinks: hardlinks,
+                                   supportsResourceFork: resourceFork, supportsPermissions: permissions)
     }
 
-    private static func existingAncestor(of url: URL) -> String? {
-        var candidate = url.standardizedFileURL
+    private static func probeFile(in directory: Int32, name: String,
+                                  operation: (Int32) -> Bool?) -> Bool? {
+        let descriptor = openat(directory, name, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0o600)
+        guard descriptor >= 0 else { return nil }
+        defer {
+            _ = close(descriptor)
+            _ = unlinkat(directory, name, 0)
+        }
+        return operation(descriptor)
+    }
+
+    private static func supported(_ result: Int32) -> Bool? {
+        if result == 0 { return true }
+        // Each request above is valid for its regular scratch file. Other errors,
+        // including permission denial and I/O failures, leave the result unknown.
+        return [ENOTSUP, EOPNOTSUPP, ENOSYS, EINVAL].contains(errno) ? false : nil
+    }
+
+    private static func existingAncestor(outsideApplicationAt url: URL) -> String? {
+        var candidate = url.resolvingSymlinksInPath().standardizedFileURL
+        var ancestor = candidate
+        while ancestor.path != "/" {
+            if ancestor.pathExtension.lowercased() == "app" {
+                candidate = ancestor.deletingLastPathComponent()
+            }
+            ancestor = ancestor.deletingLastPathComponent()
+        }
         while candidate.path != "/" {
-            if FileManager.default.fileExists(atPath: candidate.path) { return candidate.path }
-            let parent = candidate.deletingLastPathComponent()
-            guard parent.path != candidate.path else { return nil }
-            candidate = parent
+            var isDirectory = ObjCBool(false)
+            if FileManager.default.fileExists(atPath: candidate.path, isDirectory: &isDirectory),
+               isDirectory.boolValue { return candidate.path }
+            candidate = candidate.deletingLastPathComponent()
         }
         return candidate.path
     }
