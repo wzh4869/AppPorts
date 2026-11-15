@@ -8,6 +8,51 @@ import XCTest
 /// No DataDirsView, scanner or migration service is instantiated; preferences use isolated test suites.
 final class MigrationSafetyRenderTests: XCTestCase {
     @MainActor
+    func testRenderShipItTaskStates() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render update intervention tasks")
+        }
+        let output = URL(fileURLWithPath: path, isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let fixture = FileManager.default.temporaryDirectory.appendingPathComponent("ShipItRender-\(UUID().uuidString)")
+        let language = LanguageManager.shared.language
+        let preference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = language
+            if let preference { UserDefaults.standard.set(preference, forKey: "selectedLanguage") }
+            else { UserDefaults.standard.removeObject(forKey: "selectedLanguage") }
+            try? FileManager.default.removeItem(at: fixture)
+        }
+        for language in ["zh-Hans", "en", "de", "ar"] {
+            LanguageManager.shared.language = language
+            let center = MigrationTaskCenter(historyStore: MigrationTaskHistoryStore(fileURL: fixture.appendingPathComponent(language + ".json")),
+                                             operationState: AppOperationState(notificationCenter: NotificationCenter()))
+            let resources = MigrationResources(paths: [])
+            let title = "应用更新恢复".localized + " · DeepSeek Harness"
+            _ = center.updateObserved(key: "waiting", title: title, resources: resources,
+                                      status: .queued, message: ShipItUpdateRecovery.Step.waiting.message)
+            let failed = center.updateObserved(key: "failed", title: title, resources: resources, status: .attention,
+                message: String(format: "接手失败：%@\n将自动重试，也可以回退更新。".localized,
+                                "应用尚未退出，请退出后重试回退。".localized), recovery: {})
+            _ = center.updateObserved(key: "recovered", title: title, resources: resources, status: .completed,
+                message: "AppPorts 已成功接手并完成更新。".localized, result: .recovered)
+            _ = center.updateObserved(key: "rolled-back", title: title, resources: resources, status: .completed,
+                message: String(format: "已回退至 %@，本次更新缓存和临时文件已清理。".localized, "0.2.1-rc.2"), result: .rolledBack)
+            for scheme in [ColorScheme.light, .dark] {
+                func localized<V: View>(_ view: V) -> some View {
+                    view.environment(\.locale, Locale(identifier: language))
+                        .environment(\.layoutDirection, language == "ar" ? .rightToLeft : .leftToRight)
+                }
+                let prefix = "shipit-\(language)-\(scheme)"
+                try await render(localized(MigrationTaskList(center: center, isEmbedded: true)),
+                                 size: NSSize(width: 580, height: 580), to: output.appendingPathComponent(prefix + "-list.png"), colorScheme: scheme)
+                try await render(localized(MigrationTaskDetail(job: failed, center: center)),
+                                 size: NSSize(width: 460, height: 450), to: output.appendingPathComponent(prefix + "-failure.png"), colorScheme: scheme)
+            }
+        }
+    }
+
+    @MainActor
     func testRenderManualPauseStates() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render manual pause states")

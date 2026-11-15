@@ -15,6 +15,8 @@ struct MigrationTaskHistoryStore {
         let elapsed: TimeInterval
         let fraction: Double
         let paused: Bool
+        let observedKey: String?
+        let observedResult: MigrationJob.ObservedResult?
 
         @MainActor
         init(_ job: MigrationJob) {
@@ -28,6 +30,8 @@ struct MigrationTaskHistoryStore {
             elapsed = job.elapsed
             fraction = job.fraction
             paused = job.restoredPaused || job.control.snapshot().pauseRequested
+            observedKey = job.observedKey
+            observedResult = job.observedResult
         }
     }
 

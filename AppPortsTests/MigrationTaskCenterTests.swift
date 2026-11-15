@@ -230,6 +230,55 @@ struct MigrationTaskCenterTests {
         var errorDescription: String? { rawValue }
     }
 
+    @Test("Observed updates keep one persisted result without claiming migration execution")
+    func observedUpdateHistoryAndControls() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let job = fixture.center.updateObserved(key: "update-request", title: "Update fixture", resources: fixture.resources,
+            status: .running, message: "Copying")
+        #expect(fixture.center.unfinishedCount == 1)
+        let token = try #require(fixture.state.begin(), "Observed work must not block its worker's operation token")
+        fixture.center.pause([job.id])
+        fixture.center.cancel([job.id])
+        #expect(!job.control.snapshot().pauseRequested)
+        #expect(!job.control.snapshot().cancelled)
+        #expect(job.worker == nil && job.operation == nil)
+        fixture.state.finish(token)
+        var rollbackCalls = 0
+        fixture.center.updateObserved(key: "update-request", title: "Update fixture", resources: fixture.resources,
+            status: .attention, message: "Failed", recovery: { rollbackCalls += 1 })
+        fixture.center.updateObserved(key: "update-request", title: "Update fixture", resources: fixture.resources,
+            status: .running, message: "Retrying")
+        #expect(fixture.center.jobs.count == 1)
+        #expect(fixture.center.jobs.first?.id == job.id)
+        job.recoveryAction?()
+        #expect(rollbackCalls == 1, "Rollback stays reachable during automatic retry")
+        fixture.center.updateObserved(key: "update-request", title: "Update fixture", resources: fixture.resources,
+            status: .completed, message: "Rolled back", result: .rolledBack)
+        #expect(job.recoveryAction == nil)
+        let loaded = try #require(fixture.reopen().jobs.first)
+        #expect(loaded.observedKey == "update-request")
+        #expect(loaded.observedResult == .rolledBack)
+        #expect(loaded.message == "Rolled back")
+        #expect(!loaded.supportsExecutionControls)
+    }
+
+    @Test("Existing history without observed fields still loads")
+    func existingHistoryRemainsCompatible() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let job = MigrationJob(title: "Original history", category: .apps, resources: fixture.resources)
+        job.status = .completed
+        let encoded = try JSONEncoder().encode([MigrationTaskHistoryStore.Entry(job)])
+        var entries = try #require(JSONSerialization.jsonObject(with: encoded) as? [[String: Any]])
+        entries[0].removeValue(forKey: "observedKey")
+        entries[0].removeValue(forKey: "observedResult")
+        try JSONSerialization.data(withJSONObject: entries).write(to: fixture.root.appendingPathComponent("history.json"))
+        let loaded = try #require(fixture.reopen().jobs.first)
+        #expect(loaded.title == "Original history")
+        #expect(loaded.supportsExecutionControls)
+    }
+
     @MainActor
     private struct Fixture {
         let root: URL

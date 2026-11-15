@@ -170,7 +170,7 @@ struct MigrationTaskList: View {
                     Button("继续".localized) { center.resume(selection) }
                     Button("取消任务".localized) { center.cancel(selection) }
                 }
-                .disabled(selection.isEmpty)
+                .disabled(!center.jobs.contains { selection.contains($0.id) && $0.supportsExecutionControls && !$0.status.isFinished })
                 Spacer(minLength: 0)
                 Button("清空已完成".localized) { center.clearCompleted() }
                     .disabled(!center.jobs.contains { $0.status == .completed })
@@ -248,15 +248,21 @@ private struct MigrationTaskRow: View {
                         Spacer(minLength: 8)
                         Text(verbatim: job.stateTitle).font(.system(size: 12)).foregroundStyle(.secondary)
                     }
-                    HStack(spacing: 8) {
-                        ProgressView(value: job.fraction)
-                            .progressViewStyle(.linear)
-                            .accessibilityLabel("总体进度".localized)
-                        Text(job.fraction, format: .percent.precision(.fractionLength(0)))
-                            .font(.caption)
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
-                            .frame(width: 32, alignment: .trailing)
+                    if job.observedKey != nil {
+                        Text(verbatim: job.message)
+                            .font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    } else {
+                        HStack(spacing: 8) {
+                            ProgressView(value: job.fraction)
+                                .progressViewStyle(.linear)
+                                .accessibilityLabel("总体进度".localized)
+                            Text(job.fraction, format: .percent.precision(.fractionLength(0)))
+                                .font(.caption)
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                                .frame(width: 32, alignment: .trailing)
+                        }
                     }
                     HStack {
                         if let startedAt = job.startedAt {
@@ -284,7 +290,7 @@ private struct MigrationTaskRow: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("查看任务详情".localized)
-                    if !job.status.isFinished {
+                    if !job.status.isFinished && job.supportsExecutionControls {
                         let paused = job.control.snapshot().pauseRequested
                         Button {
                             if paused { center.resume([job.id]) } else { center.pause([job.id]) }
@@ -293,7 +299,7 @@ private struct MigrationTaskRow: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(paused ? "继续".localized : "暂停".localized)
-                    } else {
+                    } else if job.status.isFinished {
                         Button {
                             center.removeFinished([job.id])
                         } label: {
@@ -334,7 +340,7 @@ struct MigrationTaskDetail: View {
                     Text(verbatim: job.displayTitle).font(AppDialogTypography.title)
                     Label(job.stateTitle, systemImage: job.status == .attention ? "exclamationmark.circle.fill" : (job.status == .incomplete ? "archivebox" : (job.status == .cancelled ? "xmark.circle" : "checkmark.circle")))
                         .foregroundStyle(job.status == .attention ? Color.orange : Color.primary)
-                    MigrationOverallProgress(fraction: job.fraction)
+                    if job.observedKey == nil { MigrationOverallProgress(fraction: job.fraction) }
                     ScrollView {
                         Text(verbatim: job.message)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -344,7 +350,9 @@ struct MigrationTaskDetail: View {
                     Text("处理时间".localized + "：" + taskDuration(job.elapsed)).font(AppDialogTypography.body).foregroundStyle(.secondary)
                     HStack {
                         Button("任务列表".localized) { center.detailID = nil; center.showsList = true }
-                        if job.status == .attention {
+                        if job.status == .attention, job.observedKey != nil, let action = job.recoveryAction {
+                            Button("回退更新".localized) { action() }
+                        } else if job.status == .attention, job.observedKey == nil {
                             Button("处理异常".localized) {
                                 if job.category == .apps { showsAppRecovery = true }
                                 else if job.recoveryAction == nil { showsDataRecovery = true }
@@ -357,6 +365,24 @@ struct MigrationTaskDetail: View {
                 }
                 .padding(24)
                 .frame(width: 460, height: 450)
+                .appDialogTypography()
+                .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
+                            in: RoundedRectangle(cornerRadius: 16))
+            } else if job.observedKey != nil {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(verbatim: job.displayTitle).font(AppDialogTypography.title)
+                    Text(verbatim: job.stateTitle).foregroundStyle(.secondary)
+                    Text(verbatim: job.message).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                    if let action = job.recoveryAction { Button("回退更新".localized) { action() } }
+                    Spacer()
+                    HStack {
+                        Button("任务列表".localized) { center.detailID = nil; center.showsList = true }
+                        Spacer()
+                        Button("关闭".localized) { center.detailID = nil }
+                    }
+                }
+                .padding(24)
+                .frame(width: 460, height: 300)
                 .appDialogTypography()
                 .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
                             in: RoundedRectangle(cornerRadius: 16))

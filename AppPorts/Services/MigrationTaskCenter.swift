@@ -63,6 +63,7 @@ struct MigrationResources: Codable, Sendable {
 
 @MainActor
 final class MigrationJob: ObservableObject, Identifiable {
+    enum ObservedResult: String, Codable { case recovered, rolledBack }
     /// Identifies one failed attempt. A delayed dialog cannot retry a newer attempt.
     struct RetryToken: Equatable, Sendable {
         let jobID: UUID
@@ -89,6 +90,9 @@ final class MigrationJob: ObservableObject, Identifiable {
     let title: String
     let category: MigrationCategory
     let resources: MigrationResources
+    let observedKey: String?
+    var observedResult: ObservedResult?
+    var supportsExecutionControls: Bool { observedKey == nil }
     let progress = DataTransferProgress()
     let control = MigrationTaskControl()
     let createdAt = ProcessInfo.processInfo.systemUptime
@@ -113,12 +117,13 @@ final class MigrationJob: ObservableObject, Identifiable {
     var retryToken: RetryToken { RetryToken(jobID: id, attemptID: attemptID) }
 
     init(id: UUID = UUID(), title: String, category: MigrationCategory, resources: MigrationResources,
-         startedAt: Date? = nil) {
+         startedAt: Date? = nil, observedKey: String? = nil) {
         self.id = id
         self.startedAt = startedAt
         self.title = title
         self.category = category
         self.resources = resources
+        self.observedKey = observedKey
     }
 
     func markStarted() {
@@ -128,6 +133,9 @@ final class MigrationJob: ObservableObject, Identifiable {
 
     var elapsed: TimeInterval { restoredElapsed ?? max(0, (finishedAt ?? ProcessInfo.processInfo.systemUptime) - createdAt) }
     var stateTitle: String {
+        if status == .completed, let observedResult {
+            return observedResult == .recovered ? "已接手成功".localized : "已回退更新".localized
+        }
         if restoredPaused { return "已暂停（待恢复）".localized }
         if status.isFinished { return status.title }
         let state = control.snapshot()
@@ -162,14 +170,17 @@ final class MigrationTaskCenter: ObservableObject {
         self.makeOperationLock = makeOperationLock
         jobs = historyStore.load().map { entry in
             let job = MigrationJob(id: entry.id, title: entry.title, category: entry.category,
-                                   resources: entry.resources, startedAt: entry.startedAt)
+                                   resources: entry.resources, startedAt: entry.startedAt, observedKey: entry.observedKey)
+            job.observedResult = entry.observedResult
             job.restoredPaused = entry.paused
             job.restoredFraction = entry.fraction
             job.restoredElapsed = entry.elapsed
             job.status = entry.status.isFinished ? entry.status : .attention
             job.message = entry.message
             if !entry.status.isFinished {
-                job.message = "上次运行时任务未结束。请先检查迁移记录，再继续处理；不会自动重新迁移或删除文件。".localized
+                job.message = (entry.observedKey == nil
+                    ? "上次运行时任务未结束。请先检查迁移记录，再继续处理；不会自动重新迁移或删除文件。".localized
+                    : "上次运行时更新接手未结束，等待检查更新现场。".localized)
                     + (entry.message.isEmpty ? "" : "\n" + entry.message)
             }
             return job
@@ -189,6 +200,32 @@ final class MigrationTaskCenter: ObservableObject {
     var unfinishedCount: Int { jobs.filter { !$0.status.isFinished }.count }
     var hasAttention: Bool { jobs.contains { $0.status == .attention } }
     var detail: MigrationJob? { jobs.first { $0.id == detailID } }
+
+    /// Observed work retains its own operation token and filesystem locks.
+    @discardableResult
+    func updateObserved(key: String, title: String, resources: MigrationResources,
+                        status: MigrationJob.Status, message: String,
+                        result: MigrationJob.ObservedResult? = nil,
+                        recovery: (@MainActor () -> Void)? = nil) -> MigrationJob {
+        let job: MigrationJob
+        if let existing = jobs.first(where: { $0.observedKey == key }) { job = existing }
+        else {
+            job = MigrationJob(title: title, category: .apps, resources: resources, observedKey: key)
+            jobs.append(job)
+        }
+        if status == .running, job.startedAt == nil { job.markStarted() }
+        job.status = status
+        job.message = message
+        job.observedResult = result
+        if status == .completed { job.recoveryAction = nil }
+        else if let recovery { job.recoveryAction = recovery }
+        job.restoredPaused = false
+        job.restoredElapsed = nil
+        job.finishedAt = status.isFinished ? ProcessInfo.processInfo.systemUptime : nil
+        persistHistory()
+        objectWillChange.send()
+        return job
+    }
 
     func canRetry(_ retry: MigrationJob.RetryToken) -> Bool {
         jobs.contains { $0.retryToken == retry && $0.status == .attention }
@@ -244,19 +281,19 @@ final class MigrationTaskCenter: ObservableObject {
     }
 
     func pause(_ ids: Set<UUID>) {
-        for job in jobs where ids.contains(job.id) && !job.status.isFinished { job.control.pause() }
+        for job in jobs where ids.contains(job.id) && job.supportsExecutionControls && !job.status.isFinished { job.control.pause() }
         objectWillChange.send()
         persistHistory()
     }
 
     func resume(_ ids: Set<UUID>) {
-        for job in jobs where ids.contains(job.id) && !job.status.isFinished { job.control.resume() }
+        for job in jobs where ids.contains(job.id) && job.supportsExecutionControls && !job.status.isFinished { job.control.resume() }
         objectWillChange.send()
         schedule()
     }
 
     func cancel(_ ids: Set<UUID>) {
-        for job in jobs where ids.contains(job.id) && !job.status.isFinished {
+        for job in jobs where ids.contains(job.id) && job.supportsExecutionControls && !job.status.isFinished {
             job.control.cancel()
             if job.status == .queued {
                 job.status = .cancelled
@@ -296,7 +333,7 @@ final class MigrationTaskCenter: ObservableObject {
 
     func schedule() {
         guard !operationState.blocksInteraction else { return }
-        var active = jobs.filter { $0.status == .running }
+        var active = jobs.filter { $0.status == .running && $0.supportsExecutionControls }
         for job in jobs where job.status == .queued {
             guard active.count < maximumConcurrentJobs else { break }
             guard !job.control.snapshot().pauseRequested,
@@ -376,7 +413,7 @@ final class MigrationTaskCenter: ObservableObject {
     }
 
     private func publishCount() {
-        operationState.setMigrationCount(unfinishedCount)
+        operationState.setMigrationCount(jobs.filter { !$0.status.isFinished && $0.supportsExecutionControls }.count)
         persistHistory()
         objectWillChange.send()
     }

@@ -230589,6 +230589,3157 @@
           }
         }
       }
+    },
+    "AppPorts 已成功接手并完成更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تولى AppPorts المسؤولية وأكمل التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠞⠕⠕⠅ ⠕⠧⠑⠗ ⠁⠝⠙ ⠉⠕⠍⠏⠇⠑⠞⠑⠙ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts hat das Update übernommen und abgeschlossen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts took over and completed the update."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts transprenis kaj kompletigis la ĝisdatigon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts se hizo cargo y completó la actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts a pris le relais et a terminé la mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ने कार्यभार संभाला और अद्यतन पूरा किया।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts mengambil alih dan menyelesaikan pembaruan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ha preso il sopravvento e ha completato l'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts が引き継ぎ、アップデートを完了しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts가 업데이트를 인계받아 완료했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts nam het over en voltooide de update."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts przejęło kontrolę i zakończyło aktualizację."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts assumiu e concluiu a atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts взяла на себя ответственность и завершила обновление."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts เข้าควบคุมและอัปเดตให้เสร็จสมบูรณ์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts devraldı ve güncellemeyi tamamladı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts đã tiếp quản và hoàn tất quá trình cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 已成功接手并完成更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 接手並完成了更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 已成功啑手並唍成哽噺。"
+          }
+        }
+      }
+    },
+    "上次运行时更新接手未结束，等待检查更新现场。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم تنتهي عملية استرداد التحديث في المرة الأخيرة. في انتظار التحقق من حالة التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠗⠑⠉⠕⠧⠑⠗⠽ ⠙⠊⠙ ⠝⠕⠞ ⠋⠊⠝⠊⠎⠓ ⠇⠁⠎⠞ ⠞⠊⠍⠑⠲ ⠠⠺⠁⠊⠞⠊⠝⠛ ⠞⠕ ⠉⠓⠑⠉⠅ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠎⠞⠁⠞⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Update-Wiederherstellung wurde zuletzt nicht abgeschlossen. Warten auf die Prüfung des Update-Status."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update recovery did not finish last time. Waiting to check the update state."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La reakiro de ĝisdatigo ne finiĝis la lastan fojon. Atendante kontroli la staton de ĝisdatigo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La recuperación de la actualización no finalizó la última vez. Esperando comprobar el estado de la actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La récupération de la mise à jour ne s'est pas terminée la dernière fois. En attente de vérifier l'état de la mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अद्यतन पुनर्प्राप्ति पिछली बार समाप्त नहीं हुई थी. अद्यतन स्थिति की जाँच करने की प्रतीक्षा की जा रही है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan pembaruan tidak selesai terakhir kali. Menunggu untuk memeriksa status pembaruan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ripristino dell'aggiornamento non è stato completato l'ultima volta. In attesa di verificare lo stato dell'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前回はアップデートのリカバリが完了していませんでした。アップデートの状態を確認するのを待っています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난번에는 업데이트 복구가 완료되지 않았습니다. 업데이트 상태 확인을 기다리는 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het updateherstel is de vorige keer niet voltooid. Wachten om de updatestatus te controleren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzyskiwanie aktualizacji nie zakończyło się ostatnim razem. Czekam na sprawdzenie stanu aktualizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A recuperação da atualização não terminou da última vez. Aguardando para verificar o estado da atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление обновлений не завершилось в прошлый раз. Ожидание проверки состояния обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การกู้คืนการอัปเดตไม่เสร็จสิ้นในครั้งล่าสุด รอตรวจสอบสถานะการอัพเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleştirme kurtarma işlemi geçen sefer tamamlanmadı. Güncelleme durumunun kontrol edilmesi bekleniyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc khôi phục cập nhật không hoàn thành lần trước. Đang chờ kiểm tra trạng thái cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次运行时更新接手未结束，等待检查更新现场。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次更新恢復未完成。等待檢查更新狀態。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次運荇時哽噺啑手未結束，等待檢查哽噺現场。"
+          }
+        }
+      }
+    },
+    "回退尚未完成，可重试回退更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاستعادة ليست كاملة. يمكنك إعادة محاولة التراجع عن التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠕⠇⠇⠃⠁⠉⠅ ⠊⠎ ⠝⠕⠞ ⠉⠕⠍⠏⠇⠑⠞⠑⠲ ⠠⠽⠕⠥ ⠉⠁⠝ ⠗⠑⠞⠗⠽ ⠗⠕⠇⠇⠊⠝⠛ ⠃⠁⠉⠅ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback ist nicht abgeschlossen. Sie können erneut versuchen, das Update rückgängig zu machen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback is not complete. You can retry rolling back the update."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback ne estas kompleta. Vi povas reprovi refari la ĝisdatigon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La reversión no está completa. Puede volver a intentar revertir la actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration n'est pas terminée. Vous pouvez réessayer d'annuler la mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रोलबैक पूरा नहीं हुआ है. आप अपडेट को वापस रोल करने का पुनः प्रयास कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan belum selesai. Anda dapat mencoba mengembalikan pembaruan lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il rollback non è completo. Puoi riprovare a ripristinare l'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロールバックが完了していません。更新のロールバックを再試行できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "롤백이 완료되지 않았습니다. 업데이트 롤백을 다시 시도할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het terugdraaien is niet voltooid. U kunt opnieuw proberen de update terug te draaien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycofanie nie zostało zakończone. Możesz ponowić próbę wycofania aktualizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A reversão não está completa. Você pode tentar reverter a atualização novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откат не завершен. Вы можете повторить попытку отката обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การย้อนกลับไม่สมบูรณ์ คุณสามารถลองย้อนกลับการอัปเดตอีกครั้งได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geri alma tamamlanmadı. Güncellemeyi geri almayı tekrar deneyebilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc khôi phục chưa hoàn tất. Bạn có thể thử quay lại bản cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回退尚未完成，可重试回退更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回滾未完成。您可以重新嘗試回滾更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "囙退尚未唍成，可重試囙退哽噺。"
+          }
+        }
+      }
+    },
+    "回退更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استرجاع التحديث"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠕⠇⠇ ⠠⠃⠁⠉⠅ ⠠⠥⠏⠙⠁⠞⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update zurücksetzen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Roll Back Update"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfari ĝisdatigon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revertir actualización"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler la mise à jour"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट वापस करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kembalikan Pembaruan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina l'aggiornamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新を元に戻す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 되돌리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update terugdraaien"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycofaj aktualizację"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reverter atualização"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откатить обновление"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้อนกลับการอัปเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemeyi geri al"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoàn tác cập nhật"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回退更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復原更新"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "囙退哽噺"
+          }
+        }
+      }
+    },
+    "回退未完成：%@\n必要副本已保留，可重试回退。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم تنتهي عملية الاستعادة: %@\nتم الاحتفاظ بالنسخ اللازمة. يمكنك إعادة محاولة التراجع."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠕⠇⠇⠃⠁⠉⠅ ⠙⠊⠙ ⠝⠕⠞ ⠋⠊⠝⠊⠎⠓⠒ %@\n⠠⠝⠑⠉⠑⠎⠎⠁⠗⠽ ⠉⠕⠏⠊⠑⠎ ⠺⠑⠗⠑ ⠅⠑⠏⠞⠲ ⠠⠽⠕⠥ ⠉⠁⠝ ⠗⠑⠞⠗⠽ ⠗⠕⠇⠇⠃⠁⠉⠅⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback wurde nicht abgeschlossen: %@\nNotwendige Kopien wurden aufbewahrt. Sie können das Rollback erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback did not finish: %@\nNecessary copies were kept. You can retry rollback."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfunkciigo ne finiĝis: %@\nNecesaj kopioj estis konservitaj. Vi povas reprovi repreni."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La reversión no finalizó: %@\nSe guardaron las copias necesarias. Puede volver a intentar la reversión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration n'a pas été terminée : %@\nLes copies nécessaires ont été conservées. Vous pouvez réessayer la restauration."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रोलबैक समाप्त नहीं हुआ: %@\nआवश्यक प्रतिलिपियाँ रखी गयीं। आप रोलबैक का पुनः प्रयास कर सकते हैं."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback tidak selesai: %@\nSalinan yang diperlukan disimpan. Anda dapat mencoba kembalikan lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il rollback non è stato completato: %@\nSono state conservate le copie necessarie. Puoi riprovare il rollback."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロールバックが完了しませんでした: %@\n必要なコピーは保管しておきました。ロールバックを再試行できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "롤백이 완료되지 않았습니다: %@\n필요한 사본이 보관되었습니다. 롤백을 다시 시도할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terugdraaien is niet voltooid: %@\nDe benodigde kopieën werden bewaard. U kunt het terugdraaien opnieuw proberen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycofanie nie zostało zakończone: %@\nZachowano niezbędne kopie. Możesz ponowić próbę wycofania."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A reversão não foi concluída: %@\nCópias necessárias foram mantidas. Você pode tentar novamente a reversão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откат не завершен: %@\nНеобходимые копии сохранились. Вы можете повторить откат."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การย้อนกลับไม่เสร็จสิ้น: %@\nสำเนาที่จำเป็นถูกเก็บไว้ คุณสามารถลองย้อนกลับอีกครั้งได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geri alma işlemi tamamlanmadı: %@\nGerekli kopyalar saklandı. Geri almayı yeniden deneyebilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quá trình khôi phục chưa hoàn tất: %@\nCác bản sao cần thiết đã được lưu giữ. Bạn có thể thử khôi phục lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回退未完成：%@\n必要副本已保留，可重试回退。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回滾未完成：%@\n保留必要的副本。您可以重試回滾。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "囙退未唍成：%@\n必要副夲已葆畱，可重試囙退。"
+          }
+        }
+      }
+    },
+    "已回退更新" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم التراجع عن التحديث"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠠⠗⠕⠇⠇⠑⠙ ⠠⠃⠁⠉⠅"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update zurückgesetzt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Rolled Back"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĝisdatigo malfarita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualización revertida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour annulée"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अद्यतन रोलबैक"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pembaruan Dibatalkan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiornamento ripristinato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新がロールバックされました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트가 롤백되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update teruggedraaid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizacja wycofana"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualização revertida"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновление отменено"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้อนกลับการอัปเดตแล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme Geri Alındı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hoàn tác cập nhật"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已回退更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已回退更新"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已囙退哽噺"
+          }
+        }
+      }
+    },
+    "已回退至 %@，本次更新缓存和临时文件已清理。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم الرجوع إلى ⁦%@⁩. تمت إزالة ذاكرة التخزين المؤقت والملفات المؤقتة لهذا التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠕⠇⠇⠑⠙ ⠃⠁⠉⠅ ⠞⠕ %@⠲ ⠠⠞⠓⠊⠎ ⠥⠏⠙⠁⠞⠑⠄⠎ ⠉⠁⠉⠓⠑ ⠁⠝⠙ ⠞⠑⠍⠏⠕⠗⠁⠗⠽ ⠋⠊⠇⠑⠎ ⠺⠑⠗⠑ ⠗⠑⠍⠕⠧⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf %@ zurückgesetzt. Der Cache und die temporären Dateien dieses Updates wurden entfernt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rolled back to %@. This update’s cache and temporary files were removed."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenite al %@. La kaŝmemoro kaj provizoraj dosieroj de ĉi tiu ĝisdatigo estis forigitaj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revertido a %@. Se eliminaron el caché y los archivos temporales de esta actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restauré à %@. Le cache et les fichiers temporaires de cette mise à jour ont été supprimés."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ पर वापस लाया गया। इस अपडेट की कैशे और अस्थायी फ़ाइलें हटा दी गईं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dikembalikan ke %@. Cache dan file sementara pembaruan ini telah dihapus."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rollback a %@. La cache e i file temporanei di questo aggiornamento sono stati rimossi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ にロールバックされました。このアップデートのキャッシュと一時ファイルは削除されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@로 롤백되었습니다. 이 업데이트의 캐시와 임시 파일이 제거되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teruggedraaid naar %@. De cache en tijdelijke bestanden van deze update zijn verwijderd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywrócono do %@. Pamięć podręczna i pliki tymczasowe tej aktualizacji zostały usunięte."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revertido para %@. O cache e os arquivos temporários desta atualização foram removidos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откатился на %@. Кэш и временные файлы этого обновления были удалены."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้อนกลับเป็น %@ แคชและไฟล์ชั่วคราวของการอัปเดตนี้ถูกลบออก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sürümüne geri alındı. Bu güncellemenin önbelleği ve geçici dosyaları kaldırıldı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã khôi phục về %@. Bộ đệm và tệp tạm thời của bản cập nhật này đã bị xóa."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已回退至 %@，本次更新缓存和临时文件已清理。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已回退至 %@，本次更新的快取和暫存檔案已清除。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已囙退至 %@，夲次哽噺緩邨啝臨時攵件已淸理。"
+          }
+        }
+      }
+    },
+    "已接手成功" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم استرداد التحديث"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠠⠗⠑⠉⠕⠧⠑⠗⠑⠙"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update wiederhergestellt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Recovered"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĝisdatigo Reakirita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualización recuperada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour récupérée"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अद्यतन पुनर्प्राप्त"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pembaruan Dipulihkan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiornamento recuperato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新が回復されました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트가 복구되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update hersteld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizacja odzyskana"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualização recuperada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновление восстановлено"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กู้คืนการอัปเดตแล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme Kurtarıldı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật đã được khôi phục"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已接手成功"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已接手成功"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已啑手成功"
+          }
+        }
+      }
+    },
+    "应用位置或更新现场已变化，已停止回退并保留必要副本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم تغيير موقع التطبيق أو حالة التحديث. تم إيقاف الاستعادة وتم الاحتفاظ بالنسخ الضرورية."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏ ⠇⠕⠉⠁⠞⠊⠕⠝ ⠕⠗ ⠥⠏⠙⠁⠞⠑ ⠎⠞⠁⠞⠑ ⠉⠓⠁⠝⠛⠑⠙⠲ ⠠⠗⠕⠇⠇⠃⠁⠉⠅ ⠎⠞⠕⠏⠏⠑⠙ ⠁⠝⠙ ⠝⠑⠉⠑⠎⠎⠁⠗⠽ ⠉⠕⠏⠊⠑⠎ ⠺⠑⠗⠑ ⠅⠑⠏⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App-Standort oder Update-Status hat sich geändert. Das Rollback wurde gestoppt und die erforderlichen Kopien wurden aufbewahrt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app location or update state changed. Rollback stopped and necessary copies were kept."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplika loko aŭ ĝisdatiga stato ŝanĝiĝis. Rollback ĉesis kaj necesaj kopioj estis konservitaj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ubicación de la aplicación o el estado de actualización cambiaron. La reversión se detuvo y se conservaron las copias necesarias."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'emplacement de l'application ou l'état de la mise à jour a changé. La restauration a été arrêtée et les copies nécessaires ont été conservées."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप का स्थान या अपडेट स्थिति बदल गई. रोलबैक रुक गया और आवश्यक प्रतियां रख ली गईं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokasi aplikasi atau status pembaruan berubah. Rollback dihentikan dan salinan yang diperlukan disimpan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La posizione dell'app o lo stato dell'aggiornamento sono cambiati. Il rollback è stato interrotto e le copie necessarie sono state conservate."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの場所または更新状態が変更されました。ロールバックが停止し、必要なコピーが保持されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 위치 또는 업데이트 상태가 변경되었습니다. 롤백이 중지되고 필요한 복사본이 보관되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app-locatie of updatestatus is gewijzigd. Het terugdraaien werd gestopt en de benodigde kopieën werden bewaard."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmieniła się lokalizacja aplikacji lub stan aktualizacji. Wycofanie zmian zostało zatrzymane, a niezbędne kopie zostały zachowane."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A localização do aplicativo ou o estado de atualização foram alterados. A reversão foi interrompida e as cópias necessárias foram mantidas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Местоположение приложения или состояние обновления изменилось. Откат остановлен, необходимые копии сохранены."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตำแหน่งแอปหรือสถานะการอัปเดตเปลี่ยนไป หยุดการย้อนกลับและเก็บสำเนาที่จำเป็นไว้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama konumu veya güncelleme durumu değişti. Geri alma durduruldu ve gerekli kopyalar saklandı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vị trí ứng dụng hoặc trạng thái cập nhật đã thay đổi. Rollback dừng lại và các bản sao cần thiết được giữ lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用位置或更新现场已变化，已停止回退并保留必要副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用程式位置或更新狀態已變更。回滾停止並保留必要的副本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應詠位寘或哽噺現场已變化，已停止囙退並葆畱必要副夲。"
+          }
+        }
+      }
+    },
+    "应用尚未退出，请退出后重试回退。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يزال التطبيق يعمل. أغلق التطبيق ثم أعد محاولة التراجع."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏ ⠓⠁⠎ ⠝⠕⠞ ⠟⠥⠊⠞⠲ ⠠⠟⠥⠊⠞ ⠊⠞ ⠁⠝⠙ ⠗⠑⠞⠗⠽ ⠗⠕⠇⠇⠃⠁⠉⠅⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App läuft noch. Beenden Sie die App und versuchen Sie das Zurücksetzen erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app has not quit. Quit it and retry rollback."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵo ne ĉesis. Forlasu ĝin kaj reprovu refari."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplicación no se ha cerrado. Salga y vuelva a intentar la reversión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'application ne s'est pas arrêtée. Quittez-le et réessayez la restauration."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप बंद नहीं हुआ है. इसे छोड़ें और रोलबैक का पुनः प्रयास करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi belum berhenti. Keluar dan coba kembalikan lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'app non si è chiusa. Esci e riprova il rollback."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリは終了していません。終了してロールバックを再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱이 종료되지 않았습니다. 종료하고 롤백을 다시 시도하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app is niet gestopt. Sluit het af en probeer opnieuw terug te draaien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikacja nie została zamknięta. Zakończ i ponów próbę wycofania."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O aplicativo não foi encerrado. Saia e tente novamente a reversão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение не закрылось. Выйдите из него и повторите откат."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอพยังไม่ปิด ออกจากระบบแล้วลองย้อนกลับอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulamadan çıkılmadı. Bundan çıkın ve geri almayı yeniden deneyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng chưa thoát. Hãy thoát khỏi nó và thử quay lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用尚未退出，请退出后重试回退。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "該應用程式尚未退出。退出並重試回滾。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應詠尚未退絀，請退絀後重試囙退。"
+          }
+        }
+      }
+    },
+    "应用更新恢复" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استرداد تحديث التطبيق"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠥⠏⠙⠁⠞⠑ ⠠⠗⠑⠉⠕⠧⠑⠗⠽"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Update-Wiederherstellung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Update Recovery"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reakiro de Ĝisdatigo de App"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperación de actualización de aplicaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération de mise à jour d'application"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप अपडेट रिकवरी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan Pembaruan Aplikasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino aggiornamento app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリアップデートの回復"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 업데이트 복구"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel van app-updates"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzyskiwanie aktualizacji aplikacji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperação de atualização de aplicativos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление обновлений приложений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การกู้คืนการอัปเดตแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama Güncelleme Kurtarma"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phục hồi cập nhật ứng dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用更新恢复"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用程式更新恢復"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應詠哽噺恢復"
+          }
+        }
+      }
+    },
+    "找不到可核验的完整旧版，无法回退更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يتم العثور على نسخة سابقة كاملة يمكن التحقق منها. لا يمكن التراجع عن التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠝⠕ ⠉⠕⠍⠏⠇⠑⠞⠑⠂ ⠧⠑⠗⠊⠋⠊⠁⠃⠇⠑ ⠏⠗⠑⠧⠊⠕⠥⠎ ⠧⠑⠗⠎⠊⠕⠝ ⠺⠁⠎ ⠋⠕⠥⠝⠙⠲ ⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠗⠕⠇⠇⠑⠙ ⠃⠁⠉⠅⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es wurde keine vollständige, nachweisbare Vorgängerversion gefunden. Das Update kann nicht zurückgesetzt werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No complete, verifiable previous version was found. The update cannot be rolled back."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neniu kompleta, kontrolebla antaŭa versio estis trovita. La ĝisdatigo ne povas esti nuligita."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró ninguna versión anterior completa y verificable. La actualización no se puede revertir."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune version précédente complète et vérifiable n'a été trouvée. La mise à jour ne peut pas être annulée."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कोई पूर्ण, सत्यापन योग्य पिछला संस्करण नहीं मिला। अपडेट को वापस रोल नहीं किया जा सकता."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ditemukan versi sebelumnya yang lengkap dan dapat diverifikasi. Pembaruan tidak dapat dibatalkan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stata trovata alcuna versione precedente completa e verificabile. Non è possibile eseguire il rollback dell'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全で検証可能な以前のバージョンは見つかりませんでした。更新をロールバックすることはできません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "완전하고 검증 가능한 이전 버전을 찾을 수 없습니다. 업데이트를 롤백할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er is geen volledige, verifieerbare vorige versie gevonden. De update kan niet worden teruggedraaid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie odnaleziono pełnej, możliwej do sprawdzenia poprzedniej wersji. Aktualizacji nie można cofnąć."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma versão anterior completa e verificável foi encontrada. A atualização não pode ser revertida."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Полной и поддающейся проверке предыдущей версии обнаружено не было. Обновление невозможно откатить."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่พบเวอร์ชันก่อนหน้าที่สมบูรณ์และตรวจสอบได้ การอัปเดตไม่สามารถย้อนกลับได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksiksiz, doğrulanabilir önceki sürüm bulunamadı. Güncelleme geri alınamaz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy phiên bản trước đầy đủ, có thể kiểm chứng. Bản cập nhật không thể được khôi phục."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到可核验的完整旧版，无法回退更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到完整的、可驗證的先前版本。更新無法回滾。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找⑧↘可核驗の唍整舊版，無法囙退哽噺。"
+          }
+        }
+      }
+    },
+    "接手失败：%@\n将自动重试，也可以回退更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فشل الاسترداد: %@\nستتم إعادة محاولة AppPorts تلقائيًا. يمكنك أيضًا استرجاع التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠉⠕⠧⠑⠗⠽ ⠋⠁⠊⠇⠑⠙⠒ %@\n⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠺⠊⠇⠇ ⠗⠑⠞⠗⠽ ⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽⠲ ⠠⠽⠕⠥ ⠉⠁⠝ ⠁⠇⠎⠕ ⠗⠕⠇⠇ ⠃⠁⠉⠅ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung fehlgeschlagen: %@\nAppPorts wird es automatisch erneut versuchen. Sie können das Update auch zurücksetzen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recovery failed: %@\nAppPorts will retry automatically. You can also roll back the update."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reakiro malsukcesis: %@\nAppPorts reprovos aŭtomate. Vi ankaŭ povas refari la ĝisdatigon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error de recuperación: %@\nAppPorts lo volverá a intentar automáticamente. También puede revertir la actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de la récupération : %@\nAppPorts réessayera automatiquement. Vous pouvez également annuler la mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पुनर्प्राप्ति विफल: %@\nAppPorts स्वचालित रूप से पुनः प्रयास करेगा. आप अपडेट को वापस रोल भी कर सकते हैं."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemulihan gagal: %@\nAppPorts akan mencoba lagi secara otomatis. Anda juga dapat mengembalikan pembaruan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino non riuscito: %@\nAppPorts riproverà automaticamente. Puoi anche ripristinare l'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リカバリに失敗しました: %@\nAppPorts は自動的に再試行します。更新をロールバックすることもできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복구 실패: %@\nAppPort가 자동으로 다시 시도합니다. 업데이트를 롤백할 수도 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel mislukt: %@\nAppPorts zal het automatisch opnieuw proberen. Je kunt de update ook terugdraaien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzyskiwanie nie powiodło się: %@\nAppPorts spróbuje automatycznie. Możesz także cofnąć aktualizację."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha na recuperação: %@\nAppPorts tentará novamente automaticamente. Você também pode reverter a atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление не удалось: %@\nAppPorts повторит попытку автоматически. Вы также можете откатить обновление."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การกู้คืนล้มเหลว: %@\nAppPort จะลองอีกครั้งโดยอัตโนมัติ คุณยังสามารถย้อนกลับการอัปเดตได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurtarma başarısız oldu: %@\nAppPorts otomatik olarak yeniden deneyecektir. Güncellemeyi geri de alabilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục không thành công: %@\nAppPorts sẽ tự động thử lại. Bạn cũng có thể khôi phục bản cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接手失败：%@\n将自动重试，也可以回退更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復失敗：%@\nAppPorts 將自動重試。您也可以回滾更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啑手失敗：%@\n將自動重試，也可以囙退哽噺。"
+          }
+        }
+      }
+    },
+    "更新器或其他操作仍在运行，请稍后重试回退。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يزال برنامج التحديث أو أي عملية أخرى قيد التشغيل. أعد محاولة التراجع لاحقًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑⠗ ⠕⠗ ⠁⠝⠕⠞⠓⠑⠗ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠊⠎ ⠎⠞⠊⠇⠇ ⠗⠥⠝⠝⠊⠝⠛⠲ ⠠⠗⠑⠞⠗⠽ ⠗⠕⠇⠇⠃⠁⠉⠅ ⠇⠁⠞⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Updater oder ein anderer Vorgang wird noch ausgeführt. Versuchen Sie das Rollback später noch einmal."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The updater or another operation is still running. Retry rollback later."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatilo aŭ alia operacio ankoraŭ funkcias. Reprovi poste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El actualizador u otra operación aún se está ejecutando. Vuelva a intentar revertir más tarde."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le programme de mise à jour ou une autre opération est toujours en cours d'exécution. Réessayez la restauration plus tard."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेटर या कोई अन्य ऑपरेशन अभी भी चल रहा है। बाद में रोलबैक का पुनः प्रयास करें."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pembaru atau operasi lain masih berjalan. Coba kembalikan lagi nanti."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'aggiornamento o un'altra operazione è ancora in esecuzione. Riprovare il rollback più tardi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデーターまたは別の操作がまだ実行中です。後でロールバックを再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 프로그램이나 다른 작업이 아직 실행 중입니다. 나중에 롤백을 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De updater of een andere bewerking is nog steeds actief. Probeer het later opnieuw terug te draaien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizator lub inna operacja jest nadal uruchomiona. Spróbuj przywrócić później."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O atualizador ou outra operação ainda está em execução. Tente novamente a reversão mais tarde."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Программа обновления или другая операция все еще выполняется. Повторите откат позже."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวอัพเดตหรือการดำเนินการอื่นยังคงทำงานอยู่ ลองย้อนกลับอีกครั้งในภายหลัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleyici veya başka bir işlem hâlâ çalışıyor. Daha sonra geri almayı yeniden deneyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình cập nhật hoặc thao tác khác vẫn đang chạy. Hãy thử quay lại sau."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新器或其他操作仍在运行，请稍后重试回退。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新程式或其他操作仍在運行。稍後重試回滾。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "哽噺器或其他操莋仍╪運荇，請稍後重試囙退。"
+          }
+        }
+      }
+    },
+    "正在切换应用版本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبديل إصدارات التطبيق."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠺⠊⠞⠉⠓⠊⠝⠛ ⠁⠏⠏ ⠧⠑⠗⠎⠊⠕⠝⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Versionen wechseln."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switching app versions."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ŝanĝi app-versiojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar de versión de la aplicación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer de version d'application."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप संस्करण स्विच करना."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beralih versi aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio delle versioni dell'app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのバージョンを切り替える。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 버전 전환."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Van app-versie wisselen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przełączanie wersji aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Troca de versões de aplicativos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключение версий приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การสลับเวอร์ชันของแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama sürümlerini değiştirme."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển đổi phiên bản ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在切换应用版本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換應用程式版本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪切換應詠版夲。"
+          }
+        }
+      }
+    },
+    "正在刷新本机启动入口。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحديث مشغل التطبيقات المحلي."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠋⠗⠑⠎⠓⠊⠝⠛ ⠞⠓⠑ ⠇⠕⠉⠁⠇ ⠁⠏⠏ ⠇⠁⠥⠝⠉⠓⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisieren des lokalen App-Launchers."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing the local app launcher."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreŝigante la lokan programlanĉilon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizando el iniciador de aplicaciones local."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualisation du lanceur d'applications local."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्थानीय ऐप लॉन्चर को ताज़ा किया जा रहा है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyegarkan peluncur aplikasi lokal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiornamento dell'avvio dell'app locale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルアプリランチャーを更新しています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬 앱 실행기를 새로 고치는 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het lokale app-opstartprogramma vernieuwen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odświeżanie lokalnego programu uruchamiającego aplikacje."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizando o inicializador de aplicativos local."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновление локальной панели запуска приложений."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังรีเฟรชเครื่องเรียกใช้งานแอปในเครื่อง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yerel uygulama başlatıcısı yenileniyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang làm mới trình khởi chạy ứng dụng cục bộ."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在刷新本机启动入口。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刷新本機應用程式啟動器。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪刷噺夲机啟動入ロ。"
+          }
+        }
+      }
+    },
+    "正在复制新版应用。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نسخ إصدار التطبيق الجديد."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠕⠏⠽⠊⠝⠛ ⠞⠓⠑ ⠝⠑⠺ ⠁⠏⠏ ⠧⠑⠗⠎⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieren der neuen App-Version."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copying the new app version."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiante la novan app-version."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiando la nueva versión de la aplicación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie de la nouvelle version de l'application."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप का नया संस्करण कॉपी किया जा रहा है."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyalin versi aplikasi baru."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia della nuova versione dell'app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいアプリのバージョンをコピーします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 앱 버전을 복사하는 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De nieuwe app-versie kopiëren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiowanie nowej wersji aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiando a nova versão do aplicativo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копирование новой версии приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังคัดลอกแอปเวอร์ชันใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni uygulama sürümü kopyalanıyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sao chép phiên bản ứng dụng mới."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在复制新版应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複製新的應用程式版本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪復制噺版應詠。"
+          }
+        }
+      }
+    },
+    "正在完成更新状态收尾。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الانتهاء من تنظيف حالة التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠋⠊⠝⠊⠎⠓⠊⠝⠛ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠎⠞⠁⠞⠑ ⠉⠇⠑⠁⠝⠥⠏⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bereinigung des Aktualisierungsstatus wird abgeschlossen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finishing the update state cleanup."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finante la ĝisdatigan ŝtatpurigon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizando la limpieza del estado de actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin du nettoyage de l'état de mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अद्यतन स्थिति सफ़ाई समाप्त हो रही है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyelesaikan pembersihan status pembaruan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completamento della pulizia dello stato di aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新状態のクリーンアップを終了します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 상태 정리를 완료합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het opschonen van de updatestatus voltooien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończenie czyszczenia stanu aktualizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concluindo a limpeza do estado de atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершение очистки состояния обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เสร็จสิ้นการล้างสถานะการอัปเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme durumu temizliği tamamlanıyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoàn tất việc dọn dẹp trạng thái cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在完成更新状态收尾。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成更新狀態清理。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪唍成哽噺狀態收尾。"
+          }
+        }
+      }
+    },
+    "正在恢复更新前的应用。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استعادة إصدار التطبيق من ما قبل التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠊⠝⠛ ⠞⠓⠑ ⠁⠏⠏ ⠧⠑⠗⠎⠊⠕⠝ ⠋⠗⠕⠍ ⠃⠑⠋⠕⠗⠑ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung der App-Version vor dem Update."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restoring the app version from before the update."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarigi la version de la aplikaĵo antaŭ la ĝisdatigo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurando la versión de la aplicación anterior a la actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restauration de la version de l'application avant la mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट से पहले के ऐप संस्करण को पुनर्स्थापित किया जा रहा है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memulihkan versi aplikasi dari sebelum pembaruan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino della versione dell'app precedente all'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのバージョンをアップデート前の状態に戻します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 이전의 앱 버전을 복원합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app-versie van vóór de update herstellen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywracanie wersji aplikacji sprzed aktualizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurando a versão do aplicativo anterior à atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановление версии приложения до обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การคืนค่าเวอร์ชันของแอปก่อนการอัปเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama sürümünü güncelleme öncesinden geri yükleme."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục phiên bản ứng dụng từ trước khi cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在恢复更新前的应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復更新前的應用程式版本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪恢復哽噺前の應詠。"
+          }
+        }
+      }
+    },
+    "正在校验应用完整性和签名。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التحقق من سلامة التطبيق والتوقيع."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠧⠑⠗⠊⠋⠽⠊⠝⠛ ⠁⠏⠏ ⠊⠝⠞⠑⠛⠗⠊⠞⠽ ⠁⠝⠙ ⠎⠊⠛⠝⠁⠞⠥⠗⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überprüfung der App-Integrität und -Signatur."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifying app integrity and signature."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrolante la integrecon kaj subskribon de la aplikaĵo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificación de la integridad y firma de la aplicación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification de l'intégrité et de la signature de l'application."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप की अखंडता और हस्ताक्षर का सत्यापन।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memverifikasi integritas dan tanda tangan aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica dell'integrità e della firma dell'app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの整合性と署名を検証します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 무결성 및 서명을 확인합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-integriteit en handtekening verifiëren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weryfikacja integralności i podpisu aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando a integridade e assinatura do aplicativo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка целостности и подписи приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การตรวจสอบความสมบูรณ์และลายเซ็นของแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama bütünlüğü ve imzası doğrulanıyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác minh tính toàn vẹn và chữ ký của ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在校验应用完整性和签名。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "驗證應用程式完整性和簽名。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪校驗應詠唍整性啝簽名。"
+          }
+        }
+      }
+    },
+    "正在检查更新副本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التحقق من نسخة التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠓⠑⠉⠅⠊⠝⠛ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠉⠕⠏⠽⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überprüfung der Update-Kopie."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the update copy."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrolante la ĝisdatigan kopion."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando la copia de actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification de la copie de mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अद्यतन प्रति की जाँच की जा रही है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memeriksa salinan pembaruan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controllo della copia dell'aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新コピーを確認しています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 사본을 확인하는 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De updatekopie controleren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdzanie kopii aktualizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando a cópia da atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка копии обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังตรวจสอบสำเนาการอัพเดต"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme kopyası kontrol ediliyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra bản cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在检查更新副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查更新副本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪檢查哽噺副夲。"
+          }
+        }
+      }
+    },
+    "正在清理本次更新的缓存和临时文件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة ذاكرة التخزين المؤقت والملفات المؤقتة لهذا التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠍⠕⠧⠊⠝⠛ ⠞⠓⠊⠎ ⠥⠏⠙⠁⠞⠑⠄⠎ ⠉⠁⠉⠓⠑ ⠁⠝⠙ ⠞⠑⠍⠏⠕⠗⠁⠗⠽ ⠋⠊⠇⠑⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Cache und die temporären Dateien dieses Updates werden entfernt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removing this update’s cache and temporary files."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forigante la kaŝmemoron kaj provizorajn dosierojn de ĉi tiu ĝisdatigo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminando el caché y los archivos temporales de esta actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suppression du cache et des fichiers temporaires de cette mise à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस अद्यतन की कैशे और अस्थायी फ़ाइलों को हटाया जा रहा है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menghapus cache pembaruan ini dan file sementara."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimozione della cache e dei file temporanei di questo aggiornamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアップデートのキャッシュと一時ファイルを削除します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 업데이트의 캐시 및 임시 파일을 제거합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het verwijderen van de cache en tijdelijke bestanden van deze update."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwanie pamięci podręcznej i plików tymczasowych tej aktualizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removendo o cache e os arquivos temporários desta atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удаление кеша и временных файлов этого обновления."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การลบแคชและไฟล์ชั่วคราวของการอัปเดตนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu güncellemenin önbelleği ve geçici dosyaları kaldırılıyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa bộ nhớ đệm và tệp tạm thời của bản cập nhật này."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在清理本次更新的缓存和临时文件。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除此更新的快取和臨時檔案。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪淸理夲次哽噺の緩邨啝臨時攵件。"
+          }
+        }
+      }
+    },
+    "等待更新器或其他操作结束。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في انتظار انتهاء التحديث أو أي عملية أخرى."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠺⠁⠊⠞⠊⠝⠛ ⠋⠕⠗ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑⠗ ⠕⠗ ⠁⠝⠕⠞⠓⠑⠗ ⠕⠏⠑⠗⠁⠞⠊⠕⠝ ⠞⠕ ⠋⠊⠝⠊⠎⠓⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warten auf den Abschluss des Updaters oder eines anderen Vorgangs."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the updater or another operation to finish."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atendante ke la ĝisdatilo aŭ alia operacio finiĝos."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando a que finalice el actualizador u otra operación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente de la fin du programme de mise à jour ou d'une autre opération."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अद्यतनकर्ता या किसी अन्य ऑपरेशन के समाप्त होने की प्रतीक्षा की जा रही है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu pembaru atau operasi lainnya selesai."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In attesa del completamento dell'aggiornamento o di un'altra operazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデーターまたは別の操作が完了するのを待っています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 프로그램이나 다른 작업이 완료되기를 기다리는 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wachten tot de updater of een andere bewerking is voltooid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oczekiwanie na zakończenie aktualizacji lub innej operacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aguardando a conclusão do atualizador ou de outra operação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидание завершения программы обновления или другой операции."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังรอให้ตัวอัปเดตหรือการดำเนินการอื่นเสร็จสิ้น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleyicinin veya başka bir işlemin tamamlanması bekleniyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang chờ quá trình cập nhật hoặc thao tác khác hoàn tất."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待更新器或其他操作结束。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待更新程式或其他操作完成。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待哽噺器或其他操莋結束。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

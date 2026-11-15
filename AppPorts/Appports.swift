@@ -101,6 +101,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppUpdateInstaller.acknowledgeLaunch()
+        ShipItRecoveryMonitor.shared.start()
         // 应用可能被移动过：校准登录代理指向的程序，免得它指向一个已经不存在的路径。
         Task.detached(priority: .utility) {
             do { try await AutoResignInstaller.refreshInstalledScriptIfNeeded() }
