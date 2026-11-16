@@ -34,6 +34,7 @@ final class AppTransferTransactionTests: XCTestCase {
                                 transferHooks: .init(checkpoint: hook, synchronizeCleanupParent: synchronizeCleanupParent,
                                                      synchronizeStagingParent: synchronizeStagingParent,
                                                      exchange: exchange, administratorOperation: administratorOperation),
+                                updaterCacheDirectory: root.appendingPathComponent("Caches"),
                                 runningApplications: running)
         }
 
@@ -97,6 +98,104 @@ final class AppTransferTransactionTests: XCTestCase {
             XCTAssertEqual(service.selfUpdatingApplications(in: [item(source)]).count, 1)
             XCTAssertTrue(try w.store.records().isEmpty)
         }
+    }
+
+    func testSparkleCacheLocksAreRemovedByRestoreBeforeNonLockedMigration() async throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("App.app")
+        let destination = w.external.appendingPathComponent("App.app")
+        try makeAppWithSparkleHelper(source)
+        let migrated = try await w.service().moveAndLink(appToMove: item(source), destinationURL: destination,
+            isRunning: false, lockExternal: true, progressHandler: nil)
+        XCTAssertTrue(migrated.isComplete)
+        let cache = try copySparkleHelper(from: destination, in: w)
+        XCTAssertNotEqual(try SignatureSnapshot.info(at: cache).st_flags & UInt32(UF_IMMUTABLE), 0)
+        let cachedContents = try SignatureSnapshot.fingerprint(of: cache)
+        let restored = try await w.service().moveBack(app: item(destination), localDestinationURL: source, progressHandler: nil)
+        XCTAssertTrue(restored.transferResult.isComplete, restored.warnings.joined(separator: "\n"))
+        XCTAssertEqual(try SignatureSnapshot.fingerprint(of: cache), cachedContents)
+        for url in try SignatureSnapshot.items(in: cache) {
+            XCTAssertEqual(try SignatureSnapshot.info(at: url).st_flags & UInt32(UF_IMMUTABLE), 0)
+        }
+        // Sparkle's next update first removes and then copies this exact helper.
+        try FileManager.default.removeItem(at: cache)
+        _ = try copySparkleHelper(from: source, in: w)
+        let remigrated = try await w.service().moveAndLink(appToMove: item(source), destinationURL: destination,
+            isRunning: false, lockExternal: false, progressHandler: nil)
+        XCTAssertTrue(remigrated.isComplete)
+        XCTAssertEqual(try SignatureSnapshot.info(at: destination).st_flags & UInt32(UF_IMMUTABLE), 0)
+        XCTAssertEqual(try SignatureSnapshot.fingerprint(of: cache), cachedContents)
+        XCTAssertTrue(try w.store.records().isEmpty)
+    }
+
+    func testSparkleCacheRepairResumesAfterRestoreProtectionWasSuspended() async throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("App.app")
+        let destination = w.external.appendingPathComponent("App.app")
+        try makeAppWithSparkleHelper(source)
+        _ = try await w.service().moveAndLink(appToMove: item(source), destinationURL: destination,
+            isRunning: false, lockExternal: true, progressHandler: nil)
+        let cache = try copySparkleHelper(from: destination, in: w)
+        // A missing entry avoids the unrelated existing-target baseline requirement on this cold retry.
+        try FileManager.default.removeItem(at: source)
+        do {
+            _ = try await w.service(hook: { point, _ in
+                if point == .sourceProtectionSuspended { throw Interrupted() }
+            }).moveBack(app: item(destination), localDestinationURL: source, progressHandler: nil)
+            XCTFail("Expected an interruption before cache repair")
+        } catch is Interrupted {}
+        XCTAssertNotEqual(try SignatureSnapshot.info(at: cache).st_flags & UInt32(UF_IMMUTABLE), 0)
+        let record = try XCTUnwrap(w.store.records().first)
+        let resumed = try await w.service(storeOverride: AppTransferStore(directoryURL: w.store.directoryURL))
+            .retryTransfer(operationID: record.id)
+        XCTAssertTrue(resumed.isComplete, resumed.warnings.joined(separator: "\n"))
+        XCTAssertEqual(try SignatureSnapshot.info(at: cache).st_flags & UInt32(UF_IMMUTABLE), 0)
+        XCTAssertTrue(try w.store.records().isEmpty)
+    }
+
+    func testExplicitUnlockAlsoRepairsSparkleCache() async throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("App.app")
+        let destination = w.external.appendingPathComponent("App.app")
+        try makeAppWithSparkleHelper(source)
+        _ = try await w.service().moveAndLink(appToMove: item(source), destinationURL: destination,
+            isRunning: false, lockExternal: true, progressHandler: nil)
+        let cache = try copySparkleHelper(from: destination, in: w)
+        XCTAssertTrue(w.service().unlockExternalApp(at: destination))
+        XCTAssertEqual(try SignatureSnapshot.info(at: destination).st_flags & UInt32(UF_IMMUTABLE), 0)
+        XCTAssertEqual(try SignatureSnapshot.info(at: cache).st_flags & UInt32(UF_IMMUTABLE), 0)
+    }
+
+    func testNonLockedMigrationRepairsExistingCacheWhileLockedMigrationKeepsIt() async throws {
+        for lockExternal in [false, true] {
+            let w = try Workspace(); defer { w.cleanup() }
+            let source = w.local.appendingPathComponent("App.app")
+            let destination = w.external.appendingPathComponent("App.app")
+            try makeAppWithSparkleHelper(source)
+            let cache = try copySparkleHelper(from: source, in: w)
+            for url in try SignatureSnapshot.items(in: cache).reversed() {
+                XCTAssertEqual(lchflags(url.path, UInt32(UF_IMMUTABLE)), 0)
+            }
+            let migrated = try await w.service().moveAndLink(appToMove: item(source), destinationURL: destination,
+                isRunning: false, lockExternal: lockExternal, progressHandler: nil)
+            XCTAssertTrue(migrated.isComplete)
+            XCTAssertEqual(try SignatureSnapshot.info(at: cache).st_flags & UInt32(UF_IMMUTABLE) != 0, lockExternal)
+            XCTAssertEqual(try payload(destination), "payload")
+        }
+    }
+
+    private func makeAppWithSparkleHelper(_ app: URL) throws {
+        try makeApp(app, sparkle: true)
+        try makeApp(app.appendingPathComponent("Contents/Frameworks/Sparkle.framework/Resources/Autoupdate.app"),
+                    identifier: "org.sparkle-project.Autoupdate")
+    }
+
+    private func copySparkleHelper(from app: URL, in workspace: Workspace) throws -> URL {
+        let cache = workspace.root.appendingPathComponent("Caches/example.transfer/org.sparkle-project.Sparkle/App (Autoupdate).app")
+        try FileManager.default.createDirectory(at: cache.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: app.appendingPathComponent("Contents/Frameworks/Sparkle.framework/Resources/Autoupdate.app"),
+                                         to: cache)
+        return cache
     }
 
     func testPermissionDeniedExchangeUsesAuthorizedVerifiedOperation() async throws {

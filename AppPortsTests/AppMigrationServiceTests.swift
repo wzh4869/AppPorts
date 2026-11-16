@@ -1861,7 +1861,8 @@ final class AppMigrationServiceTests: XCTestCase {
         AppMigrationService(fileManager: fileManager, portalCreationOverride: portalCreationOverride,
             dockShortcutUpdater: dockShortcutUpdater, dockShortcutRetryUpdater: dockShortcutRetryUpdater,
             transferStore: transferStore, signatureFactStore: SignatureFactStore(backupDirectoryURL: serviceSupportRoot.appendingPathComponent("Signatures")),
-            transferHooks: transferHooks, writerAdmissionCheck: writerAdmissionCheck, runningApplications: runningApplications)
+            transferHooks: transferHooks, writerAdmissionCheck: writerAdmissionCheck,
+            updaterCacheDirectory: serviceSupportRoot.appendingPathComponent("Caches"), runningApplications: runningApplications)
     }
 
     private func makeWorkspace() throws -> (rootURL: URL, localAppsURL: URL, externalRootURL: URL) {

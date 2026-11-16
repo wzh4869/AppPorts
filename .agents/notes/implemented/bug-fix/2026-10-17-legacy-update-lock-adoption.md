@@ -54,6 +54,8 @@ Issue #77 的两条报错分别来自这两条链：VideoFusion 是旧锁（`uns
 
 ## Testing
 
+应用包外的更新缓存锁收尾见[解除迁移锁时清除应用缓存锁](2026-11-16-解除迁移锁时清除应用缓存锁.md)。迁回、非锁定迁移与显式解除同时处理该应用的标准缓存目录，包内旧锁接管、原内容保留及转移取消保护继续沿用本篇规则。
+
 回归测试在 `AppPortsTests/AppTransferTransactionTests.swift`（issue #77 分组）：`testEveryLockShapeIsClearedOnRestore` 覆盖全树锁、只锁根、只锁子项、部分锁定四种形态，都要求迁回成功且还原后不带锁；`testNonImmutableFlagsStillFailClosed` 断言额外标志位仍被拒绝且不动原树；`testCompressedSourceIsReadSequentiallyNotByPhysicalExtent` 用假 extent 探针断言压缩源从不走物理块路径；`testCompressedFlagIsAcceptedWhileOtherFlagsStillFailClosed` 断言压缩可复制而 `UF_APPEND` 仍拒绝；原 `testCompressedFlagFailsClosedBeforePayloadRead` 改名为 `testUndecodableCompressedStreamStillFailsClosed` 并改为断言逻辑字节被正确读出；1.9.0 全树锁 + 无记录 + 无 journal 时迁回成功且不留记录；排除外盘索引接管后仍锁新位置；被替换的外部对象被判为 `.blocked` 并可结束记录、两侧副本都在；清单丢失时给出可操作错误、结束记录后迁回成功；旧格式记录无 `adoptedLegacyLock` 时按 `.managed` 解码。
 
 自动收束的契约各有专门用例：`testCommittedTransferCleanupRetriesInsteadOfAskingTheUser` 造出「迁移已完成、删旧副本失败」的记录，断言它被判为 `.retry`、不被收束、重试能正常收尾；`testUnrecoverableTransferIsRetiredAutomaticallyKeepingCopies` 造出「外部对象已被替换」的记录，断言维护流程自动归档记录、两侧副本都保留、路径随后可用；`testRetirementLeavesRecoverableRecordsAlone` 断言还能推进的记录不会被收束；`testJournalWithoutManifestsIsRetiredAutomatically` 覆盖清单丢失的记录。

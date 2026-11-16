@@ -59,6 +59,7 @@ struct AppMigrationService {
     }
 
     private let fileManager: FileManager
+    private let updaterCacheDirectory: URL
     private let portalCreationOverride: PortalCreationOverride?
     private let dockShortcutUpdater: DockShortcutUpdater
     private let dockShortcutRetryUpdater: DockShortcutUpdater
@@ -77,6 +78,7 @@ struct AppMigrationService {
         signatureFactStore: SignatureFactStore = SignatureFactStore(),
         transferHooks: AppTransferHooks = .init(),
         writerAdmissionCheck: (() throws -> Void)? = nil,
+        updaterCacheDirectory: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches"),
         runningApplications: @escaping () -> [AppRunningState.RunningApplication] = {
             NSWorkspace.shared.runningApplications.map {
                 .init(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
@@ -84,6 +86,7 @@ struct AppMigrationService {
         }
     ) {
         self.fileManager = fileManager
+        self.updaterCacheDirectory = updaterCacheDirectory
         self.portalCreationOverride = portalCreationOverride
         self.dockShortcutUpdater = dockShortcutUpdater ?? { source, destination in
             try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
@@ -758,6 +761,9 @@ struct AppMigrationService {
                 }
             }, portalMatches: { self.localPortalKind(at: $0, linkedTo: $1) != nil },
             updateDock: retrying ? dockShortcutRetryUpdater : dockShortcutUpdater,
+            prepareUpdaterCaches: { source, isFolder in
+                try self.unlockUpdaterCaches(at: source, isFolder: isFolder)
+            },
             runningApplications: runningApplications, hooks: transferHooks, allowsAdministratorPrompt: !retrying)
     }
 
@@ -1273,13 +1279,20 @@ struct AppMigrationService {
             defer { operationLock.release() }
             let protection = AppUpdateProtectionStore(transferStore: transferStore)
             let identity = try DataPathIdentity.capture(url)
+            _ = try protection.adoptLegacyLock(url, evidence: .init(managedLocalEntry: nil, sameApplicationSource: nil))
             _ = try protection.suspend(url)
+            try unlockUpdaterCaches(at: url, isFolder: url.pathExtension != "app")
             try protection.forget(path: url.path, identity: identity)
             return true
         } catch {
             AppLogger.shared.logError("无法撤销应用更新保护；已有未知锁保持不变", error: error, relatedURLs: [("app", url)])
             return false
         }
+    }
+
+    private func unlockUpdaterCaches(at appURL: URL, isFolder: Bool) throws {
+        try AppUpdateCache(directory: updaterCacheDirectory).unlockCaches(for: appURL, isFolder: isFolder,
+                                                                         recheckAdmission: recheckWriterAdmission)
     }
 
     private func preferredPortalKind(for appURL: URL) -> LocalPortalKind {

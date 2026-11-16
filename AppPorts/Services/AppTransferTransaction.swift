@@ -28,6 +28,7 @@ final class AppTransferTransaction {
     private let buildPortal: PortalBuilder
     private let portalMatches: PortalMatcher
     private let updateDock: AppMigrationService.DockShortcutUpdater
+    private let prepareUpdaterCaches: (URL, Bool) throws -> Void
     private let runningApplications: () -> [AppRunningState.RunningApplication]
     private let facts: SignatureFactStore
     private let hooks: AppTransferHooks
@@ -37,10 +38,12 @@ final class AppTransferTransaction {
     init(store: AppTransferStore, fileManager: FileManager, facts: SignatureFactStore,
          buildPortal: @escaping PortalBuilder, portalMatches: @escaping PortalMatcher,
          updateDock: @escaping AppMigrationService.DockShortcutUpdater,
+         prepareUpdaterCaches: @escaping (URL, Bool) throws -> Void = { _, _ in },
          runningApplications: @escaping () -> [AppRunningState.RunningApplication], hooks: AppTransferHooks,
          allowsAdministratorPrompt: Bool = true) {
         self.store = store; self.fileManager = fileManager; self.facts = facts
         self.buildPortal = buildPortal; self.portalMatches = portalMatches; self.updateDock = updateDock
+        self.prepareUpdaterCaches = prepareUpdaterCaches
         self.runningApplications = runningApplications; self.hooks = hooks
         self.protection = AppUpdateProtectionStore(transferStore: store)
         self.allowsAdministratorPrompt = allowsAdministratorPrompt
@@ -592,6 +595,9 @@ final class AppTransferTransaction {
             try checkpoint(.destinationProtectionSuspended, journal)
         }
         try journal.save()
+        if !journal.record.protectDestination {
+            try prepareUpdaterCaches(URL(fileURLWithPath: journal.record.sourcePath), journal.record.usesFolderOperation)
+        }
     }
 
     private func publishExternalCandidate(_ journal: Journal) throws {
