@@ -11,9 +11,8 @@ import SwiftUI
 
 /// 迁移前的准备情况检查。
 ///
-/// 欢迎屏第二屏与「设置」里共用同一组设置页风格的卡片，
-/// 只有刷新入口的位置不同：欢迎屏放在卡片下方（让两屏的卡片从同一高度开始），
-/// 「设置」里放在卡片上方。
+/// 欢迎屏、独立检查面板与设置页共用检查结果和权限操作。
+@MainActor
 struct ReadinessCheckView: View {
     /// 刷新入口相对卡片的位置
     enum RefreshPlacement {
@@ -21,6 +20,8 @@ struct ReadinessCheckView: View {
         case top
         /// 卡片下方，可与左侧脚注并排（欢迎屏使用）
         case bottom
+        /// 设置页使用工具栏中的刷新入口。
+        case hidden
     }
 
     /// 刷新入口的位置
@@ -30,29 +31,33 @@ struct ReadinessCheckView: View {
     var footnote: String?
 
     var onOpenSettings: (() -> Void)?
+    var isEmbedded: Bool
+    @StateObject private var model: ReadinessCheckModel
 
-    @State private var items: [LaunchReadinessChecker.Item] = []
-    @State private var isChecking = false
-
-    init(refreshPlacement: RefreshPlacement = .top, footnote: String? = nil, onOpenSettings: (() -> Void)? = nil) {
+    init(refreshPlacement: RefreshPlacement = .top, footnote: String? = nil,
+         onOpenSettings: (() -> Void)? = nil, isEmbedded: Bool = false,
+         model: ReadinessCheckModel? = nil) {
         self.refreshPlacement = refreshPlacement
         self.footnote = footnote
         self.onOpenSettings = onOpenSettings
+        self.isEmbedded = isEmbedded
+        _model = StateObject(wrappedValue: model ?? ReadinessCheckModel())
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: isEmbedded ? AppSettingsStyle.rowGap : 12) {
             if refreshPlacement == .top {
                 refreshRow
             }
 
-            if items.isEmpty {
+            if model.items.isEmpty {
                 loadingCard
             } else {
-                ForEach(items) { item in
-                    ReadinessCard(item: item) { action in
+                ForEach(model.items) { item in
+                    ReadinessCard(item: item, isEmbedded: isEmbedded) { action in
                         openSettings(for: action)
                     }
+                    if isEmbedded, item.id != model.items.last?.id { Divider() }
                 }
             }
 
@@ -60,10 +65,10 @@ struct ReadinessCheckView: View {
                 refreshRow
             }
         }
-        .onAppear(perform: refresh)
+        .onAppear { model.refresh() }
         // 去系统设置改完权限切回来，自动重新检查一次。
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            refresh()
+            model.refresh()
         }
     }
 
@@ -79,13 +84,13 @@ struct ReadinessCheckView: View {
 
             Spacer(minLength: 8)
 
-            if isChecking {
+            if model.isChecking {
                 ProgressView()
                     .controlSize(.small)
                     .scaleEffect(0.7)
             }
 
-            Button(action: refresh) {
+            Button(action: model.refresh) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 10, weight: .semibold))
@@ -95,33 +100,24 @@ struct ReadinessCheckView: View {
             }
             .buttonStyle(.plain)
             .foregroundColor(.secondary)
-            .disabled(isChecking)
+            .disabled(model.isChecking)
         }
         .padding(.top, refreshPlacement == .bottom ? 2 : 0)
     }
 
+    @ViewBuilder
     private var loadingCard: some View {
+        if isEmbedded { loadingContent }
+        else { loadingContent.settingsCardBackground() }
+    }
+
+    private var loadingContent: some View {
         HStack(spacing: 10) {
             ProgressView()
                 .controlSize(.small)
             Text("正在检查…".localized)
                 .font(AppDialogTypography.body)
                 .foregroundColor(.secondary)
-        }
-        .settingsCardBackground()
-    }
-
-    /// 重新执行三项检查。外部存储格式要问 diskutil，所以是异步的。
-    private func refresh() {
-        guard !isChecking else { return }
-        isChecking = true
-        Task {
-            let result = await LaunchReadinessChecker().check()
-            await MainActor.run {
-                items = result
-                PermissionReadiness.shared.update(from: result)
-                isChecking = false
-            }
         }
     }
 
@@ -132,7 +128,7 @@ struct ReadinessCheckView: View {
 
 // MARK: - 准备情况弹窗
 
-/// 「设置」里点「检查」后弹出的准备情况面板。
+/// 主界面其他入口使用的独立准备情况面板。
 struct ReadinessCheckSheet: View {
     var onOpenSettings: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
@@ -214,35 +210,66 @@ private struct RunningApplicationCard: View {
 /// 准备情况里的一张卡片，缺权限时右侧是可点击的「去授权」。
 struct ReadinessCard: View {
     let item: LaunchReadinessChecker.Item
+    var isEmbedded = false
     let onAction: (LaunchReadinessChecker.Item.Action) -> Void
 
+    @ViewBuilder
     var body: some View {
-        SettingsStyleCard(
-            icon: symbolName,
-            iconColor: statusColor,
-            title: item.title,
-            detail: item.detail
-        ) {
-            if let action = item.action {
-                VStack(alignment: .trailing, spacing: 6) {
-                    if action == .appManagement {
-                        Text(statusText)
-                            .font(AppDialogTypography.body)
-                            .foregroundColor(statusColor)
+        if isEmbedded {
+            HStack(alignment: .top, spacing: AppSettingsStyle.sectionGap) {
+                VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
+                    Text(item.title).font(AppSettingsStyle.rowFont)
+                    if item.level != .ok {
+                        Text(item.detail)
+                            .font(AppSettingsStyle.secondaryFont)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Button(action: { onAction(action) }) {
-                        HStack(spacing: 3) {
-                            Text("打开系统设置".localized)
-                            Image(systemName: "arrow.up.right")
-                                .font(.system(size: 9, weight: .bold))
-                        }
-                        .font(AppDialogTypography.body.weight(.semibold))
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .help("去设置授予权限".localized)
                 }
-                .fixedSize(horizontal: true, vertical: false)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                accessory
+            }
+            .help(item.detail)
+        } else {
+            SettingsStyleCard(icon: symbolName, iconColor: statusColor,
+                title: item.title, detail: item.detail) {
+                accessory
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var accessory: some View {
+        if let action = item.action {
+            VStack(alignment: .trailing, spacing: 6) {
+                if action == .appManagement {
+                    Text(statusText)
+                        .font(isEmbedded ? AppSettingsStyle.secondaryFont : AppDialogTypography.body)
+                        .foregroundColor(isEmbedded ? .primary : statusColor)
+                }
+                Button(action: { onAction(action) }) {
+                    HStack(spacing: 3) {
+                        Text("打开系统设置".localized)
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 9, weight: .bold))
+                    }
+                    .font(isEmbedded ? AppSettingsStyle.bodyFont
+                        : AppDialogTypography.body.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(isEmbedded ? AppSettingsStyle.controlSize : .small)
+                .help("去设置授予权限".localized)
+            }
+            .fixedSize(horizontal: true, vertical: false)
+        } else {
+            if isEmbedded {
+                Label {
+                    Text(statusText)
+                } icon: {
+                    Image(systemName: symbolName).foregroundStyle(statusColor)
+                }
+                .font(AppSettingsStyle.secondaryFont)
+                .fixedSize()
             } else {
                 Text(statusText)
                     .font(AppDialogTypography.body.weight(.semibold))
@@ -269,9 +296,9 @@ struct ReadinessCard: View {
 
     private var statusColor: Color {
         switch item.level {
-        case .ok: return .green
-        case .warning: return .orange
-        case .failed: return .red
+        case .ok: return AppSettingsStyle.success
+        case .warning: return AppSettingsStyle.warning
+        case .failed: return AppSettingsStyle.error
         }
     }
 }
@@ -295,6 +322,7 @@ struct SettingsStyleCard<Accessory: View>: View {
     let iconColor: Color
     let title: String
     let detail: String
+    var isEmbedded: Bool
     let accessory: Accessory
 
     init(
@@ -302,16 +330,24 @@ struct SettingsStyleCard<Accessory: View>: View {
         iconColor: Color,
         title: String,
         detail: String,
+        isEmbedded: Bool = false,
         @ViewBuilder accessory: () -> Accessory
     ) {
         self.icon = icon
         self.iconColor = iconColor
         self.title = title
         self.detail = detail
+        self.isEmbedded = isEmbedded
         self.accessory = accessory()
     }
 
+    @ViewBuilder
     var body: some View {
+        if isEmbedded { cardContent }
+        else { cardContent.settingsCardBackground() }
+    }
+
+    private var cardContent: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
@@ -319,12 +355,12 @@ struct SettingsStyleCard<Accessory: View>: View {
                         .foregroundColor(iconColor)
 
                     Text(title)
-                        .font(AppDialogTypography.title)
+                        .font(isEmbedded ? .system(size: 13, weight: .medium) : AppDialogTypography.title)
                         .foregroundColor(.primary)
                 }
 
                 Text(detail)
-                    .font(AppDialogTypography.body)
+                    .font(isEmbedded ? AppSettingsStyle.secondaryFont : AppDialogTypography.body)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -333,7 +369,6 @@ struct SettingsStyleCard<Accessory: View>: View {
 
             accessory
         }
-        .settingsCardBackground()
     }
 }
 

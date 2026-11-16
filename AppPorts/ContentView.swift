@@ -101,9 +101,8 @@ struct ContentView: View {
     
     // App Store 外部安装引导
     @State private var masGuidanceRequest: WarningSheetRequest?
+    @ObservedObject private var appStoreInstall = AppStoreExternalInstallSettings.shared
 
-    // 设置页面
-    @State private var showAppStoreSettings = false
     @State private var showSearchExclusion = false
     
     // 单应用复制进度
@@ -155,7 +154,7 @@ struct ContentView: View {
     @State private var externalAppSort = AppListSort()
 
     // MARK: - Tab
-    enum MainTab { case apps, dataDirs, customDirs, tasks }
+    enum MainTab { case apps, dataDirs, customDirs, tasks, settings }
     @State private var mainTab: MainTab = .apps
     @State private var hasOpenedDataDirs = false
     @State private var hasOpenedCustomDirs = false
@@ -193,6 +192,7 @@ struct ContentView: View {
             // A unit-test host must not scan apps, refresh agents, or observe real volumes.
             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
             permissionReadiness.refresh()
+            refreshMASGuidance()
             isVisible = true
             if !hasRestoredSizeCache {
                 let snapshot = AppSizeCacheStore.shared.load()
@@ -255,6 +255,7 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
             permissionReadiness.refresh()
+            refreshMASGuidance()
         }
         .onReceive(
             NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
@@ -346,13 +347,7 @@ struct ContentView: View {
             AppLibraryAgentSync.shared.selectionDidChange()
             scanBothAppsAtomic()
 
-            // macOS >= 15.1: 检查外部磁盘的 Applications 目录
-            if let url = newValue, AppMigrationService.isMASExternalInstallSupported {
-                let masDir = AppMigrationService.masApplicationsURL(for: url)
-                if !fileManager.fileExists(atPath: masDir.path) {
-                    masGuidanceRequest = makeMASGuidanceRequest()
-                }
-            }
+            refreshMASGuidance()
         }
         
         .alert(LocalizedStringKey(alertTitle.localized), isPresented: $showAlert) {
@@ -367,9 +362,6 @@ struct ContentView: View {
             signatureRepairSheet(for: app)
         }
         .modifier(AppUpdatePresentation(update: $availableUpdate))
-        .modifier(AppUpdatePresentationDismissal {
-            showAppStoreSettings = false
-        })
         // 受保护应用（App Store / root）迁移预警
         .warningSheet($protectedAppsRequest)
         // 目标存储无法保存部分应用信息
@@ -384,9 +376,6 @@ struct ContentView: View {
         // App Store 设置页面
         .sheet(isPresented: $showSearchExclusion) {
             AppSearchExclusionView(load: loadExternalAppSearchStatus, process: excludeExternalAppsFromSearch)
-        }
-        .sheet(isPresented: $showAppStoreSettings) {
-            AppStoreSettingsView()
         }
         .overlay {
             if let job = migrationTasks.detail {
@@ -735,6 +724,9 @@ struct ContentView: View {
             // operation's progress, result alerts, or batch state. Hidden pages
             // suspend their list scans through isActive.
             ZStack(alignment: .topLeading) {
+                if mainTab == .settings {
+                    AppStoreSettingsView()
+                }
                 if mainTab == .tasks {
                     MigrationTaskList(isEmbedded: true)
                 }
@@ -800,8 +792,9 @@ struct ContentView: View {
                 showsTarget: true)
             Divider()
             HStack(spacing: 6) {
-                PermissionSettingsButton(level: permissionReadiness.level, attentionText: permissionReadiness.attentionText) {
-                    showAppStoreSettings = true
+                PermissionSettingsButton(level: permissionReadiness.level, attentionText: permissionReadiness.attentionText,
+                                         isSelected: mainTab == .settings) {
+                    mainTab = .settings
                 }
                 .disabled(operationState.blocksInteraction)
                 cacheRefreshButton
@@ -941,7 +934,7 @@ struct ContentView: View {
         case .apps: return localScanState.isScanning || externalScanState.isScanning
         case .dataDirs: return isDataDirsScanning
         case .customDirs: return isCustomDirsScanning
-        case .tasks: return false
+        case .tasks, .settings: return false
         }
     }
 
@@ -951,7 +944,7 @@ struct ContentView: View {
             case .apps: scanBothAppsAtomic(forceSizeRefresh: true)
             case .dataDirs: dataDirsRefreshTrigger += 1
             case .customDirs: customDirsRefreshTrigger += 1
-            case .tasks: break
+            case .tasks, .settings: break
             }
         } label: {
             Group {
@@ -2106,34 +2099,21 @@ struct ContentView: View {
 
     /// 组装「App Store 应用外部安装」引导弹窗的内容快照。
     private func makeMASGuidanceRequest() -> WarningSheetRequest {
-        WarningSheetRequest(
-            title: "App Store 应用外部安装".localized,
-            icon: "info.circle.fill",
-            tint: .blue,
-            intro: "macOS 15.1+ 支持将 App Store 应用安装到外部磁盘。\n\n请在 App Store → 设置中勾选「将大型 App 下载并安装到独立磁盘」，并选择当前外部驱动器。\n\n设置完成后点击「我已设置」，AppPorts 会自动创建 Applications 目录并检测管理这些应用。".localized,
-            cancelTitle: "稍后".localized,
-            actions: [
-                WarningAction("打开 App Store 设置".localized) {
-                    if let url = URL(string: "macappstores://settings") {
-                        NSWorkspace.shared.open(url)
-                    }
-                },
-                WarningAction("我已设置".localized, style: .preferred) {
-                    // 检查 Applications 目录是否存在，不存在则创建
-                    if let url = externalDriveURL {
-                        let masDir = AppMigrationService.masApplicationsURL(for: url)
-                        if !fileManager.fileExists(atPath: masDir.path) {
-                            try? fileManager.createDirectory(at: masDir, withIntermediateDirectories: true)
-                            AppLogger.shared.logContext(
-                                "已创建外部磁盘 Applications 目录",
-                                details: [("path", masDir.path)]
-                            )
-                        }
-                    }
-                    scanExternalApps()
-                }
-            ]
-        )
+        appStoreInstall.makeGuidanceRequest(onOpenAppStore: AppStoreExternalInstallSection.openAppStoreSettings) {
+            appStoreInstall.refresh(for: externalDriveURL)
+            if appStoreInstall.state == .ready { scanExternalApps() }
+            else { masGuidanceRequest = makeMASGuidanceRequest() }
+        }
+    }
+
+    private func refreshMASGuidance() {
+        appStoreInstall.refresh(for: externalDriveURL)
+        if !appStoreInstall.shouldPresentGuidance {
+            masGuidanceRequest = nil
+            return
+        }
+        guard mainTab != .settings, !operationState.blocksInteraction, masGuidanceRequest == nil else { return }
+        masGuidanceRequest = makeMASGuidanceRequest()
     }
 
     /// 组装「受保护应用」迁移预警的内容快照。

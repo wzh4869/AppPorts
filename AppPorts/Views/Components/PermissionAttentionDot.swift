@@ -16,6 +16,7 @@ struct PermissionAttentionDot: View {
 struct PermissionSettingsButton: View {
     let level: LaunchReadinessChecker.Item.Level?
     let attentionText: String
+    var isSelected = false
     let action: () -> Void
 
     var body: some View {
@@ -23,6 +24,8 @@ struct PermissionSettingsButton: View {
             Label("设置".localized, systemImage: "gearshape")
                 .labelStyle(.iconOnly)
                 .frame(width: 32, height: 30)
+                .background(isSelected ? Color.primary.opacity(0.08) : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 6))
                 .overlay(alignment: .topTrailing) {
                     PermissionAttentionDot(level: level).padding(4)
                 }

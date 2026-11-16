@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 struct UpdateSettingsSection: View {
+    var isEmbedded = false
     @State private var isChecking = false
     @State private var result: UpdateCheckResult?
     @State private var availableUpdate: AppUpdateInfo?
@@ -16,40 +17,71 @@ struct UpdateSettingsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 12) {
+        Group {
+            if isEmbedded { content }
+            else { content.modifier(AppSettingsPanelStyle()) }
+        }
+        .task(id: isChecking) {
+            guard isChecking else { return }
+            let checked = await UpdateChecker.shared.checkForUpdatesResult()
+            guard !Task.isCancelled else { return }
+            result = checked
+            isChecking = false
+            if case let .available(update) = checked { availableUpdate = update }
+        }
+        .modifier(AppUpdatePresentation(update: $availableUpdate))
+        .onDisappear { isChecking = false }
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: AppSettingsStyle.sectionGap) {
+            HStack(spacing: AppSettingsStyle.sectionGap) {
                 Image(nsImage: NSApplication.shared.applicationIconImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 48, height: 48)
+                    .frame(width: AppSettingsStyle.applicationIconSize, height: AppSettingsStyle.applicationIconSize)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: "AppPorts").font(.title2.bold())
-                    Text("macOS 应用迁移工具".localized)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                    Text(version).font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
+                    Text(verbatim: "AppPorts").font(AppSettingsStyle.sectionFont)
+                    Text(version).font(AppSettingsStyle.secondaryFont).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
+                if !hasPendingDownload {
+                    Button("检查更新".localized) { isChecking = true }
+                        .disabled(isChecking)
+                        .fixedSize()
+                }
             }
+            .font(AppSettingsStyle.bodyFont)
+            .controlSize(AppSettingsStyle.controlSize)
+            .buttonStyle(.bordered)
 
-            Divider()
+            Text(verbatim: Bundle.main.bundleURL.path)
+                .font(AppSettingsStyle.secondaryFont)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+                .help("当前运行的 AppPorts".localized)
 
-            HStack(spacing: 10) {
+            HStack(spacing: AppSettingsStyle.rowGap) {
                 Link("官网".localized, destination: URL(string: "https://appports.shimoko.com/")!)
                 Link("文档".localized, destination: URL(string: "https://docs-appports.shimoko.com/")!)
                 Button("关于".localized) {
                     AboutWindowController.shared.present()
                 }
                 Spacer(minLength: 0)
-                if hasPendingDownload {
-                    GitHubUpdateControls(showsStatus: false)
-                } else {
-                    Button("检查更新".localized) { isChecking = true }
-                        .disabled(isChecking)
-                }
             }
             .buttonStyle(.bordered)
+            .font(AppSettingsStyle.bodyFont)
+            .controlSize(AppSettingsStyle.controlSize)
+
+            if hasPendingDownload {
+                HStack {
+                    Spacer(minLength: 0)
+                    GitHubUpdateControls(showsStatus: false)
+                }
+                .buttonStyle(.bordered)
+            }
 
             if isChecking {
                 HStack(spacing: 8) {
@@ -65,19 +97,6 @@ struct UpdateSettingsSection: View {
             }
 
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.primary.opacity(0.03), in: RoundedRectangle(cornerRadius: 12))
-        .task(id: isChecking) {
-            guard isChecking else { return }
-            let checked = await UpdateChecker.shared.checkForUpdatesResult()
-            guard !Task.isCancelled else { return }
-            result = checked
-            isChecking = false
-            if case let .available(update) = checked { availableUpdate = update }
-        }
-        .modifier(AppUpdatePresentation(update: $availableUpdate))
-        .onDisappear { isChecking = false }
     }
 
     private func statusText(for result: UpdateCheckResult) -> String {
