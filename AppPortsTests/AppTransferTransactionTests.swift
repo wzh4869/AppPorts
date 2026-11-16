@@ -64,15 +64,39 @@ final class AppTransferTransactionTests: XCTestCase {
         XCTAssertFalse(app.hasSelfUpdater)
         var choices: [Bool] = []
         let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [app], service: w.service()) { choices.append($0) })
-        XCTAssertEqual(request.actions.map(\.title), ["非锁定迁移".localized, "锁定迁移".localized])
+        XCTAssertEqual(request.actions.map(\.title), ["锁定迁移".localized, "非锁定迁移".localized])
+        XCTAssertEqual(request.actions[0].style, .normal)
+        XCTAssertEqual(request.actions[1].style, .preferred)
+        XCTAssertFalse(request.actions[0].isDefault)
+        XCTAssertTrue(request.actions[1].isDefault)
+        XCTAssertNotNil(request.introText)
         XCTAssertTrue(choices.isEmpty)
         request.onCancel()
         XCTAssertTrue(choices.isEmpty)
         request.actions[0].handler()
         request.actions[1].handler()
-        XCTAssertEqual(choices, [false, true])
+        XCTAssertEqual(choices, [true, false])
         try FileManager.default.removeItem(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"))
         XCTAssertNil(ContentView.updateProtectionRequest(for: [app], service: w.service()) { _ in XCTFail("No automatic choice") })
+    }
+
+    @MainActor
+    func testUpdateMigrationCopyUsesEnglishForDeferredCatalogLocales() throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("App.app")
+        try makeApp(source, sparkle: true)
+        let language = LanguageManager.shared.language
+        defer { LanguageManager.shared.language = language }
+        for code in ["zh-Hans", "en", "fr", "zh-Hant"] {
+            LanguageManager.shared.language = code
+            let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [item(source)], service: w.service()) { _ in })
+            let intro = try XCTUnwrap(request.intro)
+            XCTAssertTrue(intro.hasPrefix(code == "zh-Hans"
+                ? "以下应用的更新方式可能受到迁移影响："
+                : "Migration may affect how the following apps update:"))
+            XCTAssertTrue(intro.contains(code == "zh-Hans" ? "在设置中开启" : "In Settings, enable"))
+            XCTAssertNotNil(request.introText)
+        }
     }
 
     func testExplicitUpdaterLockChoiceSurvivesMigrationAndRestore() async throws {
@@ -84,7 +108,7 @@ final class AppTransferTransactionTests: XCTestCase {
             try FileManager.default.createDirectory(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"),
                                                     withIntermediateDirectories: true)
             let service = w.service()
-            XCTAssertEqual(service.selfUpdatingApplications(in: [item(source)]).count, 1)
+            XCTAssertEqual(service.applicationsRequiringUpdateProtectionConfirmation(in: [item(source)]).count, 1)
             let result = try await service.moveAndLink(appToMove: item(source), destinationURL: destination,
                 isRunning: false, lockExternal: shouldLock, progressHandler: nil)
             XCTAssertTrue(result.isComplete, result.pendingMessage ?? "")
@@ -95,9 +119,54 @@ final class AppTransferTransactionTests: XCTestCase {
             XCTAssertTrue(restored.transferResult.isComplete, restored.warnings.joined(separator: "\n"))
             XCTAssertEqual(try payload(source), "payload")
             XCTAssertEqual(try SignatureSnapshot.info(at: source).st_flags & UInt32(UF_IMMUTABLE), 0)
-            XCTAssertEqual(service.selfUpdatingApplications(in: [item(source)]).count, 1)
+            XCTAssertEqual(service.applicationsRequiringUpdateProtectionConfirmation(in: [item(source)]).count, 1)
             XCTAssertTrue(try w.store.records().isEmpty)
         }
+    }
+
+    @MainActor
+    func testOrdinaryUpdateApplicationsSkipConfirmationAndStayUnlockedInMixedSelection() async throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let service = w.service()
+        var ordinary: [AppItem] = []
+        for (index, identifier) in ["com.tencent.workbuddy.mac", "com.netease.163music"].enumerated() {
+            let source = w.local.appendingPathComponent("Renamed\(index).app")
+            try makeApp(source, identifier: identifier, sparkle: true)
+            let app = item(source)
+            ordinary.append(app)
+            XCTAssertTrue(service.hasSelfUpdater(at: source))
+            XCTAssertNil(ContentView.updateProtectionRequest(for: [app], service: service) { _ in XCTFail("Unexpected confirmation") })
+            XCTAssertFalse(service.needsUpdateProtection(app))
+        }
+        let other = w.local.appendingPathComponent("WorkBuddy.app")
+        try makeApp(other, identifier: "example.unrelated", sparkle: true)
+        let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: ordinary + [item(other)], service: service) { _ in })
+        XCTAssertEqual(service.applicationsRequiringUpdateProtectionConfirmation(in: ordinary + [item(other)]).map(\.path), [other])
+        XCTAssertTrue(try XCTUnwrap(request.intro).contains(item(other).displayName))
+        for app in ordinary {
+            let destination = w.external.appendingPathComponent(app.path.lastPathComponent)
+            // A batch's lock choice for another updater must not lock either ordinary application.
+            let result = try await service.moveAndLink(appToMove: app, destinationURL: destination,
+                isRunning: false, lockExternal: true, progressHandler: nil)
+            XCTAssertTrue(result.isComplete, result.pendingMessage ?? "")
+            XCTAssertEqual(try SignatureSnapshot.info(at: destination).st_flags & UInt32(UF_IMMUTABLE), 0)
+            let restored = try await service.moveBack(app: item(destination), localDestinationURL: app.path, progressHandler: nil)
+            XCTAssertTrue(restored.transferResult.isComplete)
+            XCTAssertEqual(try payload(app.path), "payload")
+        }
+    }
+
+    @MainActor
+    func testFolderConfirmationChecksEachChildUpdatePolicy() throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let folder = w.local.appendingPathComponent("Suite")
+        try makeApp(folder.appendingPathComponent("WorkBuddy.app"), identifier: "com.tencent.workbuddy.mac", sparkle: true)
+        try makeApp(folder.appendingPathComponent("Music.app"), identifier: "com.netease.163music", sparkle: true)
+        var suite = item(folder)
+        suite.isFolder = true
+        XCTAssertNil(ContentView.updateProtectionRequest(for: [suite], service: w.service()) { _ in XCTFail("Unexpected confirmation") })
+        try makeApp(folder.appendingPathComponent("Other.app"), sparkle: true)
+        XCTAssertNotNil(ContentView.updateProtectionRequest(for: [suite], service: w.service()) { _ in })
     }
 
     func testSparkleCacheLocksAreRemovedByRestoreBeforeNonLockedMigration() async throws {

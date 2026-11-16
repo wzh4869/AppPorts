@@ -120,11 +120,14 @@ extension String {
     }
 
     /// Deferred translations use the requested fallback, independently of the system language.
-    func localized(fallbackLanguage: String, language: String = LanguageManager.shared.language,
+    func localized(fallbackLanguage: String, supportedLanguages: [String]? = nil,
+                   language: String = LanguageManager.shared.language,
                    bundle: Bundle = .main) -> String {
         let preferences = language == "system" ? Locale.preferredLanguages : [language]
         let selected = Bundle.preferredLocalizations(from: bundle.localizations, forPreferences: preferences).first
         for code in [selected, fallbackLanguage].compactMap({ $0 }) {
+            // Xcode emits source text for some deferred entries; skip locales without approved translations.
+            guard supportedLanguages?.contains(code) ?? true else { continue }
             if let path = bundle.path(forResource: code, ofType: "lproj"),
                let localization = Bundle(path: path), let value = localizedValue(in: localization) {
                 return value

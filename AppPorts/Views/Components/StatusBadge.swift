@@ -107,15 +107,7 @@ struct StatusBadge: View {
             result.append(BadgeConfig(text: AppStatus.pendingMoveOut, icon: "arrow.up.right.circle", color: .cyan, isTappable: false))
         }
 
-        // 2. 框架标签（独立于链接状态）
-        if app.isSparkleApp {
-            result.append(BadgeConfig(text: "Sparkle", icon: "arrow.triangle.2.circlepath", color: .teal, isTappable: true))
-        }
-        if app.isElectronApp {
-            result.append(BadgeConfig(text: "Electron", icon: "atom", color: .indigo, isTappable: true))
-        }
-
-        // 3. 类型标签
+        // 2. 类型标签
         if app.isRunning {
             result.append(BadgeConfig(text: "运行中", icon: "play.fill", color: .purple, isTappable: false))
         } else if app.isSystemApp {
@@ -126,7 +118,7 @@ struct StatusBadge: View {
             result.append(BadgeConfig(text: "商店", icon: "applelogo", color: .blue, isTappable: AppMigrationService.isMASExternalInstallSupported))
         }
 
-        // 5. MAS 外部安装标签（复用商店标签，附加外部安装说明）
+        // 3. MAS 外部安装标签（复用商店标签，附加外部安装说明）
         if app.isMASExternal && !app.isAppStoreApp {
             result.append(BadgeConfig(text: "商店", icon: "applelogo", color: .blue, isTappable: true))
         }
@@ -217,14 +209,10 @@ struct StatusBadge: View {
     /// 点击标签时显示的说明文字
     private func badgeInfoMessage(for badge: BadgeConfig) -> String? {
         switch badge.text {
-        case "Sparkle":
-            return "此应用使用 Sparkle 框架自动更新。迁移到外部存储后，应用内更新可能导致外部应用丢失。建议使用锁定迁移保护数据安全。".localized
-        case "Electron":
-            return "此应用基于 Electron 框架，支持自动更新。迁移到外部存储后，应用内更新可能导致外部应用丢失。建议使用锁定迁移保护数据安全。".localized
         case "锁定迁移":
             return "此应用已被迁移到外部存储并锁定。锁定状态可防止应用内更新破坏外部应用。如需更新，请通过 AppPorts 迁回本地后再更新。".localized
         case "非锁定迁移":
-            return "此应用已迁移到外部存储但未锁定。应用内更新可能删除外部应用。建议迁回本地后重新迁移并选择锁定模式。".localized
+            return "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。".localized(fallbackLanguage: "en", supportedLanguages: ["zh-Hans", "en"])
         case "商店" where app.isMASExternal:
             return "此应用位于外部磁盘的 Applications 目录，由 macOS 原生管理（macOS 15.1+ 功能）。App Store 可直接在此目录进行增量更新，无需通过 AppPorts 迁回。".localized
         default:

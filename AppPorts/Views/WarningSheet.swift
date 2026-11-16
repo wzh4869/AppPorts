@@ -38,6 +38,7 @@ struct WarningAction {
 
     let title: String
     var style: Style = .normal
+    var isDefault = false
     /// 是否要先勾选「我已了解」才可点
     var requiresAcknowledgement = false
     let handler: () -> Void
@@ -45,11 +46,13 @@ struct WarningAction {
     init(
         _ title: String,
         style: Style = .normal,
+        isDefault: Bool = false,
         requiresAcknowledgement: Bool = false,
         handler: @escaping () -> Void
     ) {
         self.title = title
         self.style = style
+        self.isDefault = isDefault
         self.requiresAcknowledgement = requiresAcknowledgement
         self.handler = handler
     }
@@ -62,6 +65,8 @@ struct WarningSheet: View {
     var tint: Color = .red
     /// 标题下的引言
     var intro: String?
+    /// Optional inline SF Symbols; intro remains the plain accessibility text.
+    var introText: Text?
     /// 要点列表
     var bullets: [WarningBullet] = []
     /// 灰字补充说明
@@ -100,12 +105,13 @@ struct WarningSheet: View {
 
             ScrollView(.vertical) {
                 VStack(alignment: .leading, spacing: 14) {
-                    if let intro {
-                        Text(intro)
+                    if let text = introText ?? intro.map({ Text($0) }) {
+                        text
                             .font(AppDialogTypography.body)
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .multilineTextAlignment(.leading)
+                            .accessibilityLabel(intro ?? "")
                     }
 
                     if !bullets.isEmpty {
@@ -214,9 +220,14 @@ struct WarningSheet: View {
                 .tint(.red)
                 .disabled(disabled)
         case .preferred:
-            Button(action.title) { resolve(action.handler) }
+            let preferred = Button(action.title) { resolve(action.handler) }
                 .buttonStyle(.borderedProminent)
                 .disabled(disabled)
+            if action.isDefault {
+                preferred.keyboardShortcut(.defaultAction)
+            } else {
+                preferred
+            }
         case .normal:
             Button(action.title) { resolve(action.handler) }
                 .buttonStyle(.bordered)
@@ -237,6 +248,7 @@ struct WarningSheetRequest: Identifiable {
     var icon: String = "exclamationmark.triangle.fill"
     var tint: Color = .red
     var intro: String?
+    var introText: Text?
     var bullets: [WarningBullet] = []
     var detail: String?
     var acknowledgementTitle: String?
@@ -266,6 +278,7 @@ extension WarningSheet {
             icon: request.icon,
             tint: request.tint,
             intro: request.intro,
+            introText: request.introText,
             bullets: request.bullets,
             detail: request.detail,
             acknowledgementTitle: request.acknowledgementTitle,

@@ -1330,19 +1330,33 @@ struct AppMigrationService {
             || hasCustomUpdater(at: appURL)
     }
 
-    /// Confirmation uses the same on-disk detector as execution, not scan-time flags.
-    func selfUpdatingApplications(in apps: [AppItem]) -> [AppItem] {
+    /// Confirmation uses on-disk detection, with exceptions for verified ordinary migration.
+    func applicationsRequiringUpdateProtectionConfirmation(in apps: [AppItem]) -> [AppItem] {
         apps.filter { app in
-            guard app.usesFolderOperation else { return hasSelfUpdater(at: app.path) }
+            guard app.usesFolderOperation else { return requiresUpdateProtectionConfirmation(at: app.path) }
             let children = (try? fileManager.contentsOfDirectory(at: app.path,
                 includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
             return children.filter { $0.pathExtension.lowercased() == "app" }
-                .contains { hasSelfUpdater(at: $0) }
+                .contains { requiresUpdateProtectionConfirmation(at: $0) }
+        }
+    }
+
+    private func requiresUpdateProtectionConfirmation(at appURL: URL) -> Bool {
+        !usesOrdinaryUpdateMigration(at: appURL) && hasSelfUpdater(at: appURL)
+    }
+
+    private func usesOrdinaryUpdateMigration(at appURL: URL) -> Bool {
+        switch applicationMetadata(at: appURL)?["CFBundleIdentifier"] as? String {
+        case "com.tencent.workbuddy.mac", "com.netease.163music":
+            return true
+        default:
+            return false
         }
     }
 
     /// 是否需要 uchg 锁定（仅 Sparkle/Electron 有更新器的应用，原生自更新 app 不锁定）
     private func needsUchgLock(at appURL: URL) -> Bool {
+        guard !usesOrdinaryUpdateMigration(at: appURL) else { return false }
         return isSparkleApp(at: appURL)
             || (isElectronApp(at: appURL) && hasElectronUpdater(at: appURL))
     }

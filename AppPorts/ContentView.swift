@@ -2226,23 +2226,36 @@ struct ContentView: View {
 
     static func updateProtectionRequest(for apps: [AppItem], service: AppMigrationService,
                                         onChoice: @escaping (Bool) -> Void) -> WarningSheetRequest? {
-        let updatingApps = service.selfUpdatingApplications(in: apps)
+        let updatingApps = service.applicationsRequiringUpdateProtectionConfirmation(in: apps)
         guard !updatingApps.isEmpty else { return nil }
         let names = updatingApps.map { $0.displayName }.joined(separator: "、")
+        let introduction = updateMigrationIntroduction(names: names)
         return WarningSheetRequest(
             title: "自更新应用迁移".localized,
             icon: "arrow.triangle.2.circlepath",
             tint: .orange,
-            intro: String(format: "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\n\n%@\n\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\n\n建议选择锁定迁移以保护数据安全。".localized, names),
+            intro: introduction.plain,
+            introText: introduction.text,
             actions: [
-                WarningAction("非锁定迁移".localized) {
-                    onChoice(false)
-                },
-                WarningAction("锁定迁移".localized, style: .preferred) {
+                WarningAction("锁定迁移".localized) {
                     onChoice(true)
+                },
+                WarningAction("非锁定迁移".localized, style: .preferred, isDefault: true) {
+                    onChoice(false)
                 }
             ]
         )
+    }
+
+    private static func updateMigrationIntroduction(names: String) -> (plain: String, text: Text) {
+        let template = "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。".localized(fallbackLanguage: "en", supportedLanguages: ["zh-Hans", "en"])
+        let settings = "设置".localized(fallbackLanguage: "en", supportedLanguages: ["zh-Hans", "en"])
+        let marker = UUID().uuidString
+        let parts = String(format: template, names, marker).components(separatedBy: marker)
+        let plain = String(format: template, names, settings)
+        guard parts.count == 2 else { return (plain, Text(plain)) }
+        let text = Text(parts[0]) + Text(Image(systemName: "gearshape")) + Text(" " + settings) + Text(parts[1])
+        return (plain, text)
     }
 
     /// 应用是否“受保护、难以自动迁移”：App Store 应用或归属 root 的包。

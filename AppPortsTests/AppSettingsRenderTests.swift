@@ -5,6 +5,49 @@ import XCTest
 
 final class AppSettingsRenderTests: XCTestCase {
     @MainActor
+    func testUpdateMigrationChoiceAndFrameworkFreeBadges() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT for migration visual review")
+        }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("AppPortsUpdateChoiceRender-" + UUID().uuidString)
+        let source = root.appendingPathComponent("DeepSeek Harness.app")
+        try FileManager.default.createDirectory(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"),
+                                                withIntermediateDirectories: true)
+        let metadata: [String: Any] = ["CFBundleIdentifier": "example.render", "CFBundlePackageType": "APPL"]
+        try PropertyListSerialization.data(fromPropertyList: metadata, format: .xml, options: 0)
+            .write(to: source.appendingPathComponent("Contents/Info.plist"))
+        let service = AppMigrationService(transferStore: AppTransferStore(directoryURL: root.appendingPathComponent("Journal")),
+            signatureFactStore: SignatureFactStore(backupDirectoryURL: root.appendingPathComponent("Signatures")))
+        let output = URL(fileURLWithPath: path)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let language = LanguageManager.shared.language
+        let appearance = NSApp.appearance
+        defer { try? FileManager.default.removeItem(at: root); LanguageManager.shared.language = language; NSApp.appearance = appearance }
+        var app = AppItem(name: source.lastPathComponent, path: source, status: AppStatus.local)
+        app.isSparkleApp = true
+        app.isElectronApp = true
+        for code in ["zh-Hans", "en", "fr"] {
+            LanguageManager.shared.language = code
+            for dark in [false, true] {
+                NSApp.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+                let scheme: ColorScheme = dark ? .dark : .light
+                let suffix = "\(code)-\(dark ? "dark" : "light")"
+                let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [app], service: service) { _ in })
+                try await render(WarningSheet(request).environment(\.locale, Locale(identifier: code))
+                    .environment(\.colorScheme, scheme).environment(\.controlActiveState, .key),
+                    size: NSSize(width: 520, height: 380), destination: output.appendingPathComponent("update-choice-\(suffix).png"),
+                    activateWindow: true)
+                try await render(HStack(spacing: 12) {
+                    Text(app.displayName)
+                    StatusBadge(app: app)
+                    Spacer()
+                }.padding(16).environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, scheme),
+                    size: NSSize(width: 520, height: 64), destination: output.appendingPathComponent("update-badges-\(suffix).png"))
+            }
+        }
+    }
+
+    @MainActor
     func testAppStoreConfiguredAndUnconfiguredSectionAndGuidance() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT for settings visual review")
@@ -42,15 +85,20 @@ final class AppSettingsRenderTests: XCTestCase {
     }
 
     @MainActor
-    private func render<V: View>(_ view: V, size: NSSize, destination: URL) async throws {
+    private func render<V: View>(_ view: V, size: NSSize, destination: URL, activateWindow: Bool = false) async throws {
         let host = NSHostingView(rootView: view.background(AppSettingsStyle.background))
         let frame = NSRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        let window = NSWindow(contentRect: frame, styleMask: activateWindow ? [.titled] : [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.contentView = host
         window.appearance = NSApp.appearance
         window.setFrameOrigin(NSPoint(x: -10_000, y: 0))
-        window.orderFront(nil)
+        if activateWindow {
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+        } else {
+            window.orderFront(nil)
+        }
         defer { window.close() }
         host.frame = frame
         host.layoutSubtreeIfNeeded()

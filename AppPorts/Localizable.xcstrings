@@ -1,6 +1,42 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。" : {
+      "comment" : "Simplified Chinese and English only; deferred languages explicitly use English.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app has been migrated to external storage and remains unlocked, so you can try to continue using in-app updates. Enable “App Update Guardian” in Settings to let AppPorts help with update issues, though successful recovery is not guaranteed for every app."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。"
+          }
+        }
+      }
+    },
+    "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。" : {
+      "comment" : "Simplified Chinese and English only; deferred languages explicitly use English. The second %@ is Settings, preceded by an inline SF Symbol.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migration may affect how the following apps update:\n\n%@\n\n• Unlocked migration: Leaves the app bundle unlocked so you can try to continue using in-app updates. In %@, enable “App Update Guardian” to let AppPorts help with update issues, though successful recovery is not guaranteed for every app.\n\n• Locked migration: Locks the app bundle, which may limit in-app updates. To update, you can first move the app back to this Mac with AppPorts.\n\nUpdate results depend on how each app updates itself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。"
+          }
+        }
+      }
+    },
     "找不到 AppPorts？" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -35201,143 +35237,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "以下位寘已有同一應詠，但嘸法自動比較版本。繼續會使詠本地版本；噺副本校驗完成後才替換並淸理外接磁碟舊版。"
-          }
-        }
-      }
-    },
-    "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\n\n%@\n\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\n\n建议选择锁定迁移以保护数据安全。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "التطبيقات التالية تدعم التحديث التلقائي. بعد الترحيل، قد تؤدي التحديثات داخل التطبيق إلى فقدان التطبيق الخارجي:\n\n%@\n\n• ترحيل مقفل: يُقفل التطبيق الخارجي لمنع تضرره من التحديث، ويلزم إعادته عبر AppPorts لتحديثه\n• ترحيل غير مقفل: لا يُقفل التطبيق الخارجي، وقد تؤدي التحديثات داخل التطبيق إلى حذفه\n\nيُنصح باختيار الترحيل المقفل لحماية بياناتك."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠞⠓⠑ ⠋⠕⠇⠇⠕⠺⠊⠝⠛ ⠁⠏⠏⠎ ⠎⠥⠏⠏⠕⠗⠞ ⠁⠥⠞⠕⠤⠥⠏⠙⠁⠞⠑⠎⠲ ⠠⠁⠋⠞⠑⠗ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠂ ⠊⠝⠤⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎ ⠍⠁⠽ ⠉⠁⠥⠎⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠁⠏⠏ ⠙⠁⠞⠁ ⠇⠕⠎⠎⠒\n\n%@\n\n• ⠠⠇⠕⠉⠅⠑⠙ ⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝⠒ ⠠⠑⠭⠞⠑⠗⠝⠁⠇ ⠁⠏⠏ ⠊⠎ ⠇⠕⠉⠅⠑⠙ ⠞⠕ ⠏⠗⠑⠧⠑⠝⠞ ⠥⠏⠙⠁⠞⠑ ⠙⠁⠍⠁⠛⠑⠆ ⠗⠑⠟⠥⠊⠗⠑⠎ ⠍⠕⠧⠊⠝⠛ ⠃⠁⠉⠅ ⠧⠊⠁ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠞⠕ ⠥⠏⠙⠁⠞⠑\n• ⠠⠥⠝⠇⠕⠉⠅⠑⠙ ⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝⠒ ⠠⠑⠭⠞⠑⠗⠝⠁⠇ ⠁⠏⠏ ⠊⠎ ⠝⠕⠞ ⠇⠕⠉⠅⠑⠙⠆ ⠊⠝⠤⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎ ⠍⠁⠽ ⠙⠑⠇⠑⠞⠑ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠁⠏⠏\n\n⠠⠇⠕⠉⠅⠑⠙ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠊⠎ ⠗⠑⠉⠕⠍⠍⠑⠝⠙⠑⠙ ⠞⠕ ⠏⠗⠕⠞⠑⠉⠞ ⠙⠁⠞⠁ ⠎⠁⠋⠑⠞⠽⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die folgenden Apps unterstützen automatische Updates. Nach der Migration kann ein Update innerhalb der App dazu führen, dass die externe App verloren geht:\n\n%@\n\n• Gesperrte Migration: Die externe App wird gesperrt, damit das Update sie nicht beschädigt; zum Aktualisieren muss sie über AppPorts zurückgeholt werden\n• Ungesperrte Migration: Die externe App wird nicht gesperrt; ein Update innerhalb der App kann die externe App löschen\n\nEmpfohlen ist die gesperrte Migration, um Ihre Daten zu schützen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The following apps support auto-updates. After migration, in-app updates may cause external app data loss:\n\n%@\n\n• Locked Migration: External app is locked to prevent update damage; requires moving back via AppPorts to update\n• Unlocked Migration: External app is not locked; in-app updates may delete the external app\n\nLocked migration is recommended to protect data safety."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La jenaj aplikaĵoj subtenas aŭtomatajn ĝisdatigojn. Post la migrado, ĝisdatigo ene de la aplikaĵo povas kaŭzi perdon de la ekstera aplikaĵo:\n\n%@\n\n• Ŝlosita migrado: la ekstera aplikaĵo estas ŝlosita por malhelpi difekton de la ĝisdatigo; por ĝisdatigi necesas reenmigri ĝin per AppPorts\n• Neŝlosita migrado: la ekstera aplikaĵo ne estas ŝlosita; ĝisdatigoj ene de la aplikaĵo povas forigi la eksteran aplikaĵon\n\nOni rekomendas ŝlositan migradon por protekti la datumojn."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las siguientes apps admiten actualizaciones automáticas. Tras la migración, una actualización dentro de la app puede hacer que la app externa se pierda:\n\n%@\n\n• Migración bloqueada: la app externa se bloquea para evitar daños de la actualización; hay que moverla de vuelta con AppPorts para actualizarla\n• Migración no bloqueada: la app externa no se bloquea; las actualizaciones dentro de la app pueden eliminarla\n\nSe recomienda la migración bloqueada para proteger los datos."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les apps suivantes prennent en charge les mises à jour automatiques. Après la migration, une mise à jour depuis l’app peut entraîner la perte de l’app externe :\n\n%@\n\n• Migration verrouillée : l’app externe est verrouillée pour empêcher toute dégradation par la mise à jour ; il faut la rapatrier via AppPorts pour la mettre à jour\n• Migration non verrouillée : l’app externe n’est pas verrouillée ; une mise à jour depuis l’app peut la supprimer\n\nIl est recommandé de choisir la migration verrouillée pour protéger vos données."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "निम्नलिखित ऐप स्वतः अपडेट का समर्थन करते हैं। माइग्रेशन के बाद ऐप के भीतर अपडेट करने से बाहरी ऐप खो सकता है:\n\n%@\n\n• लॉक्ड माइग्रेशन: बाहरी ऐप लॉक रहता है ताकि अपडेट से नुकसान न हो; अपडेट के लिए इसे AppPorts से वापस लाना ज़रूरी है\n• अनलॉक्ड माइग्रेशन: बाहरी ऐप लॉक नहीं रहता; ऐप के भीतर अपडेट बाहरी ऐप को हटा सकता है\n\nडेटा सुरक्षा के लिए लॉक्ड माइग्रेशन चुनने की सलाह दी जाती है।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App berikut mendukung pembaruan otomatis. Setelah migrasi, pembaruan di dalam app dapat menyebabkan app eksternal hilang:\n\n%@\n\n• Migrasi terkunci: app eksternal dikunci untuk mencegah kerusakan akibat pembaruan; perlu dipindahkan kembali lewat AppPorts untuk memperbarui\n• Migrasi tidak terkunci: app eksternal tidak dikunci; pembaruan di dalam app dapat menghapus app eksternal\n\nSebaiknya pilih migrasi terkunci untuk melindungi data."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le app seguenti supportano gli aggiornamenti automatici. Dopo la migrazione, un aggiornamento interno all’app può causare la perdita dell’app esterna:\n\n%@\n\n• Migrazione bloccata: l’app esterna viene bloccata per evitare danni da aggiornamento; per aggiornarla occorre riportarla in locale con AppPorts\n• Migrazione non bloccata: l’app esterna non viene bloccata; gli aggiornamenti interni possono eliminarla\n\nSi consiglia la migrazione bloccata per proteggere i dati."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "次のアプリは自動更新に対応しています。移行後にアプリ内で更新すると、外部のアプリが失われる可能性があります：\n\n%@\n\n• ロックあり移行：外部アプリをロックして更新による破損を防ぎます。更新するには AppPorts でローカルに戻す必要があります\n• ロックなし移行：外部アプリをロックしません。アプリ内の更新で外部アプリが削除される可能性があります\n\nデータを保護するため、ロックあり移行をおすすめします。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음 앱은 자동 업데이트를 지원합니다. 마이그레이션 후 앱 내에서 업데이트하면 외부 앱이 사라질 수 있습니다:\n\n%@\n\n• 잠금 마이그레이션: 외부 앱을 잠가 업데이트로 인한 손상을 막습니다. 업데이트하려면 AppPorts로 다시 가져와야 합니다\n• 비잠금 마이그레이션: 외부 앱을 잠그지 않습니다. 앱 내 업데이트로 외부 앱이 삭제될 수 있습니다\n\n데이터 보호를 위해 잠금 마이그레이션을 권장합니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De volgende apps ondersteunen automatische updates. Na de migratie kan een update in de app ertoe leiden dat de externe app verloren gaat:\n\n%@\n\n• Vergrendelde migratie: de externe app wordt vergrendeld om schade door de update te voorkomen; om bij te werken moet je hem met AppPorts terugzetten\n• Onvergrendelde migratie: de externe app wordt niet vergrendeld; updates in de app kunnen de externe app verwijderen\n\nKies bij voorkeur vergrendelde migratie om je gegevens te beschermen."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Następujące aplikacje obsługują automatyczne aktualizacje. Po przeniesieniu aktualizacja wewnątrz aplikacji może spowodować utratę aplikacji zewnętrznej:\n\n%@\n\n• Zablokowana migracja: aplikacja zewnętrzna jest zablokowana, aby aktualizacja jej nie uszkodziła; aktualizacja wymaga przeniesienia jej z powrotem przez AppPorts\n• Nieblokowana migracja: aplikacja zewnętrzna nie jest zablokowana; aktualizacja wewnątrz aplikacji może ją usunąć\n\nZalecana jest zablokowana migracja, aby chronić dane."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Os apps a seguir têm atualização automática. Após a migração, uma atualização dentro do app pode fazer com que o app externo seja perdido:\n\n%@\n\n• Migração bloqueada: o app externo fica bloqueado para evitar danos da atualização; é preciso movê-lo de volta pelo AppPorts para atualizar\n• Migração não bloqueada: o app externo não fica bloqueado; atualizações dentro do app podem apagá-lo\n\nRecomenda-se a migração bloqueada para proteger os dados."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Следующие приложения поддерживают автообновление; после переноса обновление внутри приложения может привести к потере внешней копии:\n\n%@\n\n• Заблокированная миграция: внешнее приложение блокируется, что предотвращает повреждение при обновлении; для обновления нужно вернуть его через AppPorts\n• Незаблокированная миграция: внешнее приложение не блокируется, обновление внутри приложения может удалить внешнюю копию\n\nДля защиты данных рекомендуется выбрать заблокированную миграцию."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "แอปต่อไปนี้รองรับการอัปเดตอัตโนมัติ หลังการย้าย การอัปเดตภายในแอปอาจทำให้แอปภายนอกสูญหาย:\n\n%@\n\n• การย้ายข้อมูลแบบล็อก: แอปภายนอกจะถูกล็อกเพื่อป้องกันความเสียหายจากการอัปเดต ต้องย้ายกลับด้วย AppPorts ก่อนจึงจะอัปเดตได้\n• การย้ายข้อมูลแบบไม่ล็อก: แอปภายนอกไม่ถูกล็อก การอัปเดตภายในแอปอาจลบแอปภายนอก\n\nแนะนำให้เลือกการย้ายข้อมูลแบบล็อกเพื่อความปลอดภัยของข้อมูล"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aşağıdaki uygulamalar otomatik güncellemeyi destekler. Taşıma sonrasında uygulama içi güncellemeler harici uygulamanın kaybolmasına yol açabilir:\n\n%@\n\n• Kilitli taşıma: Harici uygulama, güncellemenin zarar vermesini önlemek için kilitlenir; güncellemek için AppPorts ile geri taşınması gerekir\n• Kilitsiz taşıma: Harici uygulama kilitlenmez; uygulama içi güncellemeler harici uygulamayı silebilir\n\nVerilerinizi korumak için kilitli taşıma önerilir."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Các ứng dụng sau hỗ trợ tự động cập nhật. Sau khi di chuyển, cập nhật trong ứng dụng có thể khiến ứng dụng bên ngoài bị mất:\n\n%@\n\n• Di chuyển khóa: ứng dụng bên ngoài bị khóa để tránh hư hại do cập nhật; cần chuyển về bằng AppPorts để cập nhật\n• Di chuyển không khóa: ứng dụng bên ngoài không bị khóa; cập nhật trong ứng dụng có thể xóa ứng dụng bên ngoài\n\nNên chọn di chuyển khóa để bảo vệ dữ liệu."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "以下应用支持自动更新，迁移后应用内更新可能导致外部应用丢失：\n\n%@\n\n• 锁定迁移：外部应用被锁定，阻止更新破坏，需通过 AppPorts 迁回后更新\n• 非锁定迁移：不锁定外部应用，应用内更新可能删除外部应用\n\n建议选择锁定迁移以保护数据安全。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "以下應用程式支援自動更新，遷移後在應用程式內更新可能導致外部應用程式遺失：\n\n%@\n\n• 鎖定遷移：外部應用程式會被鎖定，阻止更新破壞，需透過 AppPorts 遷回後再更新\n• 非鎖定遷移：不鎖定外部應用程式，應用程式內更新可能刪除外部應用程式\n\n建議選擇鎖定遷移以保護資料安全。"
-          }
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "以下應詠支持自動哽噺，遷迻後應詠内哽噺岢能导致外荹應詠丢失：\n\n%@\n\n• 锁定遷迻：外荹應詠被锁定，阻止哽噺破坏，需通過 AppPorts 遷囙後哽噺\n• 非锁定遷迻：⑧锁定外荹應詠，應詠内哽噺岢能刪除外荹應詠\n\n建议選擇锁定遷迻以葆護數據安洤。"
           }
         }
       }
@@ -167710,143 +167609,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此應詠巳被遷迻↘外荹邨存並锁定。锁定狀態岢防止應詠内哽噺破坏外荹應詠。如需哽噺，請通過 AppPorts 遷囙夲哋後再哽噺。"
-          }
-        }
-      }
-    },
-    "此应用已迁移到外部存储但未锁定。应用内更新可能删除外部应用。建议迁回本地后重新迁移并选择锁定模式。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tahilat hada alttatbiq ealaa alttakhzin alkhariji lam yuqlad. qad tahdhif altaajirat fi dakhil alttatbiq alttatbiq alkhariji. yuwssa biead alttahil mahaliyyan thumma alttahil fi muqlad almuqlad."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠞⠓⠊⠎ ⠁⠏⠏ ⠓⠁⠎ ⠃⠑⠑⠝ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠞⠕ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠎⠞⠕⠗⠁⠛⠑ ⠃⠥⠞ ⠊⠎ ⠝⠕⠞ ⠇⠕⠉⠅⠑⠙⠲ ⠠⠊⠝⠤⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎ ⠍⠁⠽ ⠙⠑⠇⠑⠞⠑ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠁⠏⠏⠲ ⠠⠊⠞ ⠊⠎ ⠗⠑⠉⠕⠍⠍⠑⠝⠙⠑⠙ ⠞⠕ ⠍⠕⠧⠑ ⠊⠞ ⠃⠁⠉⠅ ⠞⠕ ⠇⠕⠉⠁⠇ ⠁⠝⠙ ⠗⠑⠤⠍⠊⠛⠗⠁⠞⠑ ⠺⠊⠞⠓ ⠇⠕⠉⠅⠑⠙ ⠍⠕⠙⠑⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese App wurde auf externen Speicher migriert, aber nicht gesperrt. In-App-Updates koennen die externe App loeschen. Es wird empfohlen, die App zurueckzuschieben und im Sperrmodus erneut zu migrieren."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This app has been migrated to external storage but is not locked. In-app updates may delete the external app. It is recommended to move it back to local and re-migrate with locked mode."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chi tiu aplikacio estis migrigita al ekstera konservejo sed ne shlosita. En-aplikaj ghisdatighoj povas forigi la eksteran aplikacion. Oni rekomendas reveni kaj re-migri en shlosita reghimo."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esta app ha sido migrada al almacenamiento externo pero no esta bloqueada. Las actualizaciones dentro de la app pueden eliminar la app externa. Se recomienda volver a local y luego migrar de nuevo en modo bloqueado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette application a ete migree vers le stockage externe mais n'est pas verrouillee. Les mises a jour integrees peuvent supprimer l'application externe. Il est recommande de revenir en local puis de migrer a nouveau en mode verrouille."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "yah app baahaari storaej mein maigraet kar diya gaya hai lekin lok nahin kiya gaya hai. app ke bheetar apdet baahaari app ko hata sakte hain. vaapas laakar lok mod mein phir se maigraet karane ki salaah di jaati hai."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aplikasi ini telah dimigrasi ke penyimpanan eksternal tetapi tidak dikunci. Pembaruan dalam aplikasi dapat menghapus aplikasi eksternal. Disarankan untuk kembali ke lokal lalu migrasi ulang dalam mode terkunci."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questa app e stata migrata allo storage esterno ma non e bloccata. Gli aggiornamenti in-app possono eliminare l'app esterna. Si consiglia di tornare indietro e migrare nuovamente in modalita bloccata."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このアプリは外部ストレージに移行されていますが、ロックされていません。アプリ内更新によって外部アプリが削除される可能性があります。ローカルに戻してから、ロックモードを選んで再移行することをおすすめします。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 앱은 외부 스토리지로 마이그레이션되었지만 잠기지 않았습니다. 앱 내 업데이트가 외부 앱을 삭제할 수 있습니다. 로컬로 되돌린 후 잠금 모드로 다시 마이그레이션하는 것을 권장합니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deze app is gemigreerd naar externe opslag maar niet vergrendeld. In-app updates kunnen de externe app verwijderen. Het wordt aanbevolen om terug te verplaatsen en opnieuw te migreren in vergrendelde modus."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ta aplikacja zostala przeniesiona na zewnetrzne przechowywanie, ale nie jest zablokowana. Aktualizacje w aplikacji moga usunac zewnetrzna aplikacje. Zaleca sie powrot i ponowna migracje w trybie blokady."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este app foi migrado para armazenamento externo mas nao esta bloqueado. Atualizacoes dentro do app podem excluir o app externo. Recomenda-se voltar ao local e migrar novamente no modo bloqueado."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Это приложение перенесено на внешнее хранилище, но не заблокировано. Обновление внутри приложения может удалить внешнюю копию. Рекомендуется вернуть его локально и перенести заново с блокировкой."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "app ni thuk yai pai yang tang kep nork tae mai thuk lok. kan abpdet nai app ja lae app nork hai hai. naenae hai yai khorwng mod lock phro khwam plod phai"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bu uygulama harici depolamaya tasindi ancak kilitlenmedi. Uygulama ici guncellemeler harici uygulamayi silebilir. Geri tasidiktan sonra kilitli modda yeniden tasismaniz onerilir."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ung dung nay da di chuyen sang bo ngoai nhung chua bi khoa. Cap nhat trong ung dung co the xoa ung dung ben ngoai. Nen di chuyen roi di chuyen lai o che do khoa."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此应用已迁移到外部存储但未锁定。应用内更新可能删除外部应用。建议迁回本地后重新迁移并选择锁定模式。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此應用程式已遷移至外部儲存但未鎖定。應用程式內更新可能刪除外部應用程式。建議遷回本機後重新遷移並選擇鎖定模式。"
-          }
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此應詠巳遷迻↘外荹邨存但未锁定。應詠内哽噺岢能刪除外荹應詠。建议遷囙夲哋後重噺遷迻並選擇锁定模式。"
           }
         }
       }

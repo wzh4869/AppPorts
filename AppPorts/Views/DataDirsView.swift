@@ -2269,19 +2269,6 @@ private struct AppListRow: View {
                     .help("此应用已被 Ad-hoc 重签名".localized)
             }
 
-            // Sparkle/Electron 标记
-            if app.isSparkleApp {
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 9))
-                    .foregroundColor(.teal.opacity(0.7))
-                    .help("Sparkle 自更新应用".localized)
-            } else if app.isElectronApp {
-                Image(systemName: "atom")
-                    .font(.system(size: 9))
-                    .foregroundColor(.indigo.opacity(0.7))
-                    .help("Electron 应用".localized)
-            }
-
             Spacer(minLength: 4)
             if hasMigratedData {
                 Text("已迁移".localized)
