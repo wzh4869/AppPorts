@@ -15,6 +15,7 @@ final class ShipItRecoveryMonitor {
     private let workspaceCenter: NotificationCenter
     private let didCheck: (() -> Void)?
     private let taskCenter: MigrationTaskCenter?
+    private let observedStore: ShipItObservedTaskStore?
     private var events: ShipItUpdateEventMonitor?
     private var observers: Set<AnyCancellable> = []
     private var task: Task<Void, Never>?
@@ -26,16 +27,19 @@ final class ShipItRecoveryMonitor {
     private var suppressed: Set<String> = []
     private var activeCandidateKey: String?
     private var failures: [String: String] = [:]
+    private var unfinished: [String: ShipItUpdateRecovery.Candidate] = [:]
 
     init(recovery: ShipItUpdateRecovery? = nil, interval: UInt64 = 5_000_000_000,
          operationState: AppOperationState? = nil, debounce: UInt64 = 1_000_000_000,
          eventLatency: TimeInterval = 1, workspaceCenter: NotificationCenter = NSWorkspace.shared.notificationCenter,
-         didCheck: (() -> Void)? = nil, taskCenter: MigrationTaskCenter? = nil) {
+         didCheck: (() -> Void)? = nil, taskCenter: MigrationTaskCenter? = nil,
+         observedStore: ShipItObservedTaskStore? = nil) {
         self.recovery = recovery ?? ShipItUpdateRecovery(); injected = recovery != nil
         self.interval = interval; self.debounce = debounce; self.eventLatency = eventLatency
         self.operationState = operationState ?? .shared
         self.workspaceCenter = workspaceCenter; self.didCheck = didCheck
         self.taskCenter = taskCenter ?? (recovery == nil ? .shared : nil)
+        self.observedStore = observedStore ?? (recovery == nil ? ShipItObservedTaskStore() : nil)
     }
 
     func start() {
@@ -45,7 +49,8 @@ final class ShipItRecoveryMonitor {
                   NSClassFromString("XCTestCase") == nil else { return }
         }
         started = true
-        events = ShipItUpdateEventMonitor(caches: recovery.cacheDirectory, latency: eventLatency) { [weak self] in
+        events = ShipItUpdateEventMonitor(caches: recovery.cacheDirectory, latency: eventLatency,
+            watchedFiles: [recovery.records.storageURL]) { [weak self] in
             Task { @MainActor in self?.requestCheck() }
         }
         operationState.$recordsRevision.dropFirst().sink { [weak self] _ in
@@ -161,6 +166,8 @@ final class ShipItRecoveryMonitor {
 
     private func display(_ candidate: ShipItUpdateRecovery.Candidate, status: MigrationJob.Status, message: String,
                          result: MigrationJob.ObservedResult? = nil, offerRollback: Bool = false) {
+        if status == .running || status == .queued { unfinished[candidate.key] = candidate }
+        else { unfinished.removeValue(forKey: candidate.key) }
         var action: (@MainActor () -> Void)?
         if offerRollback {
             action = { [weak self] in
@@ -174,6 +181,10 @@ final class ShipItRecoveryMonitor {
         else if (status == .running || status == .queued), let failure = failures[candidate.key] {
             detail += "\n" + failure
         }
+        do {
+            try observedStore?.save(candidate: candidate, status: status, message: detail,
+                                    result: result, offersRollback: offerRollback)
+        } catch { AppLogger.shared.logError("保存后台更新任务状态失败", error: error) }
         taskCenter?.updateObserved(key: candidate.key,
             title: "应用更新恢复".localized + " · " + candidate.record.name,
             resources: MigrationResources(paths: [candidate.request.targetBundleURL,
@@ -224,5 +235,9 @@ final class ShipItRecoveryMonitor {
         await task?.value
         task = nil
         needsCheck = false
+        for candidate in Array(unfinished.values) {
+            display(candidate, status: .attention,
+                    message: "上次运行时更新接手未结束，等待检查更新现场。".localized, offerRollback: true)
+        }
     }
 }

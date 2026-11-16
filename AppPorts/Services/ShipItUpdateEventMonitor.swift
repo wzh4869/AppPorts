@@ -6,13 +6,15 @@ final class ShipItUpdateEventMonitor: @unchecked Sendable {
     private let caches: URL
     private let latency: TimeInterval
     private let onChange: @Sendable () -> Void
+    private let watchedFiles: Set<String>
     private let queue = DispatchQueue(label: "com.shimoko.AppPorts.shipitEvents")
     private var stream: FSEventStreamRef?
     private var directories: Set<String> = []
 
-    init(caches: URL, latency: TimeInterval = 1, onChange: @escaping @Sendable () -> Void) {
+    init(caches: URL, latency: TimeInterval = 1, watchedFiles: [URL] = [], onChange: @escaping @Sendable () -> Void) {
         self.caches = caches.resolvingSymlinksInPath().standardizedFileURL
         self.latency = latency; self.onChange = onChange
+        self.watchedFiles = Set(watchedFiles.map { $0.resolvingSymlinksInPath().standardizedFileURL.path })
     }
 
     @discardableResult
@@ -29,7 +31,8 @@ final class ShipItUpdateEventMonitor: @unchecked Sendable {
                 if (0..<count).contains(where: { monitor.accepts(path: values[$0], flags: flags[$0]) }) {
                     monitor.onChange()
                 }
-            }, &context, [caches.path] as CFArray, FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
+            }, &context, Array(Set([caches.path] + watchedFiles.map { URL(fileURLWithPath: $0).deletingLastPathComponent().path })) as CFArray,
+                FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
                 latency, UInt32(kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents
                     | kFSEventStreamCreateFlagWatchRoot)) else { return false }
             FSEventStreamSetDispatchQueue(created, queue)
@@ -53,6 +56,7 @@ final class ShipItUpdateEventMonitor: @unchecked Sendable {
     }
 
     private func accepts(path: String, flags: FSEventStreamEventFlags) -> Bool {
+        if watchedFiles.contains(path) { return true }
         // Coalesced/dropped events require checking current state, never trusting event details.
         let rescan = FSEventStreamEventFlags(kFSEventStreamEventFlagMustScanSubDirs
             | kFSEventStreamEventFlagRootChanged)

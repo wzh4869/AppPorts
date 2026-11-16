@@ -297,6 +297,11 @@ final class WriterAdmission {
         try identity(processID: getpid())
     }
 
+    /// Display status can confirm its publisher without inferring any write authority.
+    static func matchesRunningProcess(_ process: WriterProcessIdentity) -> Bool {
+        (try? identity(processID: process.processID)) == process
+    }
+
     /// libproc also sees an executable launched directly as --mount-agent; a
     /// list of GUI applications alone would miss that writer. Bundle identity
     /// is used only to recognize candidates, never to infer their capability.

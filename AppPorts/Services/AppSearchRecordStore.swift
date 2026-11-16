@@ -21,6 +21,7 @@ struct AppSearchRecord: Codable, Identifiable, Equatable, Sendable {
 final class AppSearchRecordStore: @unchecked Sendable {
     static let shared = AppSearchRecordStore()
     private let fileURL: URL
+    var storageURL: URL { fileURL }
     private let lock: NSLock
     private static let registryLock = NSLock()
     private static var locks: [String: NSLock] = [:]
