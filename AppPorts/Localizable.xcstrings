@@ -234700,6 +234700,98 @@
         }
       }
     },
+    "App Store currently uses “%@”. Choose the same external drive as AppPorts in App Store Settings." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store currently uses “%@”. Choose the same external drive as AppPorts in App Store Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 当前选择的是「%@」。请在 App Store 设置中改为与 AppPorts 相同的外盘。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 目前選擇的是「%@」。請在 App Store 設定中改為與 AppPorts 相同的外接磁碟。"
+          }
+        }
+      }
+    },
+    "App Store currently uses “%@”. Select “%@” to match AppPorts." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store currently uses “%@”. Select “%@” to match AppPorts."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 当前选择的是「%@」。请选择「%@」，与 AppPorts 使用同一块外盘。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 目前選擇的是「%@」。請選擇「%@」，與 AppPorts 使用同一個外接磁碟。"
+          }
+        }
+      }
+    },
+    "App Store will also install newly downloaded apps larger than 1 GB on this drive and manage their updates." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store will also install newly downloaded apps larger than 1 GB on this drive and manage their updates."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 也会把新下载的大于 1 GB 的应用安装到这块外盘，并管理这些应用的更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 也會把新下載的大於 1 GB 的 App 安裝到這個外接磁碟，並管理這些 App 的更新。"
+          }
+        }
+      }
+    },
+    "AppPorts can migrate App Store apps of any size, including apps under 1 GB, to:" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts can migrate App Store apps of any size, including apps under 1 GB, to:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 迁移 App Store 应用不受 1 GB 限制，小于 1 GB 的应用也可以迁移到："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 移轉 App Store App 不受 1 GB 限制，小於 1 GB 的 App 也可以移轉到："
+          }
+        }
+      }
+    },
     "Application update guardian" : {
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
@@ -234820,6 +234912,75 @@
         }
       }
     },
+    "Choose external storage in AppPorts before configuring App Store external installation." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose external storage in AppPorts before configuring App Store external installation."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先在 AppPorts 选择外部存储，再设置 App Store 应用外部安装。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先在 AppPorts 選擇外部儲存空間，再設定 App Store App 外部安裝。"
+          }
+        }
+      }
+    },
+    "Configured" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configured"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已設定"
+          }
+        }
+      }
+    },
+    "Could not read the App Store installation setting. Open App Store Settings to check it." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read the App Store installation setting. Open App Store Settings to check it."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取 App Store 安装设置。请打开 App Store 设置核对。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取 App Store 安裝設定。請開啟 App Store 設定核對。"
+          }
+        }
+      }
+    },
     "Disk maintenance agent" : {
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
@@ -234840,6 +235001,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "磁碟維護代理"
+          }
+        }
+      }
+    },
+    "Don’t remind me again" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don’t remind me again"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不再提醒"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不再提醒"
+          }
+        }
+      }
+    },
+    "In App Store Settings, enable “Download and install large apps to a separate disk”, then select “%@”. This applies to newly downloaded apps larger than 1 GB." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In App Store Settings, enable “Download and install large apps to a separate disk”, then select “%@”. This applies to newly downloaded apps larger than 1 GB."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在 App Store 设置中开启「下载并安装大型 App 到独立存储盘」，然后选择「%@」。此选项适用于新下载的大于 1 GB 的应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請在 App Store 設定中開啟「下載並安裝大型 App 到獨立儲存磁碟」，然後選擇「%@」。此選項適用於新下載的大於 1 GB 的 App。"
           }
         }
       }
@@ -234888,6 +235095,75 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "遷移行為"
+          }
+        }
+      }
+    },
+    "Not configured. In App Store Settings, enable external installation for apps larger than 1 GB and choose the same external drive as AppPorts." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not configured. In App Store Settings, enable external installation for apps larger than 1 GB and choose the same external drive as AppPorts."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未设置。请在 App Store 设置中开启大于 1 GB 的应用外部安装，并选择与 AppPorts 相同的外盘。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未設定。請在 App Store 設定中開啟大於 1 GB 的 App 外部安裝，並選擇與 AppPorts 相同的外接磁碟。"
+          }
+        }
+      }
+    },
+    "Reconnect the selected external drive to check the App Store installation setting." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconnect the selected external drive to check the App Store installation setting."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请重新连接所选外盘，再检查 App Store 安装设置。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請重新連接所選外接磁碟，再檢查 App Store 安裝設定。"
+          }
+        }
+      }
+    },
+    "Settings: You can complete this later in AppPorts Settings, even after choosing “Don’t remind me again”." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings: You can complete this later in AppPorts Settings, even after choosing “Don’t remind me again”."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置：即使选择「不再提醒」，以后仍可在 AppPorts 设置里完成这项操作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定：即使選擇「不再提醒」，之後仍可在 AppPorts 設定中完成這項操作。"
           }
         }
       }
