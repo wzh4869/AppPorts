@@ -251,6 +251,9 @@ enum PrivilegedAppTransfer {
 @main
 enum AppPortsEntryPoint {
     static func main() {
+        if CommandLine.arguments.dropFirst().contains(UpdateRecoveryAgentInstaller.launchArgument) {
+            UpdateRecoveryAgent.runAndExit()
+        }
         if PrivilegedAppTransfer.runIfRequested() { return }
         if PrivilegedDataCleanup.runIfRequested() { return }
         // Keep the probe's JSON stdout free of SwiftUI initialization and writer-registration logs.

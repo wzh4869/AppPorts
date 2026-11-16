@@ -308,6 +308,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: operationState.recordsRevision) { _ in
+            AppLibraryAgentSync.shared.selectionDidChange()
             guard isVisible else { return }
             scanBothAppsAtomic()
         }
