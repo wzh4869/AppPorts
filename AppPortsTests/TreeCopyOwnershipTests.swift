@@ -405,6 +405,14 @@ struct TreeCopyOwnershipTests {
         }
     }
 
+    @Test("Ownership image cleanup still detaches after its volume was unmounted")
+    func cleanupAfterVolumeUnmount() async throws {
+        try await withImage { image in
+            _ = try await image.run("/usr/sbin/diskutil", ["unmount", image.mountPoint.path])
+            #expect(!DiskUtility.isMountPoint(image.mountPoint))
+        }
+    }
+
     private func makeTree(at source: URL) async throws {
         let nested = source.appendingPathComponent("nested")
         try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
@@ -469,6 +477,7 @@ private actor OwnershipTestImage {
     nonisolated let mountPoint: URL
     private let imageURL: URL
     private var attached = false
+    private var deviceURL: URL?
 
     init() throws {
         root = URL(fileURLWithPath: "/private/tmp/appports-ownership-test-\(UUID().uuidString)")
@@ -488,22 +497,33 @@ private actor OwnershipTestImage {
     }
 
     func detach() async throws {
-        let result = try await detachOwnershipImage(at: mountPoint)
+        let target = deviceURL ?? mountPoint
+        let result = try await detachOwnershipImage(at: target)
         if result.status != 0 || result.timedOut {
             let owners = try? await ProcessCommandRunner(captureLimit: 16_384).run(
                 executable: "/usr/sbin/lsof", arguments: ["-nP", "+f", "--", mountPoint.path], timeout: 5)
             try #require(result.status == 0 && !result.timedOut,
-                "hdiutil detach \(mountPoint.path): \(result.combinedText); status=\(result.status), timedOut=\(result.timedOut); lsof: \(owners?.combinedText ?? "unavailable")")
+                "hdiutil detach \(target.path): \(result.combinedText); status=\(result.status), timedOut=\(result.timedOut); lsof: \(owners?.combinedText ?? "unavailable")")
         }
         attached = false
+        deviceURL = nil
     }
 
     private func attach(ignoringOwnership: Bool) async throws {
-        _ = try await run("/usr/bin/hdiutil", ["attach", "-nobrowse", "-owners", ignoringOwnership ? "off" : "on", "-mountpoint", mountPoint.path, imageURL.path])
+        let result = try await run("/usr/bin/hdiutil", ["attach", "-plist", "-nobrowse", "-owners", ignoringOwnership ? "off" : "on", "-mountpoint", mountPoint.path, imageURL.path])
         attached = true
+        deviceURL = try attachedDevice(in: result.standardOutput)
         var flags = statfs()
         try #require(statfs(mountPoint.path, &flags) == 0)
         try #require((flags.f_flags & UInt32(MNT_IGNORE_OWNERSHIP) != 0) == ignoringOwnership)
+    }
+
+    private func attachedDevice(in output: Data) throws -> URL {
+        let plist = try PropertyListSerialization.propertyList(from: output, options: [], format: nil)
+        let entities = try #require((plist as? [String: Any])?["system-entities"] as? [[String: Any]])
+        let path = try #require(entities.compactMap { $0["dev-entry"] as? String }
+            .first { $0.range(of: "^/dev/disk[0-9]+$", options: .regularExpression) != nil })
+        return URL(fileURLWithPath: path)
     }
 
     func run(_ executable: String, _ arguments: [String]) async throws -> ShellCommandResult {
