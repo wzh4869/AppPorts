@@ -147,6 +147,7 @@ struct AppMoverApp: App {
     @AppStorage("appAppearance") private var appAppearance = "system"
 
     var body: some Scene {
+        let initialSize = MainWindowAppearance.initialContentSize(on: NSScreen.main)
         WindowGroup {
             Group {
                 if showWelcome {
@@ -160,6 +161,7 @@ struct AppMoverApp: App {
             .environment(\.locale, languageManager.locale)
 
             .id(languageManager.language)
+            .frame(idealWidth: initialSize.width, idealHeight: initialSize.height)
             .background(MainWindowAppearance())
             
 
@@ -273,7 +275,15 @@ struct AppMoverApp: App {
     }
 }
 
-private struct MainWindowAppearance: NSViewRepresentable {
+struct MainWindowAppearance: NSViewRepresentable {
+    static func initialContentSize(on screen: NSScreen?) -> NSSize {
+        let availableSize = screen?.visibleFrame.size
+        return NSSize(
+            width: min(1200, availableSize?.width ?? 1200),
+            height: min(780, availableSize?.height ?? 780)
+        )
+    }
+
     func makeNSView(context: Context) -> WindowView { WindowView() }
     func updateNSView(_ nsView: WindowView, context: Context) {}
 
@@ -288,15 +298,8 @@ private struct MainWindowAppearance: NSViewRepresentable {
             window.titlebarSeparatorStyle = .none
             let isInitialWindow = AppDelegate.mainWindow !== window
             AppDelegate.mainWindow = window
-            if isInitialWindow {
-                DispatchQueue.main.async { [weak window] in
-                    guard let window, !window.styleMask.contains(.fullScreen) else { return }
-                    let availableSize = (window.screen ?? NSScreen.main)?.visibleFrame.size
-                    window.setContentSize(NSSize(
-                        width: min(1200, availableSize?.width ?? 1200),
-                        height: min(780, availableSize?.height ?? 780)
-                    ))
-                }
+            if isInitialWindow, !window.styleMask.contains(.fullScreen) {
+                window.setContentSize(MainWindowAppearance.initialContentSize(on: window.screen ?? NSScreen.main))
             }
             // Preserve the hosting view and its in-memory state when clicking ×.
             if let closeButton = window.standardWindowButton(.closeButton) {
