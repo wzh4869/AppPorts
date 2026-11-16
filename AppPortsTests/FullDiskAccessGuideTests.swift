@@ -5,6 +5,59 @@ import XCTest
 
 @MainActor
 final class FullDiskAccessGuideTests: XCTestCase {
+    func testPermissionSettingsPreparationClearsBindingsBeforeReadingWindows() async throws {
+        var dismissed = false
+        try await FullDiskAccessGuide.prepareForOpeningSettings(dismiss: {
+            XCTAssertTrue(Thread.isMainThread)
+            dismissed = true
+        }, windows: {
+            XCTAssertTrue(Thread.isMainThread)
+            XCTAssertTrue(dismissed)
+            return []
+        })
+    }
+
+    func testPermissionSettingsPreparationDetachesNestedNativeSheets() async throws {
+        let frame = NSRect(x: -10_000, y: 0, width: 300, height: 200)
+        let windows = (0..<3).map { _ in
+            let window = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+            window.isReleasedWhenClosed = false
+            return window
+        }
+        defer { windows.reversed().forEach { $0.close() } }
+        windows[0].beginSheet(windows[1], completionHandler: nil)
+        windows[1].beginSheet(windows[2], completionHandler: nil)
+        try await FullDiskAccessGuide.prepareForOpeningSettings(dismiss: {}, windows: { [windows[0]] })
+        XCTAssertNil(windows[0].attachedSheet)
+        XCTAssertNil(windows[1].attachedSheet)
+    }
+
+    func testPermissionSettingsPreparationDoesNotRecreateSwiftUISheets() async throws {
+        for nested in [false, true] {
+            let state = PermissionSheetTestState(nested: nested)
+            let window = NSWindow(contentRect: NSRect(x: -10_000, y: 0, width: 600, height: 450),
+                styleMask: [.titled], backing: .buffered, defer: false)
+            window.isReleasedWhenClosed = false
+            window.contentView = NSHostingView(rootView: PermissionSheetTestView(state: state))
+            window.orderFront(nil)
+            defer { state.settings = false; window.close() }
+            let deadline = Date().addingTimeInterval(3)
+            while (window.attachedSheet == nil || (nested && window.attachedSheet?.attachedSheet == nil)) && Date() < deadline {
+                try await Task.sleep(nanoseconds: 10_000_000)
+            }
+            XCTAssertNotNil(window.attachedSheet)
+            if nested { XCTAssertNotNil(window.attachedSheet?.attachedSheet) }
+            try await FullDiskAccessGuide.prepareForOpeningSettings(dismiss: {
+                state.readiness = false
+                state.settings = false
+            }, windows: { [window] })
+            try await Task.sleep(nanoseconds: 200_000_000)
+            XCTAssertNil(window.attachedSheet)
+            XCTAssertFalse(state.settings)
+            XCTAssertFalse(state.readiness)
+        }
+    }
+
     func testGuideStaysBelowSettingsAndMovesAboveWhenNecessary() {
         let screen = NSRect(x: 0, y: 0, width: 1440, height: 900)
         let settings = NSRect(x: 400, y: 250, width: 640, height: 600)
@@ -191,5 +244,24 @@ final class FullDiskAccessGuideTests: XCTestCase {
                 }
             }
         }
+    }
+}
+
+private final class PermissionSheetTestState: ObservableObject {
+    @Published var settings = true
+    @Published var readiness: Bool
+
+    init(nested: Bool) { readiness = nested }
+}
+
+private struct PermissionSheetTestView: View {
+    @ObservedObject var state: PermissionSheetTestState
+
+    var body: some View {
+        Text("Main").frame(width: 600, height: 450)
+            .sheet(isPresented: $state.settings) {
+                Text("Settings").frame(width: 560, height: 450)
+                    .sheet(isPresented: $state.readiness) { ReadinessCheckSheet() }
+            }
     }
 }

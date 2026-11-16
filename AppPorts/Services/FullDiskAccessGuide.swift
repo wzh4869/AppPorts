@@ -13,10 +13,27 @@ final class FullDiskAccessGuide {
     private var hasSeenSettings = false
     private var missingSamples = 0
 
-    func openSettings(for permission: LaunchReadinessChecker.Item.Action = .fullDiskAccess) {
-        guard AppInstallationLocation.confirmIfNeeded(),
-              permission.settingsURLs.contains(where: { NSWorkspace.shared.open($0) }) else { return }
-        show(applicationURL: Bundle.main.bundleURL, permission: permission)
+    func openSettings(for permission: LaunchReadinessChecker.Item.Action = .fullDiskAccess,
+                      dismiss: (() -> Void)? = nil) {
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
+        Task {
+            do {
+                if let dismiss { try await Self.prepareForOpeningSettings(dismiss: dismiss) }
+                guard permission.settingsURLs.contains(where: { NSWorkspace.shared.open($0) }) else { return }
+                show(applicationURL: Bundle.main.bundleURL, permission: permission)
+            } catch {
+                AppLogger.shared.logError("打开权限设置前关闭弹窗失败", error: error,
+                    errorCode: "PERMISSION-SETTINGS-DISMISS-FAILED")
+            }
+        }
+    }
+
+    static func prepareForOpeningSettings(dismiss: @MainActor () -> Void,
+                                         windows: @MainActor () -> [NSWindow] = { NSApp.windows }) async throws {
+        // Clear SwiftUI bindings first so ending the native sheets cannot recreate them.
+        dismiss()
+        await Task.yield()
+        try await AppUpdateController.dismissSheets(in: windows())
     }
 
     private func show(applicationURL: URL, permission: LaunchReadinessChecker.Item.Action) {

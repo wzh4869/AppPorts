@@ -29,12 +29,15 @@ struct ReadinessCheckView: View {
     /// 放在刷新入口左侧的说明文字，仅 `refreshPlacement == .bottom` 时显示
     var footnote: String?
 
+    var onOpenSettings: (() -> Void)?
+
     @State private var items: [LaunchReadinessChecker.Item] = []
     @State private var isChecking = false
 
-    init(refreshPlacement: RefreshPlacement = .top, footnote: String? = nil) {
+    init(refreshPlacement: RefreshPlacement = .top, footnote: String? = nil, onOpenSettings: (() -> Void)? = nil) {
         self.refreshPlacement = refreshPlacement
         self.footnote = footnote
+        self.onOpenSettings = onOpenSettings
     }
 
     var body: some View {
@@ -123,7 +126,7 @@ struct ReadinessCheckView: View {
     }
 
     private func openSettings(for action: LaunchReadinessChecker.Item.Action) {
-        FullDiskAccessGuide.shared.openSettings(for: action)
+        FullDiskAccessGuide.shared.openSettings(for: action, dismiss: onOpenSettings)
     }
 }
 
@@ -131,6 +134,7 @@ struct ReadinessCheckView: View {
 
 /// 「设置」里点「检查」后弹出的准备情况面板。
 struct ReadinessCheckSheet: View {
+    var onOpenSettings: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -158,7 +162,10 @@ struct ReadinessCheckSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     RunningApplicationCard()
-                    ReadinessCheckView()
+                    ReadinessCheckView(onOpenSettings: {
+                        dismiss()
+                        onOpenSettings?()
+                    })
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

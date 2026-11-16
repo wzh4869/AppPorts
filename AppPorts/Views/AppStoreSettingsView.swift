@@ -84,7 +84,10 @@ struct AppStoreSettingsView: View {
         .padding(.vertical, 20)
         .frame(minWidth: 560, idealWidth: 560, maxWidth: 560)
         .sheet(isPresented: $showReadinessCheck) {
-            ReadinessCheckSheet()
+            ReadinessCheckSheet(onOpenSettings: {
+                showReadinessCheck = false
+                dismiss()
+            })
         }
         .onAppear { permissionReadiness.refresh() }
         .sheet(isPresented: $showClassicModeAcknowledgement) {
