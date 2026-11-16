@@ -16,7 +16,7 @@ struct LaunchReadinessCheckerTests {
 
     // MARK: 检查项映射
 
-    @Test("权限和外部存储均就绪，App 管理仍提供设置入口")
+    @Test("权限和外部存储均就绪时不再显示设置入口")
     func allSatisfied() {
         let items = LaunchReadinessChecker.items(
             fullDiskAccessState: .granted,
@@ -31,9 +31,9 @@ struct LaunchReadinessCheckerTests {
             LaunchReadinessChecker.ItemID.externalDrive
         ])
         #expect(items.allSatisfy { $0.level == .ok })
-        #expect(items.filter { $0.id != LaunchReadinessChecker.ItemID.appManagement }.allSatisfy { $0.action == nil })
+        #expect(items.allSatisfy { $0.action == nil })
         #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }?.level == .ok)
-        #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }?.action == .appManagement)
+        #expect(items.first { $0.id == LaunchReadinessChecker.ItemID.appManagement }?.action == nil)
     }
 
     @Test("缺少完全磁盘访问权限时报失败并给出设置入口")
@@ -82,7 +82,7 @@ struct LaunchReadinessCheckerTests {
         case .unknown: expected = .warning
         }
         #expect(item.level == expected)
-        #expect(item.action == .appManagement)
+        #expect(item.action == (appManagement == .granted ? nil : .appManagement))
     }
 
     @Test("系统预检只认明确授权或拒绝，其余结果无法确认")

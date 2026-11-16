@@ -186,7 +186,7 @@ struct LaunchReadinessChecker: Sendable {
             level: level,
             title: "App 管理权限".localized,
             detail: detail,
-            action: .appManagement
+            action: state == .granted ? nil : .appManagement
         )
     }
 

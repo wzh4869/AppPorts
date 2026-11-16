@@ -291,7 +291,11 @@ private struct MainWindowAppearance: NSViewRepresentable {
             if isInitialWindow {
                 DispatchQueue.main.async { [weak window] in
                     guard let window, !window.styleMask.contains(.fullScreen) else { return }
-                    window.setContentSize(NSSize(width: 952, height: 624))
+                    let availableSize = (window.screen ?? NSScreen.main)?.visibleFrame.size
+                    window.setContentSize(NSSize(
+                        width: min(1200, availableSize?.width ?? 1200),
+                        height: min(780, availableSize?.height ?? 780)
+                    ))
                 }
             }
             // Preserve the hosting view and its in-memory state when clicking ×.
