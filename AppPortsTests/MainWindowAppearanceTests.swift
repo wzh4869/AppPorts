@@ -23,7 +23,9 @@ final class MainWindowAppearanceTests: XCTestCase {
         let window = makeWindow()
         defer { window.close() }
         window.contentView = MainWindowAppearance.WindowView()
-        let userSize = NSSize(width: 1000, height: 700)
+        // AppKit constrains oversized windows when shown; keep this fixture inside the visible screen.
+        let visibleSize = (window.screen ?? NSScreen.main)?.visibleFrame.size ?? NSSize(width: 1200, height: 780)
+        let userSize = NSSize(width: min(1000, visibleSize.width - 40), height: min(700, visibleSize.height - 40))
         window.setContentSize(userSize)
         window.contentView = MainWindowAppearance.WindowView()
         XCTAssertEqual(window.contentRect(forFrameRect: window.frame).size, userSize)
