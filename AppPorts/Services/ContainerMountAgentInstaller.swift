@@ -38,7 +38,8 @@ enum ContainerMountAgentInstaller {
     /// 启动时不卸载代理：没有挂载记录就保持原状，卸载只跟随最后一次还原。
     static func refreshAtLaunch(store: ContainerMountStore = .shared) async {
         // 测试宿主也会走到这里；不能让跑测试改写开发机上真实的登录代理。
-        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
+        guard BackgroundAgentPreferences.diskMaintenanceEnabled(),
+              ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
               (try? requiresAgent(store: store)) == true else { return }
         // 定义有变化时要先 bootout 正在运行的代理；拿锁，免得在它挂到一半时把它停掉。
         let lock = OperationLock()
@@ -92,11 +93,7 @@ enum ContainerMountAgentInstaller {
         // or rebootstrap here would terminate recovery halfway through its loop.
         guard !isRunningAsAgent else { return }
         do {
-            guard try requiresAgent(store: store) else {
-                uninstall()
-                return
-            }
-            try install()
+            try synchronizeConfiguration(store: store)
         } catch {
             AppLogger.shared.logError(
                 "安装容器卷自动挂载代理失败",
@@ -104,6 +101,15 @@ enum ContainerMountAgentInstaller {
                 errorCode: "CONTAINER-MOUNT-AGENT-INSTALL-FAILED"
             )
         }
+    }
+
+    /// Configuration changes hold OperationLock, so a running mount is never interrupted.
+    static func synchronizeConfiguration(store: ContainerMountStore = .shared) throws {
+        guard BackgroundAgentPreferences.diskMaintenanceEnabled(), try requiresAgent(store: store) else {
+            try removeAgent(label: label, definitionURL: agentPlistURL)
+            return
+        }
+        try install()
     }
 
     /// 代理的 LaunchAgent 定义。
@@ -144,7 +150,7 @@ enum ContainerMountAgentInstaller {
         return payload
     }
 
-    private static func executableSignatureIdentity(at path: String) -> String? {
+    static func executableSignatureIdentity(at path: String) -> String? {
         var code: SecStaticCode?
         guard SecStaticCodeCreateWithPath(URL(fileURLWithPath: path) as CFURL, [], &code) == errSecSuccess,
               let code else { return nil }
@@ -287,21 +293,45 @@ enum ContainerMountAgentInstaller {
     static func configureAgent(
         definitionMatches: Bool,
         writeDefinition: () throws -> Void,
-        run: ([String]) -> Int32
+        run: ([String]) -> Int32,
+        serviceLabel: String? = nil,
+        definitionURL: URL? = nil
     ) throws -> Bool {
         let domain = "gui/\(getuid())"
-        let service = "\(domain)/\(label)"
+        let service = "\(domain)/\(serviceLabel ?? label)"
+        let definition = definitionURL ?? agentPlistURL
         // Disabled overrides survive plist replacement and bootstrap. Enable
         // before the fast path; on failure leave the existing definition alone.
         guard run(["enable", service]) == 0 else { throw InstallError.launchAgentLoadFailed }
         if definitionMatches, run(["print", service]) == 0 { return false }
         _ = run(["bootout", service])
         try writeDefinition()
-        guard run(["bootstrap", domain, agentPlistURL.path]) == 0
-                || run(["load", agentPlistURL.path]) == 0 else {
+        guard run(["bootstrap", domain, definition.path]) == 0
+                || run(["load", definition.path]) == 0 else {
             throw InstallError.launchAgentLoadFailed
         }
         guard run(["print", service]) == 0 else { throw InstallError.launchAgentLoadFailed }
+        return true
+    }
+
+    static func removeAgent(label: String, definitionURL: URL,
+                            run: ([String]) -> Int32 = runLaunchctl) throws {
+        _ = try suspendAgent(label: label, run: run)
+        if FileManager.default.fileExists(atPath: definitionURL.path) {
+            try FileManager.default.removeItem(at: definitionURL)
+        }
+    }
+
+    /// Keep the definition for AppPorts updates; 113 specifically means an absent service.
+    @discardableResult
+    static func suspendAgent(label: String, run: ([String]) -> Int32 = runLaunchctl) throws -> Bool {
+        let service = "gui/\(getuid())/\(label)"
+        let current = run(["print", service])
+        if current == 113 { return false }
+        guard current == 0 else { throw InstallError.launchAgentLoadFailed }
+        guard run(["bootout", service]) == 0 || run(["print", service]) == 113 else {
+            throw InstallError.launchAgentLoadFailed
+        }
         return true
     }
 
@@ -317,6 +347,7 @@ enum ContainerMountAgentInstaller {
     /// 直到全部就位、或用完等待窗口（`ContainerRemountLoop.Policy.window`）。
     /// 还在等的容器卷位于选中映像内时，第一轮后立即接回映像并在同一轮重试，不等满窗口。
     static func runAgentAndExit() -> Never {
+        guard BackgroundAgentPreferences.diskMaintenanceEnabled() else { exit(0) }
         // 启动行：既是排障锚点，也是「开机时序」自查脚本判定代理何时被 launchd 拉起的依据，
         // 所以无论这一轮有没有活干都要留下（pid 行里的 `[pid:…]` 已经有进程号了）。
         AppLogger.shared.log("容器卷自动挂载代理启动")
@@ -390,6 +421,7 @@ enum ContainerMountAgentInstaller {
         let imageLock = OperationLock()
         guard await imageLock.acquire(timeout: OperationLock.agentWaitTimeout) else { return }
         defer { imageLock.release() }
+        guard BackgroundAgentPreferences.diskMaintenanceEnabled() else { return }
         do {
             let ejection = try DiskEjectionPauseStore().snapshot()
             await AppLibraryImageRecovery.recoverSelected(ejection: ejection)
@@ -420,6 +452,7 @@ enum ContainerMountAgentInstaller {
             return .deferred
         }
         defer { lock.release() }
+        guard BackgroundAgentPreferences.diskMaintenanceEnabled() else { return .deferred }
         await migrator.performAutomaticMaintenance()
         let outcomes = await migrator.remountAvailableRecords()
         if (try? requiresAgent(store: .shared)) == false {
@@ -480,7 +513,7 @@ enum ContainerMountAgentInstaller {
     }
 
     @discardableResult
-    private static func runLaunchctl(_ arguments: [String]) -> Int32 {
+    static func runLaunchctl(_ arguments: [String]) -> Int32 {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         process.arguments = arguments

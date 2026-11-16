@@ -1,15 +1,18 @@
 import Foundation
+import Combine
 
 /// Keep selection reconciliation alive until the latest selection is saved to launchd.
 @MainActor
-final class AppLibraryAgentSync {
+final class AppLibraryAgentSync: ObservableObject {
     static let shared = AppLibraryAgentSync()
+    @Published private(set) var isSynchronizing = false
+    @Published private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
     private var generation: UInt = 0
-    private let synchronize: @Sendable () async -> Void
+    private let synchronize: @Sendable () async throws -> Void
 
-    init(synchronize: @escaping @Sendable () async -> Void = {
-        await ContainerMountAgentInstaller.synchronizeSelection()
+    init(synchronize: @escaping @Sendable () async throws -> Void = {
+        try await BackgroundAgents.synchronize()
     }) {
         self.synchronize = synchronize
     }
@@ -17,14 +20,23 @@ final class AppLibraryAgentSync {
     func selectionDidChange() {
         generation &+= 1
         guard task == nil else { return }
+        isSynchronizing = true
+        errorMessage = nil
         task = Task {
             while true {
                 let current = generation
                 let operation = synchronize
-                await Task.detached(priority: .utility) { await operation() }.value
+                do {
+                    try await Task.detached(priority: .utility) { try await operation() }.value
+                    errorMessage = nil
+                } catch {
+                    errorMessage = error.localizedDescription
+                    AppLogger.shared.logError("同步后台代理设置失败", error: error)
+                }
                 if current == generation { break }
             }
             task = nil
+            isSynchronizing = false
         }
     }
 

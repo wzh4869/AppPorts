@@ -119,6 +119,20 @@ extension String {
         return NSLocalizedString(self, comment: "")
     }
 
+    /// Deferred translations use the requested fallback, independently of the system language.
+    func localized(fallbackLanguage: String, language: String = LanguageManager.shared.language,
+                   bundle: Bundle = .main) -> String {
+        let preferences = language == "system" ? Locale.preferredLanguages : [language]
+        let selected = Bundle.preferredLocalizations(from: bundle.localizations, forPreferences: preferences).first
+        for code in [selected, fallbackLanguage].compactMap({ $0 }) {
+            if let path = bundle.path(forResource: code, ofType: "lproj"),
+               let localization = Bundle(path: path), let value = localizedValue(in: localization) {
+                return value
+            }
+        }
+        return self
+    }
+
     /// A valid translation can equal its key, especially in the source language.
     /// Use an explicit missing value instead of treating that equality as a miss.
     func localizedValue(in bundle: Bundle) -> String? {
