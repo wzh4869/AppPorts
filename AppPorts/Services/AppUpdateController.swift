@@ -24,10 +24,19 @@ final class AppUpdateController: ObservableObject {
     private let makeOperationLock: () -> OperationLock
     private let launchInstaller: (PreparedAppUpdate) throws -> Process
     private let requestTermination: @MainActor () async throws -> Void
+    private let suspendUpdateAgent: () throws -> Bool
+    private let resumeUpdateAgent: @MainActor () -> Void
+    private var updateAgentSuspended = false
 
     init(operationState: AppOperationState? = nil,
          makeOperationLock: @escaping () -> OperationLock = { OperationLock() },
          launchInstaller: @escaping (PreparedAppUpdate) throws -> Process = { try AppUpdateInstaller.launch($0) },
+         suspendUpdateAgent: @escaping () throws -> Bool = {
+             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
+                   NSClassFromString("XCTestCase") == nil else { return false }
+             return try UpdateRecoveryAgentInstaller.suspendForApplicationUpdate()
+         },
+         resumeUpdateAgent: @escaping @MainActor () -> Void = { AppLibraryAgentSync.shared.selectionDidChange() },
          requestTermination: @escaping @MainActor () async throws -> Void = {
              try await AppUpdateController.requestApplicationTermination()
          }) {
@@ -35,6 +44,8 @@ final class AppUpdateController: ObservableObject {
         self.makeOperationLock = makeOperationLock
         self.launchInstaller = launchInstaller
         self.requestTermination = requestTermination
+        self.suspendUpdateAgent = suspendUpdateAgent
+        self.resumeUpdateAgent = resumeUpdateAgent
     }
 
     var allowsTermination: Bool {
@@ -127,6 +138,7 @@ final class AppUpdateController: ObservableObject {
         }
         defer { lock.release() }
         do {
+            updateAgentSuspended = try suspendUpdateAgent()
             installationHelper = try launchInstaller(prepared)
             installToken = token
             errorMessage = nil
@@ -159,6 +171,7 @@ final class AppUpdateController: ObservableObject {
             installToken = nil
             operations.finish(token)
             errorMessage = error.localizedDescription
+            resumeSuspendedUpdateAgent()
         }
     }
 
@@ -187,6 +200,13 @@ final class AppUpdateController: ObservableObject {
         installationHelper = nil
         installToken = nil
         operations.finish(token)
+        resumeSuspendedUpdateAgent()
+    }
+
+    private func resumeSuspendedUpdateAgent() {
+        guard updateAgentSuspended else { return }
+        updateAgentSuspended = false
+        resumeUpdateAgent()
     }
 
     static func dismissSheets(in windows: [NSWindow]) async throws {

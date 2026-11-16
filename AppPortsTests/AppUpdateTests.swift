@@ -6,6 +6,71 @@ import SwiftUI
 
 final class AppUpdateTests: XCTestCase {
     @MainActor
+    func testInstallationSuspendsGuardianBeforeLaunchingAndResumesOnceOnCancel() async throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let helper = Process()
+        helper.executableURL = URL(fileURLWithPath: "/bin/sleep")
+        helper.arguments = ["30"]
+        try helper.run()
+        defer { if helper.isRunning { helper.terminate() }; helper.waitUntilExit() }
+        var actions: [String] = []
+        let operations = AppOperationState()
+        let controller = AppUpdateController(operationState: operations,
+            makeOperationLock: { OperationLock(fileURL: root.appendingPathComponent("operation.lock"), writerAdmissionCheck: {}) },
+            launchInstaller: { _ in actions.append("launch"); return helper },
+            suspendUpdateAgent: { actions.append("suspend"); return true },
+            resumeUpdateAgent: { actions.append("resume") }, requestTermination: {})
+        controller.install(PreparedAppUpdate(workspace: root, destination: root.appendingPathComponent("AppPorts.app"),
+            originalIdentity: "old", stagedIdentity: "new", version: "2.0.1"))
+        XCTAssertEqual(actions, ["suspend", "launch"])
+        controller.cancelInstallationForTerminationRefusal()
+        controller.cancel()
+        await controller.waitForCleanup()
+        XCTAssertEqual(actions, ["suspend", "launch", "resume"])
+        XCTAssertFalse(operations.isBusy)
+    }
+
+    @MainActor
+    func testGuardianSuspendFailureLeavesAppRunningAndReleasesUpdateLock() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lockURL = root.appendingPathComponent("operation.lock")
+        let operations = AppOperationState()
+        let controller = AppUpdateController(operationState: operations,
+            makeOperationLock: { OperationLock(fileURL: lockURL, writerAdmissionCheck: {}) },
+            launchInstaller: { _ in XCTFail("A live guardian must not be replaced"); return Process() },
+            suspendUpdateAgent: { throw CocoaError(.fileWriteNoPermission) },
+            resumeUpdateAgent: { XCTFail("The guardian has not been stopped") },
+            requestTermination: { XCTFail("The app must remain running") })
+        controller.install(PreparedAppUpdate(workspace: root, destination: root.appendingPathComponent("AppPorts.app"),
+            originalIdentity: "old", stagedIdentity: "new", version: "2.0.1"))
+        XCTAssertNotNil(controller.errorMessage)
+        XCTAssertFalse(operations.isBusy)
+        let lock = OperationLock(fileURL: lockURL, writerAdmissionCheck: {})
+        XCTAssertTrue(lock.tryAcquire())
+        lock.release()
+    }
+
+    @MainActor
+    func testInstallerLaunchFailureRestoresPreviouslySuspendedGuardian() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        var resumed = 0
+        let operations = AppOperationState()
+        let controller = AppUpdateController(operationState: operations,
+            makeOperationLock: { OperationLock(fileURL: root.appendingPathComponent("operation.lock"), writerAdmissionCheck: {}) },
+            launchInstaller: { _ in throw CocoaError(.executableNotLoadable) }, suspendUpdateAgent: { true },
+            resumeUpdateAgent: { resumed += 1 }, requestTermination: {})
+        controller.install(PreparedAppUpdate(workspace: root, destination: root.appendingPathComponent("AppPorts.app"),
+            originalIdentity: "old", stagedIdentity: "new", version: "2.0.1"))
+        XCTAssertEqual(resumed, 1)
+        XCTAssertNotNil(controller.errorMessage)
+        XCTAssertFalse(controller.isInstalling)
+        XCTAssertFalse(operations.isBusy)
+    }
+
+    @MainActor
     func testInstallationRequestReturningKeepsHelperAndTerminationTokenAlive() async throws {
         let root = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
