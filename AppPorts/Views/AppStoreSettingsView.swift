@@ -31,29 +31,15 @@ struct AppStoreSettingsView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                HStack(spacing: AppSettingsStyle.rowGap) {
-                    Text("设置".localized).font(.system(size: 16, weight: .semibold))
-                    Spacer()
-                    PermissionCheckButton(level: permissionReadiness.level, attentionText: permissionReadiness.attentionText) {
-                        readiness.refresh()
-                        refreshAppStoreInstall()
-                    }
-                    .disabled(readiness.isChecking)
-                }
-                .padding(.horizontal, AppSettingsStyle.contentInset)
-                .padding(.vertical, AppSettingsStyle.gap)
-                Divider()
-                ScrollView {
-                    settingsContent(width: geometry.size.width - 2 * AppSettingsStyle.contentInset)
-                        .padding(AppSettingsStyle.contentInset)
-                    Text("更改设置后，请刷新应用列表以查看效果".localized)
-                        .font(AppSettingsStyle.secondaryFont)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, AppSettingsStyle.contentInset)
-                        .padding(.bottom, AppSettingsStyle.contentInset)
-                }
+            ScrollView {
+                settingsContent(width: geometry.size.width - 2 * AppSettingsStyle.contentInset)
+                    .padding(AppSettingsStyle.contentInset)
+                Text("更改设置后，请刷新应用列表以查看效果".localized)
+                    .font(AppSettingsStyle.secondaryFont)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, AppSettingsStyle.contentInset)
+                    .padding(.bottom, AppSettingsStyle.contentInset)
             }
         }
         .font(AppSettingsStyle.bodyFont)
@@ -83,7 +69,16 @@ struct AppStoreSettingsView: View {
         VStack(alignment: .leading, spacing: AppSettingsStyle.sectionGap) {
             UpdateSettingsSection(isEmbedded: true)
             Divider()
-            Text("准备情况".localized).font(AppSettingsStyle.sectionFont)
+            HStack(alignment: .firstTextBaseline, spacing: AppSettingsStyle.rowGap) {
+                Text("准备情况".localized)
+                    .font(AppSettingsStyle.sectionFont)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                PermissionCheckButton(level: permissionReadiness.level, attentionText: permissionReadiness.attentionText) {
+                    readiness.refresh()
+                    refreshAppStoreInstall()
+                }
+                .disabled(readiness.isChecking)
+            }
             ReadinessCheckView(refreshPlacement: .hidden, isEmbedded: true, model: readiness)
         }
         .modifier(AppSettingsPanelStyle())

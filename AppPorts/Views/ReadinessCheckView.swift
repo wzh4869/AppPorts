@@ -20,7 +20,7 @@ struct ReadinessCheckView: View {
         case top
         /// 卡片下方，可与左侧脚注并排（欢迎屏使用）
         case bottom
-        /// 设置页使用工具栏中的刷新入口。
+        /// 设置页使用准备情况标题行中的刷新入口。
         case hidden
     }
 
