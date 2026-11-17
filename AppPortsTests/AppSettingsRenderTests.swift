@@ -5,6 +5,58 @@ import XCTest
 
 final class AppSettingsRenderTests: XCTestCase {
     @MainActor
+    func testOrdinaryMigratedBadgesAndExistingLocks() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/Volumes/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT on an external volume for lock badge review")
+        }
+        let output = URL(fileURLWithPath: path)
+        let root = output.appendingPathComponent("BadgeFixtures-" + UUID().uuidString)
+        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("Signatures"), adHocProbe: { _ in false })
+        let language = LanguageManager.shared.language
+        let appearance = NSApp.appearance
+        var apps: [URL] = []
+        defer {
+            for app in apps { _ = chflags(app.path, 0) }
+            try? FileManager.default.removeItem(at: root)
+            LanguageManager.shared.language = language
+            NSApp.appearance = appearance
+        }
+        for (name, identifier) in [("NeteaseMusic", "com.netease.163music"), ("WorkBuddy", "com.tencent.workbuddy.mac"),
+                                   ("DeepSeek Harness", "example.shipit")] {
+            let app = root.appendingPathComponent("External/\(name).app")
+            try FileManager.default.createDirectory(at: app.appendingPathComponent("Contents/Frameworks/Sparkle.framework"),
+                                                    withIntermediateDirectories: true)
+            try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": identifier], format: .xml, options: 0)
+                .write(to: app.appendingPathComponent("Contents/Info.plist"))
+            apps.append(app)
+        }
+        let scanned = await scanner.scanLocalApps(at: root.appendingPathComponent("External"), runningAppURLs: [])
+        XCTAssertEqual(scanned.count, 3)
+        for code in ["zh-Hans", "en"] {
+            LanguageManager.shared.language = code
+            for dark in [false, true] {
+                NSApp.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+                for locked in [false, true] {
+                    for url in apps { XCTAssertEqual(chflags(url.path, locked ? UInt32(UF_IMMUTABLE) : 0), 0) }
+                    try await render(VStack(alignment: .leading, spacing: 16) {
+                        ForEach(scanned) { original in
+                            var app = original
+                            app.status = AppStatus.linked
+                            return HStack {
+                                Text(app.displayName).frame(width: 160, alignment: .leading)
+                                StatusBadge(app: app)
+                                Spacer()
+                            }
+                        }
+                    }.padding(16).environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, dark ? .dark : .light),
+                        size: NSSize(width: 480, height: 140),
+                        destination: output.appendingPathComponent("migrated-badges-\(code)-\(dark ? "dark" : "light")-\(locked ? "locked" : "unlocked").png"))
+                }
+            }
+        }
+    }
+
+    @MainActor
     func testUpdateMigrationChoiceAndFrameworkFreeBadges() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT for migration visual review")

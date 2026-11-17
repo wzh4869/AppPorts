@@ -4,6 +4,50 @@ import XCTest
 final class AppScannerTests: XCTestCase {
     private let fileManager = FileManager.default
 
+    func testOrdinaryUpdatePolicyMatchesLocalExternalAndStubScanning() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let scanner = AppScanner(backupDirectoryURL: workspace.rootURL.appendingPathComponent("Signatures"),
+                                 adHocProbe: { _ in false })
+        let service = AppMigrationService(
+            transferStore: AppTransferStore(directoryURL: workspace.rootURL.appendingPathComponent("Journal")),
+            signatureFactStore: SignatureFactStore(backupDirectoryURL: workspace.rootURL.appendingPathComponent("Signatures")))
+        for (identifier, needsLock) in [("com.netease.163music", false), ("com.tencent.workbuddy.mac", false),
+                                        ("example.unrelated", true)] {
+            let source = workspace.externalRootURL.appendingPathComponent("WorkBuddy.app")
+            let local = workspace.localAppsURL.appendingPathComponent("WorkBuddy.app")
+            try createAppBundle(at: source, payloadSize: 16, bundleID: identifier)
+            try fileManager.createDirectory(at: source.appendingPathComponent("Contents/Frameworks/Sparkle.framework"),
+                                            withIntermediateDirectories: true)
+            let externalItems = await scanner.scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+            let external = try XCTUnwrap(externalItems.first)
+            XCTAssertTrue(external.hasSelfUpdater)
+            XCTAssertEqual(external.needsLock, needsLock)
+            XCTAssertEqual(service.needsUpdateProtection(external), needsLock)
+
+            try fileManager.createSymbolicLink(at: local, withDestinationURL: source)
+            let linkedItems = await scanner.scanLocalApps(at: workspace.localAppsURL, runningAppURLs: [])
+            let linked = try XCTUnwrap(linkedItems.first)
+            XCTAssertEqual(linked.status, AppStatus.local)
+            XCTAssertTrue(linked.hasSelfUpdater)
+            XCTAssertEqual(linked.needsLock, needsLock)
+            try fileManager.removeItem(at: local)
+
+            try createScannerStub(at: local, pointingTo: source, bundleID: identifier)
+            let plistURL = local.appendingPathComponent("Contents/Info.plist")
+            var plist = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: plistURL), format: nil) as? [String: Any])
+            plist["SUFeedURL"] = "https://example.invalid/update.xml"
+            try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: plistURL)
+            let stubItems = await scanner.scanLocalApps(at: workspace.localAppsURL, runningAppURLs: [])
+            let stub = try XCTUnwrap(stubItems.first)
+            XCTAssertEqual(stub.status, AppStatus.linked)
+            XCTAssertTrue(stub.hasSelfUpdater)
+            XCTAssertEqual(stub.needsLock, needsLock)
+            try fileManager.removeItem(at: local)
+            try fileManager.removeItem(at: source)
+        }
+    }
+
     func testDisplayedSizeForWholeAppSymlinkUsesLocalPortalFootprint() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

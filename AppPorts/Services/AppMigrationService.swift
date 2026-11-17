@@ -1346,7 +1346,11 @@ struct AppMigrationService {
     }
 
     private func usesOrdinaryUpdateMigration(at appURL: URL) -> Bool {
-        switch applicationMetadata(at: appURL)?["CFBundleIdentifier"] as? String {
+        Self.usesOrdinaryUpdateMigration(bundleIdentifier: applicationMetadata(at: appURL)?["CFBundleIdentifier"] as? String)
+    }
+
+    static func usesOrdinaryUpdateMigration(bundleIdentifier: String?) -> Bool {
+        switch bundleIdentifier {
         case "com.tencent.workbuddy.mac", "com.netease.163music":
             return true
         default:

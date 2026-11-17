@@ -2254,7 +2254,8 @@ struct ContentView: View {
         let parts = String(format: template, names, marker).components(separatedBy: marker)
         let plain = String(format: template, names, settings)
         guard parts.count == 2 else { return (plain, Text(plain)) }
-        let text = Text(parts[0]) + Text(Image(systemName: "gearshape")) + Text(" " + settings) + Text(parts[1])
+        let prefix = parts[0].hasSuffix(" ") ? String(parts[0].dropLast()) : parts[0]
+        let text = Text(prefix + "\u{202F}") + Text(Image(systemName: "gearshape")) + Text("\u{202F}" + settings) + Text(parts[1])
         return (plain, text)
     }
 

@@ -1190,7 +1190,13 @@ actor AppScanner {
     }
 
     private func makeCandidate(for app: AppItem, bundleURL: URL, priority: Int) -> ScanCandidate {
-        ScanCandidate(
+        var app = app
+        if app.needsLock,
+           case .success(let identity) = AppIdentityResolver.resolve(at: bundleURL),
+           AppMigrationService.usesOrdinaryUpdateMigration(bundleIdentifier: identity.bundleIdentifier) {
+            app.needsLock = false
+        }
+        return ScanCandidate(
             app: app,
             dedupeKey: dedupeKey(for: bundleURL, fallbackName: app.displayName),
             priority: priority

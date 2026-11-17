@@ -73,6 +73,7 @@ struct StatusBadge: View {
         let path: URL
         let status: String
         let needsLock: Bool
+        let hasSelfUpdater: Bool
         let version: String?
     }
 
@@ -82,7 +83,7 @@ struct StatusBadge: View {
 
         // 1. 链接状态标签
         if app.status == AppStatus.linked {
-            if app.needsLock, let locked = externalAppLocked {
+            if let locked = externalAppLocked, locked || app.needsLock {
                 result.append(BadgeConfig(
                     text: locked ? "锁定迁移" : "非锁定迁移",
                     icon: locked ? "lock.fill" : "lock.open",
@@ -253,9 +254,10 @@ struct StatusBadge: View {
             badges.map { localizedStatusBadgeText($0.text) }.joined(separator: ", ")
         )
         .accessibilityAddTraits(.isStaticText)
-        .task(id: LockRequest(path: app.path, status: app.status, needsLock: app.needsLock, version: app.version)) {
+        .task(id: LockRequest(path: app.path, status: app.status, needsLock: app.needsLock,
+                              hasSelfUpdater: app.hasSelfUpdater, version: app.version)) {
             externalAppLocked = nil
-            guard app.needsLock, app.status == AppStatus.linked else { return }
+            guard app.needsLock || app.hasSelfUpdater, app.status == AppStatus.linked else { return }
             let inspectedApp = app
             let worker = Task.detached(priority: .utility) {
                 Self.isExternalAppLocked(app: inspectedApp)
