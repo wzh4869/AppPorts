@@ -88,22 +88,6 @@ final class OperationLock: @unchecked Sendable {
         }
     }
 
-    /// 当前是否被**别的进程**持有。只探测、不拿锁，用来记日志判断谁在让路。
-    var isHeldByAnotherProcess: Bool {
-        stateLock.lock()
-        let alreadyHeldBySelf = descriptor >= 0 || managedLease
-        stateLock.unlock()
-        guard !alreadyHeldBySelf else { return false }
-
-        guard let probe = openDescriptor(recordFailure: false) else { return false }
-        defer {
-            _ = flock(probe, LOCK_UN)
-            _ = close(probe)
-        }
-        // flock 的锁跟着「打开的文件描述」走，所以同一个进程里另开一个 fd 也能探到冲突。
-        return flock(probe, LOCK_EX | LOCK_NB) != 0
-    }
-
     /// 试一次，不等待。已经在持锁状态时返回 `true`（不会重复计数）。
     @discardableResult
     func tryAcquire() -> Bool {

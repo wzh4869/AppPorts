@@ -50,13 +50,4 @@ enum DataMigrationWorkflow {
                              fingerprint: try SignatureSnapshot.fingerprint(of: realURL),
                              temporarySpaceRequirement: try CodeSigner.temporarySpaceRequirement(appURL: realURL))
     }
-
-    static func run<Result>(
-        validateBeforeMigration: () async throws -> Void = {},
-        migrate: () async throws -> Result
-    ) async throws -> Result {
-        try await validateBeforeMigration()
-        try Task.checkCancellation()
-        return try await migrate()
-    }
 }

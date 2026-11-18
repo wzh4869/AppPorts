@@ -121,10 +121,8 @@ final class OperationLockTests: XCTestCase {
 
         XCTAssertTrue(first.tryAcquire())
         XCTAssertFalse(second.tryAcquire(), "第一个持有者还没释放，第二个不该拿到锁")
-        XCTAssertTrue(second.isHeldByAnotherProcess, "代理靠这个判断要不要让路")
 
         first.release()
-        XCTAssertFalse(second.isHeldByAnotherProcess)
         XCTAssertTrue(second.tryAcquire(), "释放后应该能拿到")
         second.release()
     }

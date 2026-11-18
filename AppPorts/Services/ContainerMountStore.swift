@@ -284,8 +284,6 @@ final class ContainerMountStore: @unchecked Sendable {
     func upsertManagedLink(_ link: ManagedDataLinkRecord) throws {
         try mutate { try self.putLink(link, into: &$0) }
     }
-    /// Startup only returns durable facts, including cleanupRequested; it never deletes or resumes work.
-    func unfinishedTransfers() throws -> [DataTransferRecord] { try transfers() }
     func transfer(operationID: UUID) throws -> DataTransferRecord? { try read { $0.transfers.first { $0.operationID == operationID } } }
     func record(forMountPoint url: URL) -> ContainerMountRecord? {
         records().first { DataPathTopology.relationship($0.mountPointPath, url.path) == .same }

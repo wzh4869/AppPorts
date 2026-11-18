@@ -59,7 +59,7 @@ actor DataDirMover {
     }
 
     init(homeDir: URL = URL(fileURLWithPath: NSHomeDirectory()),
-         failSymlinkCreation: Bool = false, failSourceBackupCleanup: Bool = false,
+         failSymlinkCreation: Bool = false,
          store: ContainerMountStore = .shared, runner: any ShellCommandRunning = ProcessCommandRunner(),
          mountMigrator: ContainerVolumeMigrator? = nil,
          allowsAdministratorPrompt: Bool = false,
@@ -73,8 +73,6 @@ actor DataDirMover {
         self.failSymlinkCreation = failSymlinkCreation
         self.synchronizeDirectory = synchronizeDirectory
         self.allowsAdministratorPrompt = allowsAdministratorPrompt
-        // Kept source-compatible with older callers. Success now always retains the original.
-        _ = failSourceBackupCleanup
     }
 
     /// Complete the ordinary user flow while keeping cleanup failures separate

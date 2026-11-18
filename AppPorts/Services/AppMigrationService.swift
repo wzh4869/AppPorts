@@ -1300,27 +1300,9 @@ struct AppMigrationService {
             return .wholeAppSymlink
         }
 
-        // 原型：透明混合入口（feature flag）。让 .app/Contents/... 的硬编码内部路径可解析。
-        // iOS 应用（Wrapper/WrappedBundle）不支持，回退到 Stub。
-        if transparentHybridEnabled, !isIOSWrappedApp(at: appURL) {
-            return .transparentHybrid
-        }
-
         // 所有 .app 应用统一使用 stubPortal（无角标，安全）
         // iOS 应用使用专用的 iOS stub（从 iTunesMetadata.plist 生成 Info.plist，提取 AppIcon）
         return .stubPortal
-    }
-
-    /// 原型开关：透明混合入口。默认关闭，可用
-    /// `defaults write com.shimoko.AppPorts transparentHybridEnabled -bool YES` 开启。
-    private var transparentHybridEnabled: Bool {
-        UserDefaults.standard.bool(forKey: "transparentHybridEnabled")
-    }
-
-    /// 是否为 iOS-on-Mac 应用（含 `Wrapper/` 或 `WrappedBundle/`）。
-    private func isIOSWrappedApp(at appURL: URL) -> Bool {
-        fileManager.fileExists(atPath: appURL.appendingPathComponent("Wrapper").path)
-            || fileManager.fileExists(atPath: appURL.appendingPathComponent("WrappedBundle").path)
     }
 
     /// 检测应用是否有自更新能力
@@ -1738,7 +1720,7 @@ struct AppMigrationService {
             try createFolderMirrorPortal(at: localURL, pointingTo: externalURL)
 
         case .transparentHybrid:
-            try createTransparentHybridPortal(at: localURL, pointingTo: externalURL)
+            try createStubPortal(at: localURL, pointingTo: externalURL)
         }
 
         AppLogger.shared.logPathState("本地入口结果[\(operationID ?? "n/a")]", url: localURL, level: "TRACE")
@@ -1900,19 +1882,7 @@ struct AppMigrationService {
         return URL(fileURLWithPath: path).standardizedFileURL
     }
 
-    /// 写入 Transparent Hybrid 标记文件（位于本地 .app 的 `Contents` 内）。
-    private func writeHybridPortalMarker(in localContentsURL: URL, externalURL: URL) throws {
-        let marker: [String: Any] = [
-            "externalPath": externalURL.standardizedFileURL.path,
-            "createdBy": "AppPorts",
-            "kind": "transparentHybrid",
-            "version": 1
-        ]
-        let data = try PropertyListSerialization.data(fromPropertyList: marker, format: .xml, options: 0)
-        try data.write(to: localContentsURL.appendingPathComponent(Self.hybridPortalMarkerName))
-    }
-
-    /// 读取 Transparent Hybrid 标记中的外部路径（静态版，供扫描器等无实例场景复用）。
+    /// 读取 Transparent Hybrid 标记中的外部路径（静态版，保留用于旧入口识别与还原兼容）。
     static func hybridPortalExternalURL(at localAppURL: URL, fileManager: FileManager = .default) -> URL? {
         let markerURL = localAppURL
             .appendingPathComponent("Contents")
@@ -2075,90 +2045,6 @@ struct AppMigrationService {
         } catch {
             AppLogger.shared.logError("创建应用入口失败", error: error, relatedURLs: [("stage", localURL), ("external", externalURL)])
             throw error
-        }
-    }
-
-    /// 创建透明混合入口（Transparent Hybrid，原型）。
-    ///
-    /// 本地为真实 .app 壳：保留 Stub 启动器（`Contents/MacOS/launcher` + `Resources/real_app_path.txt`），
-    /// 因此可被 Launch Services / Spotlight 索引、双击经启动器打开外部真实 app、外置磁盘缺失时弹提示；
-    /// 同时把 `Contents` 下未被我们注入的文件/子目录以符号链接镜像到外部真实 app，
-    /// 使硬编码到 `/Applications/X.app/Contents/...` 的内部路径仍可解析（需外置磁盘在线）。
-    ///
-    /// 镜像遵循"只在含我们文件的分支下建真实目录，其余整棵子树用符号链接"：
-    /// - `Contents` 顶层：除注入项（Info.plist/PkgInfo/MacOS/Resources/_CodeSignature/标记）外，逐项符号链接
-    /// - `Contents/MacOS`、`Contents/Resources`：保留我们的真实文件，其余子项逐项符号链接（不再深入）
-    private func createTransparentHybridPortal(at localURL: URL, pointingTo externalURL: URL) throws {
-        let fm = fileManager
-
-        // iOS 应用（Wrapper/WrappedBundle）不支持透明混合，回退为常规 Stub
-        if isIOSWrappedApp(at: externalURL) {
-            AppLogger.shared.log("透明混合入口不支持 iOS 应用，回退为 Stub Portal", level: "WARN")
-            try createStubPortal(at: localURL, pointingTo: externalURL)
-            return
-        }
-
-        // 1. 先建立 Stub "脊柱"（Info.plist / PkgInfo / MacOS/launcher / Resources/real_app_path.txt + 图标 + 签名）
-        try createMacOSStubPortal(at: localURL, pointingTo: externalURL)
-
-        let localContents = localURL.appendingPathComponent("Contents")
-        let externalContents = externalURL.appendingPathComponent("Contents")
-
-        // 2. Contents 顶层：镜像我们未注入的条目为符号链接（整棵子树，不深入）。
-        //    _CodeSignature 由本地重新签名生成，绝不可符号链接到外部（否则签名会写穿到外部 app）。
-        let injectedTopLevel: Set<String> = [
-            "Info.plist", "PkgInfo", "MacOS", "Resources", "_CodeSignature", Self.hybridPortalMarkerName
-        ]
-        if let externalTop = try? fm.contentsOfDirectory(at: externalContents, includingPropertiesForKeys: nil, options: []) {
-            for entry in externalTop {
-                let name = entry.lastPathComponent
-                if injectedTopLevel.contains(name) { continue }
-                let localEntry = localContents.appendingPathComponent(name)
-                if fm.fileExists(atPath: localEntry.path) { continue }  // 不覆盖既有真实项，避免与我们的数据相交
-                try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
-            }
-        }
-
-        // 3. MacOS / Resources：保留我们的真实文件，其余子项逐项符号链接（只深入这一层）
-        mirrorChildrenAsSymlinks(
-            localDir: localContents.appendingPathComponent("MacOS"),
-            externalDir: externalContents.appendingPathComponent("MacOS")
-        )
-        mirrorChildrenAsSymlinks(
-            localDir: localContents.appendingPathComponent("Resources"),
-            externalDir: externalContents.appendingPathComponent("Resources")
-        )
-
-        // 4. 写入标记文件（restore/scan 识别本类型的权威依据，须在重新签名前写入）
-        try writeHybridPortalMarker(in: localContents, externalURL: externalURL)
-
-        // 5. 重新 ad-hoc shallow 签名（覆盖脊柱签名，纳入新增符号链接与标记；shallow 不穿透 Frameworks 符号链接）
-        try signAndVerifyPortal(at: localURL)
-
-        refreshLaunchServices(for: localURL)
-        AppLogger.shared.log("已创建 Transparent Hybrid Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
-    }
-
-    /// 将 `externalDir` 下我们尚未注入的子项，逐个在 `localDir` 内创建符号链接（不递归深入）。
-    /// `localDir` 内已存在的真实文件（如 launcher / real_app_path.txt / 图标）优先保留，避免与我们的数据相交。
-    private func mirrorChildrenAsSymlinks(localDir: URL, externalDir: URL) {
-        let fm = fileManager
-        guard let children = try? fm.contentsOfDirectory(at: externalDir, includingPropertiesForKeys: nil, options: []) else {
-            return
-        }
-        for child in children {
-            let localChild = localDir.appendingPathComponent(child.lastPathComponent)
-            if fm.fileExists(atPath: localChild.path) { continue }
-            do {
-                try fm.createSymbolicLink(at: localChild, withDestinationURL: child)
-            } catch {
-                AppLogger.shared.logError(
-                    "Transparent Hybrid: 符号链接创建失败",
-                    error: error,
-                    errorCode: "HYBRID-SYMLINK-FAILED",
-                    relatedURLs: [("local", localChild), ("external", child)]
-                )
-            }
         }
     }
 

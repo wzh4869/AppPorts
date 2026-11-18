@@ -311,7 +311,6 @@ struct SignatureFactStore: Sendable {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         try DurableFileIO.write(encoder.encode(fact), to: destination)
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
 

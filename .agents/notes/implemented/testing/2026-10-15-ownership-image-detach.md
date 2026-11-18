@@ -65,5 +65,4 @@ OwnershipTestImage 的正常卸载最多尝试五次，仅对未超时的 EBUSY 
 OwnershipImageDetachTests 共 14 项 Swift Testing，0 失败。真实“卷先卸载、镜像后分离”用例通过，
 busy、持续错误、其他错误、超时和取消结果保持原边界；全量 runner 结果另行记录。
 
-最终 build 68 的真实卸载后清理用例与完整应用回归均在 runner 通过，进程计时和 Release
-构建通过；批准延期的翻译完整性审计仍失败。完整结果见 [2.3.0（68）验证记录](../../../../.github/pr-assets/main-build68.md)。
+最终 build 68（[运行记录](https://github.com/wzh4869/AppPorts/actions/runs/43890629285)）的真实卸载后清理用例与完整应用回归均在 runner 通过，进程计时和 Release 构建通过。

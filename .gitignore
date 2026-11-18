@@ -24,7 +24,6 @@ DerivedData/
 
 # Node.js
 User_docs/node_modules/
-User_docs/docs/.vitepress/dist/
 
 # Local development notes
 /docs/
@@ -32,20 +31,12 @@ User_docs/docs/.vitepress/dist/
 # Other
 *.xcscmblueprint
 AppPorts/Localizable.xcstrings
-.kilo/plans/1777443133039-witty-mountain.md
 .claude/settings.json
-.kilo/plans/1778193948175-mighty-knight.md
-.kilo/plans/1778208853339-sunny-engine.md
-.kilo/plans/1778362405740-mighty-cactus.md
-.kilo/plans/1778449101739-gentle-engine.md
 .kilo/
-Tools/StubLauncher/launcher
 .momocode/
 .omo/
 .mimocode/plans/1782222306653-lucky-otter.md
 .superpowers
-RELEASE_NOTES_1.9.0.md
-__pycache__/manage_translations.cpython-314.pyc
 design/UI-VI-GUIDELINES.md
 .codex/config.toml
 .workbuddy/

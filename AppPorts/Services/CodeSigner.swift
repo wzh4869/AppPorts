@@ -182,14 +182,6 @@ actor CodeSigner {
         _ = allowAdministratorPrompt
     }
 
-    static func ownershipRepairAppleScript(username: String, appPath: String) -> String {
-        """
-        set targetPath to \(AppMigrationService.appleScriptStringLiteral(appPath))
-        set userName to \(AppMigrationService.appleScriptStringLiteral(username))
-        do shell script "/usr/sbin/chown -R -P " & quoted form of userName & " " & quoted form of targetPath with administrator privileges
-        """
-    }
-
     static func resolveAppURL(at appURL: URL) throws -> URL {
         let fileManager = FileManager.default
         var candidate = appURL.standardizedFileURL
@@ -1410,7 +1402,6 @@ extension CodeSigner {
         try requireWriterAdmission()
         try deleteBackupRecordFile(recordURL)
         try synchronizeDirectory(recordURL.deletingLastPathComponent())
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
 
@@ -1471,7 +1462,6 @@ extension CodeSigner {
             try manifest.remove(at: url, allowingPartial: false, unlockCopiedFlags: false)
             try DurableFileIO.syncDirectory(at: url.deletingLastPathComponent())
         }
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
         return .recordRemoved
     }
@@ -1791,7 +1781,6 @@ extension CodeSigner {
         try manifest.remove(at: recordURL, allowingPartial: false, unlockCopiedFlags: false)
         try synchronizeConfirmedDirectory(parent, identity: parentIdentity)
         AppLogger.shared.logContext("已清理不可恢复的旧签名记录", details: [("bundle_id", backup.bundleIdentifier)])
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
         return true
     }

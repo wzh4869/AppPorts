@@ -74,9 +74,6 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         next.sizeBytes = 20_000_000_000
         next.isRunning = true
         XCTAssertEqual(first.id, next.id)
-        XCTAssertEqual(AppDataScanIdentity(first), AppDataScanIdentity(next))
-        next.version = "4.2"
-        XCTAssertNotEqual(AppDataScanIdentity(first), AppDataScanIdentity(next))
     }
 
     func testUnchangedStoreDoesNotWriteOrNotifyAgain() throws {

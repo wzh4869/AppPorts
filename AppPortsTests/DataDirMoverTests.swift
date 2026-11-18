@@ -186,7 +186,7 @@ final class DataDirMoverTests: XCTestCase {
             isMigratable: true
         )
 
-        let mover = makeMover(homeDir: workspace.homeURL, failSourceBackupCleanup: true)
+        let mover = makeMover(homeDir: workspace.homeURL)
         try await mover.migrate(item: item, to: externalBaseURL, progressHandler: nil)
 
         try assertSymlink(localDataURL, pointsTo: externalDataURL)
@@ -812,8 +812,8 @@ final class DataDirMoverTests: XCTestCase {
         }
     }
 
-    private func makeMover(homeDir: URL, failSymlinkCreation: Bool = false, failSourceBackupCleanup: Bool = false) -> DataDirMover {
-        DataDirMover(homeDir: homeDir, failSymlinkCreation: failSymlinkCreation, failSourceBackupCleanup: failSourceBackupCleanup,
+    private func makeMover(homeDir: URL, failSymlinkCreation: Bool = false) -> DataDirMover {
+        DataDirMover(homeDir: homeDir, failSymlinkCreation: failSymlinkCreation,
             store: ContainerMountStore(fileURL: homeDir.deletingLastPathComponent().appendingPathComponent("data-transfers.plist")), runner: NoFixtureWriters())
     }
 

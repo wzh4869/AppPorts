@@ -309,14 +309,12 @@ struct TreeCopyOwnershipTests {
             try store.endUnswitchedTransfer(transfer, preserving: "material deliberately kept") { }
             let material = try #require(try store.preservedMaterials().first)
             let bytes = try Data(contentsOf: image.root.appendingPathComponent("materials.plist"))
-            let service = DataTransferMaterialService(store: store)
             try await image.detach()
-            #expect(try await service.recheckPreservedMaterial(id: material.id) == .absenceUnverified)
+            #expect(!FileManager.default.fileExists(atPath: candidate.path))
             #expect(try Data(contentsOf: image.root.appendingPathComponent("materials.plist")) == bytes)
             try await image.remount(ignoringOwnership: true)
-            #expect(try await service.recheckPreservedMaterial(id: material.id) == .listedPathsStillExist([candidate.path]))
-            #expect(try await service.removePreservedMaterialRecord(id: material.id,
-                confirmation: .keepAllFilesAndVolumes) == .recordRemoved)
+            #expect(FileManager.default.fileExists(atPath: candidate.path))
+            try store.removePreservedMaterialRecord(material)
             #expect(try store.preservedMaterials().isEmpty)
             #expect(DiskUtility.isMountPoint(image.mountPoint))
             #expect(try String(contentsOf: candidate.appendingPathComponent("payload"), encoding: .utf8) == "unique material")

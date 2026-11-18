@@ -233,7 +233,6 @@ actor ContainerVolumeMigrator {
         safetyRunner: any ShellCommandRunning = ProcessCommandRunner(),
         encryption: APFSVolumeEncryption.Credentials? = nil,
         makeMountPointLease: @escaping @Sendable (URL) throws -> any MountPointLeasing = { try MountPointLease(at: $0) },
-        removeMigrationBackup: @escaping @Sendable (URL) throws -> Void = { try FileCopier.removeCopy(at: $0) },
         synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
     ) {
         self.safety = DataOperationSafety(homeDirectory: homeDirectory, store: store, runner: safetyRunner,

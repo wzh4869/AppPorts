@@ -249,11 +249,6 @@ enum AppMoverError: LocalizedError {
     /// - Note: 必须先退出应用才能进行迁移或删除操作
     case appIsRunning
     
-    /// App Store 应用错误
-    /// - Parameter Error: 相关的错误信息
-    /// - Note: App Store 应用受 macOS 系统保护，自动迁移可能失败
-    case appStoreAppError(Error)
-    
     // MARK: - LocalizedError 实现
     
     /// 提供用户友好的错误描述
@@ -270,15 +265,6 @@ enum AppMoverError: LocalizedError {
             
         case .appIsRunning:
             return "该应用正在运行。请先退出应用，然后再试。".localized
-            
-        case .appStoreAppError:
-            return """
-            此 App Store 应用受系统保护，无法自动迁移。
-            
-            请尝试：
-            1. 手动将应用移动到外部存储
-            2. 然后回到 AppPorts 创建链接
-            """.localized
         }
     }
 }

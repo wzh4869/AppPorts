@@ -28,7 +28,7 @@ Status: implemented
 
 来源的固定镜像对照为 20,000 × 4 KiB 与 4 × 128 MiB，按旧、新、新、旧执行，每版每数据两轮中位数。build 27 已测速，build 28–30 未重测。真实微信 build 27 往返比对使用 38,674 文件的各自正确时间点；10 月 14 日另有多应用验证。
 
-来源保留了容量观测、夹具、签名计时和 build 28 组合运行失败；有些独立重跑通过，有些范围仍未测。`script/isolate_test_host.py`、`script/prepare_apfs_baseline.py`、`script/benchmark_apfs_lifecycle.py`、`script/validate_private_apfs.py` 是隔离宿主、基线准备、生命周期测速与私有 APFS 校验的实现入口。
+来源保留了容量观测、夹具、签名计时和 build 28 组合运行失败；有些独立重跑通过，有些范围仍未测。`script/isolate_test_host.py`、`script/validate_private_apfs.py` 是隔离宿主与私有 APFS 校验的现行入口（早期的 v1.9.0 基线测速脚手架已完成使命并移除）。
 
 ## 2026-10-22 企业微信 USB 验证
 

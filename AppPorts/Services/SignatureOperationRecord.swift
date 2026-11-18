@@ -273,20 +273,14 @@ struct SignatureOperationStore: Sendable {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         try DurableFileIO.write(encoder.encode(record), to: directoryURL.appendingPathComponent(record.id.uuidString + ".plist"))
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
 
     func remove(_ record: SignatureOperationRecord) throws {
         try FileManager.default.removeItem(at: directoryURL.appendingPathComponent(record.id.uuidString + ".plist"))
         try DurableFileIO.syncDirectory(at: directoryURL)
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
-}
-
-extension Notification.Name {
-    static let signatureMaterialsDidChange = Notification.Name("AppPorts.signatureMaterialsDidChange")
 }
 
 /// Temporary, bounded-by-file-count deletion evidence. It is removed with the

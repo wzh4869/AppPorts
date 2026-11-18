@@ -660,7 +660,7 @@ final class AppMigrationServiceTests: XCTestCase {
 
     func testCancelledRestoreCleansReadOnlyCopyAndRestoresTheOriginalPortal() async throws {
         let workspace = try makeWorkspace()
-        defer { try? FileCopier.removeCopy(at: workspace.rootURL) }
+        defer { try? SignatureSnapshot.remove(workspace.rootURL); cleanupWorkspace(workspace.rootURL) }
         let externalAppURL = workspace.externalRootURL.appendingPathComponent("Cancelled.app")
         let localAppURL = workspace.localAppsURL.appendingPathComponent("Cancelled.app")
         try createAppBundle(at: externalAppURL, payload: "keep-external-source")
@@ -1076,13 +1076,6 @@ final class AppMigrationServiceTests: XCTestCase {
         XCTAssertTrue(literal.contains("\\\"quoted\\\""))
         XCTAssertTrue(literal.contains("Slash\\\\Name.app"))
         XCTAssertTrue(literal.contains("it's"))
-
-        let script = CodeSigner.ownershipRepairAppleScript(username: "user'name", appPath: path)
-        XCTAssertTrue(script.contains("set targetPath to \(literal)"))
-        XCTAssertTrue(script.contains("set userName to \"user'name\""))
-        XCTAssertTrue(script.contains("quoted form of userName"))
-        XCTAssertTrue(script.contains("quoted form of targetPath"))
-        XCTAssertFalse(script.contains("'\\(path)'"))
     }
 
     // MARK: - 还原前把「本地入口记录」换成外部本体

@@ -163,7 +163,6 @@ struct SignatureHistoryStore: Sendable {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .xml
         try DurableFileIO.write(encoder.encode(backup), to: url)
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
 
@@ -434,7 +433,6 @@ struct SignatureHistoryStore: Sendable {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         try DurableFileIO.write(encoder.encode(deletion), to: cleanupDirectoryURL.appendingPathComponent(deletion.id.uuidString + ".plist"))
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
 
@@ -502,7 +500,6 @@ struct SignatureHistoryStore: Sendable {
         }
         try FileManager.default.removeItem(at: url)
         try DurableFileIO.syncDirectory(at: cleanupDirectoryURL)
-        NotificationCenter.default.post(name: .signatureMaterialsDidChange, object: nil)
         NotificationCenter.default.post(name: .appPortsRecordsDidChange, object: nil)
     }
 

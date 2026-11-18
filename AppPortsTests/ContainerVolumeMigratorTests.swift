@@ -3292,7 +3292,6 @@ struct ContainerVolumeMigratorTests {
             mountFlags: @escaping @Sendable (URL) -> UInt32? = { _ in UInt32(MNT_DONTBROWSE) },
             safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
             makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
-            removeMigrationBackup: @escaping @Sendable (URL) throws -> Void = { try FileCopier.removeCopy(at: $0) },
             synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
         ) -> ContainerVolumeMigrator {
             let counter = agentSyncCounter
@@ -3312,7 +3311,6 @@ struct ContainerVolumeMigratorTests {
                 homeDirectory: rootURL.appendingPathComponent("Home"),
                 safetyRunner: safetyRunner,
                 makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
-                removeMigrationBackup: removeMigrationBackup,
                 synchronizeCleanupParent: synchronizeCleanupParent
             )
         }

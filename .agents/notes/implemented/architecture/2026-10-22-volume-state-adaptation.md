@@ -56,7 +56,7 @@ Status: implemented
 
 ## Verification
 
-2026-10-22：最终 Release `xcodebuild clean build` 成功（macOS，关闭代码签名）。定向运行 13 个套件：113 项 XCTest、169 项 Swift Testing，共 282 项全部通过。包括 `VolumeStateClassifierTests`、`ContainerMountResumeTests`、`ContainerVolumeMigratorTests`、`DataTransferStoreTests`、`DataPreparationRecoveryTests`、`DataDirMoverTests`、`TreeCopySessionTests`、`AppLoggerTests`、`OperationLockTests`、`OperationMaintenanceProgressTests`、`ContainerMountSafetyTests`、`ContainerRestoreParentSafetyTests`、`DataTransferMaterialServiceTests`。参数化子用例由各套件另行计数，不重复累计为独立测试。
+2026-10-22：最终 Release `xcodebuild clean build` 成功（macOS，关闭代码签名）。定向运行 13 个套件：113 项 XCTest、169 项 Swift Testing，共 282 项全部通过。包括 `VolumeStateClassifierTests`、`ContainerMountResumeTests`、`ContainerVolumeMigratorTests`、`DataTransferStoreTests`、`DataPreparationRecoveryTests`、`DataDirMoverTests`、`TreeCopySessionTests`、`AppLoggerTests`、`OperationLockTests`、`OperationMaintenanceProgressTests`、`ContainerMountSafetyTests`、`ContainerRestoreParentSafetyTests` 及当时的薄包装回归（无生产调用方的 `DataTransferMaterialService` 后来由[历史死代码与过期资产清理](../simplification/2026-11-18-历史死代码与过期资产清理.md)移除，保留材料继续由 `ContainerMountStore.preservedMaterials` 直接读取）。参数化子用例由各套件另行计数，不重复累计为独立测试。
 
 独立审查指出的前驱退避、失败计时、保留暂存内容证明、诊断阻塞和原始输出、外来卷、还原入口分类、重挂设备号问题均已修正；最终复核没有未解决的重要问题。笔记树、格式、归档校验通过。构建与测试日志分别位于 `/tmp/AppPorts-volume-state-release.log`、`/tmp/AppPorts-volume-state-verified-tests.log`；原始 HEAD 的既有测试失败证据位于 `/tmp/AppPorts-volume-baseline.log` 和 `/tmp/AppPorts-volume-baseline-extra.log`。这些是本机临时证据，不是仓库内长期测试报告。
 
