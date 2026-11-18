@@ -1367,11 +1367,15 @@ extension CodeSigner {
                   try DataPathIdentity.capture(snapshot).matchesFilesystemObject(expected),
                   !expected.matchesFilesystemObject(appIdentity) else { throw SigningError.snapshotInvalid }
             let partial = cleanup.actualDeletionStarted == true
+            var justCapturedManifest = false
             if cleanup.removalManifest == nil {
                 _ = try history.verifiedSnapshot(for: backup)
                 cleanup.removalManifest = try SignatureRemovalManifest.capture(at: snapshot)
+                justCapturedManifest = true
             }
-            try cleanup.removalManifest!.verify(at: snapshot, allowingPartial: partial)
+            if !justCapturedManifest {
+                try cleanup.removalManifest!.verify(at: snapshot, allowingPartial: partial)
+            }
             cleanup.actualDeletionStarted = true
             backup.cleanup = cleanup
             try history.write(backup, to: recordURL)

@@ -102,6 +102,46 @@ final class DirectorySizeTraversalTests: XCTestCase {
             .write(to: URL(fileURLWithPath: output))
     }
 
+    func testSinglePassSubtreeMeasurementMatchesIndividualTraversals() throws {
+        let root = try workspace()
+        let unreadable = root.appendingPathComponent("msg/unreadable")
+        defer {
+            _ = chmod(unreadable.path, 0o700)
+            try? manager.removeItem(at: root)
+        }
+        let db = root.appendingPathComponent("db_storage")
+        let msg = root.appendingPathComponent("msg")
+        let attach = msg.appendingPathComponent("attach")
+        let file = msg.appendingPathComponent("file")
+        let video = msg.appendingPathComponent("video")
+        let business = root.appendingPathComponent("business")
+        for dir in [db, attach, file, video, business, unreadable] {
+            try manager.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        try Data(repeating: 0x11, count: 100).write(to: db.appendingPathComponent("db.sqlite"))
+        try Data(repeating: 0x22, count: 200).write(to: attach.appendingPathComponent("thumb.bin"))
+        try Data(repeating: 0x33, count: 300).write(to: file.appendingPathComponent("doc.pdf"))
+        try Data(repeating: 0x44, count: 400).write(to: video.appendingPathComponent("clip.mp4"))
+        try Data(repeating: 0x55, count: 500).write(to: business.appendingPathComponent("res.dat"))
+        if geteuid() != 0 {
+            XCTAssertEqual(chmod(unreadable.path, 0), 0)
+        }
+
+        let single = DirectorySizeTraversal.measure(at: root, subtrees: [msg, business, file, video])
+        let baselineRoot = DirectorySizeTraversal.measure(at: root)
+        XCTAssertEqual(single.root.bytes, baselineRoot.bytes)
+        XCTAssertEqual(single.root.isComplete, baselineRoot.isComplete)
+        XCTAssertEqual(single.root.readIssues.count, baselineRoot.readIssues.count)
+
+        for subtree in [msg, business, file, video] {
+            let expected = DirectorySizeTraversal.measure(at: subtree)
+            let actual = try XCTUnwrap(single.subtrees[subtree])
+            XCTAssertEqual(actual.bytes, expected.bytes)
+            XCTAssertEqual(actual.isComplete, expected.isComplete)
+            XCTAssertEqual(actual.readIssues.count, expected.readIssues.count)
+        }
+    }
+
     private func workspace() throws -> URL {
         let root = manager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try manager.createDirectory(at: root, withIntermediateDirectories: true)

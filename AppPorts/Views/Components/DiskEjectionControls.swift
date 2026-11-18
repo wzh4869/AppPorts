@@ -65,8 +65,13 @@ struct DiskEjectionControls: View {
             : controller.pauses.isEmpty ? "弹出整块外置硬盘及其所有卷。".localized
                 : "此磁盘的自动挂载已暂停。请重新插入设备以恢复自动挂载。".localized)
         .task { await controller.observeDisks() }
-        .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { _ in
-            if controller.needsRefresh || !controller.pauses.isEmpty { Task { await controller.refresh() } }
+        .task(id: controller.needsRefresh || !controller.pauses.isEmpty) {
+            guard controller.needsRefresh || !controller.pauses.isEmpty else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                guard !Task.isCancelled, controller.needsRefresh || !controller.pauses.isEmpty else { break }
+                await controller.refresh()
+            }
         }
         .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { _ in
             Task { await controller.refresh() }

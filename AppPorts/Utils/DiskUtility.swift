@@ -424,12 +424,37 @@ struct DiskUtility: Sendable {
         }
     }
 
+    struct VolumePresenceAndLockState: Sendable {
+        let isOnline: Bool
+        let isLocked: Bool
+    }
+
+    /// 同一次 `diskutil info -plist` 查询返回在线与加密锁定状态，避免扫描期对同一 UUID 重复起进程。
+    static func volumePresenceAndLockState(_ volume: String, timeout: TimeInterval = 15) -> VolumePresenceAndLockState {
+        guard let result = try? ProcessCommandRunner.runSynchronously(
+            executable: diskutilPath,
+            arguments: ["info", "-plist", volume],
+            timeout: timeout
+        ) else {
+            return VolumePresenceAndLockState(isOnline: false, isLocked: false)
+        }
+        if result.timedOut {
+            AppLogger.shared.logContext(
+                "diskutil info 查询超时，已终止",
+                details: [("volume", volume), ("timeout_sec", String(Int(timeout)))],
+                level: "WARN"
+            )
+            return VolumePresenceAndLockState(isOnline: false, isLocked: false)
+        }
+        guard result.status == 0 else {
+            return VolumePresenceAndLockState(isOnline: false, isLocked: false)
+        }
+        let plist = try? PropertyListSerialization.propertyList(from: result.standardOutput, format: nil) as? [String: Any]
+        return VolumePresenceAndLockState(isOnline: true, isLocked: plist?["Locked"] as? Bool == true)
+    }
+
     static func isVolumeLocked(_ volume: String) -> Bool {
-        guard let result = try? ProcessCommandRunner.runSynchronously(executable: diskutilPath,
-            arguments: ["info", "-plist", volume], timeout: 15), result.status == 0,
-              let plist = try? PropertyListSerialization.propertyList(from: result.standardOutput, format: nil) as? [String: Any]
-        else { return false }
-        return plist["Locked"] as? Bool == true
+        volumePresenceAndLockState(volume).isLocked
     }
 
     private struct CreationContainer {
@@ -812,28 +837,7 @@ struct DiskUtility: Sendable {
 
     /// 同步查询卷是否在线（已连接，无论是否挂载）；供扫描器使用，带超时。
     static func isVolumeOnline(_ volume: String, timeout: TimeInterval = 15) -> Bool {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: diskutilPath)
-        process.arguments = ["info", "-plist", volume]
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
-        let exited = DispatchSemaphore(value: 0)
-        process.terminationHandler = { _ in exited.signal() }
-        do {
-            try process.run()
-        } catch {
-            return false
-        }
-        guard exited.wait(timeout: .now() + timeout) == .success else {
-            process.terminate()
-            AppLogger.shared.logContext(
-                "diskutil info 查询超时，已终止",
-                details: [("volume", volume), ("timeout_sec", String(Int(timeout)))],
-                level: "WARN"
-            )
-            return false
-        }
-        return process.terminationStatus == 0
+        volumePresenceAndLockState(volume, timeout: timeout).isOnline
     }
 
     /// 生成外置卷名称：可读、含应用标识，并带随机后缀避免重名。

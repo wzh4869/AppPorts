@@ -305,8 +305,7 @@ struct SignatureRemovalManifest: Codable, Equatable, Sendable {
     static func capture(at root: URL) throws -> Self {
         let rootIdentity = try DataPathIdentity.capture(root)
         let rootInfo = try SignatureSnapshot.info(at: root)
-        let entries = try SignatureSnapshot.items(in: root).map { url -> Entry in
-            let info = try SignatureSnapshot.info(at: url)
+        let entries = try SignatureSnapshot.itemsWithInfo(in: root).map { url, info -> Entry in
             guard info.st_dev == rootInfo.st_dev else { throw TreeCopyError.mountBoundary(url.path) }
             let kind = info.st_mode & S_IFMT
             guard kind == S_IFDIR || kind == S_IFREG || kind == S_IFLNK else { throw CodeSigner.SigningError.snapshotInvalid }
@@ -314,37 +313,55 @@ struct SignatureRemovalManifest: Codable, Equatable, Sendable {
                          inode: UInt64(info.st_ino), kind: UInt16(kind), mode: info.st_mode & 0o7777,
                          flags: info.st_flags, birthSeconds: Int64(info.st_birthtimespec.tv_sec),
                          birthNanoseconds: Int64(info.st_birthtimespec.tv_nsec),
-                         fingerprint: kind == S_IFDIR ? nil : try SignatureSnapshot.fingerprint(of: url))
+                         fingerprint: kind == S_IFDIR ? nil : try SignatureSnapshot.singleNodeFingerprint(at: url, info: info))
         }
         guard try DataPathIdentity.capture(root).matchesFilesystemObject(rootIdentity) else { throw CodeSigner.SigningError.applicationChanged }
         return .init(rootIdentity: rootIdentity, entries: entries)
     }
 
     func verify(at root: URL, allowingPartial: Bool) throws {
+        _ = try verifyAndSnapshotStats(at: root, allowingPartial: allowingPartial)
+    }
+
+    private func verifyAndSnapshotStats(at root: URL, allowingPartial: Bool) throws -> [String: stat] {
         try validateStructure()
         guard try DataPathIdentity.capture(root).matchesFilesystemObject(rootIdentity) else { throw CodeSigner.SigningError.applicationChanged }
         let rootInfo = try SignatureSnapshot.info(at: root)
         let known = Dictionary(uniqueKeysWithValues: entries.map { ($0.path, $0) })
-        let paths = try SignatureSnapshot.items(in: root)
-        if !allowingPartial, paths.count != entries.count { throw CodeSigner.SigningError.applicationChanged }
-        for url in paths {
+        let items = try SignatureSnapshot.itemsWithInfo(in: root)
+        if !allowingPartial, items.count != entries.count { throw CodeSigner.SigningError.applicationChanged }
+        var statsByPath: [String: stat] = [:]
+        for (url, info) in items {
             let path = String(url.path.dropFirst(root.path.count)).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             guard let entry = known[path] else { throw CodeSigner.SigningError.applicationChanged }
-            let info = try SignatureSnapshot.info(at: url)
             try requireIdentity(info, entry, device: rootInfo.st_dev)
-            let fingerprint = entry.fingerprint == nil ? nil : try SignatureSnapshot.fingerprint(of: url)
+            let fingerprint = entry.fingerprint == nil ? nil : try SignatureSnapshot.singleNodeFingerprint(at: url, info: info)
             guard info.st_mode & 0o7777 == entry.mode,
                   info.st_flags == entry.flags || (allowingPartial && info.st_flags == entry.flags & ~UInt32(UF_IMMUTABLE)),
                   fingerprint == entry.fingerprint else {
                 throw CodeSigner.SigningError.applicationChanged
             }
+            if entry.kind == S_IFREG {
+                let afterHash = try SignatureSnapshot.info(at: url)
+                guard afterHash.st_dev == info.st_dev, afterHash.st_ino == info.st_ino,
+                      afterHash.st_mode == info.st_mode, afterHash.st_flags == info.st_flags,
+                      afterHash.st_size == info.st_size,
+                      afterHash.st_mtimespec.tv_sec == info.st_mtimespec.tv_sec,
+                      afterHash.st_mtimespec.tv_nsec == info.st_mtimespec.tv_nsec,
+                      afterHash.st_ctimespec.tv_sec == info.st_ctimespec.tv_sec,
+                      afterHash.st_ctimespec.tv_nsec == info.st_ctimespec.tv_nsec else {
+                    throw CodeSigner.SigningError.applicationChanged
+                }
+                statsByPath[path] = afterHash
+            }
         }
+        return statsByPath
     }
 
     /// Anchored no-follow removal. Unknown entries are never recursively swept
     /// up, and every node is checked again immediately before unlinking it.
     func remove(at root: URL, allowingPartial: Bool, unlockCopiedFlags: Bool) throws {
-        try verify(at: root, allowingPartial: allowingPartial)
+        let verifiedStats = try verifyAndSnapshotStats(at: root, allowingPartial: allowingPartial)
         if !unlockCopiedFlags, let locked = entries.first(where: { $0.flags & UInt32(UF_IMMUTABLE | SF_IMMUTABLE | UF_APPEND | SF_APPEND) != 0 }) {
             throw CodeSigner.SigningError.lockedApplication(root.appendingPathComponent(locked.path))
         }
@@ -376,17 +393,25 @@ struct SignatureRemovalManifest: Codable, Equatable, Sendable {
             var opened = stat()
             guard fstat(fd, &opened) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
             try requireIdentity(opened, entry, device: expectedDevice)
+            if entry.kind == S_IFREG {
+                guard let expectedStat = verifiedStats[path],
+                      opened.st_dev == expectedStat.st_dev,
+                      opened.st_ino == expectedStat.st_ino,
+                      (opened.st_mode & 0o7777) == (expectedStat.st_mode & 0o7777),
+                      opened.st_size == expectedStat.st_size,
+                      opened.st_mtimespec.tv_sec == expectedStat.st_mtimespec.tv_sec,
+                      opened.st_mtimespec.tv_nsec == expectedStat.st_mtimespec.tv_nsec,
+                      opened.st_ctimespec.tv_sec == expectedStat.st_ctimespec.tv_sec,
+                      opened.st_ctimespec.tv_nsec == expectedStat.st_ctimespec.tv_nsec else {
+                    throw CodeSigner.SigningError.applicationChanged
+                }
+            }
             if opened.st_flags & UInt32(UF_IMMUTABLE) != 0 {
                 guard unlockCopiedFlags, opened.st_nlink == 1 || entry.kind == S_IFDIR,
                       fchflags(fd, opened.st_flags & ~UInt32(UF_IMMUTABLE)) == 0 else { throw CodeSigner.SigningError.lockedApplication(root.appendingPathComponent(path)) }
             }
             if entry.kind == S_IFDIR {
                 for child in children[path] ?? [] { try removeNode(parentFD: fd, name: (child.path as NSString).lastPathComponent, path: child.path) }
-            } else {
-                // The whole tree was content-checked immediately before this anchored
-                // traversal. Reject an intervening write before unlinking this inode.
-                let url = path.isEmpty ? root : root.appendingPathComponent(path)
-                guard try SignatureSnapshot.fingerprint(of: url) == entry.fingerprint else { throw CodeSigner.SigningError.applicationChanged }
             }
             guard fstatat(parentFD, name, &observed, AT_SYMLINK_NOFOLLOW) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
             try requireIdentity(observed, entry, device: expectedDevice)

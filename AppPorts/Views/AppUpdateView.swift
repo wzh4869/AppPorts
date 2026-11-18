@@ -28,7 +28,6 @@ struct AppUpdateActions: View {
     let update: AppUpdateInfo
     let dismiss: () -> Void
     @ObservedObject private var updater = AppUpdateController.shared
-    @ObservedObject private var operations = AppOperationState.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {

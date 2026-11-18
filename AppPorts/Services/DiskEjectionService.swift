@@ -88,7 +88,7 @@ struct DiskEjectionService: Sendable {
         for uuid in target.volumeUUIDs.sorted() {
             if let info = try? await disk.volumeInfo(for: uuid), let path = info.mountPoint, !path.isEmpty {
                 member = (uuid, path)
-                if url?.path == path || url?.path.hasPrefix(path + "/") == true { break }
+                if url == nil || url?.path == path || url?.path.hasPrefix(path + "/") == true { break }
             }
         }
         guard let member else { throw DiskEjectionError.unavailable }

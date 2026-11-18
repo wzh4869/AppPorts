@@ -196,11 +196,12 @@ actor DataDirScanner {
     private let managedLinkSchemaVersion = 1
     private let mountStore: ContainerMountStore
     private let isMountPoint: @Sendable (URL) -> Bool
-    private let isVolumeOnline: @Sendable (String) -> Bool
-    private let isVolumeLocked: @Sendable (String) -> Bool
+    private let isVolumeOnlineOverride: (@Sendable (String) -> Bool)?
+    private let isVolumeLockedOverride: (@Sendable (String) -> Bool)?
     private let isSandboxedApplication: @Sendable (URL) -> Bool
     /// 本轮扫描开始时读取一次的挂载记录，避免逐路径重复读文件。
     private var mountRecordsByPath: [String: ContainerMountRecord] = [:]
+    private var volumeStateCache: [String: DiskUtility.VolumePresenceAndLockState] = [:]
     private var recoveryInspection: ContainerMountStore.Inspection?
     private var readIssues: [DataDirReadIssue] = []
     private var pausedMountDirectories: Set<URL> = []
@@ -223,8 +224,8 @@ actor DataDirScanner {
         preferredWeChatSplitGroup: PartialWeChatMigrationPolicy.SplitGroup? = nil,
         weChatContainerIdentifier: String = PartialWeChatMigrationPolicy.bundleIdentifier,
         isMountPoint: @escaping @Sendable (URL) -> Bool = { DiskUtility.isMountPoint($0) },
-        isVolumeOnline: @escaping @Sendable (String) -> Bool = { DiskUtility.isVolumeOnline($0) },
-        isVolumeLocked: @escaping @Sendable (String) -> Bool = { DiskUtility.isVolumeLocked($0) },
+        isVolumeOnline: (@Sendable (String) -> Bool)? = nil,
+        isVolumeLocked: (@Sendable (String) -> Bool)? = nil,
         isSandboxedApplication: @escaping @Sendable (URL) -> Bool = { DataDirScanner.isSandboxedRealApplication($0) }
     ) {
         self.homeDir = homeDir.standardizedFileURL
@@ -233,8 +234,8 @@ actor DataDirScanner {
         self.preferredWeChatSplitGroup = preferredWeChatSplitGroup
         self.weChatContainerIdentifier = weChatContainerIdentifier
         self.isMountPoint = isMountPoint
-        self.isVolumeOnline = isVolumeOnline
-        self.isVolumeLocked = isVolumeLocked
+        self.isVolumeOnlineOverride = isVolumeOnline
+        self.isVolumeLockedOverride = isVolumeLocked
         self.isSandboxedApplication = isSandboxedApplication
     }
 
@@ -491,6 +492,7 @@ actor DataDirScanner {
             level: "TRACE"
         )
         refreshMountRecords(for: nil)
+        volumeStateCache.removeAll(keepingCapacity: true)
         var results: [DataDirItem] = []
 
         for known in knownDotFolders {
@@ -556,6 +558,7 @@ actor DataDirScanner {
     /// matching and the business browser's depth limit cannot prove absence.
     func scanSignatureDependencies(bundleIdentifier: String, applicationGroups: [String]) -> DataDirScanResult {
         readIssues = []
+        volumeStateCache.removeAll(keepingCapacity: true)
         let containers = homeDir.appendingPathComponent("Library/Containers")
         let groups = homeDir.appendingPathComponent("Library/Group Containers")
         var roots: [(URL, DataDirType)] = []
@@ -640,6 +643,7 @@ actor DataDirScanner {
         }
         let bundleID = identity?.bundleIdentifier
         refreshMountRecords(for: bundleID)
+        volumeStateCache.removeAll(keepingCapacity: true)
         let appName = app.displayName.replacingOccurrences(of: ".app", with: "")
         let matchProfile = buildMatchProfile(bundleID: bundleID, appName: appName)
         let appIsSandboxed = isSandboxedApplication(app.displayURL)
@@ -745,6 +749,7 @@ actor DataDirScanner {
         for record in mountRecordsByPath.values {
             guard let type = DataDirType(rawValue: record.dataDirType) else { continue }
             let url = record.mountPointURL.standardizedFileURL
+            if resultsByPath[url.path] != nil { continue }
             var item = makeAppDataItem(name: url.lastPathComponent, path: url, type: type,
                                       priority: .critical, description: "容器内部数据目录", appName: appName)
             applyInspectionResult(to: &item, inspection: inspectItem(at: url, type: type), externalRootURL: externalRootURL)
@@ -1709,14 +1714,32 @@ actor DataDirScanner {
         return false
     }
 
+    private func volumeState(for volumeUUID: String) -> DiskUtility.VolumePresenceAndLockState {
+        let key = volumeUUID.uppercased()
+        if let cached = volumeStateCache[key] {
+            return cached
+        }
+        let state: DiskUtility.VolumePresenceAndLockState
+        if isVolumeOnlineOverride == nil && isVolumeLockedOverride == nil {
+            state = DiskUtility.volumePresenceAndLockState(volumeUUID)
+        } else {
+            let online = (isVolumeOnlineOverride ?? { DiskUtility.isVolumeOnline($0) })(volumeUUID)
+            let locked = online ? (isVolumeLockedOverride ?? { DiskUtility.isVolumeLocked($0) })(volumeUUID) : false
+            state = DiskUtility.VolumePresenceAndLockState(isOnline: online, isLocked: locked)
+        }
+        volumeStateCache[key] = state
+        return state
+    }
+
     /// 检测目录当前状态，并区分 AppPorts 受管链接、挂载迁移项和已有符号链接。
     private func inspectItem(at url: URL, type: DataDirType) -> (status: String, linkedDestination: URL?) {
         if let record = mountRecord(for: url) {
             if isMountPoint(url) {
                 return (DataDirStatus.mounted, nil)
             }
-            guard isVolumeOnline(record.volumeUUID) else { return (DataDirStatus.volumeMissing, nil) }
-            if record.isEncrypted == true, isVolumeLocked(record.volumeUUID) {
+            let volume = volumeState(for: record.volumeUUID)
+            guard volume.isOnline else { return (DataDirStatus.volumeMissing, nil) }
+            if record.isEncrypted == true, volume.isLocked {
                 return (DataDirStatus.waitingForUnlock, nil)
             }
             return (DataDirStatus.pendingMount, nil)

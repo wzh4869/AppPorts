@@ -151,8 +151,10 @@ final class AppSearchRecordStore: @unchecked Sendable {
     private func mutate(_ body: (inout [AppSearchRecord]) throws -> Void) throws {
         lock.lock(); defer { lock.unlock() }
         try WriterAdmission.recheck(dataDirectory: fileURL.deletingLastPathComponent())
-        var records = try read()
+        let original = try read()
+        var records = original
         try body(&records)
+        guard records != original else { return }
         try WriterAdmission.recheck(dataDirectory: fileURL.deletingLastPathComponent())
         try FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try JSONEncoder().encode(records).write(to: fileURL, options: .atomic)

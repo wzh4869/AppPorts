@@ -2193,7 +2193,16 @@ struct DataDirsView: View {
                 performWeChatSplitOperation(item, mode: mode, restoring: restoring, encryption: encryption, retrying: retry)
             })
         }) { progress in
-            let fresh = try await preparation?.refresh(item, progress: progress) ?? item
+            let fresh: DataDirItem
+            let preverifiedSources: Set<String>
+            if let preparation {
+                fresh = try await preparation.refresh(item, progress: progress)
+                let sources = fresh.weChatSplitMembers.isEmpty ? [fresh] : fresh.weChatSplitMembers
+                preverifiedSources = Set(sources.map { $0.path.standardizedFileURL.path })
+            } else {
+                fresh = item
+                preverifiedSources = []
+            }
             let service = WeChatAccountMigrationService(enabled: splitEnabled,
                 containerIdentifier: containerIdentifier, encryption: encryption)
             let activeUnits: [URL]
@@ -2210,7 +2219,7 @@ struct DataDirsView: View {
             } else {
                 guard let destination else { throw DataOperationSafety.Failure.inspection("请先选择外部存储路径".localized) }
                 warnings = try await service.migrate(account: fresh.path, mode: mode, externalRoot: destination,
-                    appName: appName, progress: { progress.update($0) })
+                    appName: appName, preverifiedSources: preverifiedSources, progress: { progress.update($0) })
             }
             return warnings.isEmpty ? nil : warnings.joined(separator: "\n")
         }

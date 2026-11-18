@@ -212,8 +212,18 @@ private struct MigrationTaskRow: View {
     }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.5)) { _ in
-            HStack(alignment: .center, spacing: 10) {
+        if job.status.isFinished {
+            rowContent
+        } else {
+            TimelineView(.periodic(from: .now, by: 0.5)) { _ in
+                rowContent
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var rowContent: some View {
+        HStack(alignment: .center, spacing: 10) {
                 Button {
                     selected.toggle()
                 } label: {
@@ -316,7 +326,6 @@ private struct MigrationTaskRow: View {
             .padding(10)
             .background(job.status == .attention ? Color.orange.opacity(0.12) : Color.primary.opacity(isEmbedded ? 0 : 0.04),
                         in: RoundedRectangle(cornerRadius: isEmbedded ? 0 : 10))
-        }
     }
 }
 
@@ -334,7 +343,7 @@ struct MigrationTaskDetail: View {
     }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+        Group {
             if job.status.isFinished {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(verbatim: job.displayTitle).font(AppDialogTypography.title)
@@ -387,8 +396,10 @@ struct MigrationTaskDetail: View {
                 .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white,
                             in: RoundedRectangle(cornerRadius: 16))
             } else {
-                DataDirProgressContent(title: job.displayTitle, snapshot: job.progress.snapshot(),
-                    overallProgress: job.fraction, actions: AnyView(actions))
+                TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+                    DataDirProgressContent(title: job.displayTitle, snapshot: job.progress.snapshot(),
+                        overallProgress: job.fraction, actions: AnyView(actions))
+                }
             }
         }
         .sheet(isPresented: $showsAppRecovery) {

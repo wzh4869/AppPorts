@@ -100,16 +100,60 @@ struct WeChatAccountMigrationService: Sendable {
 
     func measure(_ account: URL) throws -> Sizing {
         try requireAccount(account)
-        let total = measureDirectorySize(at: account, useCache: false)
+        let accountDevice = try SignatureSnapshot.info(at: account).st_dev
+        let mediaMembers = policy.members(of: account, group: .media)
+        let existingCold = policy.existingDirectoryMembers(of: account, group: .filesAndVideos)
+
+        var singlePassSubtrees: Set<URL> = []
+        var standaloneMedia: [URL] = []
+        var standaloneCold: [URL] = []
         var media = DirectorySizeResult()
-        for member in policy.members(of: account, group: .media) {
+
+        for member in mediaMembers {
+            var info = stat()
+            if lstat(member.path, &info) != 0 {
+                media.readIssues.append(.init(url: member, error: POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)))
+            } else if (info.st_mode & S_IFMT) == S_IFDIR && info.st_dev == accountDevice {
+                singlePassSubtrees.insert(member.standardizedFileURL)
+            } else {
+                standaloneMedia.append(member)
+            }
+        }
+
+        for member in existingCold {
+            var info = stat()
+            if lstat(member.path, &info) == 0 && (info.st_mode & S_IFMT) == S_IFDIR && info.st_dev == accountDevice {
+                singlePassSubtrees.insert(member.standardizedFileURL)
+            } else {
+                standaloneCold.append(member)
+            }
+        }
+
+        let singlePass = DirectorySizeTraversal.measure(at: account, subtrees: singlePassSubtrees)
+        let total = singlePass.root
+
+        for member in mediaMembers {
+            let key = member.standardizedFileURL
+            if singlePassSubtrees.contains(key), let result = singlePass.subtrees[key] {
+                media.bytes += result.bytes
+                media.readIssues += result.readIssues
+            }
+        }
+        for member in standaloneMedia {
             let result = measureDirectorySize(at: member, useCache: false)
             media.bytes += result.bytes
             media.readIssues += result.readIssues
         }
-        let existingCold = policy.existingDirectoryMembers(of: account, group: .filesAndVideos)
+
         var cold = DirectorySizeResult()
         for member in existingCold {
+            let key = member.standardizedFileURL
+            if singlePassSubtrees.contains(key), let result = singlePass.subtrees[key] {
+                cold.bytes += result.bytes
+                cold.readIssues += result.readIssues
+            }
+        }
+        for member in standaloneCold {
             let result = measureDirectorySize(at: member, useCache: false)
             cold.bytes += result.bytes
             cold.readIssues += result.readIssues
@@ -140,10 +184,12 @@ struct WeChatAccountMigrationService: Sendable {
 
     /// The caller owns the application operation and cross-process locks for the whole group.
     func migrate(account: URL, mode: Mode, externalRoot: URL, appName: String,
+                 preverifiedSources: Set<String> = [],
                  progress: FileCopier.ProgressHandler? = nil) async throws -> [String] {
         if DataTransferSession.current == nil {
             return try await DataTransferSession.run {
-                try await migrate(account: account, mode: mode, externalRoot: externalRoot, appName: appName, progress: progress)
+                try await migrate(account: account, mode: mode, externalRoot: externalRoot, appName: appName,
+                                  preverifiedSources: preverifiedSources, progress: progress)
             }
         }
         try requireAccount(account)
@@ -184,7 +230,9 @@ struct WeChatAccountMigrationService: Sendable {
             try safety.requireNoOverlap(at: source)
             try safety.requireNoManagedFileSystemAncestor(at: source)
             try safety.requireNoManagedDescendants(at: source)
-            guard measureDirectorySize(at: source, useCache: false).isComplete else { throw Failure.incompleteSize }
+            if !preverifiedSources.contains(source.standardizedFileURL.path) {
+                guard measureDirectorySize(at: source, useCache: false).isComplete else { throw Failure.incompleteSize }
+            }
         }
         var warnings: [String] = []
         if members.count > 1, let dataProgress = DataTransferSession.progress, dataProgress.snapshot().unitCount <= 1 {

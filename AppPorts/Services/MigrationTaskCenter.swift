@@ -361,8 +361,8 @@ final class MigrationTaskCenter: ObservableObject {
             showsList = false
             detailID = job.id
         }
+        scheduleRunnableJobs()
         publishCount()
-        schedule()
         return job.id
     }
 
@@ -374,8 +374,9 @@ final class MigrationTaskCenter: ObservableObject {
 
     func resume(_ ids: Set<UUID>) {
         for job in jobs where ids.contains(job.id) && job.supportsExecutionControls && !job.status.isFinished { job.control.resume() }
+        scheduleRunnableJobs()
         objectWillChange.send()
-        schedule()
+        persistHistory()
     }
 
     func cancel(_ ids: Set<UUID>) {
@@ -393,8 +394,8 @@ final class MigrationTaskCenter: ObservableObject {
                 job.worker?.cancel()
             }
         }
+        scheduleRunnableJobs()
         publishCount()
-        schedule()
     }
 
     func markArchivedIncomplete(_ id: UUID, message: String) {
@@ -418,7 +419,16 @@ final class MigrationTaskCenter: ObservableObject {
     }
 
     func schedule() {
-        guard !operationState.blocksInteraction else { return }
+        if scheduleRunnableJobs() {
+            objectWillChange.send()
+            persistHistory()
+        }
+    }
+
+    @discardableResult
+    private func scheduleRunnableJobs() -> Bool {
+        guard !operationState.blocksInteraction else { return false }
+        var didStart = false
         var active = jobs.filter { $0.status == .running && $0.supportsExecutionControls }
         for job in jobs where job.status == .queued {
             guard active.count < maximumConcurrentJobs else { break }
@@ -426,6 +436,7 @@ final class MigrationTaskCenter: ObservableObject {
                   !active.contains(where: { $0.resources.conflicts(with: job.resources) }) else { continue }
             guard let operation = job.operation else { continue }
             job.markStarted()
+            didStart = true
             active.append(job)
             let control = job.control
             let progress = job.progress
@@ -455,8 +466,7 @@ final class MigrationTaskCenter: ObservableObject {
                 self?.finish(job, result: result)
             }
         }
-        objectWillChange.send()
-        persistHistory()
+        return didStart
     }
 
     private func finish(_ job: MigrationJob, result: Result<String?, Error>) {
@@ -496,8 +506,8 @@ final class MigrationTaskCenter: ObservableObject {
         let completion = job.completion
         job.completion = nil
         completion?()
+        scheduleRunnableJobs()
         publishCount()
-        schedule()
     }
 
     private func publishCount() {

@@ -56,6 +56,30 @@ extension StorageCapabilities {
 }
 
 enum StorageCapabilityProbe {
+    private struct CacheKey: Hashable {
+        let device: dev_t
+        let inode: ino_t
+        let mode: mode_t
+        let flags: UInt32
+        let uid: uid_t
+        let gid: gid_t
+    }
+
+    private struct CacheEntry {
+        let capabilities: StorageCapabilities
+        let expiresAt: TimeInterval
+    }
+
+    private static let cacheLock = NSLock()
+    private static var cache: [CacheKey: CacheEntry] = [:]
+    private static let cacheTTL: TimeInterval = 5.0
+
+    internal static func clearCacheForTests() {
+        cacheLock.lock()
+        cache.removeAll()
+        cacheLock.unlock()
+    }
+
     /// Probe beside an application bundle, never inside its signed or locked tree.
     /// nil means the check could not run; access errors do not prove a missing capability.
     static func probe(destination: URL) -> StorageCapabilities? {
@@ -63,6 +87,30 @@ enum StorageCapabilityProbe {
         let descriptor = open(directory, O_RDONLY | O_DIRECTORY | O_NOFOLLOW)
         guard descriptor >= 0 else { return nil }
         defer { _ = close(descriptor) }
+        var dirInfo = stat()
+        guard fstat(descriptor, &dirInfo) == 0 else { return nil }
+        guard dirInfo.st_flags & UInt32(UF_IMMUTABLE | SF_IMMUTABLE) == 0,
+              faccessat(descriptor, ".", W_OK | X_OK, AT_EACCESS) == 0 else {
+            return nil
+        }
+
+        let cacheKey = CacheKey(
+            device: dirInfo.st_dev,
+            inode: dirInfo.st_ino,
+            mode: dirInfo.st_mode,
+            flags: dirInfo.st_flags,
+            uid: dirInfo.st_uid,
+            gid: dirInfo.st_gid
+        )
+        let now = ProcessInfo.processInfo.systemUptime
+        cacheLock.lock()
+        if let entry = cache[cacheKey], entry.expiresAt > now {
+            cacheLock.unlock()
+            return entry.capabilities
+        }
+        cache[cacheKey] = nil
+        cacheLock.unlock()
+
         let prefix = ".appports-probe-\(UUID().uuidString)"
 
         guard let acl = probeFile(in: descriptor, name: prefix + "-acl", operation: { fd in
@@ -82,8 +130,12 @@ enum StorageCapabilityProbe {
             return info.st_mode & 0o777 == 0o640
         }) else { return nil }
 
-        return StorageCapabilities(supportsACL: acl, supportsHardlinks: hardlinks,
-                                   supportsResourceFork: resourceFork, supportsPermissions: permissions)
+        let result = StorageCapabilities(supportsACL: acl, supportsHardlinks: hardlinks,
+                                         supportsResourceFork: resourceFork, supportsPermissions: permissions)
+        cacheLock.lock()
+        cache[cacheKey] = CacheEntry(capabilities: result, expiresAt: now + cacheTTL)
+        cacheLock.unlock()
+        return result
     }
 
     private static func probeFile(in directory: Int32, name: String,

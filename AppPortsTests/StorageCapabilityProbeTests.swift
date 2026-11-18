@@ -35,11 +35,32 @@ final class StorageCapabilityProbeTests: XCTestCase {
     }
 
     func testMissingDestinationUsesExistingDirectoryAndRemovesScratchFiles() throws {
+        StorageCapabilityProbe.clearCacheForTests()
         let root = try workspace()
         defer { try? FileManager.default.removeItem(at: root) }
         let target = root.appendingPathComponent("New/Example.app")
         XCTAssertEqual(StorageCapabilityProbe.probe(destination: target), StorageCapabilityProbe.probe(destination: root))
         XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: root.path).isEmpty)
+    }
+
+    func testWritableCacheHitSkipsScratchFilesAndInvalidatesOnReadOnlyMode() throws {
+        StorageCapabilityProbe.clearCacheForTests()
+        let root = try workspace()
+        defer {
+            _ = chmod(root.path, 0o700)
+            try? FileManager.default.removeItem(at: root)
+        }
+        let first = try XCTUnwrap(StorageCapabilityProbe.probe(destination: root))
+        let beforeStat = try SignatureSnapshot.info(at: root)
+        let second = try XCTUnwrap(StorageCapabilityProbe.probe(destination: root))
+        let afterStat = try SignatureSnapshot.info(at: root)
+        XCTAssertEqual(first, second)
+        XCTAssertEqual(beforeStat.st_mtimespec.tv_sec, afterStat.st_mtimespec.tv_sec)
+        XCTAssertEqual(beforeStat.st_mtimespec.tv_nsec, afterStat.st_mtimespec.tv_nsec)
+
+        guard geteuid() != 0 else { return }
+        XCTAssertEqual(chmod(root.path, 0o555), 0)
+        XCTAssertNil(StorageCapabilityProbe.probe(destination: root))
     }
 
     private func workspace() throws -> URL {

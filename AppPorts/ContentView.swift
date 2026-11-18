@@ -2225,11 +2225,12 @@ struct ContentView: View {
     /// migration and restoring cannot recover it. Say so before the user acts,
     /// because afterwards the external original is deleted and the gap becomes
     /// permanent.
-    private func makeDegradedRestoreRequest(apps: [AppItem], source: URL) -> WarningSheetRequest {
+    private func makeDegradedRestoreRequest(apps: [AppItem], source: URL,
+                                            capabilities: StorageCapabilities? = nil) -> WarningSheetRequest {
         let names = apps.map { $0.displayName }.joined(separator: "、")
         let driveName = MountMigrationGuidance.driveName(for: source.path)
-        let capabilities = StorageCapabilityProbe.probe(destination: source)
-        let items = (capabilities?.missing ?? []).map { $0.localizedDescription }.joined(separator: "\n")
+        let resolvedCapabilities = capabilities ?? StorageCapabilityProbe.probe(destination: source)
+        let items = (resolvedCapabilities?.missing ?? []).map { $0.localizedDescription }.joined(separator: "\n")
         AppLogger.shared.logContext(
             "还原的外部副本可能已降级",
             details: [
@@ -2493,7 +2494,8 @@ struct ContentView: View {
            let capabilities = StorageCapabilityProbe.probe(destination: target.path),
            capabilities.mayHoldDegradedBundle {
             pendingDegradedRestoreApps = [target]
-            degradedRestoreRequest = makeDegradedRestoreRequest(apps: [target], source: target.path)
+            degradedRestoreRequest = makeDegradedRestoreRequest(apps: [target], source: target.path,
+                                                                capabilities: capabilities)
             return
         }
         executeMoveBack(app: target)
@@ -2518,12 +2520,20 @@ struct ContentView: View {
         }
         // 还原读取的是外部副本；外部盘存不住的能力，在迁出时就已丢失。
         // 只要其中任意一个来自降级的卷，先统一说明一次再动手。
-        if degradedRestoreRequest == nil,
-           let degraded = validApps.first(where: {
-               StorageCapabilityProbe.probe(destination: $0.path)?.mayHoldDegradedBundle == true
-           }) {
+        var degradedTarget: (app: AppItem, capabilities: StorageCapabilities)?
+        if degradedRestoreRequest == nil {
+            for app in validApps {
+                if let capabilities = StorageCapabilityProbe.probe(destination: app.path),
+                   capabilities.mayHoldDegradedBundle {
+                    degradedTarget = (app, capabilities)
+                    break
+                }
+            }
+        }
+        if let degraded = degradedTarget {
             pendingDegradedRestoreApps = validApps
-            degradedRestoreRequest = makeDegradedRestoreRequest(apps: validApps, source: degraded.path)
+            degradedRestoreRequest = makeDegradedRestoreRequest(apps: validApps, source: degraded.app.path,
+                                                                capabilities: degraded.capabilities)
             return
         }
         executeBatchMoveBack(validApps: validApps)

@@ -29,7 +29,6 @@ struct SidebarTargetSection: View {
     let showsTarget: Bool
     let onChoose: () -> Void
     let onImageReady: (URL) -> Void
-    @ObservedObject private var operations = AppOperationState.shared
     @ObservedObject private var images = AppLibraryImageController.shared
     private var selectedImage: AppLibraryImageService.Record? {
         guard let directory, let record = images.record,

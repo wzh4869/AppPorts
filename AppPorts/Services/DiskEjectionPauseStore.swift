@@ -172,11 +172,12 @@ struct DiskEjectionPauseStore: Sendable {
 
     @discardableResult
     func pause(_ disk: ExternalDiskInventory.Disk) throws -> Pause {
-        var pauses = try snapshot().pauses
+        let current = try snapshot()
+        var pauses = current.pauses
         if let existing = pauses.first(where: { $0.connectionID == disk.connectionID }) { return existing }
         let pause = Pause(disk: disk)
         pauses.append(pause)
-        try save(pauses)
+        try save(pauses, images: current.images)
         return pause
     }
 
@@ -191,7 +192,7 @@ struct DiskEjectionPauseStore: Sendable {
             let matches = inventory.disks.filter { !$0.volumeUUIDs.isDisjoint(with: pause.volumeUUIDs) }
             return matches.count != 1 || matches[0].connectionID == pause.connectionID
         }
-        if before != after { try save(after) }
+        if before != after { try save(after, images: current.images) }
         return Snapshot(pauses: after, images: current.images)
     }
 
