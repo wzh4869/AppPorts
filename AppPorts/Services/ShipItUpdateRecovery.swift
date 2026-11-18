@@ -156,10 +156,11 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
     @discardableResult
     func recover(_ candidate: Candidate, report: @escaping Reporter = { _ in }) async throws -> Bool {
         await report(.waiting)
-        guard operationLock.tryAcquire() else { return false }
-        defer { operationLock.release() }
+        var lock: OperationLock? = operationLock.freshInstance()
+        guard lock?.tryAcquire() == true else { return false }
+        defer { lock?.release() }
         guard !hasRollbackRequest(candidate) else { return false }
-        try operationLock.recheckWriterAdmission()
+        try lock?.recheckWriterAdmission()
         guard try candidateStillMatches(candidate) else { return false }
         let activity = try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL)
         guard activity != .updaterRunning else { return false }
@@ -178,11 +179,15 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
         }
         let result = try await installWithLaunchProtection(candidate, report: report)
         // Portal refresh uses the same global lock through AppMigrationService.
-        operationLock.release()
+        lock?.release()
+        lock = nil
         guard result else { return false }
         await report(.refreshing)
         try await refresh(candidate.record)
-        guard operationLock.tryAcquire(), try candidateStillMatches(candidate),
+        let reacquired = operationLock.freshInstance()
+        guard reacquired.tryAcquire() else { return false }
+        lock = reacquired
+        guard try candidateStillMatches(candidate),
               try ownsInstalledTarget(candidate) else { return false }
         guard try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL) != .updaterRunning else { return false }
         await report(.finishing)
@@ -324,17 +329,21 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
         }
     }
 
-    private static func isNewer(_ candidate: Candidate) -> Bool {
-        guard let old = try? SignatureAppVersion.read(at: candidate.request.targetBundleURL),
-              let new = try? SignatureAppVersion.read(at: candidate.request.updateBundleURL),
-              old.bundleIdentifier == candidate.request.bundleIdentifier, new.bundleIdentifier == old.bundleIdentifier,
-              (try? SignatureSnapshot.info(at: candidate.request.targetBundleURL).st_mode & S_IFMT) == S_IFDIR else { return false }
+    static func isNewer(update new: SignatureAppVersion, than old: SignatureAppVersion) -> Bool {
         for pair in [(new.shortVersion, old.shortVersion), (new.buildVersion, old.buildVersion)] {
             guard let left = pair.0, let right = pair.1,
                   let comparison = compareVersion(left, right) else { return false }
             if comparison != .orderedSame { return comparison == .orderedDescending }
         }
         return false
+    }
+
+    private static func isNewer(_ candidate: Candidate) -> Bool {
+        guard let old = try? SignatureAppVersion.read(at: candidate.request.targetBundleURL),
+              let new = try? SignatureAppVersion.read(at: candidate.request.updateBundleURL),
+              old.bundleIdentifier == candidate.request.bundleIdentifier, new.bundleIdentifier == old.bundleIdentifier,
+              (try? SignatureSnapshot.info(at: candidate.request.targetBundleURL).st_mode & S_IFMT) == S_IFDIR else { return false }
+        return isNewer(update: new, than: old)
     }
 
     static func compareVersion(_ left: String, _ right: String) -> ComparisonResult? {

@@ -12,9 +12,33 @@ final class ShipItUpdateEventMonitor: @unchecked Sendable {
     private var directories: Set<String> = []
 
     init(caches: URL, latency: TimeInterval = 1, watchedFiles: [URL] = [], onChange: @escaping @Sendable () -> Void) {
-        self.caches = caches.resolvingSymlinksInPath().standardizedFileURL
+        self.caches = URL(fileURLWithPath: Self.canonicalFilePath(for: caches))
         self.latency = latency; self.onChange = onChange
-        self.watchedFiles = Set(watchedFiles.map { $0.resolvingSymlinksInPath().standardizedFileURL.path })
+        self.watchedFiles = Set(watchedFiles.map { Self.canonicalFilePath(for: $0) })
+    }
+
+    private static func canonicalFilePath(for url: URL) -> String {
+        let standardized = url.standardizedFileURL
+        if let resolved = DiskUtility.resolvedPath(standardized.path) {
+            return resolved
+        }
+        var current = standardized
+        var trailingComponents: [String] = []
+        while current.path != "/" {
+            let name = current.lastPathComponent
+            let parent = current.deletingLastPathComponent()
+            guard parent.path != current.path else { break }
+            trailingComponents.append(name)
+            current = parent
+            if let resolvedAncestor = DiskUtility.resolvedPath(current.path) {
+                var rebuilt = URL(fileURLWithPath: resolvedAncestor)
+                for component in trailingComponents.reversed() {
+                    rebuilt.appendPathComponent(component)
+                }
+                return rebuilt.standardizedFileURL.path
+            }
+        }
+        return standardized.resolvingSymlinksInPath().standardizedFileURL.path
     }
 
     @discardableResult

@@ -69,6 +69,11 @@ final class OperationLock: @unchecked Sendable {
         }
     }
 
+    /// Creates an independent descriptor-owning lock bound to the same target and writer check.
+    func freshInstance() -> OperationLock {
+        OperationLock(fileURL: fileURL, writerAdmissionCheck: writerAdmissionCheck)
+    }
+
     deinit { release() }
 
     /// Distinguishes a live incompatible writer from ordinary lock contention.

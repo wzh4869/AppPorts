@@ -69,9 +69,10 @@ extension ShipItUpdateRecovery {
 
     func rollback(_ candidate: Candidate, report: @escaping Reporter = { _ in }) async throws -> String {
         try requestRollback(candidate)
-        guard operationLock.tryAcquire() else { throw RollbackError.busy }
-        defer { operationLock.release() }
-        try operationLock.recheckWriterAdmission()
+        var lock: OperationLock? = operationLock.freshInstance()
+        guard lock?.tryAcquire() == true else { throw RollbackError.busy }
+        defer { lock?.release() }
+        try lock?.recheckWriterAdmission()
         let lease = try ApplicationLaunchGate.acquire(bundleIdentifier: candidate.request.bundleIdentifier,
                                                       migrating: true, directory: launchLocks)
         defer { withExtendedLifetime(lease) {} }
@@ -98,9 +99,12 @@ extension ShipItUpdateRecovery {
         try restorePreviousApplication(&saved)
         await report(.refreshing)
         // Portal refresh takes the existing global lock itself.
-        operationLock.release()
+        lock?.release()
+        lock = nil
         try await refresh(candidate.record)
-        guard operationLock.tryAcquire() else { throw RollbackError.busy }
+        let reacquired = operationLock.freshInstance()
+        guard reacquired.tryAcquire() else { throw RollbackError.busy }
+        lock = reacquired
         try requireRollbackLocation(candidate)
         try requireRestoredApplication(saved)
         await report(.cleaning)
@@ -146,8 +150,7 @@ extension ShipItUpdateRecovery {
         if try SignatureSnapshot.entryExists(target), try !ownsInstalledTarget(candidate) {
             let original = try SignatureAppVersion.read(at: target)
             let update = try SignatureAppVersion.read(at: candidate.request.updateBundleURL)
-            if let a = original.shortVersion, let b = update.shortVersion,
-               Self.compareVersion(a, b) == .orderedAscending { return target }
+            if Self.isNewer(update: update, than: original) { return target }
         }
         for path in try nativeTemporaryApplications(candidate, movedFromTarget: true) {
             if try SignatureSnapshot.entryExists(path), (try? validate(path, candidate.request.bundleIdentifier)) != nil { return path }
