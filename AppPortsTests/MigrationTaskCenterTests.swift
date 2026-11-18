@@ -370,6 +370,59 @@ struct MigrationTaskCenterTests {
         #expect(fixture.center.jobs.first(where: { $0.id == id2 })?.status == .completed)
     }
 
+    @Test("Queued wait time is excluded from elapsed duration")
+    func queuedWaitExcludedFromElapsedDuration() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let hold = try #require(fixture.state.begin())
+        let id = fixture.center.submit(title: "Queued wait", category: .appData, resources: fixture.resources) { _ in
+            try await Task.sleep(nanoseconds: 30_000_000)
+            return nil
+        }
+        let job = try #require(fixture.center.jobs.first(where: { $0.id == id }))
+        #expect(job.status == .queued)
+        #expect(job.elapsed == 0)
+        try await Task.sleep(nanoseconds: 60_000_000)
+        #expect(job.elapsed == 0)
+        fixture.state.finish(hold)
+        fixture.center.schedule()
+        await job.worker?.value
+        #expect(job.status == .completed)
+        let started = try #require(job.startedUptime)
+        let finished = try #require(job.finishedAt)
+        #expect(started >= job.createdAt)
+        #expect(job.elapsed == finished - started)
+    }
+
+    @Test("Pause requested inside critical section does not persist as paused after completion")
+    func pauseRequestedInCriticalSectionClearsOnCompletion() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let gate = AsyncGate()
+        let entered = AsyncGate()
+        let id = fixture.center.submit(title: "Critical completion", category: .appData, resources: fixture.resources) { _ in
+            MigrationExecution.control?.setCriticalSection(true)
+            await entered.open()
+            await gate.wait()
+            MigrationExecution.control?.setCriticalSection(false)
+            return nil
+        }
+        let job = try #require(fixture.center.jobs.first(where: { $0.id == id }))
+        await entered.wait()
+        fixture.center.pause([id])
+        #expect(job.control.snapshot().pauseRequested)
+        await gate.open()
+        await job.worker?.value
+        #expect(job.status == .completed)
+        #expect(!job.restoredPaused)
+        #expect(!job.control.snapshot().pauseRequested)
+        #expect(MigrationTaskHistoryStore.Entry(job).paused == false)
+        let reloaded = try #require(fixture.reopen().jobs.first(where: { $0.id == id }))
+        #expect(reloaded.status == .completed)
+        #expect(!reloaded.restoredPaused)
+        #expect(reloaded.stateTitle == MigrationJob.Status.completed.title)
+    }
+
     @MainActor
     private struct Fixture {
         let root: URL
@@ -407,5 +460,22 @@ struct MigrationTaskCenterTests {
         }
 
         func remove() { try? FileManager.default.removeItem(at: root) }
+    }
+
+    private actor AsyncGate {
+        private var opened = false
+        private var waiters: [CheckedContinuation<Void, Never>] = []
+
+        func wait() async {
+            if opened { return }
+            await withCheckedContinuation { waiters.append($0) }
+        }
+
+        func open() {
+            opened = true
+            let ready = waiters
+            waiters.removeAll()
+            ready.forEach { $0.resume() }
+        }
     }
 }

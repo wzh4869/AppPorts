@@ -51,10 +51,10 @@ extension ShipItUpdateRecovery {
                 let candidate: Candidate
                 let expected: URL
                 if url.lastPathComponent.hasSuffix(".rollback-intent.json") {
-                    candidate = try JSONDecoder().decode(Candidate.self, from: SignatureRecordFile.data(at: url))
+                    candidate = try JSONDecoder().decode(Candidate.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576))
                     expected = rollbackIntentURL(candidate)
                 } else if url.lastPathComponent.hasSuffix(".rollback.json") {
-                    candidate = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url)).candidate
+                    candidate = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576)).candidate
                     expected = rollbackURL(candidate)
                 } else { continue }
                 guard url.standardizedFileURL.path == expected.standardizedFileURL.path,
@@ -116,7 +116,7 @@ extension ShipItUpdateRecovery {
     private func loadOrPrepareRollback(_ candidate: Candidate) throws -> Rollback {
         let url = rollbackURL(candidate)
         if FileManager.default.fileExists(atPath: url.path) {
-            let saved = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url))
+            let saved = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576))
             guard saved.candidate == candidate,
                   saved.stage.deletingLastPathComponent() == candidate.request.targetBundleURL.deletingLastPathComponent(),
                   saved.stage.lastPathComponent.hasPrefix(".appports-shipit-rollback-"), saved.stage.pathExtension == "app" else { throw RollbackError.changed }
@@ -268,7 +268,7 @@ extension ShipItUpdateRecovery {
         }
         // The signed old bundle names the Electron download cache; never guess a data directory.
         let config = candidate.request.targetBundleURL.appendingPathComponent("Contents/Resources/app-update.yml")
-        if let data = try? SignatureRecordFile.data(at: config), data.count < 32_768,
+        if let data = try? SignatureRecordFile.data(at: config, maxBytes: 1_048_576), data.count < 32_768,
            let text = String(data: data, encoding: .utf8),
            let line = text.components(separatedBy: .newlines).first(where: { $0.hasPrefix("updaterCacheDirName:") }) {
             let name = line.dropFirst("updaterCacheDirName:".count).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -293,7 +293,7 @@ extension ShipItUpdateRecovery {
     private func installationReceipt(_ candidate: Candidate) throws -> Receipt? {
         let url = directory.appendingPathComponent(candidate.key + ".json")
         guard try SignatureSnapshot.entryExists(url) else { return nil }
-        let value = try JSONDecoder().decode(Receipt.self, from: SignatureRecordFile.data(at: url))
+        let value = try JSONDecoder().decode(Receipt.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576))
         let parent = candidate.request.targetBundleURL.deletingLastPathComponent()
         guard value.candidate == candidate, value.stage.deletingLastPathComponent() == parent,
               value.stage.lastPathComponent.hasPrefix(".appports-shipit-") else { throw RollbackError.changed }

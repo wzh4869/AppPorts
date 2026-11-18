@@ -54,14 +54,17 @@ enum SignatureRecordFile {
             .map { directory.appendingPathComponent($0) }
     }
 
-    static func data(at url: URL) throws -> Data {
+    static func data(at url: URL, maxBytes: Int64 = 256 * 1024 * 1024) throws -> Data {
         let fd = open(url.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
         guard fd >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         defer { close(fd) }
         var before = stat()
         guard fstat(fd, &before) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         guard before.st_mode & S_IFMT == S_IFREG, before.st_size >= 0 else { throw CodeSigner.SigningError.snapshotInvalid }
-        let data = try FileHandle(fileDescriptor: fd, closeOnDealloc: false).readToEnd() ?? Data()
+        guard before.st_size <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
+        let limit = Int(min(maxBytes, Int64(Int.max - 1))) + 1
+        let data = try FileHandle(fileDescriptor: fd, closeOnDealloc: false).read(upToCount: limit) ?? Data()
+        guard Int64(data.count) <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
         var after = stat()
         guard fstat(fd, &after) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         let current = try SignatureSnapshot.info(at: url)

@@ -175,6 +175,10 @@ struct MountMigrationPreflightTests {
         #expect(DocumentationLink.sitePrefix(for: "zh-martian") == "")
         #expect(DocumentationLink.sitePrefix(for: "ru") == "en/")
         #expect(DocumentationLink.sitePrefix(for: "br") == "en/")
+        #expect(DocumentationLink.homeURL(language: "zh-Hans").absoluteString == "https://docs-appports.shimoko.com/")
+        #expect(DocumentationLink.homeURL(language: "zh-Hant").absoluteString == "https://docs-appports.shimoko.com/zh-Hant")
+        #expect(DocumentationLink.homeURL(language: "en").absoluteString == "https://docs-appports.shimoko.com/en")
+        #expect(DocumentationLink.homeURL(language: "ja").absoluteString == "https://docs-appports.shimoko.com/en")
     }
 
     // MARK: 辅助

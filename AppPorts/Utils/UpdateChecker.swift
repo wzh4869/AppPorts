@@ -344,7 +344,9 @@ final class UpdateChecker {
         }
 
         let rawTag = release.tag.isEmpty ? release.version : release.tag
-        guard let tag = normalizedVersion(rawTag) else { return nil }
+        let trimmed = rawTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let normalized = normalizedVersion(trimmed) else { return nil }
+        let tag = trimmed.lowercased().hasPrefix("v") ? "v" + normalized : normalized
         return URL(string: "https://github.com/\(repoOwner)/\(repoName)/releases/tag/\(tag)")
     }
 
@@ -488,9 +490,9 @@ final class UpdateChecker {
         text = text.replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression)
         text = text.replacingOccurrences(of: "&quot;", with: "\"")
         text = text.replacingOccurrences(of: "&apos;", with: "'")
-        text = text.replacingOccurrences(of: "&amp;", with: "&")
         text = text.replacingOccurrences(of: "&lt;", with: "<")
         text = text.replacingOccurrences(of: "&gt;", with: ">")
+        text = text.replacingOccurrences(of: "&amp;", with: "&")
         text = text.replacingOccurrences(of: #"\n{3,}"#, with: "\n\n", options: .regularExpression)
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -626,9 +628,9 @@ private enum UpdateCheckerError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case let .invalidResponse(source):
-            return "\(source) update source returned an invalid response"
+            return String(format: "%@ 更新源返回了无效响应".localized, source)
         case let .invalidStatusCode(source, statusCode):
-            return "\(source) update source returned HTTP \(statusCode)"
+            return String(format: "%@ 更新源返回了 HTTP %lld".localized, source, Int64(statusCode))
         }
     }
 }

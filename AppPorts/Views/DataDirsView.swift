@@ -2085,11 +2085,14 @@ struct DataDirsView: View {
         submitDataTask(item, title: String(format: "正在挂载「%@」".localized, item.name),
                        mount: true, requireAppStopped: false, retrying: retrying, recovery: { error, retry in
             presentAPFSFailure(error, item: item, retryToken: retry, retry: { performMount(item, retrying: retry) })
-        }) { _ in
+        }) { progress in
+            progress.configureUnits(records.map { URL(fileURLWithPath: $0.mountPointPath) })
             let migrator = ContainerVolumeMigrator()
             for record in records {
                 try await MigrationExecution.control?.checkpointAsync()
                 try Task.checkCancellation()
+                progress.setDirectory(URL(fileURLWithPath: record.mountPointPath))
+                progress.begin(.switching)
                 try await migrator.mount(record: record, resumingManualPause: true)
             }
             return nil

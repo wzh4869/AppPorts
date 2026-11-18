@@ -134,6 +134,7 @@ final class MigrationJob: ObservableObject, Identifiable {
     @Published var status: Status = .queued
     @Published var message = ""
     private(set) var startedAt: Date?
+    private(set) var startedUptime: TimeInterval?
     var restoredPaused = false
     var restoredFraction: Double?
     var restoredElapsed: TimeInterval?
@@ -163,14 +164,20 @@ final class MigrationJob: ObservableObject, Identifiable {
 
     func markStarted() {
         startedAt = Date()
+        startedUptime = ProcessInfo.processInfo.systemUptime
         status = .running
     }
 
-    var elapsed: TimeInterval { restoredElapsed ?? max(0, (finishedAt ?? ProcessInfo.processInfo.systemUptime) - createdAt) }
+    var elapsed: TimeInterval {
+        if let restoredElapsed { return restoredElapsed }
+        guard let startedUptime else { return 0 }
+        return max(0, (finishedAt ?? ProcessInfo.processInfo.systemUptime) - startedUptime)
+    }
     var stateTitle: String {
         if status == .completed, let observedResult {
             return observedResult == .recovered ? "已接手成功".localized : "已回退更新".localized
         }
+        if status.isFinished, status != .attention { return status.title }
         if restoredPaused { return "已暂停（待恢复）".localized }
         if status.isFinished { return status.title }
         let state = control.snapshot()
@@ -211,7 +218,7 @@ final class MigrationTaskCenter: ObservableObject {
             let job = MigrationJob(id: entry.id, title: entry.title, category: entry.category,
                                    resources: entry.resources, startedAt: entry.startedAt, observedKey: entry.observedKey)
             job.observedResult = entry.observedResult
-            job.restoredPaused = entry.paused
+            job.restoredPaused = entry.paused && (!entry.status.isFinished || entry.status == .attention)
             job.restoredFraction = entry.fraction
             job.restoredElapsed = entry.elapsed
             job.status = entry.status.isFinished ? entry.status : .attention
@@ -481,6 +488,8 @@ final class MigrationTaskCenter: ObservableObject {
             }
         }
         job.finishedAt = ProcessInfo.processInfo.systemUptime
+        job.restoredPaused = false
+        job.control.resume()
         job.worker = nil
         job.operation = nil
         job.recoveryHandler = nil

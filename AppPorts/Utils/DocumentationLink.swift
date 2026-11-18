@@ -31,6 +31,18 @@ enum DocumentationLink {
         return components.url ?? baseURL
     }
 
+    /// 对应语言的文档站首页；`zh-Hant` 与 `en` 静态导出页面不能带末尾斜杠。
+    static func homeURL(language: String = currentLanguage) -> URL {
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
+        let prefix = sitePrefix(for: language)
+        if prefix.isEmpty {
+            components.path = "/"
+        } else {
+            components.path = "/" + prefix.dropLast()
+        }
+        return components.url ?? baseURL
+    }
+
     /// 当前界面语言；跟随系统时取应用实际使用的本地化。
     static var currentLanguage: String {
         let selected = LanguageManager.shared.language

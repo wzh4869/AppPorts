@@ -94,6 +94,31 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(update?.releaseNotesMarkdown, "Official notes")
     }
 
+    func testOfficialFallbackPreservesLeadingVInGitHubTag() async throws {
+        let checker = makeChecker(
+            github: .status(503),
+            official: .json(officialRelease(version: "1.9.0", tag: "v1.9.0", notes: ["en": "Official notes"], githubURL: "")),
+            language: "en"
+        )
+
+        let update = await checker.checkForUpdates()
+
+        XCTAssertEqual(update?.githubURL?.absoluteString, "https://github.com/wzh4869/AppPorts/releases/tag/v1.9.0")
+    }
+
+    func testGitHubAtomFallbackDecodesAmpersandAfterAngleEntities() async throws {
+        let checker = makeChecker(
+            github: .status(404),
+            official: .status(404),
+            atom: .text(gitHubAtomFeed(tag: "1.7.0", htmlBody: "<p>&amp;lt;script&amp;gt;</p>")),
+            language: "en"
+        )
+
+        let update = await checker.checkForUpdates(channel: .github)
+
+        XCTAssertEqual(update?.releaseNotesMarkdown, "&lt;script&gt;")
+    }
+
     func testDefaultFeedFailureDoesNotRequestGitHub() async throws {
         let checker = makeChecker(
             github: .json(gitHubRelease(tag: "1.7.0", body: "GitHub notes")),

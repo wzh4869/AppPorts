@@ -187,8 +187,12 @@ struct WeChatAccountMigrationService: Sendable {
             guard measureDirectorySize(at: source, useCache: false).isComplete else { throw Failure.incompleteSize }
         }
         var warnings: [String] = []
+        if members.count > 1, let dataProgress = DataTransferSession.progress, dataProgress.snapshot().unitCount <= 1 {
+            dataProgress.configureUnits(members)
+        }
         for source in members {
             try Task.checkCancellation()
+            DataTransferSession.progress?.setDirectory(source)
             if let record = try store.recordsStrict().first(where: { $0.mountPointPath == source.path }) {
                 guard mode.isSplit else { throw Failure.restoreFirst }
                 try await migrator.mount(record: record)
@@ -237,14 +241,29 @@ struct WeChatAccountMigrationService: Sendable {
             throw Failure.restoreFirst
         }
         var warnings: [String] = []
+        if let dataProgress = DataTransferSession.progress, dataProgress.snapshot().unitCount <= 1 {
+            var activeUnits: [URL] = []
+            var seenPaths: Set<String> = []
+            for url in rolledBack.map({ URL(fileURLWithPath: $0.originalPath) }) + members {
+                let path = url.standardizedFileURL.path
+                if seenPaths.insert(path).inserted {
+                    activeUnits.append(url)
+                }
+            }
+            if activeUnits.count > 1 {
+                dataProgress.configureUnits(activeUnits)
+            }
+        }
         for transfer in rolledBack {
             try Task.checkCancellation()
+            DataTransferSession.progress?.setDirectory(URL(fileURLWithPath: transfer.originalPath))
             if let warning = try await migrator.resumeVerifiedTransfer(operationID: transfer.operationID, progressHandler: progress) {
                 warnings.append(warning)
             }
         }
         for source in members {
             try Task.checkCancellation()
+            DataTransferSession.progress?.setDirectory(source)
             // A preparation may not yet have published its mount record.
             if let transfer = try store.transfers().last(where: {
                 $0.originalPath == source.path && !$0.isDataSwitchComplete && $0.rollbackCompletedAt == nil
@@ -262,7 +281,8 @@ struct WeChatAccountMigrationService: Sendable {
                 }
             }
             if let record = try store.recordForRestore(at: source) {
-                if let warning = try await migrator.restoreAndComplete(record: record, estimatedTotalBytes: 0, progressHandler: progress) {
+                let estimatedBytes = DiskUtility.isMountPoint(source) ? measureDirectorySize(at: source, useCache: false).bytes : 0
+                if let warning = try await migrator.restoreAndComplete(record: record, estimatedTotalBytes: estimatedBytes, progressHandler: progress) {
                     warnings.append(warning.message)
                 }
             }

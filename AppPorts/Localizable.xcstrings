@@ -238681,6 +238681,1638 @@
           }
         }
       }
+    },
+    "%@ 更新源返回了无效响应" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أرجع مصدر التحديث %@ استجابة غير صالحة."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ⠥⠏⠙⠁⠞⠑ ⠎⠕⠥⠗⠉⠑ ⠗⠑⠞⠥⠗⠝⠑⠙ ⠁⠝ ⠊⠝⠧⠁⠇⠊⠙ ⠗⠑⠎⠏⠕⠝⠎⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Update-Quelle %@ hat eine ungültige Antwort zurückgegeben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ update source returned an invalid response."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatiga fonto %@ redonis nevalidan respondon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fuente de actualización %@ devolvió una respuesta no válida."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La source de mise à jour %@ a renvoyé une réponse invalide."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ अपडेट स्रोत ने अमान्य प्रतिक्रिया लौटाई।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sumber pembaruan %@ mengembalikan respons yang tidak valid."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sorgente di aggiornamento %@ ha restituito una risposta non valida."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 更新ソースから無効な応答が返されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 업데이트 소스에서 잘못된 응답을 반환했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updatebron %@ heeft een ongeldig antwoord geretourneerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródło aktualizacji %@ zwróciło nieprawidłową odpowiedź."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A fonte de atualização %@ retornou uma resposta inválida."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Источник обновлений %@ вернул недопустимый ответ."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แหล่งอัปเดต %@ ส่งคืนการตอบกลับที่ไม่ถูกต้อง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ güncelleme kaynağı geçersiz bir yanıt döndürdü."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nguồn cập nhật %@ đã trả về phản hồi không hợp lệ."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 更新源返回了无效响应"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 更新來源傳回了無效回應。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 哽噺源迒囙了無効響應"
+          }
+        }
+      }
+    },
+    "%@ 更新源返回了 HTTP %lld" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أرجع مصدر التحديث %@ حالة HTTP %lld."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ⠥⠏⠙⠁⠞⠑ ⠎⠕⠥⠗⠉⠑ ⠗⠑⠞⠥⠗⠝⠑⠙ ⠠⠓⠠⠞⠠⠞⠠⠏ %lld⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Update-Quelle %@ hat HTTP %lld zurückgegeben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ update source returned HTTP %lld."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatiga fonto %@ redonis HTTP %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fuente de actualización %@ devolvió HTTP %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La source de mise à jour %@ a renvoyé HTTP %lld."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ अपडेट स्रोत ने HTTP %lld लौटाया।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sumber pembaruan %@ mengembalikan HTTP %lld."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sorgente di aggiornamento %@ ha restituito HTTP %lld."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 更新ソースが HTTP %lld を返しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 업데이트 소스가 HTTP %lld 상태를 반환했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updatebron %@ retourneerde HTTP %lld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródło aktualizacji %@ zwróciło kod HTTP %lld."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A fonte de atualização %@ retornou HTTP %lld."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Источник обновлений %@ вернул ошибку HTTP %lld."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แหล่งอัปเดต %@ ส่งคืน HTTP %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ güncelleme kaynağı HTTP %lld döndürdü."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nguồn cập nhật %@ đã trả về HTTP %lld."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 更新源返回了 HTTP %lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 更新來源傳回 HTTP %lld。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 哽噺源迒囙了 HTTP %lld"
+          }
+        }
+      }
+    },
+    "Dock 快捷方式需要使用本地绝对文件 URL。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تتطلب اختصارات Dock عناوين URL محلية مطلقة للملفات."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠕⠉⠅ ⠎⠓⠕⠗⠞⠉⠥⠞⠎ ⠗⠑⠟⠥⠊⠗⠑ ⠁⠃⠎⠕⠇⠥⠞⠑ ⠇⠕⠉⠁⠇ ⠋⠊⠇⠑ ⠠⠥⠠⠗⠠⠇⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock-Verknüpfungen erfordern absolute lokale Datei-URLs."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock shortcuts require absolute local file URLs."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock-ŝparvojoj postulas absolutajn lokajn dosier-URL-ojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los accesos directos del Dock requieren URL locales de archivo absolutas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les raccourcis du Dock nécessitent des URL de fichiers locaux absolues."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock शॉर्टकट के लिए पूर्ण स्थानीय फ़ाइल URL आवश्यक हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pintasan Dock memerlukan URL file lokal absolut."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I collegamenti del Dock richiedono URL di file locali assoluti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock ショートカットにはローカルの絶対ファイル URL が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 바로가기는 로컬 절대 파일 URL이 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock-snelkoppelingen vereisen absolute lokale bestands-URL's."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skróty w Docku wymagają bezwzględnych lokalnych adresów URL plików."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os atalhos do Dock exigem URLs locais de arquivo absolutas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ярлыки Dock требуют абсолютных локальных файловых URL."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ทางลัด Dock ต้องใช้ URL ไฟล์ภายในเครื่องแบบสัมบูรณ์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock kısayolları mutlak yerel dosya URL'leri gerektirir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phím tắt Dock yêu cầu URL tệp cục bộ tuyệt đối."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 快捷方式需要使用本地绝对文件 URL。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 捷徑需要使用本機絕對檔案 URL。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 快捷方式需要使詠夲地絕對攵件 URL。"
+          }
+        }
+      }
+    },
+    "Dock 应用列表格式不受支持或已损坏。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنسيق قائمة تطبيقات Dock غير مدعوم أو تالف."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠠⠙⠕⠉⠅ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠓⠁⠎ ⠁⠝ ⠥⠝⠎⠥⠏⠏⠕⠗⠞⠑⠙ ⠕⠗ ⠍⠁⠇⠋⠕⠗⠍⠑⠙ ⠋⠕⠗⠍⠁⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Dock-Programmliste hat ein nicht unterstütztes oder beschädigtes Format."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Dock application list has an unsupported or malformed format."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵlisto de Dock havas nesubtenatan aŭ misformitan formaton."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La lista de aplicaciones del Dock tiene un formato no compatible o dañado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La liste des applications du Dock a un format non pris en charge ou corrompu."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock ऐप सूची का फ़ॉर्मेट असमर्थित या क्षतिग्रस्त है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format daftar aplikasi Dock tidak didukung atau rusak."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'elenco delle applicazioni del Dock ha un formato non supportato o danneggiato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock アプリケーションリストの形式が非対応または破損しています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 응용 프로그램 목록 형식이 지원되지 않거나 손상되었습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Dock-applijst heeft een niet-ondersteunde of beschadigde indeling."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lista aplikacji w Docku ma nieobsługiwany lub uszkodzony format."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lista de aplicativos do Dock tem um formato incompatível ou corrompido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Список приложений Dock имеет неподдерживаемый или повреждённый формат."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รูปแบบรายการแอปของ Dock ไม่รองรับหรือเสียหาย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock uygulama listesi desteklenmeyen veya bozuk bir biçime sahip."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danh sách ứng dụng Dock có định dạng không được hỗ trợ hoặc bị hỏng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 应用列表格式不受支持或已损坏。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 應用程式列表格式不受支援或已損壞。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 應詠列錶格式⑧受支持或巳損壞。"
+          }
+        }
+      }
+    },
+    "Dock 应用列表受系统管理或已锁定。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قائمة تطبيقات Dock مُدارة أو مقفلة من قِبل النظام."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠠⠙⠕⠉⠅ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠊⠎ ⠍⠁⠝⠁⠛⠑⠙ ⠕⠗ ⠇⠕⠉⠅⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Dock-Programmliste wird verwaltet oder ist gesperrt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Dock application list is managed or locked."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵlisto de Dock estas administrita aŭ ŝlosita."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La lista de aplicaciones del Dock está administrada o bloqueada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La liste des applications du Dock est gérée ou verrouillée."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock ऐप सूची सिस्टम द्वारा प्रबंधित या लॉक है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daftar aplikasi Dock dikelola sistem atau terkunci."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'elenco delle applicazioni del Dock è gestito o bloccato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock アプリケーションリストはシステムにより管理またはロックされています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 응용 프로그램 목록이 시스템에 의해 관리되거나 잠겨 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Dock-applijst wordt beheerd of is vergrendeld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lista aplikacji w Docku jest zarządzana przez system lub zablokowana."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lista de aplicativos do Dock é gerenciada ou bloqueada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Список приложений Dock управляется системой или заблокирован."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รายการแอปของ Dock ถูกจัดการโดยระบบหรือถูกล็อก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock uygulama listesi sistem tarafından yönetiliyor veya kilitli."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danh sách ứng dụng Dock đang được hệ thống quản lý hoặc đã bị khóa."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 应用列表受系统管理或已锁定。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 應用程式列表受系統管理或已鎖定。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 應詠列錶受系統管浬或巳鎖定。"
+          }
+        }
+      }
+    },
+    "目标应用当前不可用。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التطبيق الهدف غير متوفر حالياً."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠊⠎ ⠥⠝⠁⠧⠁⠊⠇⠁⠃⠇⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Ziel-App ist derzeit nicht verfügbar."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination application is unavailable."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cela aplikaĵo nun ne disponeblas."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplicación de destino no está disponible actualmente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'application de destination est actuellement indisponible."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लक्ष्य ऐप वर्तमान में उपलब्ध नहीं है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi tujuan sedang tidak tersedia."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'applicazione di destinazione non è attualmente disponibile."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動先のアプリケーションは現在利用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 응용 프로그램을 현재 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De doel-app is momenteel niet beschikbaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Docelowa aplikacja jest obecnie niedostępna."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O aplicativo de destino não está disponível no momento."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Целевое приложение сейчас недоступно."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปปลายทางไม่พร้อมใช้งานในขณะนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef uygulama şu anda kullanılamıyor."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đích hiện không khả dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标应用当前不可用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標應用程式目前無法使用。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標應詠噹前⑧可詠。"
+          }
+        }
+      }
+    },
+    "目标应用缺少有效的原始包标识符。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يفتقر التطبيق الهدف إلى معرّف حزمة أصلي صالح."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠓⠁⠎ ⠝⠕ ⠧⠁⠇⠊⠙ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠊⠙⠑⠝⠞⠊⠋⠊⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ziel-App fehlt eine gültige ursprüngliche Bundle-ID."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination has no valid original application identifier."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cela aplikaĵo malhavas validan originalan pakaĵidentigilon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplicación de destino carece de un identificador de paquete original válido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'application de destination n'a pas d'identifiant de paquet d'origine valide."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लक्ष्य ऐप में मान्य मूल बंडल पहचानकर्ता नहीं है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi tujuan tidak memiliki pengenal bundel asli yang valid."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'applicazione di destinazione non dispone di un identificatore di bundle originale valido."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動先アプリに有効な元のバンドル識別子がありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 앱에 유효한 원본 번들 식별자가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De doel-app mist een geldige oorspronkelijke bundel-ID."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Docelowa aplikacja nie ma prawidłowego oryginalnego identyfikatora pakietu."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O aplicativo de destino não possui um identificador de pacote original válido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У целевого приложения отсутствует действительный исходный идентификатор пакета."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปปลายทางไม่มีรหัสแพ็กเกจเดิมที่ถูกต้อง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedef uygulamada geçerli bir özgün paket kimliği eksik."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đích thiếu mã định danh gói gốc hợp lệ."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标应用缺少有效的原始包标识符。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標應用程式缺少有效的原始套件識別碼。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標應詠缺少有效の原始包標識符。"
+          }
+        }
+      }
+    },
+    "新的 Dock 书签未能解析到目标应用。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر تحليل علامة Dock المرجعية الجديدة إلى التطبيق الهدف."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠝⠑⠺ ⠠⠙⠕⠉⠅ ⠃⠕⠕⠅⠍⠁⠗⠅ ⠙⠕⠑⠎ ⠝⠕⠞ ⠗⠑⠎⠕⠇⠧⠑ ⠞⠕ ⠞⠓⠑ ⠙⠑⠎⠞⠊⠝⠁⠞⠊⠕⠝ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das neue Dock-Lesezeichen verweist nicht auf die Ziel-App."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The new Dock bookmark does not resolve to the destination application."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nova Dock-legosigno ne solviĝis al la cela aplikaĵo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El nuevo marcador del Dock no se resolvió hacia la aplicación de destino."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le nouveau signet du Dock ne pointe pas vers l'application de destination."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नया Dock बुकमार्क लक्ष्य ऐप तक रिज़ॉल्व नहीं हो सका।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penanda Dock baru tidak mengarah ke aplikasi tujuan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il nuovo segnalibro del Dock non rimanda all'applicazione di destinazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しい Dock ブックマークが移動先アプリに解決されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 Dock 책갈피가 대상 응용 프로그램으로 확인되지 않았습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De nieuwe Dock-bladwijzer verwijst niet naar de doel-app."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowa zakładka w Docku nie wskazuje docelowej aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O novo marcador do Dock não aponta para o aplicativo de destino."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новая закладка Dock не указывает на целевое приложение."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บุ๊กมาร์ก Dock ใหม่ไม่สามารถเชื่อมโยงไปยังแอปปลายทางได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni Dock yer imi hedef uygulamaya çözümlenemedi."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu trang Dock mới không trỏ tới đúng ứng dụng đích."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新的 Dock 书签未能解析到目标应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新的 Dock 書籤未能解析至目標應用程式。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "噺の Dock 書籤未能解析到目標應詠。"
+          }
+        }
+      }
+    },
+    "无法读取 Dock 应用列表。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر قراءة قائمة تطبيقات Dock."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠠⠙⠕⠉⠅ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠗⠑⠁⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Dock-Programmliste konnte nicht gelesen werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Dock application list could not be read."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis legi la aplikaĵliston de Dock."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer la lista de aplicaciones del Dock."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de lire la liste des applications du Dock."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock ऐप सूची पढ़ी नहीं जा सकी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat membaca daftar aplikasi Dock."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile leggere l'elenco delle applicazioni del Dock."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock アプリケーションリストを読み取れません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 응용 프로그램 목록을 읽을 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Dock-applijst kan niet worden gelezen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można odczytać listy aplikacji w Docku."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler a lista de aplicativos do Dock."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось прочитать список приложений Dock."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถอ่านรายการแอปของ Dock ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock uygulama listesi okunamadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể đọc danh sách ứng dụng Dock."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取 Dock 应用列表。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取 Dock 應用程式列表。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀棷 Dock 應詠列錶。"
+          }
+        }
+      }
+    },
+    "无法保存 Dock 应用列表。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر حفظ قائمة تطبيقات Dock."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠠⠙⠕⠉⠅ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠎⠁⠧⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Dock-Programmliste konnte nicht gespeichert werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Dock application list could not be saved."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis konservi la aplikaĵliston de Dock."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la lista de aplicaciones del Dock."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'enregistrer la liste des applications du Dock."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock ऐप सूची सहेजी नहीं जा सकी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat menyimpan daftar aplikasi Dock."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile salvare l'elenco delle applicazioni del Dock."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock アプリケーションリストを保存できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 응용 프로그램 목록을 저장할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Dock-applijst kan niet worden opgeslagen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można zapisać listy aplikacji w Docku."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar a lista de aplicativos do Dock."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось сохранить список приложений Dock."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถบันทึกรายการแอปของ Dock ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock uygulama listesi kaydedilemedi."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể lưu danh sách ứng dụng Dock."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法保存 Dock 应用列表。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法儲存 Dock 應用程式列表。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法葆存 Dock 應詠列錶。"
+          }
+        }
+      }
+    },
+    "Dock 应用列表持续变化，请稍后重试。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استمرت قائمة تطبيقات Dock في التغيّر. يُرجى المحاولة لاحقاً."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠠⠙⠕⠉⠅ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠅⠑⠏⠞ ⠉⠓⠁⠝⠛⠊⠝⠛⠲ ⠠⠏⠇⠑⠁⠎⠑ ⠞⠗⠽ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Dock-Programmliste hat sich laufend geändert. Bitte versuche es später erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Dock application list kept changing. Please try again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵlisto de Dock daŭre ŝanĝiĝis. Bonvolu reprovi poste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La lista de aplicaciones del Dock siguió cambiando. Inténtalo de nuevo más tarde."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La liste des applications du Dock n'a cessé de changer. Veuillez réessayer."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock ऐप सूची लगातार बदल रही है। कृपया बाद में पुनः प्रयास करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daftar aplikasi Dock terus berubah. Silakan coba lagi nanti."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'elenco delle applicazioni del Dock continuava a cambiare. Riprova più tardi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock アプリケーションリストが更新され続けています。しばらくしてから再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 응용 프로그램 목록이 계속 변경되고 있습니다. 잠시 후 다시 시도하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Dock-applijst bleef veranderen. Probeer het later opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lista aplikacji w Docku ciągle się zmieniała. Spróbuj ponownie później."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A lista de aplicativos do Dock continuou mudando. Tente novamente mais tarde."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Список приложений Dock постоянно менялся. Повторите попытку позже."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รายการแอปของ Dock เปลี่ยนแปลงอย่างต่อเนื่อง โปรดลองอีกครั้งในภายหลัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock uygulama listesi sürekli değişti. Lütfen daha sonra tekrar deneyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danh sách ứng dụng Dock liên tục thay đổi. Vui lòng thử lại sau."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 应用列表持续变化，请稍后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 應用程式列表持續變動，請稍後重試。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dock 應詠列錶持續變化，請稍後重試。"
+          }
+        }
+      }
+    },
+    "无法校验已保存的 Dock 应用列表。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذر التحقق من قائمة تطبيقات Dock المحفوظة."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠎⠁⠧⠑⠙ ⠠⠙⠕⠉⠅ ⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠇⠊⠎⠞ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠧⠑⠗⠊⠋⠊⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die gespeicherte Dock-Programmliste konnte nicht überprüft werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The saved Dock application list could not be verified."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis kontroli la konservitan aplikaĵliston de Dock."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la lista de aplicaciones guardada del Dock."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de vérifier la liste des applications du Dock enregistrée."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सहेजी गई Dock ऐप सूची सत्यापित नहीं की जा सकी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat memverifikasi daftar aplikasi Dock yang tersimpan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile verificare l'elenco salvato delle applicazioni del Dock."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存された Dock アプリケーションリストを検証できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장된 Dock 응용 프로그램 목록을 확인할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De opgeslagen Dock-applijst kan niet worden geverifieerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można zweryfikować zapisanej listy aplikacji w Docku."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar a lista de aplicativos salva do Dock."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось проверить сохранённый список приложений Dock."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถตรวจสอบรายการแอปของ Dock ที่บันทึกไว้ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydedilen Dock uygulama listesi doğrulanamadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác minh danh sách ứng dụng Dock đã lưu."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法校验已保存的 Dock 应用列表。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法驗證已儲存的 Dock 應用程式列表。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法校驗巳葆存の Dock 應詠列錶。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

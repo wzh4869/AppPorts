@@ -90,16 +90,16 @@ final class DockShortcutService: @unchecked Sendable {
         var errorUserInfo: [String: Any] {
             let description: String
             switch self {
-            case .invalidLocalURL: description = "Dock shortcuts require absolute local file URLs."
-            case .malformedPreferences: description = "The Dock application list has an unsupported or malformed format."
-            case .managedPreferences: description = "The Dock application list is managed or locked."
-            case .destinationUnavailable: description = "The destination application is unavailable."
-            case .invalidBundleIdentifier: description = "The destination has no valid original application identifier."
-            case .bookmarkMismatch: description = "The new Dock bookmark does not resolve to the destination application."
-            case .preferencesReadFailed: description = "The Dock application list could not be read."
-            case .preferencesWriteFailed: description = "The Dock application list could not be saved."
-            case .concurrentModification: description = "The Dock application list kept changing. Please try again."
-            case .verificationFailed: description = "The saved Dock application list could not be verified."
+            case .invalidLocalURL: description = "Dock 快捷方式需要使用本地绝对文件 URL。".localized
+            case .malformedPreferences: description = "Dock 应用列表格式不受支持或已损坏。".localized
+            case .managedPreferences: description = "Dock 应用列表受系统管理或已锁定。".localized
+            case .destinationUnavailable: description = "目标应用当前不可用。".localized
+            case .invalidBundleIdentifier: description = "目标应用缺少有效的原始包标识符。".localized
+            case .bookmarkMismatch: description = "新的 Dock 书签未能解析到目标应用。".localized
+            case .preferencesReadFailed: description = "无法读取 Dock 应用列表。".localized
+            case .preferencesWriteFailed: description = "无法保存 Dock 应用列表。".localized
+            case .concurrentModification: description = "Dock 应用列表持续变化，请稍后重试。".localized
+            case .verificationFailed: description = "无法校验已保存的 Dock 应用列表。".localized
             }
             return [NSLocalizedDescriptionKey: description]
         }

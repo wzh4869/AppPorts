@@ -29,7 +29,7 @@ struct MigrationTaskHistoryStore {
             startedAt = job.startedAt
             elapsed = job.elapsed
             fraction = job.fraction
-            paused = job.restoredPaused || job.control.snapshot().pauseRequested
+            paused = job.status.isFinished ? (job.status == .attention && job.restoredPaused) : job.control.snapshot().pauseRequested
             observedKey = job.observedKey
             observedResult = job.observedResult
         }

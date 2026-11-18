@@ -7,6 +7,7 @@ struct UpdateSettingsSection: View {
     @State private var result: UpdateCheckResult?
     @State private var availableUpdate: AppUpdateInfo?
     @ObservedObject private var updater = AppUpdateController.shared
+    @ObservedObject private var languageManager = LanguageManager.shared
 
     private var hasPendingDownload: Bool { updater.isPreparing || updater.prepared != nil }
 
@@ -65,7 +66,7 @@ struct UpdateSettingsSection: View {
 
             HStack(spacing: AppSettingsStyle.rowGap) {
                 Link("官网".localized, destination: URL(string: "https://appports.shimoko.com/")!)
-                Link("文档".localized, destination: URL(string: "https://docs-appports.shimoko.com/")!)
+                Link("文档".localized, destination: DocumentationLink.homeURL())
                 Button("关于".localized) {
                     AboutWindowController.shared.present()
                 }
