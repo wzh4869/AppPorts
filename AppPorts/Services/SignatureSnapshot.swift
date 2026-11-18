@@ -354,7 +354,7 @@ enum SignatureSnapshot {
         let resolvedRoot = (DiskUtility.resolvedPath(root.path) ?? root.resolvingSymlinksInPath().path)
         let resolvedPrefix = resolvedRoot + "/"
         let lexicalPrefix = rootStandardized + "/"
-        for url in try items(in: root) where try info(at: url).st_mode & S_IFMT == S_IFLNK {
+        for (url, itemInfo) in try itemsWithInfo(in: root) where itemInfo.st_mode & S_IFMT == S_IFLNK {
             let raw = try FileManager.default.destinationOfSymbolicLink(atPath: url.path)
             let lexical = URL(fileURLWithPath: raw, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
             guard lexical.path != rootStandardized,
@@ -370,18 +370,15 @@ enum SignatureSnapshot {
         var trailing: [String] = []
         while current.path != "/" {
             if let real = DiskUtility.resolvedPath(current.path) {
-                var combined = URL(fileURLWithPath: real)
-                for component in trailing.reversed() {
-                    combined.appendPathComponent(component)
-                }
-                return combined.standardizedFileURL.path
+                if trailing.isEmpty { return real }
+                return (real == "/" ? "" : real) + "/" + trailing.reversed().joined(separator: "/")
             }
             trailing.append(current.lastPathComponent)
             let parent = current.deletingLastPathComponent()
             if parent.path == current.path { break }
             current = parent
         }
-        return target.resolvingSymlinksInPath().standardizedFileURL.path
+        return target.resolvingSymlinksInPath().path
     }
 
     /// 同卷交换，失败时两边都保持原样。明确拒绝不支持该能力的存储，不降级为先删后复制。

@@ -109,6 +109,37 @@ struct AuditRegressionTests {
         }
     }
 
+    @Test("SignatureSnapshot accepts internal symlinks under symlinked /var temporary roots")
+    func validateLinksForSigningAcceptsInternalSymlinkUnderVarRoot() throws {
+        // Do not call resolvingSymlinksInPath(): temporaryDirectory stays under /var/...
+        // so root.standardizedFileURL strip-vs-realpath differences exercise prefix matching.
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("InternalSignLink-" + UUID().uuidString)
+        let app = root.appendingPathComponent("Sample.app")
+        let resources = app.appendingPathComponent("Contents/Resources")
+        try FileManager.default.createDirectory(at: resources, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try Data("ok".utf8).write(to: resources.appendingPathComponent("data.txt"))
+        try FileManager.default.createSymbolicLink(
+            atPath: resources.appendingPathComponent("valid-internal").path,
+            withDestinationPath: "data.txt"
+        )
+        try FileManager.default.createSymbolicLink(
+            atPath: resources.appendingPathComponent("dangling-internal").path,
+            withDestinationPath: "missing-inside.txt"
+        )
+        try SignatureSnapshot.validateLinksForSigning(in: app)
+
+        try FileManager.default.createSymbolicLink(
+            atPath: resources.appendingPathComponent("escape-rel").path,
+            withDestinationPath: "../../../nonexistent-outside"
+        )
+        #expect(throws: (any Error).self) {
+            try SignatureSnapshot.validateLinksForSigning(in: app)
+        }
+    }
+
     @Test("PortalImageLaunchPreparation.verifyLink accepts both regular plist files and directories")
     func verifyLinkAcceptsRegularPlistFile() async throws {
         let root = FileManager.default.temporaryDirectory

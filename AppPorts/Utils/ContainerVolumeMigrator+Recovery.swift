@@ -915,9 +915,10 @@ extension ContainerVolumeMigrator {
                 var material = material
                 let local = URL(fileURLWithPath: material.originalPath)
                 let staging = local.deletingLastPathComponent().appendingPathComponent(".appports-restore-staging-" + material.id.uuidString)
+                let quarantine = staging.deletingLastPathComponent().appendingPathComponent(".appports-deleting-" + material.id.uuidString)
                 let recovery = stagingMountRootURL.appendingPathComponent("recovery-" + material.id.uuidString)
                 guard staging.path == stagingPath,
-                      Set(material.paths).isSubset(of: [staging.path, recovery.path]),
+                      Set(material.paths).isSubset(of: [staging.path, quarantine.path, recovery.path]),
                       existingRealDirectory(at: local), !isSymbolicLink(at: local),
                       try DataPathIdentity.capture(staging.deletingLastPathComponent()).matchesFilesystemObject(parentIdentity),
                       try !DataPathIdentity.capture(local).matchesFilesystemObject(candidateIdentity),

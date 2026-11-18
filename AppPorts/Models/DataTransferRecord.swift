@@ -334,7 +334,7 @@ struct DataTransferMaterial: Codable, Equatable, Identifiable, Sendable {
     let mode: DataTransferRecord.Mode
     let direction: DataTransferRecord.Direction
     let originalPath: String
-    let paths: [String]
+    var paths: [String]
     let volumeUUID: String?
     let volumeName: String?
     let containerUUID: String?

@@ -219,6 +219,7 @@ final class ContainerMountStore: @unchecked Sendable {
             recovery.preparationRemovalBaseline = baseline
             recovery.preparationRemovalParentIdentity = recovery.preparationParentIdentity
             updated.recoveryRecord = recovery
+            updated.paths = Array(Set(updated.paths + recovery.materialPaths)).sorted()
             current.preservedMaterials[index] = updated
         }
         return updated
