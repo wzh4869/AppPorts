@@ -17,17 +17,88 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
 
     func testEnabledPolicyOnlyAllowsExactMediaMembers() {
         let policy = DataPathPolicy(homeDirectory: home, partialWeChatMigrationEnabled: true)
-        for name in ["msg", "business"] {
+        for name in ["msg", "business", "msg/file", "msg/video"] {
             let decision = policy.evaluate(account.appendingPathComponent(name))
-            XCTAssertTrue(decision.canMigrate)
-            XCTAssertTrue(decision.partialSubdirectory)
-            XCTAssertFalse(decision.mayDiscoverChildren)
+            XCTAssertTrue(decision.canMigrate, name)
+            XCTAssertTrue(decision.partialSubdirectory, name)
+            XCTAssertFalse(decision.mayDiscoverChildren, name)
         }
-        for name in ["db_storage", "config", "resource", "all_users", "msg_other", "business/deeper", "msg/deeper"] {
+        for name in ["db_storage", "config", "resource", "all_users", "msg_other", "business/deeper",
+                     "msg/deeper", "msg/attach", "msg/migrate", "msg/file/2026-11", "msg/video/2026-11"] {
             XCTAssertFalse(policy.evaluate(account.appendingPathComponent(name)).canMigrate, name)
         }
         XCTAssertTrue(policy.evaluate(account).mayDiscoverChildren)
         XCTAssertFalse(policy.evaluate(account).partialSubdirectory)
+    }
+
+    func testRegularFileNamedMsgFileIsNeverTreatedAsMigratableDirectory() async throws {
+        let fixture = try Fixture(); defer { fixture.cleanup() }
+        let msgRoot = fixture.account.appendingPathComponent("msg")
+        let sqliteMsgFile = msgRoot.appendingPathComponent("file")
+        let videoDir = msgRoot.appendingPathComponent("video")
+        try Data("sqlite-payload".utf8).write(to: sqliteMsgFile)
+        try FileManager.default.createDirectory(at: videoDir, withIntermediateDirectories: true)
+        try Data("video-payload".utf8).write(to: videoDir.appendingPathComponent("clip.mp4"))
+
+        let policy = DataPathPolicy(homeDirectory: fixture.home, partialWeChatMigrationEnabled: true)
+        let fileDecision = policy.evaluate(sqliteMsgFile)
+        XCTAssertFalse(fileDecision.canMigrate)
+        XCTAssertEqual(fileDecision.reason, .weChatCompatibility)
+        XCTAssertTrue(policy.evaluate(videoDir).canMigrate)
+
+        let weChatPolicy = PartialWeChatMigrationPolicy(homeDirectory: fixture.home)
+        XCTAssertEqual(weChatPolicy.existingDirectoryMembers(of: fixture.account, group: .filesAndVideos), [videoDir.standardizedFileURL])
+
+        let service = fixture.service()
+        let warnings = try await service.migrate(account: fixture.account, mode: .filesAndVideos,
+                                                 externalRoot: fixture.external, appName: "WeChat")
+        XCTAssertTrue(warnings.isEmpty)
+        XCTAssertEqual(try service.state(of: fixture.account), .filesAndVideos)
+        let records = try fixture.store.recordsStrict()
+        XCTAssertEqual(records.map(\.mountPointPath), [videoDir.standardizedFileURL.path])
+        XCTAssertEqual(try Data(contentsOf: sqliteMsgFile), Data("sqlite-payload".utf8))
+    }
+
+    func testFilesAndVideosModeMigratesRestoresAndEnforcesMutualExclusion() async throws {
+        let fixture = try Fixture(); defer { fixture.cleanup() }
+        let msgRoot = fixture.account.appendingPathComponent("msg")
+        for sub in ["file", "video", "attach"] {
+            let dir = msgRoot.appendingPathComponent(sub)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try Data(sub.utf8).write(to: dir.appendingPathComponent("payload"))
+        }
+        let service = fixture.service()
+        let sizing = try service.measure(fixture.account)
+        XCTAssertEqual(sizing.filesAndVideosCount, 2)
+        XCTAssertEqual(sizing.filesAndVideos.bytes, Int64("file".utf8.count + "video".utf8.count))
+
+        let warnings = try await service.migrate(account: fixture.account, mode: .filesAndVideos,
+                                                 externalRoot: fixture.external, appName: "WeChat")
+        XCTAssertTrue(warnings.isEmpty)
+        XCTAssertEqual(try service.state(of: fixture.account), .filesAndVideos)
+        XCTAssertEqual(try fixture.store.recordsStrict().count, 2)
+        XCTAssertEqual(try String(contentsOf: msgRoot.appendingPathComponent("attach/payload"), encoding: .utf8), "attach")
+
+        for disallowedMode in [WeChatAccountMigrationService.Mode.whole, .split] {
+            do {
+                _ = try await service.migrate(account: fixture.account, mode: disallowedMode,
+                                              externalRoot: fixture.external, appName: "WeChat")
+                XCTFail("Switching to \(disallowedMode) must require restoring first")
+            } catch WeChatAccountMigrationService.Failure.restoreFirst {}
+        }
+
+        let restored = try await fixture.service(enabled: false).restoreSplit(account: fixture.account)
+        XCTAssertTrue(restored.isEmpty)
+        XCTAssertEqual(try service.state(of: fixture.account), .local)
+        XCTAssertTrue(try fixture.store.recordsStrict().isEmpty)
+
+        _ = try await service.migrate(account: fixture.account, mode: .split,
+                                      externalRoot: fixture.external, appName: "WeChat")
+        do {
+            _ = try await service.migrate(account: fixture.account, mode: .filesAndVideos,
+                                          externalRoot: fixture.external, appName: "WeChat")
+            XCTFail("Switching from .split to .filesAndVideos must require restoring first")
+        } catch WeChatAccountMigrationService.Failure.restoreFirst {}
     }
 
     func testWeChatCompatibilityRejectionUsesDedicatedGuidanceInsteadOfSystemProtectionCopy() throws {
@@ -60,6 +131,21 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
             systemDir.lastPathComponent
         )
         XCTAssertEqual(moverSystemError.localizedDescription, expectedSystemText)
+    }
+
+    func testDisplayMemberLabelScopesMsgPrefixToXWeChatFiles() {
+        XCTAssertEqual(
+            PartialWeChatMigrationPolicy.displayMemberLabel(for: account.appendingPathComponent("msg/file")),
+            "msg/file"
+        )
+        XCTAssertEqual(
+            PartialWeChatMigrationPolicy.displayMemberLabel(for: account.appendingPathComponent("msg/video")),
+            "msg/video"
+        )
+        XCTAssertEqual(
+            PartialWeChatMigrationPolicy.displayMemberLabel(for: URL(fileURLWithPath: "/tmp/msg/file")),
+            "file"
+        )
     }
 
     func testSpecialSharedDirectoriesAreNotAccounts() {

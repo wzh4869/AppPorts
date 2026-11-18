@@ -3,7 +3,7 @@ import SwiftUI
 struct WeChatAccountMigrationSheet: View {
     let item: DataDirItem
     let containerIdentifier: String
-    let onConfirm: (WeChatAccountMigrationService.Mode) -> Void
+    let onConfirm: (WeChatAccountMigrationService.Mode, WeChatAccountMigrationService.Sizing?) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var mode: WeChatAccountMigrationService.Mode = .split
     @State private var sizing: WeChatAccountMigrationService.Sizing?
@@ -17,6 +17,15 @@ struct WeChatAccountMigrationSheet: View {
         }
     }
 
+    private var canStartSelectedMode: Bool {
+        guard let sizing else { return false }
+        switch mode {
+        case .whole: return sizing.total.isComplete
+        case .split: return sizing.isComplete
+        case .filesAndVideos: return sizing.isFilesAndVideosComplete
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
@@ -26,24 +35,45 @@ struct WeChatAccountMigrationSheet: View {
             }
             Picker("迁移方式".localized, selection: $mode) {
                 Text("全部迁移".localized).tag(WeChatAccountMigrationService.Mode.whole)
-                Text("拆分迁移".localized).tag(WeChatAccountMigrationService.Mode.split)
+                Text("拆分迁移（msg + business）".localized).tag(WeChatAccountMigrationService.Mode.split)
+                Text("仅大文件与视频（msg/file + msg/video）".localized).tag(WeChatAccountMigrationService.Mode.filesAndVideos)
             }
             .pickerStyle(.radioGroup)
             if let sizing {
-                if mode == .whole {
+                switch mode {
+                case .whole:
                     sizeRow("迁移整个账号目录".localized, value: sizing.total.formattedSize)
                     Text("外置盘未连接时，微信可能无法启动。".localized)
                         .font(AppDialogTypography.body).foregroundStyle(.secondary)
-                } else {
+                    if !sizing.total.isComplete {
+                        Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
+                            .foregroundStyle(.orange)
+                    }
+                case .split:
                     sizeRow("迁移 msg + business".localized, value: sizing.media.formattedSize)
                     sizeRow("本地保留数据库等数据".localized,
                                    value: LocalizedByteCountFormatter.string(fromByteCount: sizing.retainedBytes))
                     Text("仅迁移媒体文件，数据库和配置留在本地。外置盘未连接时的文字消息可用性取决于微信版本。".localized)
                         .font(AppDialogTypography.body).foregroundStyle(.secondary)
-                }
-                if mode == .whole ? !sizing.total.isComplete : !sizing.isComplete {
-                    Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
-                        .foregroundStyle(.orange)
+                    if !sizing.isComplete {
+                        Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
+                            .foregroundStyle(.orange)
+                    }
+                case .filesAndVideos:
+                    if sizing.filesAndVideosCount == 0 {
+                        Text("未在账号下找到可迁移的 msg/file 或 msg/video 目录。".localized)
+                            .foregroundStyle(.orange)
+                    } else {
+                        sizeRow("迁移 msg/file + msg/video".localized, value: sizing.filesAndVideos.formattedSize)
+                        sizeRow("本地保留数据库与聊天图片等".localized,
+                                       value: LocalizedByteCountFormatter.string(fromByteCount: sizing.filesAndVideosRetainedBytes))
+                        Text("仅迁移接收的大文件与视频，数据库和聊天图片留在本地，兼顾空间释放与离线聊天体验。".localized)
+                            .font(AppDialogTypography.body).foregroundStyle(.secondary)
+                        if !sizing.total.isComplete || !sizing.filesAndVideos.isComplete {
+                            Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
+                                .foregroundStyle(.orange)
+                        }
+                    }
                 }
             } else if let errorMessage {
                 Text(errorMessage).foregroundStyle(.orange)
@@ -55,14 +85,14 @@ struct WeChatAccountMigrationSheet: View {
             HStack {
                 Button("取消".localized) { dismiss() }.keyboardShortcut(.cancelAction)
                 Spacer()
-                Button("开始迁移".localized) { onConfirm(mode) }
+                Button("开始迁移".localized) { onConfirm(mode, sizing) }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(mode == .whole ? sizing?.total.isComplete != true : sizing?.isComplete != true)
+                    .disabled(!canStartSelectedMode)
             }
         }
         .padding(24)
         .appDialogTypography()
-        .frame(width: 480)
+        .frame(width: 500)
         .task {
             let account = item.path
             let identifier = containerIdentifier

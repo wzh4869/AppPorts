@@ -193,7 +193,7 @@ struct DataDirOperationButtons: View {
                     migrationButton(title: item.status == DataDirStatus.mounted ? "恢复自动挂载".localized : "挂载".localized, icon: "externaldrive.fill.badge.checkmark", compact: inline) { onMount(item) }
                 } else if item.status == DataDirStatus.waitingForUnlock, let onMount {
                     migrationButton(title: "解锁".localized, icon: "lock.open") { onMount(item) }
-                } else if item.weChatSplitMembers.count < PartialWeChatMigrationPolicy.memberNames.count
+                } else if item.weChatSplitMembers.count < item.weChatExpectedMemberCount
                     || item.weChatSplitMembers.contains(where: { $0.status != DataDirStatus.mounted }) {
                     migrationButton(title: (item.status == DataDirStatus.local ? "迁移" : "继续").localized,
                                     icon: "externaldrive.fill.badge.plus") { onMigrate(item) }
@@ -201,7 +201,7 @@ struct DataDirOperationButtons: View {
                 if item.weChatSplitMembers.contains(where: { $0.canRestore || $0.recoveryOperationID != nil }),
                    let onMountRestore {
                     mountRestoreButton(action: onMountRestore, compact: inline && (
-                        item.weChatSplitMembers.count < PartialWeChatMigrationPolicy.memberNames.count
+                        item.weChatSplitMembers.count < item.weChatExpectedMemberCount
                             || item.weChatSplitMembers.contains { $0.status != DataDirStatus.mounted }
                     ))
                 }

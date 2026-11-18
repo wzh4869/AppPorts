@@ -278,6 +278,11 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     /// 已迁移或需要恢复的目录不能再次迁移，但不属于“不支持迁移”。
     var isMigrationUnsupported: Bool {
         !isMigratable && !canRestore && !hasMountTransferRecord && recoveryOperationID == nil
+    var weChatExpectedMemberCount: Int = PartialWeChatMigrationPolicy.memberNames.count
+
+    var isWeChatFilesAndVideosSplit: Bool {
+        weChatSplitMembers.contains { $0.path.standardizedFileURL.deletingLastPathComponent().lastPathComponent == "msg" }
+    }
     }
 
     /// Standard container shortcuts are user-folder entry points, not app-owned data.
@@ -302,14 +307,16 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     var displayedStatus: String { isUserDirectoryLink ? "用户目录入口" : status }
 
     var sizeScopeLabel: String {
-        if !weChatSplitMembers.isEmpty { return "msg + business" }
+        if !weChatSplitMembers.isEmpty {
+            return isWeChatFilesAndVideosSplit ? "msg/file + msg/video" : "msg + business"
+        }
         if isUserDirectoryLink { return "不计入应用数据".localized }
         return (linkedDestination == nil ? "本卷大小" : "目标大小").localized
     }
 
     var sizeScopeExplanation: String {
         if !weChatSplitMembers.isEmpty {
-            if status == DataDirStatus.local { return "msg + business" }
+            if status == DataDirStatus.local { return sizeScopeLabel }
             return "仅统计已迁移的媒体目录，不包含本地数据库和配置。".localized
         }
         if isUserDirectoryLink {
@@ -387,3 +394,4 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
         lhs.requiresMountMigration == rhs.requiresMountMigration
     }
 }
+        lhs.weChatExpectedMemberCount == rhs.weChatExpectedMemberCount &&

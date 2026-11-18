@@ -205,6 +205,7 @@ actor DataDirScanner {
     private var readIssues: [DataDirReadIssue] = []
     private var pausedMountDirectories: Set<URL> = []
     private let partialWeChatMigrationEnabled: Bool
+    private let preferredWeChatSplitGroup: PartialWeChatMigrationPolicy.SplitGroup?
     private let weChatContainerIdentifier: String
 
     private struct ManagedLinkMetadata: Codable, Sendable {
@@ -219,6 +220,7 @@ actor DataDirScanner {
         homeDir: URL = URL(fileURLWithPath: NSHomeDirectory()),
         mountStore: ContainerMountStore = .shared,
         partialWeChatMigrationEnabled: Bool = false,
+        preferredWeChatSplitGroup: PartialWeChatMigrationPolicy.SplitGroup? = nil,
         weChatContainerIdentifier: String = PartialWeChatMigrationPolicy.bundleIdentifier,
         isMountPoint: @escaping @Sendable (URL) -> Bool = { DiskUtility.isMountPoint($0) },
         isVolumeOnline: @escaping @Sendable (String) -> Bool = { DiskUtility.isVolumeOnline($0) },
@@ -228,6 +230,7 @@ actor DataDirScanner {
         self.homeDir = homeDir.standardizedFileURL
         self.mountStore = mountStore
         self.partialWeChatMigrationEnabled = partialWeChatMigrationEnabled
+        self.preferredWeChatSplitGroup = preferredWeChatSplitGroup
         self.weChatContainerIdentifier = weChatContainerIdentifier
         self.isMountPoint = isMountPoint
         self.isVolumeOnline = isVolumeOnline
@@ -749,6 +752,35 @@ actor DataDirScanner {
         }
 
         mergeRecoveryRecords(into: &resultsByPath, bundleID: bundleID, appName: appName, externalRootURL: externalRootURL)
+
+        let weChatPolicy = PartialWeChatMigrationPolicy(homeDirectory: homeDir, containerIdentifier: weChatContainerIdentifier)
+        var coldAccounts: Set<String> = []
+        if preferredWeChatSplitGroup == .filesAndVideos {
+            for existing in resultsByPath.values where weChatPolicy.isAccount(existing.path) {
+                coldAccounts.insert(existing.path.standardizedFileURL.path)
+            }
+        }
+        for existing in resultsByPath.values {
+            if let match = weChatPolicy.memberMatch(for: existing.path), match.group == .filesAndVideos {
+                coldAccounts.insert(match.account.standardizedFileURL.path)
+            }
+        }
+        for accountPath in coldAccounts {
+            let accountURL = URL(fileURLWithPath: accountPath)
+            for candidate in weChatPolicy.existingDirectoryMembers(of: accountURL, group: .filesAndVideos) {
+                guard resultsByPath[candidate.path] == nil else { continue }
+                var item = makeAppDataItem(
+                    name: PartialWeChatMigrationPolicy.displayMemberLabel(for: candidate),
+                    path: candidate,
+                    type: .containers,
+                    priority: .critical,
+                    description: "容器内部数据目录",
+                    appName: appName
+                )
+                applyInspectionResult(to: &item, inspection: inspectItem(at: candidate, type: .containers), externalRootURL: externalRootURL)
+                resultsByPath[item.id] = item
+            }
+        }
 
         let policy = DataPathPolicy(homeDirectory: homeDir, partialWeChatMigrationEnabled: partialWeChatMigrationEnabled,
                                     weChatContainerIdentifier: weChatContainerIdentifier)

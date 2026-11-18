@@ -34384,6 +34384,280 @@
         }
       }
     },
+    "仅迁移接收的大文件与视频，数据库和聊天图片留在本地，兼顾空间释放与离线聊天体验。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يرحّل الملفات الكبيرة ومقاطع الفيديو المستلمة فقط مع إبقاء قواعد البيانات وصور الدردشة محليًا للموازنة بين توفير المساحة وتجربة الدردشة دون اتصال."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑⠎ ⠕⠝⠇⠽ ⠗⠑⠉⠑⠊⠧⠑⠙ ⠇⠁⠗⠛⠑ ⠋⠊⠇⠑⠎ ⠁⠝⠙ ⠧⠊⠙⠑⠕⠎ ⠺⠓⠊⠇⠑ ⠅⠑⠑⠏⠊⠝⠛ ⠙⠁⠞⠁⠃⠁⠎⠑⠎ ⠁⠝⠙ ⠉⠓⠁⠞ ⠊⠍⠁⠛⠑⠎ ⠕⠝ ⠽⠕⠥⠗ ⠠⠍⠁⠉ ⠋⠕⠗ ⠎⠍⠕⠕⠞⠓⠑⠗ ⠕⠋⠋⠇⠊⠝⠑ ⠉⠓⠁⠞⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migriert nur empfangene große Dateien und Videos; Datenbanken und Chatbilder bleiben lokal, um Speicherplatz zu sparen und Offline-Chats zu erhalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrates only received large files and videos while keeping databases and chat images on your Mac for smoother offline chats."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migras nur ricevitajn grandajn dosierojn kaj videojn, lasante datumbazojn kaj babilbildojn loke por ŝpari spacon kaj konservi glatan eksterretan babiladon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra solo los archivos grandes y vídeos recibidos, dejando las bases de datos y las imágenes del chat en local para equilibrar espacio libre y uso sin conexión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne migre que les fichiers volumineux et vidéos reçus, tout en gardant les bases de données et images de discussion en local pour concilier gain d’espace et discussions hors ligne."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "केवल प्राप्त बड़ी फ़ाइलों और वीडियो को माइग्रेट करता है, जबकि स्थान बचाने और बेहतर ऑफ़लाइन चैट अनुभव के लिए डेटाबेस व चैट चित्र स्थानीय रखता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya memigrasikan file besar dan video yang diterima, sementara basis data dan gambar obrolan tetap di lokal demi menghemat ruang sekaligus menjaga kenyamanan obrolan offline."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra solo i file grandi e i video ricevuti, mantenendo database e immagini della chat in locale per bilanciare spazio libero ed esperienza offline."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受信した大容量ファイルと動画のみを移行し、データベースとチャット画像はローカルに残すことで、容量確保とオフライン時のチャット体験を両立します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수신한 대용량 파일과 동영상만 마이그레이션하고 데이터베이스와 채팅 이미지는 로컬에 남겨, 용량 확보와 오프라인 채팅 사용성을 함께 챙깁니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migreert alleen ontvangen grote bestanden en video’s en houdt databases en chatafbeeldingen lokaal voor zowel ruimtewinst als prettig offline chatten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenosi tylko odebrane duże pliki i wideo, pozostawiając bazy danych i obrazy czatu lokalnie, aby połączyć oszczędność miejsca z wygodnym czatem offline."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra apenas arquivos grandes e vídeos recebidos, mantendo bancos de dados e imagens do chat no Mac para equilibrar espaço livre e conversas offline."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переносит только полученные крупные файлы и видео, оставляя базы данных и изображения чатов локально для экономии места и удобного общения без диска."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้ายเฉพาะไฟล์ขนาดใหญ่และวิดีโอที่ได้รับ โดยเก็บฐานข้อมูลและรูปภาพแชทไว้ในเครื่อง เพื่อทั้งประหยัดพื้นที่และใช้งานแชทขณะออฟไลน์ได้ราบรื่น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca alınan büyük dosyaları ve videoları taşır; hem alan açmak hem de çevrimdışı sohbet deneyimini korumak için veritabanını ve sohbet görsellerini yerelde tutar."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ di chuyển tệp lớn và video đã nhận, giữ cơ sở dữ liệu và ảnh trò chuyện ở cục bộ để vừa giải phóng dung lượng vừa đảm bảo trải nghiệm trò chuyện ngoại tuyến."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅迁移接收的大文件与视频，数据库和聊天图片留在本地，兼顾空间释放与离线聊天体验。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅遷移接收的大檔案與影片，資料庫和聊天圖片留在本機，兼顧空間釋放與離線聊天體驗。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅遷迻啑收の大攵件與视频，數據库啝聊天圖片畱╪夲哋，兼顾空間釋放與離線聊天体驗。"
+          }
+        }
+      }
+    },
+    "仅大文件与视频（msg/file + msg/video）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الملفات الكبيرة ومقاطع الفيديو فقط (msg/file + msg/video)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠁⠗⠛⠑ ⠋⠊⠇⠑⠎ & ⠧⠊⠙⠑⠕⠎ ⠕⠝⠇⠽ ⠐⠣⠍⠎⠛⠌⠋⠊⠇⠑ + ⠍⠎⠛⠌⠧⠊⠙⠑⠕⠐⠜"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur große Dateien & Videos (msg/file + msg/video)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large files & videos only (msg/file + msg/video)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur grandaj dosieroj kaj videoj (msg/file + msg/video)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo archivos grandes y vídeos (msg/file + msg/video)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers volumineux et vidéos uniquement (msg/file + msg/video)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "केवल बड़ी फ़ाइलें और वीडियो (msg/file + msg/video)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya file besar & video (msg/file + msg/video)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo file grandi e video (msg/file + msg/video)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大容量ファイルと動画のみ（msg/file + msg/video）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대용량 파일 및 동영상만 (msg/file + msg/video)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen grote bestanden en video’s (msg/file + msg/video)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylko duże pliki i wideo (msg/file + msg/video)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apenas arquivos grandes e vídeos (msg/file + msg/video)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Только крупные файлы и видео (msg/file + msg/video)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เฉพาะไฟล์ขนาดใหญ่และวิดีโอ (msg/file + msg/video)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca büyük dosyalar ve videolar (msg/file + msg/video)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ tệp lớn và video (msg/file + msg/video)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅大文件与视频（msg/file + msg/video）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅大檔案與影片（msg/file + msg/video）"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅大攵件與视频（msg/file + msg/video）"
+          }
+        }
+      }
+    },
     "仅迁移数据" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -76311,6 +76585,143 @@
         }
       }
     },
+    "将这个账号的 msg/file 与 msg/video 一起还原到本地。校验并切换成功后，自动清理外置旧副本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استعِد مجلدَي msg/file وmsg/video لهذا الحساب معًا إلى المحلي. بعد نجاح التحقق والتبديل، تُنظَّف النسخة القديمة على القرص الخارجي تلقائيًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠎⠞⠕⠗⠑ ⠞⠓⠊⠎ ⠁⠉⠉⠕⠥⠝⠞⠄⠎ ⠍⠎⠛⠌⠋⠊⠇⠑ ⠁⠝⠙ ⠍⠎⠛⠌⠧⠊⠙⠑⠕ ⠋⠕⠇⠙⠑⠗⠎ ⠞⠕⠛⠑⠞⠓⠑⠗⠲ ⠠⠕⠇⠙ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠉⠕⠏⠊⠑⠎ ⠁⠗⠑ ⠉⠇⠑⠁⠝⠑⠙ ⠥⠏ ⠁⠋⠞⠑⠗ ⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝ ⠁⠝⠙ ⠎⠺⠊⠞⠉⠓⠊⠝⠛ ⠎⠥⠉⠉⠑⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellen Sie die Ordner msg/file und msg/video dieses Kontos gemeinsam lokal wieder her. Nach erfolgreicher Prüfung und Umschaltung wird die alte Kopie auf dem externen Laufwerk automatisch bereinigt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore this account’s msg/file and msg/video folders together. Old external copies are cleaned up after verification and switching succeed."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarigu la dosierujojn msg/file kaj msg/video de ĉi tiu konto kune loke. Post sukcesa kontrolo kaj transŝalto, la malnova kopio sur la ekstera disko aŭtomate purigatas."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaura juntas las carpetas msg/file y msg/video de esta cuenta en local. Tras verificar y cambiar correctamente, la copia antigua del disco externo se limpia automáticamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurez ensemble les dossiers msg/file et msg/video de ce compte en local. Une fois la vérification et le basculement réussis, l’ancienne copie sur le disque externe est nettoyée automatiquement."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस खाते के msg/file और msg/video को साथ में स्थानीय रूप से पुनर्स्थापित करें। सत्यापन और स्विच सफल होने पर बाहरी ड्राइव की पुरानी प्रति अपने आप साफ़ हो जाती है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulihkan folder msg/file dan msg/video akun ini bersama-sama ke lokal. Setelah verifikasi dan peralihan berhasil, salinan lama di drive eksternal dibersihkan otomatis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina insieme le cartelle msg/file e msg/video di questo account in locale. Dopo verifica e passaggio riusciti, la vecchia copia sul disco esterno viene pulita automaticamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアカウントの msg/file と msg/video をまとめてローカルに復元します。検証と切り替えが成功すると、外付けドライブ上の旧コピーは自動的にクリーンアップされます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 계정의 msg/file과 msg/video를 함께 로컬로 복원합니다. 검증과 전환이 성공하면 외장 드라이브의 이전 사본이 자동으로 정리됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel de mappen msg/file en msg/video van dit account samen lokaal. Na geslaagde verificatie en omschakeling wordt de oude kopie op de externe schijf automatisch opgeruimd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przywróć razem foldery msg/file i msg/video tego konta lokalnie. Po pomyślnej weryfikacji i przełączeniu stara kopia na dysku zewnętrznym zostanie automatycznie usunięta."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaure juntas as pastas msg/file e msg/video desta conta no local. Após concluir a verificação e a troca, a cópia antiga no disco externo é limpa automaticamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстановите папки msg/file и msg/video этого аккаунта вместе локально. После успешной проверки и переключения старая копия на внешнем диске очищается автоматически."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กู้คืนโฟลเดอร์ msg/file และ msg/video ของบัญชีนี้กลับมาไว้ในเครื่องพร้อมกัน เมื่อการตรวจสอบและสลับสำเร็จ สำเนาเก่าบนไดรฟ์ภายนอกจะถูกล้างให้อัตโนมัติ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu hesabın msg/file ve msg/video klasörlerini birlikte yerele geri yükleyin. Doğrulama ve geçiş başarılı olduktan sonra harici diskteki eski kopya otomatik olarak temizlenir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khôi phục cùng lúc thư mục msg/file và msg/video của tài khoản này về cục bộ. Sau khi xác minh và chuyển đổi thành công, bản sao cũ trên ổ đĩa ngoài sẽ tự động được dọn dẹp."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将这个账号的 msg/file 与 msg/video 一起还原到本地。校验并切换成功后，自动清理外置旧副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將這個帳號的 msg/file 與 msg/video 一起還原到本機。校驗並切換成功後，自動清理外接舊副本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將這個账号の msg/file 與 msg/video 一起還原↘夲哋。校驗並切換成功後，自動淸理外寘舊副夲。"
+          }
+        }
+      }
+    },
     "将重签「%@」。AppPorts 会自动保留仍有恢复价值的官方原包，并在确认恢复官方状态后清理。你可以在应用上使用“恢复原始签名”。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -99609,6 +100020,143 @@
         }
       }
     },
+    "微信账号 · 拆分迁移（msg/file + msg/video）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حساب WeChat · الترحيل المنقسم (msg/file + msg/video)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠺⠑⠠⠉⠓⠁⠞ ⠁⠉⠉⠕⠥⠝⠞ · ⠠⠎⠏⠇⠊⠞ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠐⠣⠍⠎⠛⠌⠋⠊⠇⠑ + ⠍⠎⠛⠌⠧⠊⠙⠑⠕⠐⠜"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat-Konto · Split-Migration (msg/file + msg/video)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat account · Split migration (msg/file + msg/video)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat-konto · Divida migrado (msg/file + msg/video)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta de WeChat · Migración dividida (msg/file + msg/video)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compte WeChat · Migration scindée (msg/file + msg/video)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat खाता · विभाजित माइग्रेशन (msg/file + msg/video)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akun WeChat · Migrasi terpisah (msg/file + msg/video)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account WeChat · Migrazione separata (msg/file + msg/video)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat アカウント · 分割移行（msg/file + msg/video）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat 계정 · 분할 마이그레이션 (msg/file + msg/video)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat-account · Gesplitste migratie (msg/file + msg/video)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konto WeChat · Migracja dzielona (msg/file + msg/video)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conta do WeChat · Migração dividida (msg/file + msg/video)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аккаунт WeChat · Раздельный перенос (msg/file + msg/video)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บัญชี WeChat · การย้ายแบบแยกส่วน (msg/file + msg/video)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat hesabı · Bölünmüş taşıma (msg/file + msg/video)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tài khoản WeChat · Di chuyển tách riêng (msg/file + msg/video)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "微信账号 · 拆分迁移（msg/file + msg/video）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "微信帳號 · 拆分遷移（msg/file + msg/video）"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "微信账号 · 拆汾遷迻（msg/file + msg/video）"
+          }
+        }
+      }
+    },
     "微信账号拆分迁移" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -99879,6 +100427,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "微信账号數據"
+          }
+        }
+      }
+    },
+    "未在账号下找到可迁移的 msg/file 或 msg/video 目录。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يُعثر على مجلد msg/file أو msg/video قابل للترحيل ضمن هذا الحساب."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠝⠕ ⠍⠊⠛⠗⠁⠞⠁⠃⠇⠑ ⠍⠎⠛⠌⠋⠊⠇⠑ ⠕⠗ ⠍⠎⠛⠌⠧⠊⠙⠑⠕ ⠋⠕⠇⠙⠑⠗ ⠺⠁⠎ ⠋⠕⠥⠝⠙ ⠥⠝⠙⠑⠗ ⠞⠓⠊⠎ ⠁⠉⠉⠕⠥⠝⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unter diesem Konto wurde kein migrierbarer Ordner msg/file oder msg/video gefunden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No migratable msg/file or msg/video folder was found under this account."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neniu migrebla dosierujo msg/file aŭ msg/video troviĝis sub ĉi tiu konto."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró ninguna carpeta msg/file o msg/video migrable en esta cuenta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun dossier msg/file ou msg/video migrable n’a été trouvé dans ce compte."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस खाते के अंतर्गत माइग्रेट करने योग्य msg/file या msg/video निर्देशिका नहीं मिली।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ditemukan folder msg/file atau msg/video yang dapat dimigrasikan pada akun ini."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna cartella msg/file o msg/video migrabile trovata in questo account."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアカウント下に、移行可能な msg/file または msg/video ディレクトリが見つかりませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 계정 아래에서 마이그레이션할 수 있는 msg/file 또는 msg/video 디렉터리를 찾지 못했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen migreerbare map msg/file of msg/video gevonden onder dit account."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie znaleziono na tym koncie katalogu msg/file ani msg/video możliwego do przeniesienia."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma pasta msg/file ou msg/video migrável foi encontrada nesta conta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этом аккаунте не найдено доступных для переноса папок msg/file или msg/video."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่พบโฟลเดอร์ msg/file หรือ msg/video ที่ย้ายได้ภายใต้บัญชีนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu hesap altında taşınabilir msg/file veya msg/video klasörü bulunamadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy thư mục msg/file hoặc msg/video có thể di chuyển trong tài khoản này."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未在账号下找到可迁移的 msg/file 或 msg/video 目录。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未在帳號下找到可遷移的 msg/file 或 msg/video 目錄。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未╪账号下找↘可遷迻の msg/file 或 msg/video 目錄。"
           }
         }
       }
@@ -110429,6 +111114,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拆汾遷迻"
+          }
+        }
+      }
+    },
+    "拆分迁移（msg + business）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الترحيل المنقسم (msg + business)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠏⠇⠊⠞ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠐⠣⠍⠎⠛ + ⠃⠥⠎⠊⠝⠑⠎⠎⠐⠜"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split-Migration (msg + business)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split migration (msg + business)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Divida migrado (msg + business)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migración dividida (msg + business)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migration scindée (msg + business)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "विभाजित माइग्रेशन (msg + business)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrasi terpisah (msg + business)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrazione separata (msg + business)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分割移行（msg + business）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "분할 마이그레이션 (msg + business)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesplitste migratie (msg + business)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migracja dzielona (msg + business)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migração dividida (msg + business)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Раздельный перенос (msg + business)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การย้ายแบบแยกส่วน (msg + business)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bölünmüş taşıma (msg + business)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển tách riêng (msg + business)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拆分迁移（msg + business）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拆分遷移（msg + business）"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拆汾遷迻（msg + business）"
           }
         }
       }
@@ -143321,6 +144143,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "夲哋葆畱數據库等數據"
+          }
+        }
+      }
+    },
+    "本地保留数据库与聊天图片等" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قواعد البيانات وصور الدردشة وغيرها تبقى محليًا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠁⠞⠁⠃⠁⠎⠑ ⠁⠝⠙ ⠉⠓⠁⠞ ⠊⠍⠁⠛⠑⠎ ⠅⠑⠏⠞ ⠇⠕⠉⠁⠇⠇⠽"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenbanken und Chatbilder bleiben lokal"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Database and chat images kept locally"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datumbazoj kaj babilbildoj restas loke"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bases de datos e imágenes del chat se quedan en local"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bases de données et images de discussion conservées en local"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेटाबेस और चैट चित्र आदि स्थानीय रहते हैं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basis data dan gambar obrolan tetap di lokal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Database e immagini della chat restano in locale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データベースとチャット画像などはローカルに保持"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터베이스 및 채팅 이미지 등은 로컬에 유지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Databases en chatafbeeldingen blijven lokaal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bazy danych i obrazy czatu pozostają lokalnie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bancos de dados e imagens do chat ficam no local"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Базы данных и изображения чатов остаются локально"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ฐานข้อมูลและรูปภาพแชทฯ ยังอยู่ภายในเครื่อง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veritabanı ve sohbet görselleri yerelde kalır"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cơ sở dữ liệu và ảnh trò chuyện vẫn ở cục bộ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地保留数据库与聊天图片等"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機保留資料庫與聊天圖片等"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夲哋葆畱數據库與聊天圖片等"
           }
         }
       }
@@ -209234,6 +210193,143 @@
         }
       }
     },
+    "迁移 msg/file + msg/video" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترحيل msg/file + msg/video"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑ ⠍⠎⠛⠌⠋⠊⠇⠑ + ⠍⠎⠛⠌⠧⠊⠙⠑⠕"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video migrieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate msg/file + msg/video"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migri msg/file + msg/video"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar msg/file + msg/video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrer msg/file + msg/video"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video माइग्रेट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrasikan msg/file + msg/video"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra msg/file + msg/video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video を移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video 마이그레이션"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video migreren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenieś msg/file + msg/video"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar msg/file + msg/video"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перенести msg/file + msg/video"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้าย msg/file + msg/video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video taşı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển msg/file + msg/video"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移 msg/file + msg/video"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移 msg/file + msg/video"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷迻 msg/file + msg/video"
+          }
+        }
+      }
+    },
     "迁移「%@」的数据" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -234841,10 +235937,118 @@
     "App Store currently uses “%@”. Choose the same external drive as AppPorts in App Store Settings." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم App Store حاليًا «%@». اختر نفس القرص الخارجي المستخدم في AppPorts من إعدادات App Store."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠉⠥⠗⠗⠑⠝⠞⠇⠽ ⠥⠎⠑⠎ “%@”⠲ ⠠⠉⠓⠕⠕⠎⠑ ⠞⠓⠑ ⠎⠁⠍⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠁⠎ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠝ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App Store verwendet derzeit „%@“. Wähle in den App Store-Einstellungen dasselbe externe Laufwerk wie in AppPorts."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "App Store currently uses “%@”. Choose the same external drive as AppPorts in App Store Settings."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store nun uzas «%@». Elektu la saman eksteran diskon kiel AppPorts en la agordoj de App Store."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store usa actualmente «%@». Elige la misma unidad externa que AppPorts en los Ajustes de App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store utilise actuellement « %@ ». Choisissez le même disque externe qu’AppPorts dans les réglages de l’App Store."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store अभी “%@” का उपयोग कर रहा है। App Store सेटिंग्ज़ में AppPorts वाली समान बाहरी ड्राइव चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store saat ini menggunakan “%@”. Pilih drive eksternal yang sama dengan AppPorts di Pengaturan App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store usa attualmente «%@». Scegli la stessa unità esterna di AppPorts nelle Impostazioni dell’App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store は現在「%@」を使用しています。App Store の設定で AppPorts と同じ外部ドライブを選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store가 현재 ‘%@’을(를) 사용 중입니다. App Store 설정에서 AppPorts와 동일한 외장 드라이브를 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De App Store gebruikt momenteel ‘%@’. Kies in de App Store-instellingen dezelfde externe schijf als in AppPorts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store używa obecnie dysku „%@”. Wybierz ten sam dysk zewnętrzny co w AppPorts w ustawieniach App Store."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A App Store usa atualmente “%@”. Escolha a mesma unidade externa do AppPorts nos Ajustes da App Store."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store сейчас использует «%@». Выберите тот же внешний диск, что и в AppPorts, в настройках App Store."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขณะนี้ App Store ใช้ “%@” อยู่ โปรดเลือกไดรฟ์ภายนอกเดียวกับ AppPorts ในการตั้งค่า App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store şu anda “%@” diskini kullanıyor. App Store Ayarları’nda AppPorts ile aynı harici diski seçin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store hiện đang dùng “%@”. Hãy chọn cùng ổ đĩa ngoài với AppPorts trong Cài đặt App Store."
           }
         },
         "zh-Hans" : {
@@ -234858,16 +236062,130 @@
             "state" : "translated",
             "value" : "App Store 目前選擇的是「%@」。請在 App Store 設定中改為與 AppPorts 相同的外接磁碟。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 當前選擇の是「%@」。請╪ App Store 設寘㊥改为與 AppPorts 相茼の外盤。"
+          }
         }
       }
     },
     "App Store currently uses “%@”. Select “%@” to match AppPorts." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم App Store حاليًا «%@». اختر «%@» ليطابق AppPorts."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠉⠥⠗⠗⠑⠝⠞⠇⠽ ⠥⠎⠑⠎ “%@”⠲ ⠠⠎⠑⠇⠑⠉⠞ “%@” ⠞⠕ ⠍⠁⠞⠉⠓ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App Store verwendet derzeit „%@“. Wähle „%@“, um mit AppPorts übereinzustimmen."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "App Store currently uses “%@”. Select “%@” to match AppPorts."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store nun uzas «%@». Elektu «%@» por kongrui kun AppPorts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store usa actualmente «%@». Selecciona «%@» para coincidir con AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store utilise actuellement « %@ ». Sélectionnez « %@ » pour correspondre à AppPorts."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store अभी “%@” का उपयोग कर रहा है। AppPorts से मिलान करने के लिए “%@” चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store saat ini menggunakan “%@”. Pilih “%@” agar sesuai dengan AppPorts."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store usa attualmente «%@». Seleziona «%@» per usare la stessa unità di AppPorts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store は現在「%@」を使用しています。AppPorts に合わせるには「%@」を選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store가 현재 ‘%@’을(를) 사용 중입니다. AppPorts와 일치시키려면 ‘%@’을(를) 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De App Store gebruikt momenteel ‘%@’. Selecteer ‘%@’ om overeen te komen met AppPorts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store używa obecnie dysku „%@”. Wybierz „%@”, aby dopasować go do AppPorts."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A App Store usa atualmente “%@”. Selecione “%@” para coincidir com o AppPorts."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store сейчас использует «%@». Выберите «%@», чтобы диск совпадал с AppPorts."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขณะนี้ App Store ใช้ “%@” อยู่ โปรดเลือก “%@” เพื่อให้ตรงกับ AppPorts"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store şu anda “%@” diskini kullanıyor. AppPorts ile eşleşmesi için “%@” seçeneğini belirleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store hiện đang dùng “%@”. Hãy chọn “%@” để khớp với AppPorts."
           }
         },
         "zh-Hans" : {
@@ -234881,16 +236199,130 @@
             "state" : "translated",
             "value" : "App Store 目前選擇的是「%@」。請選擇「%@」，與 AppPorts 使用同一個外接磁碟。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 當前選擇の是「%@」。請選擇「%@」，與 AppPorts 使詠茼一塊外盤。"
+          }
         }
       }
     },
     "App Store will also install newly downloaded apps larger than 1 GB on this drive and manage their updates." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سيقوم App Store أيضًا بتثبيت التطبيقات المحمّلة حديثًا التي يتجاوز حجمها 1 غيغابايت على هذا القرص وإدارة تحديثاتها."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠺⠊⠇⠇ ⠁⠇⠎⠕ ⠊⠝⠎⠞⠁⠇⠇ ⠝⠑⠺⠇⠽ ⠙⠕⠺⠝⠇⠕⠁⠙⠑⠙ ⠁⠏⠏⠎ ⠇⠁⠗⠛⠑⠗ ⠞⠓⠁⠝ ⠼⠁ ⠠⠛⠠⠃ ⠕⠝ ⠞⠓⠊⠎ ⠙⠗⠊⠧⠑ ⠁⠝⠙ ⠍⠁⠝⠁⠛⠑ ⠞⠓⠑⠊⠗ ⠥⠏⠙⠁⠞⠑⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App Store installiert neu geladene Apps über 1 GB ebenfalls auf diesem Laufwerk und verwaltet deren Updates."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "App Store will also install newly downloaded apps larger than 1 GB on this drive and manage their updates."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store ankaŭ instalos novajn elŝutitajn apojn pli grandajn ol 1 GB sur ĉi tiu disko kaj administros iliajn ĝisdatigojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store también instalará en esta unidad las nuevas apps descargadas de más de 1 GB y gestionará sus actualizaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store installera également sur ce disque les nouvelles apps téléchargées de plus de 1 Go et gérera leurs mises à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 1 GB से बड़े नए डाउनलोड किए गए ऐप्स को भी इसी ड्राइव पर इंस्टॉल करेगा और उनके अपडेट प्रबंधित करेगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store juga akan menginstal aplikasi baru yang diunduh berukuran lebih dari 1 GB di drive ini serta mengelola pembaruannya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store installerà su questa unità anche le nuove app scaricate superiori a 1 GB e ne gestirà gli aggiornamenti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store でも、新しくダウンロードする 1 GB 超のアプリがこのドライブにインストールされ、アップデートも管理されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store도 새로 다운로드하는 1 GB 초과 앱을 이 드라이브에 설치하고 업데이트를 관리합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De App Store installeert nieuw gedownloade apps groter dan 1 GB ook op deze schijf en beheert hun updates."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store będzie również instalować na tym dysku nowo pobrane aplikacje większe niż 1 GB i zarządzać ich aktualizacjami."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A App Store também instalará nesta unidade os novos apps baixados maiores que 1 GB e gerenciará suas atualizações."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store также будет устанавливать на этот диск новые загружаемые приложения размером более 1 ГБ и управлять их обновлениями."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store จะติดตั้งแอปที่ดาวน์โหลดใหม่ซึ่งมีขนาดเกิน 1 GB ลงในไดรฟ์นี้และจัดการการอัปเดตให้ด้วย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store ayrıca 1 GB’tan büyük yeni indirilen uygulamaları bu diske yükler ve güncellemelerini yönetir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store cũng sẽ cài đặt các ứng dụng mới tải về lớn hơn 1 GB lên ổ đĩa này và quản lý cập nhật của chúng."
           }
         },
         "zh-Hans" : {
@@ -234904,16 +236336,130 @@
             "state" : "translated",
             "value" : "App Store 也會把新下載的大於 1 GB 的 App 安裝到這個外接磁碟，並管理這些 App 的更新。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 也會把噺下载の大於 1 GB の應詠安装↘這塊外盤，並管理這些應詠の哽噺。"
+          }
         }
       }
     },
     "AppPorts can migrate App Store apps of any size, including apps under 1 GB, to:" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يمكن لـ AppPorts نقل تطبيقات App Store بأي حجم، بما في ذلك التطبيقات الأصغر من 1 غيغابايت، إلى:"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠉⠁⠝ ⠍⠊⠛⠗⠁⠞⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠕⠋ ⠁⠝⠽ ⠎⠊⠵⠑⠂ ⠊⠝⠉⠇⠥⠙⠊⠝⠛ ⠁⠏⠏⠎ ⠥⠝⠙⠑⠗ ⠼⠁ ⠠⠛⠠⠃⠂ ⠞⠕⠒"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts kann App Store-Apps jeder Größe – auch unter 1 GB – migrieren nach:"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "AppPorts can migrate App Store apps of any size, including apps under 1 GB, to:"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts povas migri apojn el App Store de ajna grandeco, inkluzive de apoj sub 1 GB, al:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts puede migrar apps de App Store de cualquier tamaño, incluidas las menores de 1 GB, a:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts peut migrer les apps de l’App Store de toute taille, y compris celles de moins de 1 Go, vers :"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts किसी भी आकार के App Store ऐप्स (1 GB से छोटे ऐप्स सहित) को यहाँ माइग्रेट कर सकता है:"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts dapat memigrasikan aplikasi App Store berukuran apa pun, termasuk di bawah 1 GB, ke:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts può migrare app dell’App Store di qualsiasi dimensione, incluse quelle inferiori a 1 GB, su:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts は 1 GB 未満を含むあらゆるサイズの App Store アプリを次の場所へ移行できます："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts는 1 GB 미만 앱을 포함해 모든 크기의 App Store 앱을 다음 위치로 마이그레이션할 수 있습니다:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts kan App Store-apps van elke grootte, inclusief apps kleiner dan 1 GB, migreren naar:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts może przenosić aplikacje z App Store o dowolnym rozmiarze, w tym mniejsze niż 1 GB, do:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O AppPorts pode migrar apps da App Store de qualquer tamanho, inclusive menores que 1 GB, para:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts может переносить приложения из App Store любого размера, включая приложения меньше 1 ГБ, в:"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts สามารถย้ายแอปจาก App Store ได้ทุกขนาด รวมถึงแอปที่มีขนาดต่ำกว่า 1 GB ไปยัง:"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts, 1 GB altındakiler dahil her boyuttaki App Store uygulamasını şuraya taşıyabilir:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts có thể di chuyển ứng dụng App Store ở mọi dung lượng, kể cả ứng dụng dưới 1 GB, đến:"
           }
         },
         "zh-Hans" : {
@@ -234927,6 +236473,12 @@
             "state" : "translated",
             "value" : "AppPorts 移轉 App Store App 不受 1 GB 限制，小於 1 GB 的 App 也可以移轉到："
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 遷迻 App Store 應詠⑧受 1 GB 限制，曉於 1 GB の應詠也可以遷迻↘："
+          }
         }
       }
     },
@@ -234934,10 +236486,118 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حارس تحديث التطبيقات"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠥⠏⠙⠁⠞⠑ ⠛⠥⠁⠗⠙⠊⠁⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wächter für App-Updates"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Application update guardian"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gardanto de ap-ĝisdatigoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardián de actualización de aplicaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gardien de mise à jour des applications"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप अपडेट संरक्षक"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penjaga pembaruan aplikasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custode aggiornamenti delle app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ更新ガーディアン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 업데이트 가디언"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-updatebewaker"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strażnik aktualizacji aplikacji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardião de atualização de aplicativos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Страж обновления приложений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผู้ดูแลการอัปเดตแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama güncelleme koruyucusu"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình bảo vệ cập nhật ứng dụng"
           }
         },
         "zh-Hans" : {
@@ -234951,6 +236611,12 @@
             "state" : "translated",
             "value" : "應用程式更新守護"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應詠哽噺守護"
+          }
         }
       }
     },
@@ -234958,10 +236624,118 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جاري تطبيق إعدادات الخلفية…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠇⠽⠊⠝⠛ ⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠎⠑⠞⠞⠊⠝⠛⠎⠲⠲⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hintergrundeinstellungen werden angewendet…"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Applying background settings…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikante fonajn agordojn…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicando ajustes en segundo plano…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application des réglages d’arrière-plan…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैकग्राउंड सेटिंग्ज़ लागू की जा रही हैं…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menerapkan pengaturan latar belakang…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applicazione delle impostazioni in background…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックグラウンド設定を適用中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백그라운드 설정 적용 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achtergrondinstellingen toepassen…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stosowanie ustawień działania w tle…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicando ajustes em segundo plano…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Применение фоновых настроек…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังใช้การตั้งค่าการทำงานเบื้องหลัง…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arka plan ayarları uygulanıyor…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang áp dụng cài đặt chạy nền…"
           }
         },
         "zh-Hans" : {
@@ -234975,6 +236749,12 @@
             "state" : "translated",
             "value" : "正在套用背景設定…"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪應詠後台設寘…"
+          }
         }
       }
     },
@@ -234982,19 +236762,37 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عند تسجيل الدخول أو إعادة توصيل قرص خارجي، يستعيد وحدات البيانات المنقولة ومكتبة التطبيقات، مع إبقاء وحدات بيانات APFS التي يديرها AppPorts مخفية."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠞ ⠇⠕⠛⠊⠝ ⠕⠗ ⠺⠓⠑⠝ ⠁⠝ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠗⠑⠉⠕⠝⠝⠑⠉⠞⠎⠂ ⠗⠑⠎⠞⠕⠗⠑ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠙⠁⠞⠁ ⠧⠕⠇⠥⠍⠑⠎ ⠁⠝⠙ ⠞⠓⠑ ⠁⠏⠏ ⠇⠊⠃⠗⠁⠗⠽⠂ ⠁⠝⠙ ⠅⠑⠑⠏ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠤⠍⠁⠝⠁⠛⠑⠙ ⠠⠁⠠⠏⠠⠋⠠⠎ ⠙⠁⠞⠁ ⠧⠕⠇⠥⠍⠑⠎ ⠓⠊⠙⠙⠑⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellt beim Anmelden oder erneuten Verbinden eines externen Laufwerks migrierte Datenvolumes und die App-Mediathek wieder her und hält von AppPorts verwaltete APFS-Datenvolumes ausgeblendet."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "At login or when an external drive reconnects, restore migrated data volumes and the app library, and keep AppPorts-managed APFS data volumes hidden."
           }
         },
-        "zh-Hans" : {
+        "eo" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ĉe ensaluto aŭ rekonektado de ekstera disko, restarigu migritajn datumvolumojn kaj la ap-bibliotekon, kaj tenu APFS-datumvolumojn administratajn de AppPorts kaŝitaj."
           }
         },
-        "zh-Hant" : {
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Al iniciar sesión o reconectar una unidad externa, restaura los volúmenes de datos migrados y la biblioteca de apps, manteniendo ocultos los volúmenes de datos APFS gestionados por AppPorts."
@@ -235006,13 +236804,13 @@
             "value" : "À l’ouverture de session ou à la reconnexion d’un disque externe, restaure les volumes de données migrés et la bibliothèque d’apps, tout en gardant masqués les volumes de données APFS gérés par AppPorts."
           }
         },
-        "zh-Hans" : {
+        "hi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "लॉगिन पर या बाहरी ड्राइव फिर से जुड़ने पर, माइग्रेट किए गए डेटा वॉल्यूम और ऐप लाइब्रेरी को पुनर्स्थापित करें तथा AppPorts द्वारा प्रबंधित APFS डेटा वॉल्यूम छिपाए रखें।"
           }
         },
-        "zh-Hant" : {
+        "id" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saat masuk atau ketika drive eksternal tersambung kembali, pulihkan volume data yang dimigrasikan serta pustaka aplikasi, dan tetap sembunyikan volume data APFS yang dikelola AppPorts."
@@ -235024,13 +236822,13 @@
             "value" : "All’accesso o alla riconnessione di un’unità esterna, ripristina i volumi dati migrati e la libreria app, mantenendo nascosti i volumi dati APFS gestiti da AppPorts."
           }
         },
-        "br" : {
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ログイン時または外部ドライブの再接続時に、移行済みのデータボリュームとアプリライブラリを復元し、AppPorts が管理する APFS データボリュームを非表示に保ちます。"
           }
         },
-        "zh-Hant" : {
+        "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "로그인하거나 외장 드라이브가 다시 연결될 때 마이그레이션된 데이터 볼륨과 앱 라이브러리를 복원하고, AppPorts가 관리하는 APFS 데이터 볼륨을 숨김 상태로 유지합니다."
@@ -235042,13 +236840,13 @@
             "value" : "Herstel bij het inloggen of opnieuw verbinden van een externe schijf gemigreerde gegevensvolumes en de appbibliotheek, en houd door AppPorts beheerde APFS-gegevensvolumes verborgen."
           }
         },
-        "th" : {
+        "pl" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Przy logowaniu lub ponownym podłączeniu dysku zewnętrznego przywracaj przeniesione woluminy danych i bibliotekę aplikacji oraz ukrywaj woluminy danych APFS zarządzane przez AppPorts."
           }
         },
-        "tr" : {
+        "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No início de sessão ou ao reconectar uma unidade externa, restaura os volumes de dados migrados e a biblioteca de apps, mantendo ocultos os volumes de dados APFS gerenciados pelo AppPorts."
@@ -235060,13 +236858,13 @@
             "value" : "При входе в систему или повторном подключении внешнего диска восстанавливает перенесённые тома данных и библиотеку приложений, скрывая управляемые AppPorts тома данных APFS."
           }
         },
-        "pl" : {
+        "th" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "เมื่อเข้าสู่ระบบหรือเชื่อมต่อไดรฟ์ภายนอกอีกครั้ง จะกู้คืนโวลุ่มข้อมูลที่ย้ายแล้วและคลังแอป พร้อมซ่อนโวลุ่มข้อมูล APFS ที่จัดการโดย AppPorts ไว้"
           }
         },
-        "pt" : {
+        "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oturum açıldığında veya harici disk yeniden bağlandığında taşınan veri birimlerini ve uygulama arşivini geri yükler; AppPorts tarafından yönetilen APFS veri birimlerini gizli tutar."
@@ -235078,13 +236876,13 @@
             "value" : "Khi đăng nhập hoặc kết nối lại ổ đĩa ngoài, khôi phục các phân vùng dữ liệu đã di chuyển và thư viện ứng dụng, đồng thời ẩn các phân vùng dữ liệu APFS do AppPorts quản lý."
           }
         },
-        "ja" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "登录或外盘重新连接时，接回已迁移的数据卷和应用库，并隐藏 AppPorts 管理的 APFS 数据卷。"
           }
         },
-        "ko" : {
+        "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "登入或外接磁碟重新連線時，接回已遷移的資料卷與應用程式庫，並隱藏 AppPorts 管理的 APFS 資料卷。"
@@ -235102,25 +236900,25 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
+        "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "تعذّر تطبيق إعدادات وكلاء الخلفية."
           }
         },
-        "hi" : {
+        "br" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "⠠⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠁⠛⠑⠝⠞ ⠎⠑⠞⠞⠊⠝⠛⠎ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠁⠏⠏⠇⠊⠑⠙⠲"
           }
         },
-        "id" : {
+        "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Die Einstellungen für Hintergrundagenten konnten nicht angewendet werden."
           }
         },
-        "ar" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Background agent settings could not be applied."
@@ -235129,13 +236927,13 @@
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudieron aplicar los ajustes de los agentes en segundo plano."
+            "value" : "Ne eblis apliki la agordojn de fonaj agentoj."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ne eblis apliki la agordojn de fonaj agentoj."
+            "value" : "No se pudieron aplicar los ajustes de los agentes en segundo plano."
           }
         },
         "fr" : {
@@ -235144,13 +236942,13 @@
             "value" : "Impossible d’appliquer les réglages des agents d’arrière-plan."
           }
         },
-        "br" : {
+        "hi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "बैकग्राउंड एजेंट सेटिंग्ज़ लागू नहीं की जा सकीं।"
           }
         },
-        "de" : {
+        "id" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pengaturan agen latar belakang tidak dapat diterapkan."
@@ -235162,13 +236960,13 @@
             "value" : "Impossibile applicare le impostazioni degli agenti in background."
           }
         },
-        "th" : {
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "バックグラウンドエージェントの設定を適用できませんでした。"
           }
         },
-        "tr" : {
+        "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "백그라운드 에이전트 설정을 적용할 수 없습니다."
@@ -235198,13 +236996,13 @@
             "value" : "Не удалось применить настройки фоновых агентов."
           }
         },
-        "ja" : {
+        "th" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ไม่สามารถใช้การตั้งค่าเอเจนต์เบื้องหลังได้"
           }
         },
-        "ko" : {
+        "tr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arka plan aracısı ayarları uygulanamadı."
@@ -235216,13 +237014,13 @@
             "value" : "Không thể áp dụng cài đặt tác nhân chạy nền."
           }
         },
-        "hi" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "后台代理设置未能生效。"
           }
         },
-        "id" : {
+        "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "背景代理設定未能生效。"
@@ -235246,7 +237044,7 @@
             "value" : "وكلاء الخلفية"
           }
         },
-        "eo" : {
+        "br" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "⠠⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠁⠛⠑⠝⠞⠎"
@@ -236870,10 +238668,16 @@
             "value" : "设置：即使选择「不再提醒」，以后仍可在 AppPorts 设置里完成这项操作。"
           }
         },
-        "es" : {
+        "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定：即使選擇「不再提醒」，之後仍可在 AppPorts 設定中完成這項操作。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設寘：即使選擇「⑧再提醒」，以後仍可╪ AppPorts 設寘裏唍成這項操莋。"
           }
         }
       }
@@ -236881,711 +238685,3 @@
   },
   "version" : "1.1"
 }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يستخدم App Store حاليًا «%@». اختر نفس القرص الخارجي المستخدم في AppPorts من إعدادات App Store."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠉⠥⠗⠗⠑⠝⠞⠇⠽ ⠥⠎⠑⠎ “%@”⠲ ⠠⠉⠓⠕⠕⠎⠑ ⠞⠓⠑ ⠎⠁⠍⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠁⠎ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠝ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der App Store verwendet derzeit „%@“. Wähle in den App Store-Einstellungen dasselbe externe Laufwerk wie in AppPorts."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store nun uzas «%@». Elektu la saman eksteran diskon kiel AppPorts en la agordoj de App Store."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store usa actualmente «%@». Elige la misma unidad externa que AppPorts en los Ajustes de App Store."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store utilise actuellement « %@ ». Choisissez le même disque externe qu’AppPorts dans les réglages de l’App Store."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store अभी “%@” का उपयोग कर रहा है। App Store सेटिंग्ज़ में AppPorts वाली समान बाहरी ड्राइव चुनें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store saat ini menggunakan “%@”. Pilih drive eksternal yang sama dengan AppPorts di Pengaturan App Store."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store usa attualmente «%@». Scegli la stessa unità esterna di AppPorts nelle Impostazioni dell’App Store."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store は現在「%@」を使用しています。App Store の設定で AppPorts と同じ外部ドライブを選択してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store가 현재 ‘%@’을(를) 사용 중입니다. App Store 설정에서 AppPorts와 동일한 외장 드라이브를 선택하세요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De App Store gebruikt momenteel ‘%@’. Kies in de App Store-instellingen dezelfde externe schijf als in AppPorts."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store używa obecnie dysku „%@”. Wybierz ten sam dysk zewnętrzny co w AppPorts w ustawieniach App Store."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A App Store usa atualmente “%@”. Escolha a mesma unidade externa do AppPorts nos Ajustes da App Store."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store сейчас использует «%@». Выберите тот же внешний диск, что и в AppPorts, в настройках App Store."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ขณะนี้ App Store ใช้ “%@” อยู่ โปรดเลือกไดรฟ์ภายนอกเดียวกับ AppPorts ในการตั้งค่า App Store"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store şu anda “%@” diskini kullanıyor. App Store Ayarları’nda AppPorts ile aynı harici diski seçin."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store hiện đang dùng “%@”. Hãy chọn cùng ổ đĩa ngoài với AppPorts trong Cài đặt App Store."
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 當前選擇の是「%@」。請╪ App Store 設寘㊥改为與 AppPorts 相茼の外盤。"
-          }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يستخدم App Store حاليًا «%@». اختر «%@» ليطابق AppPorts."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠉⠥⠗⠗⠑⠝⠞⠇⠽ ⠥⠎⠑⠎ “%@”⠲ ⠠⠎⠑⠇⠑⠉⠞ “%@” ⠞⠕ ⠍⠁⠞⠉⠓ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der App Store verwendet derzeit „%@“. Wähle „%@“, um mit AppPorts übereinzustimmen."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store nun uzas «%@». Elektu «%@» por kongrui kun AppPorts."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store usa actualmente «%@». Selecciona «%@» para coincidir con AppPorts."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store utilise actuellement « %@ ». Sélectionnez « %@ » pour correspondre à AppPorts."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store अभी “%@” का उपयोग कर रहा है। AppPorts से मिलान करने के लिए “%@” चुनें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store saat ini menggunakan “%@”. Pilih “%@” agar sesuai dengan AppPorts."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store usa attualmente «%@». Seleziona «%@» per usare la stessa unità di AppPorts."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store は現在「%@」を使用しています。AppPorts に合わせるには「%@」を選択してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store가 현재 ‘%@’을(를) 사용 중입니다. AppPorts와 일치시키려면 ‘%@’을(를) 선택하세요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De App Store gebruikt momenteel ‘%@’. Selecteer ‘%@’ om overeen te komen met AppPorts."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store używa obecnie dysku „%@”. Wybierz „%@”, aby dopasować go do AppPorts."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A App Store usa atualmente “%@”. Selecione “%@” para coincidir com o AppPorts."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store сейчас использует «%@». Выберите «%@», чтобы диск совпадал с AppPorts."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ขณะนี้ App Store ใช้ “%@” อยู่ โปรดเลือก “%@” เพื่อให้ตรงกับ AppPorts"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store şu anda “%@” diskini kullanıyor. AppPorts ile eşleşmesi için “%@” seçeneğini belirleyin."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store hiện đang dùng “%@”. Hãy chọn “%@” để khớp với AppPorts."
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 當前選擇の是「%@」。請選擇「%@」，與 AppPorts 使詠茼一塊外盤。"
-          }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "سيقوم App Store أيضًا بتثبيت التطبيقات المحمّلة حديثًا التي يتجاوز حجمها 1 غيغابايت على هذا القرص وإدارة تحديثاتها."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠺⠊⠇⠇ ⠁⠇⠎⠕ ⠊⠝⠎⠞⠁⠇⠇ ⠝⠑⠺⠇⠽ ⠙⠕⠺⠝⠇⠕⠁⠙⠑⠙ ⠁⠏⠏⠎ ⠇⠁⠗⠛⠑⠗ ⠞⠓⠁⠝ ⠼⠁ ⠠⠛⠠⠃ ⠕⠝ ⠞⠓⠊⠎ ⠙⠗⠊⠧⠑ ⠁⠝⠙ ⠍⠁⠝⠁⠛⠑ ⠞⠓⠑⠊⠗ ⠥⠏⠙⠁⠞⠑⠎⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der App Store installiert neu geladene Apps über 1 GB ebenfalls auf diesem Laufwerk und verwaltet deren Updates."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store ankaŭ instalos novajn elŝutitajn apojn pli grandajn ol 1 GB sur ĉi tiu disko kaj administros iliajn ĝisdatigojn."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store también instalará en esta unidad las nuevas apps descargadas de más de 1 GB y gestionará sus actualizaciones."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store installera également sur ce disque les nouvelles apps téléchargées de plus de 1 Go et gérera leurs mises à jour."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 1 GB से बड़े नए डाउनलोड किए गए ऐप्स को भी इसी ड्राइव पर इंस्टॉल करेगा और उनके अपडेट प्रबंधित करेगा।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store juga akan menginstal aplikasi baru yang diunduh berukuran lebih dari 1 GB di drive ini serta mengelola pembaruannya."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store installerà su questa unità anche le nuove app scaricate superiori a 1 GB e ne gestirà gli aggiornamenti."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store でも、新しくダウンロードする 1 GB 超のアプリがこのドライブにインストールされ、アップデートも管理されます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store도 새로 다운로드하는 1 GB 초과 앱을 이 드라이브에 설치하고 업데이트를 관리합니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De App Store installeert nieuw gedownloade apps groter dan 1 GB ook op deze schijf en beheert hun updates."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store będzie również instalować na tym dysku nowo pobrane aplikacje większe niż 1 GB i zarządzać ich aktualizacjami."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A App Store também instalará nesta unidade os novos apps baixados maiores que 1 GB e gerenciará suas atualizações."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store также будет устанавливать на этот диск новые загружаемые приложения размером более 1 ГБ и управлять их обновлениями."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store จะติดตั้งแอปที่ดาวน์โหลดใหม่ซึ่งมีขนาดเกิน 1 GB ลงในไดรฟ์นี้และจัดการการอัปเดตให้ด้วย"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store ayrıca 1 GB’tan büyük yeni indirilen uygulamaları bu diske yükler ve güncellemelerini yönetir."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store cũng sẽ cài đặt các ứng dụng mới tải về lớn hơn 1 GB lên ổ đĩa này và quản lý cập nhật của chúng."
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 也會把噺下载の大於 1 GB の應詠安装↘這塊外盤，並管理這些應詠の哽噺。"
-          }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يمكن لـ AppPorts نقل تطبيقات App Store بأي حجم، بما في ذلك التطبيقات الأصغر من 1 غيغابايت، إلى:"
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠉⠁⠝ ⠍⠊⠛⠗⠁⠞⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠕⠋ ⠁⠝⠽ ⠎⠊⠵⠑⠂ ⠊⠝⠉⠇⠥⠙⠊⠝⠛ ⠁⠏⠏⠎ ⠥⠝⠙⠑⠗ ⠼⠁ ⠠⠛⠠⠃⠂ ⠞⠕⠒"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts kann App Store-Apps jeder Größe – auch unter 1 GB – migrieren nach:"
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts povas migri apojn el App Store de ajna grandeco, inkluzive de apoj sub 1 GB, al:"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts puede migrar apps de App Store de cualquier tamaño, incluidas las menores de 1 GB, a:"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts peut migrer les apps de l’App Store de toute taille, y compris celles de moins de 1 Go, vers :"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts किसी भी आकार के App Store ऐप्स (1 GB से छोटे ऐप्स सहित) को यहाँ माइग्रेट कर सकता है:"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts dapat memigrasikan aplikasi App Store berukuran apa pun, termasuk di bawah 1 GB, ke:"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts può migrare app dell’App Store di qualsiasi dimensione, incluse quelle inferiori a 1 GB, su:"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts は 1 GB 未満を含むあらゆるサイズの App Store アプリを次の場所へ移行できます："
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts는 1 GB 미만 앱을 포함해 모든 크기의 App Store 앱을 다음 위치로 마이그레이션할 수 있습니다:"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts kan App Store-apps van elke grootte, inclusief apps kleiner dan 1 GB, migreren naar:"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts może przenosić aplikacje z App Store o dowolnym rozmiarze, w tym mniejsze niż 1 GB, do:"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O AppPorts pode migrar apps da App Store de qualquer tamanho, inclusive menores que 1 GB, para:"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts может переносить приложения из App Store любого размера, включая приложения меньше 1 ГБ, в:"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts สามารถย้ายแอปจาก App Store ได้ทุกขนาด รวมถึงแอปที่มีขนาดต่ำกว่า 1 GB ไปยัง:"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts, 1 GB altındakiler dahil her boyuttaki App Store uygulamasını şuraya taşıyabilir:"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts có thể di chuyển ứng dụng App Store ở mọi dung lượng, kể cả ứng dụng dưới 1 GB, đến:"
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AppPorts 遷迻 App Store 應詠⑧受 1 GB 限制，曉於 1 GB の應詠也可以遷迻↘："
-          }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "حارس تحديث التطبيقات"
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠥⠏⠙⠁⠞⠑ ⠛⠥⠁⠗⠙⠊⠁⠝"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wächter für App-Updates"
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gardanto de ap-ĝisdatigoj"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardián de actualización de aplicaciones"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gardien de mise à jour des applications"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ऐप अपडेट संरक्षक"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Penjaga pembaruan aplikasi"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Custode aggiornamenti delle app"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリ更新ガーディアン"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱 업데이트 가디언"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App-updatebewaker"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strażnik aktualizacji aplikacji"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardião de atualização de aplicativos"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Страж обновления приложений"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ผู้ดูแลการอัปเดตแอป"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uygulama güncelleme koruyucusu"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trình bảo vệ cập nhật ứng dụng"
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "應詠哽噺守護"
-          }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "جاري تطبيق إعدادات الخلفية…"
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠏⠏⠇⠽⠊⠝⠛ ⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠎⠑⠞⠞⠊⠝⠛⠎⠲⠲⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hintergrundeinstellungen werden angewendet…"
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aplikante fonajn agordojn…"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aplicando ajustes en segundo plano…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Application des réglages d’arrière-plan…"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "बैकग्राउंड सेटिंग्ज़ लागू की जा रही हैं…"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menerapkan pengaturan latar belakang…"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Applicazione delle impostazioni in background…"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "バックグラウンド設定を適用中…"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "백그라운드 설정 적용 중…"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Achtergrondinstellingen toepassen…"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stosowanie ustawień działania w tle…"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aplicando ajustes em segundo plano…"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Применение фоновых настроек…"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "กำลังใช้การตั้งค่าการทำงานเบื้องหลัง…"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Arka plan ayarları uygulanıyor…"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang áp dụng cài đặt chạy nền…"
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正╪應詠後台設寘…"
-          }
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "عند تسجيل الدخول أو إعادة توصيل قرص خارجي، يستعيد وحدات البيانات المنقولة ومكتبة التطبيقات، مع إبقاء وحدات بيانات APFS التي يديرها AppPorts مخفية."
-          }
-        },
-        "br" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⠠⠁⠞ ⠇⠕⠛⠊⠝ ⠕⠗ ⠺⠓⠑⠝ ⠁⠝ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠗⠑⠉⠕⠝⠝⠑⠉⠞⠎⠂ ⠗⠑⠎⠞⠕⠗⠑ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠙⠁⠞⠁ ⠧⠕⠇⠥⠍⠑⠎ ⠁⠝⠙ ⠞⠓⠑ ⠁⠏⠏ ⠇⠊⠃⠗⠁⠗⠽⠂ ⠁⠝⠙ ⠅⠑⠑⠏ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠤⠍⠁⠝⠁⠛⠑⠙ ⠠⠁⠠⠏⠠⠋⠠⠎ ⠙⠁⠞⠁ ⠧⠕⠇⠥⠍⠑⠎ ⠓⠊⠙⠙⠑⠝⠲"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stellt beim Anmelden oder erneuten Verbinden eines externen Laufwerks migrierte Datenvolumes und die App-Mediathek wieder her und hält von AppPorts verwaltete APFS-Datenvolumes ausgeblendet."
-          }
-        },
-        },
-        "zh-martian" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設寘：即使選擇「⑧再提醒」，以後仍可╪ AppPorts 設寘裏唍成這項操莋。"
-          }
