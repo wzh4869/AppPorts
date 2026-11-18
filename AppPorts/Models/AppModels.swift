@@ -256,7 +256,7 @@ enum AppMoverError: LocalizedError {
         switch self {
         case .permissionDenied:
             return """
-            权限不足。请前往"系统设置 > 隐私与安全性 > 完全磁盘访问权限"，\
+            权限不足。请前往“系统设置 > 隐私与安全性 > 完全磁盘访问权限”，\
             允许 AppPorts 访问磁盘，然后重启应用。
             """.localized
             

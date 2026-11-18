@@ -81,20 +81,29 @@ final class AppTransferTransactionTests: XCTestCase {
     }
 
     @MainActor
-    func testUpdateMigrationCopyUsesEnglishForDeferredCatalogLocales() throws {
+    func testUpdateMigrationCopyUsesLocalizedCatalogStrings() throws {
         let w = try Workspace(); defer { w.cleanup() }
         let source = w.local.appendingPathComponent("App.app")
         try makeApp(source, sparkle: true)
         let language = LanguageManager.shared.language
-        defer { LanguageManager.shared.language = language }
-        for code in ["zh-Hans", "en", "fr", "zh-Hant"] {
+        let preference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = language
+            if let preference { UserDefaults.standard.set(preference, forKey: "selectedLanguage") }
+            else { UserDefaults.standard.removeObject(forKey: "selectedLanguage") }
+        }
+        let expectations: [(String, String, String)] = [
+            ("zh-Hans", "以下应用的更新方式可能受到迁移影响：", "在设置中开启"),
+            ("en", "Migration may affect how the following apps update:", "In Settings, enable"),
+            ("fr", "La migration peut affecter la façon dont les apps suivantes se mettent à jour :", "Dans Paramètres, activez"),
+            ("zh-Hant", "以下應用程式的更新方式可能受到遷移影響：", "在設定中開啟"),
+        ]
+        for (code, expectedPrefix, expectedSettingsPhrase) in expectations {
             LanguageManager.shared.language = code
             let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [item(source)], service: w.service()) { _ in })
             let intro = try XCTUnwrap(request.intro)
-            XCTAssertTrue(intro.hasPrefix(code == "zh-Hans"
-                ? "以下应用的更新方式可能受到迁移影响："
-                : "Migration may affect how the following apps update:"))
-            XCTAssertTrue(intro.contains(code == "zh-Hans" ? "在设置中开启" : "In Settings, enable"))
+            XCTAssertTrue(intro.hasPrefix(expectedPrefix), "[\(code)] \(intro)")
+            XCTAssertTrue(intro.contains(expectedSettingsPhrase), "[\(code)] \(intro)")
             XCTAssertNotNil(request.introText)
         }
     }

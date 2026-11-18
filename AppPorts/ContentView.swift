@@ -2248,8 +2248,8 @@ struct ContentView: View {
     }
 
     private static func updateMigrationIntroduction(names: String) -> (plain: String, text: Text) {
-        let template = "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。".localized(fallbackLanguage: "en", supportedLanguages: ["zh-Hans", "en"])
-        let settings = "设置".localized(fallbackLanguage: "en", supportedLanguages: ["zh-Hans", "en"])
+        let template = "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。".localized
+        let settings = "设置".localized
         let marker = UUID().uuidString
         let parts = String(format: template, names, marker).components(separatedBy: marker)
         let plain = String(format: template, names, settings)

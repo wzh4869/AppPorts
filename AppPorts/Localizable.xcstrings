@@ -2,13 +2,120 @@
   "sourceLanguage" : "zh-Hans",
   "strings" : {
     "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。" : {
-      "comment" : "Simplified Chinese and English only; deferred languages explicitly use English.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم نقل هذا التطبيق إلى وحدة تخزين خارجية وهو غير مقفل، لذا يمكنك محاولة مواصلة التحديث من داخل التطبيق. فعّل «حارس تحديث التطبيقات» في الإعدادات لمساعدة AppPorts في معالجة مشكلات التحديث، مع عدم ضمان النجاح لكل تطبيق."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠁⠏⠏ ⠓⠁⠎ ⠃⠑⠑⠝ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠞⠕ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠎⠞⠕⠗⠁⠛⠑ ⠁⠝⠙ ⠗⠑⠍⠁⠊⠝⠎ ⠥⠝⠇⠕⠉⠅⠑⠙⠂ ⠎⠕ ⠽⠕⠥ ⠉⠁⠝ ⠞⠗⠽ ⠞⠕ ⠉⠕⠝⠞⠊⠝⠥⠑ ⠥⠎⠊⠝⠛ ⠊⠝⠤⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎⠲ ⠠⠑⠝⠁⠃⠇⠑ “⠠⠁⠏⠏ ⠠⠥⠏⠙⠁⠞⠑ ⠠⠛⠥⠁⠗⠙⠊⠁⠝” ⠊⠝ ⠠⠎⠑⠞⠞⠊⠝⠛⠎ ⠞⠕ ⠇⠑⠞ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠓⠑⠇⠏ ⠺⠊⠞⠓ ⠥⠏⠙⠁⠞⠑ ⠊⠎⠎⠥⠑⠎⠂ ⠞⠓⠕⠥⠛⠓ ⠎⠥⠉⠉⠑⠎⠎⠋⠥⠇ ⠗⠑⠉⠕⠧⠑⠗⠽ ⠊⠎ ⠝⠕⠞ ⠛⠥⠁⠗⠁⠝⠞⠑⠑⠙ ⠋⠕⠗ ⠑⠧⠑⠗⠽ ⠁⠏⠏⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App wurde auf einen externen Speicher migriert und bleibt ungesperrt, sodass du In-App-Updates weiter versuchen kannst. Aktiviere in den Einstellungen „Wächter für App-Updates“, damit AppPorts bei Update-Problemen helfen kann; ein Erfolg ist jedoch nicht für jede App garantiert."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "This app has been migrated to external storage and remains unlocked, so you can try to continue using in-app updates. Enable “App Update Guardian” in Settings to let AppPorts help with update issues, though successful recovery is not guaranteed for every app."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu apo estis migrita al ekstera konservejo kaj restas neŝlosita, do vi povas provi daŭre uzi en-apajn ĝisdatigojn. Ŝaltu «Gardanto de ap-ĝisdatigoj» en Agordoj por lasi AppPorts helpi pri ĝisdatigaj problemoj, kvankam sukceso ne estas garantiita por ĉiu apo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app se ha migrado a un almacenamiento externo y permanece desbloqueada, por lo que puedes intentar seguir usando las actualizaciones integradas. Activa «Guardián de actualización de aplicaciones» en Ajustes para que AppPorts ayude con problemas de actualización, aunque no se garantiza la recuperación en todas las apps."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app a été migrée vers un stockage externe et reste déverrouillée ; vous pouvez donc essayer de continuer à utiliser les mises à jour intégrées. Activez « Gardien de mise à jour des applications » dans les Réglages pour laisser AppPorts aider en cas de problème de mise à jour, sans garantie de réussite pour chaque app."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह ऐप बाहरी स्टोरेज पर माइग्रेट किया गया है और अनलॉक है, इसलिए आप इन-ऐप अपडेट का उपयोग जारी रखने का प्रयास कर सकते हैं। सेटिंग्ज़ में “ऐप अपडेट संरक्षक” चालू करें ताकि AppPorts अपडेट समस्याओं में सहायता कर सके, हालाँकि हर ऐप के लिए सफलता की गारंटी नहीं है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi ini telah dimigrasikan ke penyimpanan eksternal dan tetap tidak terkunci, sehingga Anda dapat mencoba tetap menggunakan pembaruan di dalam aplikasi. Aktifkan “Penjaga pembaruan aplikasi” di Pengaturan agar AppPorts membantu menangani masalah pembaruan, meskipun keberhasilan tidak dijamin untuk setiap aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app è stata migrata su un archivio esterno e rimane sbloccata, quindi puoi provare a continuare a usare gli aggiornamenti interni. Attiva «Custode aggiornamenti delle app» nelle Impostazioni per consentire ad AppPorts di intervenire sui problemi di aggiornamento, anche se il ripristino non è garantito per ogni app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリは外部ストレージへ移行されロックされていないため、アプリ内アップデートの継続利用を試せます。設定で「アプリ更新ガーディアン」をオンにすると、アップデート異常時に AppPorts が復旧を補助しますが、すべてのアプリでの成功は保証されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 앱은 외부 저장 공간으로 마이그레이션되었으며 잠겨 있지 않으므로 앱 내 업데이트를 계속 시도할 수 있습니다. 설정에서 ‘앱 업데이트 가디언’을 켜면 업데이트 문제 발생 시 AppPorts가 복구를 도울 수 있지만, 모든 앱의 성공이 보장되지는 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze app is gemigreerd naar externe opslag en blijft ontgrendeld, zodat je in-app updates kunt blijven proberen. Schakel ‘App-updatebewaker’ in bij Instellingen zodat AppPorts kan helpen bij updateproblemen, al is herstel niet voor elke app gegarandeerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta aplikacja została przeniesiona do pamięci zewnętrznej i pozostaje odblokowana, więc możesz próbować korzystać z aktualizacji wewnątrz aplikacji. Włącz „Strażnik aktualizacji aplikacji” w Ustawieniach, aby AppPorts pomagał przy problemach z aktualizacją, choć powodzenie nie jest gwarantowane dla każdej aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este app foi migrado para o armazenamento externo e permanece desbloqueado, permitindo tentar continuar usando atualizações internas. Ative “Guardião de atualização de aplicativos” nos Ajustes para permitir que o AppPorts ajude em falhas de atualização, embora a recuperação não seja garantida para todos os apps."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это приложение перенесено на внешнее хранилище и не заблокировано, поэтому можно пробовать обновления внутри приложения. Включите «Страж обновления приложений» в Настройках, чтобы AppPorts помогал при сбоях обновления, хотя успех гарантируется не для всех приложений."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปนี้ถูกย้ายไปยังพื้นที่จัดเก็บภายนอกโดยไม่ได้ล็อก จึงสามารถลองใช้อัปเดตภายในแอปต่อไปได้ เปิด “ผู้ดูแลการอัปเดตแอป” ในการตั้งค่าเพื่อให้ AppPorts ช่วยแก้ไขปัญหาการอัปเดต แม้จะไม่รับประกันความสำเร็จกับทุกแอปก็ตาม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulama harici depolamaya taşındı ve kilitsiz durumda; uygulama içi güncellemeleri denemeye devam edebilirsiniz. AppPorts’un güncelleme sorunlarına yardımcı olması için Ayarlar’da “Uygulama güncelleme koruyucusu” seçeneğini etkinleştirin; ancak her uygulama için kurtarma garanti edilmez."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng này đã được di chuyển sang bộ nhớ ngoài và không bị khóa, nên bạn có thể tiếp tục thử cập nhật trong ứng dụng. Hãy bật “Trình bảo vệ cập nhật ứng dụng” trong Cài đặt để AppPorts hỗ trợ xử lý sự cố cập nhật, dù không đảm bảo thành công cho mọi ứng dụng."
           }
         },
         "zh-Hans" : {
@@ -16,23 +123,155 @@
             "state" : "translated",
             "value" : "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應用程式已遷移到外部儲存空間且未加鎖，可嘗試繼續使用應用程式內更新。在設定中開啟「應用程式更新守護」後，AppPorts 可協助處理更新異常，但無法保證所有應用程式都能處理成功。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此應詠已遷迻↘外荹邨存且未加锁，可嘗試繼續使詠應詠内哽噺。╪設寘㊥開啟“應詠哽噺守護”後，AppPorts 可协助處理哽噺异常，但無法葆證所有應詠都能處理成功。"
+          }
         }
       }
     },
     "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。" : {
-      "comment" : "Simplified Chinese and English only; deferred languages explicitly use English. The second %@ is Settings, preceded by an inline SF Symbol.",
+      "comment" : "The first %@ is the app list; the second %@ is Settings, preceded by an inline SF Symbol.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قد يؤثر النقل في طريقة تحديث التطبيقات التالية:\n\n%@\n\n• نقل بدون قفل: يترك حزمة التطبيق غير مقفلة لتتمكن من محاولة مواصلة التحديث من داخل التطبيق. في %@، فعّل «حارس تحديث التطبيقات» لمساعدة AppPorts في معالجة مشكلات التحديث، مع عدم ضمان النجاح لكل تطبيق.\n\n• نقل مع القفل: يقفل حزمة التطبيق، مما قد يقيّد التحديث من داخل التطبيق. للتحديث، يمكنك أولًا إعادة التطبيق إلى هذا الـ Mac عبر AppPorts.\n\nتعتمد النتيجة الفعلية على آلية التحديث الخاصة بكل تطبيق."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠍⠁⠽ ⠁⠋⠋⠑⠉⠞ ⠓⠕⠺ ⠞⠓⠑ ⠋⠕⠇⠇⠕⠺⠊⠝⠛ ⠁⠏⠏⠎ ⠥⠏⠙⠁⠞⠑⠒\n\n%@\n\n• ⠠⠥⠝⠇⠕⠉⠅⠑⠙ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠒ ⠠⠇⠑⠁⠧⠑⠎ ⠞⠓⠑ ⠁⠏⠏ ⠃⠥⠝⠙⠇⠑ ⠥⠝⠇⠕⠉⠅⠑⠙ ⠎⠕ ⠽⠕⠥ ⠉⠁⠝ ⠞⠗⠽ ⠞⠕ ⠉⠕⠝⠞⠊⠝⠥⠑ ⠥⠎⠊⠝⠛ ⠊⠝⠤⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎⠲ ⠠⠊⠝ %@⠂ ⠑⠝⠁⠃⠇⠑ “⠠⠁⠏⠏ ⠠⠥⠏⠙⠁⠞⠑ ⠠⠛⠥⠁⠗⠙⠊⠁⠝” ⠞⠕ ⠇⠑⠞ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠓⠑⠇⠏ ⠺⠊⠞⠓ ⠥⠏⠙⠁⠞⠑ ⠊⠎⠎⠥⠑⠎⠂ ⠞⠓⠕⠥⠛⠓ ⠎⠥⠉⠉⠑⠎⠎⠋⠥⠇ ⠗⠑⠉⠕⠧⠑⠗⠽ ⠊⠎ ⠝⠕⠞ ⠛⠥⠁⠗⠁⠝⠞⠑⠑⠙ ⠋⠕⠗ ⠑⠧⠑⠗⠽ ⠁⠏⠏⠲\n\n• ⠠⠇⠕⠉⠅⠑⠙ ⠍⠊⠛⠗⠁⠞⠊⠕⠝⠒ ⠠⠇⠕⠉⠅⠎ ⠞⠓⠑ ⠁⠏⠏ ⠃⠥⠝⠙⠇⠑⠂ ⠺⠓⠊⠉⠓ ⠍⠁⠽ ⠇⠊⠍⠊⠞ ⠊⠝⠤⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎⠲ ⠠⠞⠕ ⠥⠏⠙⠁⠞⠑⠂ ⠽⠕⠥ ⠉⠁⠝ ⠋⠊⠗⠎⠞ ⠍⠕⠧⠑ ⠞⠓⠑ ⠁⠏⠏ ⠃⠁⠉⠅ ⠞⠕ ⠞⠓⠊⠎ ⠠⠍⠁⠉ ⠺⠊⠞⠓ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲\n\n⠠⠥⠏⠙⠁⠞⠑ ⠗⠑⠎⠥⠇⠞⠎ ⠙⠑⠏⠑⠝⠙ ⠕⠝ ⠓⠕⠺ ⠑⠁⠉⠓ ⠁⠏⠏ ⠥⠏⠙⠁⠞⠑⠎ ⠊⠞⠎⠑⠇⠋⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Migration kann beeinflussen, wie sich die folgenden Apps aktualisieren:\n\n%@\n\n• Ungesperrte Migration: Lässt das App-Paket ungesperrt, sodass In-App-Updates weiter versucht werden können. Aktiviere in %@ „Wächter für App-Updates“, damit AppPorts bei Update-Problemen helfen kann; ein Erfolg ist jedoch nicht für jede App garantiert.\n\n• Gesperrte Migration: Sperrt das App-Paket, wodurch In-App-Updates eingeschränkt sein können. Zum Aktualisieren kannst du die App zuerst mit AppPorts auf diesen Mac zurückbewegen.\n\nDas Verhalten hängt vom jeweiligen Update-Mechanismus der App ab."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Migration may affect how the following apps update:\n\n%@\n\n• Unlocked migration: Leaves the app bundle unlocked so you can try to continue using in-app updates. In %@, enable “App Update Guardian” to let AppPorts help with update issues, though successful recovery is not guaranteed for every app.\n\n• Locked migration: Locks the app bundle, which may limit in-app updates. To update, you can first move the app back to this Mac with AppPorts.\n\nUpdate results depend on how each app updates itself."
           }
         },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrado povas influi kiel la jenaj apoj sin ĝisdatigas:\n\n%@\n\n• Neŝlosita migrado: Lasas la ap-pakaĵon neŝlosita por ke vi povu provi daŭre uzi en-apajn ĝisdatigojn. En %@, ŝaltu «Gardanto de ap-ĝisdatigoj» por lasi AppPorts helpi pri ĝisdatigaj problemoj, kvankam sukceso ne estas garantiita por ĉiu apo.\n\n• Ŝlosita migrado: Ŝlosas la ap-pakaĵon, kio povas limigi en-apajn ĝisdatigojn. Por ĝisdatigi, vi povas unue revenigi la apon al ĉi tiu Mac per AppPorts.\n\nLa rezulto dependas de la propra ĝisdatiga maniero de ĉiu apo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La migración puede afectar al modo en que se actualizan las siguientes apps:\n\n%@\n\n• Migración sin bloqueo: Deja el paquete de la app sin bloquear para intentar seguir usando las actualizaciones integradas. En %@, activa «Guardián de actualización de aplicaciones» para que AppPorts ayude con problemas de actualización, aunque no se garantiza la recuperación en todas las apps.\n\n• Migración con bloqueo: Bloquea el paquete de la app, lo que puede limitar las actualizaciones integradas. Para actualizar, primero puedes devolver la app a este Mac con AppPorts.\n\nEl resultado depende del mecanismo de actualización de cada app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La migration peut affecter la façon dont les apps suivantes se mettent à jour :\n\n%@\n\n• Migration non verrouillée : Laisse le paquet de l’app déverrouillé afin d’essayer de continuer à utiliser les mises à jour intégrées. Dans %@, activez « Gardien de mise à jour des applications » pour laisser AppPorts aider en cas de problème de mise à jour, sans garantie de réussite pour chaque app.\n\n• Migration verrouillée : Verrouille le paquet de l’app, ce qui peut limiter les mises à jour intégrées. Pour mettre à jour, vous pouvez d’abord rapatrier l’app sur ce Mac avec AppPorts.\n\nLe résultat dépend du mode de mise à jour propre à chaque app."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "माइग्रेशन से निम्नलिखित ऐप्स के अपडेट होने के तरीके पर प्रभाव पड़ सकता है:\n\n%@\n\n• अनलॉक माइग्रेशन: ऐप बंडल को अनलॉक रखता है ताकि आप इन-ऐप अपडेट का उपयोग जारी रखने का प्रयास कर सकें। %@ में “ऐप अपडेट संरक्षक” चालू करने पर AppPorts अपडेट समस्याओं में सहायता कर सकता है, हालाँकि हर ऐप के लिए सफलता की गारंटी नहीं है।\n\n• लॉक माइग्रेशन: ऐप बंडल को लॉक करता है, जिससे इन-ऐप अपडेट सीमित हो सकते हैं। अपडेट करने के लिए आप पहले AppPorts से ऐप को इस Mac पर वापस ला सकते हैं।\n\nवास्तविक परिणाम प्रत्येक ऐप की अपनी अपडेट प्रक्रिया पर निर्भर करता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrasi dapat memengaruhi cara aplikasi berikut memperbarui diri:\n\n%@\n\n• Migrasi tanpa kunci: Membiarkan bundel aplikasi tidak terkunci sehingga Anda dapat mencoba tetap menggunakan pembaruan di dalam aplikasi. Di %@, aktifkan “Penjaga pembaruan aplikasi” agar AppPorts membantu menangani masalah pembaruan, meskipun keberhasilan tidak dijamin untuk setiap aplikasi.\n\n• Migrasi terkunci: Mengunci bundel aplikasi sehingga pembaruan di dalam aplikasi mungkin terbatas. Untuk memperbarui, Anda dapat memindahkan aplikasi kembali ke Mac ini terlebih dahulu melalui AppPorts.\n\nHasil pembaruan bergantung pada mekanisme pembaruan masing-masing aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La migrazione può influire sul modo in cui si aggiornano le seguenti app:\n\n%@\n\n• Migrazione non bloccata: Lascia il pacchetto dell’app sbloccato per provare a continuare a usare gli aggiornamenti interni. In %@, attiva «Custode aggiornamenti delle app» per consentire ad AppPorts di intervenire sui problemi di aggiornamento, anche se il ripristino non è garantito per ogni app.\n\n• Migrazione bloccata: Blocca il pacchetto dell’app, limitando gli aggiornamenti interni. Per aggiornare, puoi prima riportare l’app su questo Mac con AppPorts.\n\nIl risultato dipende dal sistema di aggiornamento di ciascuna app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行により、次のアプリのアップデート方法に影響が出る場合があります：\n\n%@\n\n• ロックなし移行：アプリバンドルをロックせず、アプリ内アップデートの継続利用を試せます。%@で「アプリ更新ガーディアン」をオンにすると、アップデート異常時に AppPorts が復旧を補助しますが、すべてのアプリでの成功は保証されません。\n\n• ロック付き移行：アプリバンドルをロックするため、アプリ内アップデートが制限される場合があります。アップデートする際は、先に AppPorts でこの Mac に戻せます。\n\n実際の動作は各アプリの更新方式によって異なります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마이그레이션은 다음 앱의 업데이트 방식에 영향을 줄 수 있습니다:\n\n%@\n\n• 잠금 없는 마이그레이션: 앱 번들을 잠그지 않아 앱 내 업데이트를 계속 시도할 수 있습니다. %@에서 ‘앱 업데이트 가디언’을 켜면 업데이트 문제 발생 시 AppPorts가 복구를 도울 수 있지만, 모든 앱의 성공이 보장되지는 않습니다.\n\n• 잠금 마이그레이션: 앱 번들을 잠그므로 앱 내 업데이트가 제한될 수 있습니다. 업데이트하려면 먼저 AppPorts로 앱을 이 Mac으로 되돌릴 수 있습니다.\n\n실제 업데이트 결과는 각 앱의 자체 업데이트 방식에 따라 달라집니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migratie kan invloed hebben op hoe de volgende apps worden bijgewerkt:\n\n%@\n\n• Ontgrendelde migratie: Laat de app-bundel ontgrendeld zodat je in-app updates kunt blijven proberen. Schakel in %@ ‘App-updatebewaker’ in zodat AppPorts kan helpen bij updateproblemen, al is herstel niet voor elke app gegarandeerd.\n\n• Vergrendelde migratie: Vergrendelt de app-bundel, waardoor in-app updates beperkt kunnen zijn. Om bij te werken kun je de app eerst met AppPorts terugzetten naar deze Mac.\n\nHet resultaat hangt af van hoe elke app zichzelf bijwerkt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migracja może wpłynąć na sposób aktualizacji następujących aplikacji:\n\n%@\n\n• Migracja bez blokady: Pozostawia pakiet aplikacji odblokowany, aby można było próbować korzystać z aktualizacji wewnątrz aplikacji. W sekcji %@ włącz „Strażnik aktualizacji aplikacji”, aby AppPorts pomagał przy problemach z aktualizacją, choć powodzenie nie jest gwarantowane dla każdej aplikacji.\n\n• Migracja z blokadą: Blokuje pakiet aplikacji, co może ograniczyć aktualizacje wewnątrz aplikacji. Aby zaktualizować, możesz najpierw przenieść aplikację z powrotem na tego Maca w AppPorts.\n\nRzeczywisty efekt zależy od mechanizmu aktualizacji danej aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A migração pode afetar a forma como os seguintes apps são atualizados:\n\n%@\n\n• Migração sem bloqueio: Mantém o pacote do app desbloqueado para tentar continuar usando atualizações internas. Em %@, ative “Guardião de atualização de aplicativos” para permitir que o AppPorts ajude em falhas de atualização, embora a recuperação não seja garantida para todos os apps.\n\n• Migração com bloqueio: Bloqueia o pacote do app, o que pode limitar atualizações internas. Para atualizar, você pode primeiro mover o app de volta para este Mac com o AppPorts.\n\nOs resultados dependem de como cada app realiza suas atualizações."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перенос может повлиять на способ обновления следующих приложений:\n\n%@\n\n• Перенос без блокировки: Оставляет пакет приложения разблокированным, чтобы можно было пробовать обновления внутри приложения. В разделе «%@» включите «Страж обновления приложений», чтобы AppPorts помогал при сбоях обновления, хотя успех гарантируется не для всех приложений.\n\n• Перенос с блокировкой: Блокирует пакет приложения, что может ограничить внутренние обновления. Для обновления приложение можно сначала вернуть на этот Mac через AppPorts.\n\nРезультат зависит от механизма обновления конкретного приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การย้ายข้อมูลอาจส่งผลต่อวิธีอัปเดตของแอปต่อไปนี้:\n\n%@\n\n• การย้ายแบบไม่ล็อก: ไม่ล็อกบันเดิลของแอปเพื่อให้ลองใช้อัปเดตภายในแอปต่อไปได้ ใน %@ ให้เปิด “ผู้ดูแลการอัปเดตแอป” เพื่อให้ AppPorts ช่วยแก้ไขปัญหาการอัปเดต แม้จะไม่รับประกันความสำเร็จกับทุกแอปก็ตาม\n\n• การย้ายแบบล็อก: ล็อกบันเดิลของแอป ซึ่งอาจจำกัดการอัปเดตภายในแอป เมื่อต้องการอัปเดต สามารถย้ายแอปกลับมายัง Mac เครื่องนี้ด้วย AppPorts ก่อนได้\n\nผลลัพธ์จริงขึ้นอยู่กับวิธีอัปเดตของแต่ละแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taşıma işlemi aşağıdaki uygulamaların güncellenme biçimini etkileyebilir:\n\n%@\n\n• Kilitsiz taşıma: Uygulama içi güncellemeleri denemeye devam edebilmeniz için uygulama paketini kilitsiz bırakır. %@ içinde “Uygulama güncelleme koruyucusu” seçeneğini etkinleştirerek AppPorts’un güncelleme sorunlarına yardımcı olmasını sağlayabilirsiniz; ancak her uygulama için kurtarma garanti edilmez.\n\n• Kilitli taşıma: Uygulama paketini kilitler ve uygulama içi güncellemeleri sınırlayabilir. Güncellemek için uygulamayı önce AppPorts ile bu Mac’e geri taşıyabilirsiniz.\n\nGüncelleme sonuçları her uygulamanın kendi güncelleme yöntemine bağlıdır."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Việc di chuyển có thể ảnh hưởng đến cách các ứng dụng sau cập nhật:\n\n%@\n\n• Di chuyển không khóa: Giữ gói ứng dụng không bị khóa để bạn có thể tiếp tục thử cập nhật trong ứng dụng. Trong %@, hãy bật “Trình bảo vệ cập nhật ứng dụng” để AppPorts hỗ trợ xử lý sự cố cập nhật, dù không đảm bảo thành công cho mọi ứng dụng.\n\n• Di chuyển có khóa: Khóa gói ứng dụng, có thể hạn chế cập nhật trong ứng dụng. Khi cần cập nhật, bạn có thể chuyển ứng dụng về lại máy Mac này bằng AppPorts trước.\n\nKết quả thực tế phụ thuộc vào cơ chế tự cập nhật của từng ứng dụng."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "以下应用的更新方式可能受到迁移影响：\n\n%@\n\n• 非锁定迁移：不对应用包加锁，可尝试继续使用应用内更新。在%@中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。\n\n• 锁定迁移：对应用包加锁，应用内更新可能受限。需要更新时，可先通过 AppPorts 迁回本机。\n\n实际更新效果取决于应用自身的更新方式。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下應用程式的更新方式可能受到遷移影響：\n\n%@\n\n• 非鎖定遷移：不對應用程式套件加鎖，可嘗試繼續使用應用程式內更新。在%@中開啟「應用程式更新守護」後，AppPorts 可協助處理更新異常，但無法保證所有應用程式都能處理成功。\n\n• 鎖定遷移：對應用程式套件加鎖，應用程式內更新可能受限。需要更新時，可先透過 AppPorts 遷回本機。\n\n實際更新效果取決於應用程式自身的更新方式。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下應詠の哽噺方式可能受↘遷迻影响：\n\n%@\n\n• 非锁定遷迻：⑧對應詠包加锁，可嘗試繼續使詠應詠内哽噺。╪%@㊥開啟“應詠哽噺守護”後，AppPorts 可协助處理哽噺异常，但無法葆證所有應詠都能處理成功。\n\n• 锁定遷迻：對應詠包加锁，應詠内哽噺可能受限。需要哽噺時，可先通過 AppPorts 遷囙夲机。\n\n實際哽噺效果取决於應詠自身の哽噺方式。"
           }
         }
       }
@@ -234615,13 +234854,109 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "登录或外盘重新连接时，接回已迁移的数据卷和应用库，并隐藏 AppPorts 管理的 APFS 数据卷。"
+            "value" : "Ĉe ensaluto aŭ rekonektado de ekstera disko, restarigu migritajn datumvolumojn kaj la ap-bibliotekon, kaj tenu APFS-datumvolumojn administratajn de AppPorts kaŝitaj."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Al iniciar sesión o reconectar una unidad externa, restaura los volúmenes de datos migrados y la biblioteca de apps, manteniendo ocultos los volúmenes de datos APFS gestionados por AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À l’ouverture de session ou à la reconnexion d’un disque externe, restaure les volumes de données migrés et la bibliothèque d’apps, tout en gardant masqués les volumes de données APFS gérés par AppPorts."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लॉगिन पर या बाहरी ड्राइव फिर से जुड़ने पर, माइग्रेट किए गए डेटा वॉल्यूम और ऐप लाइब्रेरी को पुनर्स्थापित करें तथा AppPorts द्वारा प्रबंधित APFS डेटा वॉल्यूम छिपाए रखें।"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saat masuk atau ketika drive eksternal tersambung kembali, pulihkan volume data yang dimigrasikan serta pustaka aplikasi, dan tetap sembunyikan volume data APFS yang dikelola AppPorts."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All’accesso o alla riconnessione di un’unità esterna, ripristina i volumi dati migrati e la libreria app, mantenendo nascosti i volumi dati APFS gestiti da AppPorts."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログイン時または外部ドライブの再接続時に、移行済みのデータボリュームとアプリライブラリを復元し、AppPorts が管理する APFS データボリュームを非表示に保ちます。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그인하거나 외장 드라이브가 다시 연결될 때 마이그레이션된 데이터 볼륨과 앱 라이브러리를 복원하고, AppPorts가 관리하는 APFS 데이터 볼륨을 숨김 상태로 유지합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herstel bij het inloggen of opnieuw verbinden van een externe schijf gemigreerde gegevensvolumes en de appbibliotheek, en houd door AppPorts beheerde APFS-gegevensvolumes verborgen."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przy logowaniu lub ponownym podłączeniu dysku zewnętrznego przywracaj przeniesione woluminy danych i bibliotekę aplikacji oraz ukrywaj woluminy danych APFS zarządzane przez AppPorts."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No início de sessão ou ao reconectar uma unidade externa, restaura os volumes de dados migrados e a biblioteca de apps, mantendo ocultos os volumes de dados APFS gerenciados pelo AppPorts."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При входе в систему или повторном подключении внешнего диска восстанавливает перенесённые тома данных и библиотеку приложений, скрывая управляемые AppPorts тома данных APFS."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมื่อเข้าสู่ระบบหรือเชื่อมต่อไดรฟ์ภายนอกอีกครั้ง จะกู้คืนโวลุ่มข้อมูลที่ย้ายแล้วและคลังแอป พร้อมซ่อนโวลุ่มข้อมูล APFS ที่จัดการโดย AppPorts ไว้"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oturum açıldığında veya harici disk yeniden bağlandığında taşınan veri birimlerini ve uygulama arşivini geri yükler; AppPorts tarafından yönetilen APFS veri birimlerini gizli tutar."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi đăng nhập hoặc kết nối lại ổ đĩa ngoài, khôi phục các phân vùng dữ liệu đã di chuyển và thư viện ứng dụng, đồng thời ẩn các phân vùng dữ liệu APFS do AppPorts quản lý."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录或外盘重新连接时，接回已迁移的数据卷和应用库，并隐藏 AppPorts 管理的 APFS 数据卷。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "登入或外接磁碟重新連線時，接回已遷移的資料卷與應用程式庫，並隱藏 AppPorts 管理的 APFS 資料卷。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登錄或外盤重噺連啑時，啑囙已遷迻の數據卷啝應詠库，並隱藏 AppPorts 管理の APFS 數據卷。"
           }
         }
       }
@@ -234633,19 +234968,133 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "تعذّر تطبيق إعدادات وكلاء الخلفية."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠁⠛⠑⠝⠞ ⠎⠑⠞⠞⠊⠝⠛⠎ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠁⠏⠏⠇⠊⠑⠙⠲"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Einstellungen für Hintergrundagenten konnten nicht angewendet werden."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "Background agent settings could not be applied."
           }
         },
-        "zh-Hans" : {
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron aplicar los ajustes de los agentes en segundo plano."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis apliki la agordojn de fonaj agentoj."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’appliquer les réglages des agents d’arrière-plan."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैकग्राउंड एजेंट सेटिंग्ज़ लागू नहीं की जा सकीं।"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pengaturan agen latar belakang tidak dapat diterapkan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile applicare le impostazioni degli agenti in background."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックグラウンドエージェントの設定を適用できませんでした。"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백그라운드 에이전트 설정을 적용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De instellingen voor achtergrondagenten konden niet worden toegepast."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się zastosować ustawień agentów w tle."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível aplicar os ajustes dos agentes em segundo plano."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось применить настройки фоновых агентов."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถใช้การตั้งค่าเอเจนต์เบื้องหลังได้"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arka plan aracısı ayarları uygulanamadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể áp dụng cài đặt tác nhân chạy nền."
+          }
+        },
+        "hi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "后台代理设置未能生效。"
           }
         },
-        "zh-Hant" : {
+        "id" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "背景代理設定未能生效。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "後台代理設寘未能生效。"
           }
         }
       }
@@ -234654,10 +235103,118 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وكلاء الخلفية"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠁⠛⠑⠝⠞⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hintergrundagenten"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Background agents"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonaj agentoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agentes en segundo plano"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agents d’arrière-plan"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैकग्राउंड एजेंट"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agen latar belakang"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agenti in background"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックグラウンドエージェント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백그라운드 에이전트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achtergrondagenten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agenci w tle"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agentes em segundo plano"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фоновые агенты"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เอเจนต์เบื้องหลัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arka plan aracıları"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tác nhân chạy nền"
           }
         },
         "zh-Hans" : {
@@ -234671,16 +235228,130 @@
             "state" : "translated",
             "value" : "背景代理"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "後台代理"
+          }
         }
       }
     },
     "Choose external storage in AppPorts before configuring App Store external installation." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اختر وحدة تخزين خارجية في AppPorts أولًا قبل إعداد التثبيت الخارجي لـ App Store."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠓⠕⠕⠎⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠎⠞⠕⠗⠁⠛⠑ ⠊⠝ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠃⠑⠋⠕⠗⠑ ⠉⠕⠝⠋⠊⠛⠥⠗⠊⠝⠛ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle zuerst in AppPorts einen externen Speicher aus, bevor du die externe App Store-Installation konfigurierst."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose external storage in AppPorts before configuring App Store external installation."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unue elektu eksteran konservejon en AppPorts antaŭ ol agordi eksteran instaladon de App Store."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige primero un almacenamiento externo en AppPorts antes de configurar la instalación externa de App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez d’abord un stockage externe dans AppPorts avant de configurer l’installation externe de l’App Store."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store बाहरी इंस्टॉलेशन कॉन्फ़िगर करने से पहले AppPorts में बाहरी स्टोरेज चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih penyimpanan eksternal di AppPorts terlebih dahulu sebelum mengonfigurasi instalasi eksternal App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli prima un archivio esterno in AppPorts prima di configurare l’installazione esterna dell’App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store の外部インストールを設定する前に、AppPorts で外部ストレージを選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 외장 설치를 구성하기 전에 먼저 AppPorts에서 외부 저장 공간을 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kies eerst externe opslag in AppPorts voordat je externe installatie voor de App Store configureert."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najpierw wybierz pamięć zewnętrzną w AppPorts przed skonfigurowaniem instalacji zewnętrznej App Store."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha primeiro o armazenamento externo no AppPorts antes de configurar a instalação externa da App Store."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сначала выберите внешнее хранилище в AppPorts перед настройкой внешней установки App Store."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โปรดเลือกพื้นที่จัดเก็บภายนอกใน AppPorts ก่อนตั้งค่าการติดตั้งภายนอกของ App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store harici kurulumunu yapılandırmadan önce AppPorts’ta harici depolama seçin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy chọn bộ nhớ ngoài trong AppPorts trước khi cấu hình cài đặt ngoài của App Store."
           }
         },
         "zh-Hans" : {
@@ -234694,16 +235365,130 @@
             "state" : "translated",
             "value" : "請先在 AppPorts 選擇外部儲存空間，再設定 App Store App 外部安裝。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先╪ AppPorts 選擇外荹邨存，再設寘 App Store 應詠外荹安装。"
+          }
         }
       }
     },
     "Configured" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم الإعداد"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠕⠝⠋⠊⠛⠥⠗⠑⠙"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguriert"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configured"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agordita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuré"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कॉन्फ़िगर किया गया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terkonfigurasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geconfigureerd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skonfigurowano"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настроено"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตั้งค่าแล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yapılandırıldı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã cấu hình"
           }
         },
         "zh-Hans" : {
@@ -234717,16 +235502,130 @@
             "state" : "translated",
             "value" : "已設定"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已設寘"
+          }
         }
       }
     },
     "Could not read the App Store installation setting. Open App Store Settings to check it." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّرت قراءة إعداد التثبيت في App Store. افتح إعدادات App Store للتحقق منه."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠗⠑⠁⠙ ⠞⠓⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝ ⠎⠑⠞⠞⠊⠝⠛⠲ ⠠⠕⠏⠑⠝ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠎⠑⠞⠞⠊⠝⠛⠎ ⠞⠕ ⠉⠓⠑⠉⠅ ⠊⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App Store-Installationseinstellung konnte nicht gelesen werden. Öffne die App Store-Einstellungen zur Überprüfung."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not read the App Store installation setting. Open App Store Settings to check it."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis legi la instal-agordon de App Store. Malfermu la agordojn de App Store por kontroli ĝin."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer el ajuste de instalación de App Store. Abre los Ajustes de App Store para comprobarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de lire le réglage d’installation de l’App Store. Ouvrez les réglages de l’App Store pour le vérifier."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store इंस्टॉलेशन सेटिंग पढ़ी नहीं जा सकी। जाँचने के लिए App Store सेटिंग्ज़ खोलें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dapat membaca pengaturan instalasi App Store. Buka Pengaturan App Store untuk memeriksanya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile leggere l’impostazione di installazione dell’App Store. Apri le Impostazioni dell’App Store per verificarla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store のインストール設定を読み取れませんでした。App Store の設定を開いて確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 설치 설정을 읽을 수 없습니다. App Store 설정을 열어 확인하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De installatie-instelling van de App Store kon niet worden gelezen. Open de App Store-instellingen om deze te controleren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się odczytać ustawienia instalacji App Store. Otwórz ustawienia App Store, aby je sprawdzić."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler o ajuste de instalação da App Store. Abra os Ajustes da App Store para verificá-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось прочитать настройку установки App Store. Откройте настройки App Store для проверки."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถอ่านการตั้งค่าการติดตั้งของ App Store ได้ โปรดเปิดการตั้งค่า App Store เพื่อตรวจสอบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store kurulum ayarı okunamadı. Kontrol etmek için App Store Ayarları’nı açın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể đọc cài đặt cài đặt của App Store. Hãy mở Cài đặt App Store để kiểm tra."
           }
         },
         "zh-Hans" : {
@@ -234740,6 +235639,12 @@
             "state" : "translated",
             "value" : "無法讀取 App Store 安裝設定。請開啟 App Store 設定核對。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取 App Store 安装設寘。請打開 App Store 設寘核對。"
+          }
         }
       }
     },
@@ -234747,10 +235652,118 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وكيل صيانة الأقراص"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠊⠎⠅ ⠍⠁⠊⠝⠞⠑⠝⠁⠝⠉⠑ ⠁⠛⠑⠝⠞"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent zur Laufwerkswartung"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Disk maintenance agent"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agento pri diska prizorgado"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agente de mantenimiento de disco"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent de maintenance des disques"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डिस्क रखरखाव एजेंट"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agen pemeliharaan disk"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agente di manutenzione del disco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスク保守エージェント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디스크 유지보수 에이전트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schijfonderhoudsagent"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent konserwacji dysków"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agente de manutenção de disco"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Агент обслуживания дисков"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เอเจนต์ดูแลรักษาดิสก์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disk bakım aracısı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tác nhân bảo trì ổ đĩa"
           }
         },
         "zh-Hans" : {
@@ -234764,16 +235777,130 @@
             "state" : "translated",
             "value" : "磁碟維護代理"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "磁盤维護代理"
+          }
         }
       }
     },
     "Don’t remind me again" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عدم التذكير مرة أخرى"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠙⠕⠝⠄⠞ ⠗⠑⠍⠊⠝⠙ ⠍⠑ ⠁⠛⠁⠊⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht mehr erinnern"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Don’t remind me again"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne plu memorigu min"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No volver a recordármelo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne plus me le rappeler"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मुझे फिर याद न दिलाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jangan ingatkan lagi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non ricordarmelo più"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今後は通知しない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 알리지 않음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet meer herinneren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie przypominaj ponownie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não lembrar novamente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше не напоминать"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ต้องเตือนฉันอีก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir daha hatırlatma"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không nhắc lại"
           }
         },
         "zh-Hans" : {
@@ -234787,16 +235914,130 @@
             "state" : "translated",
             "value" : "不再提醒"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⑧再提醒"
+          }
         }
       }
     },
     "In App Store Settings, enable “Download and install large apps to a separate disk”, then select “%@”. This applies to newly downloaded apps larger than 1 GB." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في إعدادات App Store، فعّل «تنزيل التطبيقات الكبيرة وتثبيتها على قرص منفصل»، ثم اختر «%@». ينطبق ذلك على التطبيقات المحمّلة حديثًا التي يتجاوز حجمها 1 غيغابايت."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠊⠝ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠂ ⠑⠝⠁⠃⠇⠑ “⠠⠙⠕⠺⠝⠇⠕⠁⠙ ⠁⠝⠙ ⠊⠝⠎⠞⠁⠇⠇ ⠇⠁⠗⠛⠑ ⠁⠏⠏⠎ ⠞⠕ ⠁ ⠎⠑⠏⠁⠗⠁⠞⠑ ⠙⠊⠎⠅”⠂ ⠞⠓⠑⠝ ⠎⠑⠇⠑⠉⠞ “%@”⠲ ⠠⠞⠓⠊⠎ ⠁⠏⠏⠇⠊⠑⠎ ⠞⠕ ⠝⠑⠺⠇⠽ ⠙⠕⠺⠝⠇⠕⠁⠙⠑⠙ ⠁⠏⠏⠎ ⠇⠁⠗⠛⠑⠗ ⠞⠓⠁⠝ ⠼⠁ ⠠⠛⠠⠃⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiviere in den App Store-Einstellungen „Große Apps auf ein separates Volume laden und installieren“ und wähle anschließend „%@“. Dies gilt für neu geladene Apps über 1 GB."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "In App Store Settings, enable “Download and install large apps to a separate disk”, then select “%@”. This applies to newly downloaded apps larger than 1 GB."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la agordoj de App Store, ŝaltu «Elŝuti kaj instali grandajn apojn sur apartan diskon», poste elektu «%@». Tio validas por novaj elŝutitaj apoj pli grandaj ol 1 GB."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En los Ajustes de App Store, activa «Descargar e instalar las apps grandes en otro disco» y selecciona «%@». Esto se aplica a las nuevas apps descargadas de más de 1 GB."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans les réglages de l’App Store, activez « Télécharger et installer les apps volumineuses sur un autre disque », puis sélectionnez « %@ ». Cela s’applique aux nouvelles apps téléchargées de plus de 1 Go."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store सेटिंग्ज़ में “बड़े ऐप्स को अलग डिस्क पर डाउनलोड और इंस्टॉल करें” चालू करें, फिर “%@” चुनें। यह 1 GB से बड़े नए डाउनलोड किए गए ऐप्स पर लागू होता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di Pengaturan App Store, aktifkan “Unduh dan instal aplikasi besar ke disk terpisah”, lalu pilih “%@”. Pengaturan ini berlaku untuk aplikasi baru yang diunduh berukuran lebih dari 1 GB."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nelle Impostazioni dell’App Store, attiva «Scarica e installa le app di grandi dimensioni su un altro disco», quindi seleziona «%@». Questo vale per le nuove app scaricate superiori a 1 GB."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store の設定で「サイズの大きいアプリを別のディスクにダウンロードしてインストール」をオンにし、「%@」を選択してください。新しくダウンロードする 1 GB 超のアプリに適用されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 설정에서 ‘대용량 앱을 별도의 디스크에 다운로드 및 설치’를 켠 다음 ‘%@’을(를) 선택하세요. 새로 다운로드하는 1 GB 초과 앱에 적용됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel in de App Store-instellingen ‘Download en installeer grote apps op een aparte schijf’ in en selecteer vervolgens ‘%@’. Dit geldt voor nieuw gedownloade apps groter dan 1 GB."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W ustawieniach App Store włącz opcję „Pobieraj i instaluj duże aplikacje na osobnym dysku”, a następnie wybierz „%@”. Dotyczy to nowo pobranych aplikacji większych niż 1 GB."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nos Ajustes da App Store, ative “Baixar e instalar apps grandes em um disco separado” e selecione “%@”. Isso se aplica a novos apps baixados maiores que 1 GB."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В настройках App Store включите «Загружать и устанавливать большие приложения на отдельный диск», затем выберите «%@». Это применяется к новым загружаемым приложениям больше 1 ГБ."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ในการตั้งค่า App Store ให้เปิดใช้ “ดาวน์โหลดและติดตั้งแอปขนาดใหญ่ลงในดิสก์แยก” แล้วเลือก “%@” ตัวเลือกนี้ใช้กับแอปที่ดาวน์โหลดใหม่ซึ่งมีขนาดเกิน 1 GB"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Ayarları’nda “Büyük uygulamaları ayrı bir diske indir ve yükle” seçeneğini etkinleştirin, ardından “%@” diskini seçin. Bu ayar 1 GB’tan büyük yeni indirilen uygulamalar için geçerlidir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trong Cài đặt App Store, hãy bật “Tải về và cài đặt các ứng dụng lớn vào một ổ đĩa riêng”, sau đó chọn “%@”. Tùy chọn này áp dụng cho các ứng dụng mới tải về lớn hơn 1 GB."
           }
         },
         "zh-Hans" : {
@@ -234810,6 +236051,12 @@
             "state" : "translated",
             "value" : "請在 App Store 設定中開啟「下載並安裝大型 App 到獨立儲存磁碟」，然後選擇「%@」。此選項適用於新下載的大於 1 GB 的 App。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請╪ App Store 設寘㊥開啟「下载並安装大型 App ↘独立邨存盤」，然後選擇「%@」。此選項适詠於噺下载の大於 1 GB の應詠。"
+          }
         }
       }
     },
@@ -234817,10 +236064,118 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مواصلة مراقبة التطبيقات المنقولة بعد إنهاء AppPorts، ومحاولة الاسترداد عند فشل تحديث ShipIt مع عرض النتيجة في مركز المهام."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠅⠑⠑⠏ ⠺⠁⠞⠉⠓⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠁⠏⠏⠎ ⠁⠋⠞⠑⠗ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠟⠥⠊⠞⠎⠲ ⠠⠁⠞⠞⠑⠍⠏⠞ ⠗⠑⠉⠕⠧⠑⠗⠽ ⠺⠓⠑⠝ ⠁ ⠠⠎⠓⠊⠏⠠⠊⠞ ⠥⠏⠙⠁⠞⠑ ⠋⠁⠊⠇⠎ ⠁⠝⠙ ⠗⠑⠏⠕⠗⠞ ⠞⠓⠑ ⠗⠑⠎⠥⠇⠞ ⠊⠝ ⠞⠓⠑ ⠞⠁⠎⠅ ⠉⠑⠝⠞⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrierte Apps auch nach dem Beenden von AppPorts weiter überwachen. Bei fehlgeschlagenen ShipIt-Updates eine Wiederherstellung versuchen und das Ergebnis in der Aufgabenzentrale melden."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep watching migrated apps after AppPorts quits. Attempt recovery when a ShipIt update fails and report the result in the task center."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daŭre observu migritajn apojn post fermo de AppPorts. Provu riparon kiam ĝisdatigo per ShipIt malsukcesas kaj raportu la rezulton en la taskocentro."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue supervisando las apps migradas después de cerrar AppPorts. Intenta recuperar una actualización de ShipIt si falla e informa del resultado en el centro de tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer à surveiller les apps migrées après la fermeture d’AppPorts. Tenter une récupération lorsqu’une mise à jour ShipIt échoue et signaler le résultat dans le centre des tâches."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts बंद होने के बाद भी माइग्रेट किए गए ऐप्स की निगरानी जारी रखें। ShipIt अपडेट विफल होने पर रिकवरी का प्रयास करें और परिणाम टास्क सेंटर में दिखाएँ।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tetap pantau aplikasi yang dimigrasikan setelah AppPorts ditutup. Coba pemulihan saat pembaruan ShipIt gagal dan laporkan hasilnya di pusat tugas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continua a monitorare le app migrate dopo la chiusura di AppPorts. Tenta il ripristino se un aggiornamento ShipIt non riesce e segnala il risultato nel centro attività."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts の終了後も移行済みアプリの監視を続けます。ShipIt アップデートが失敗した際に復旧を試み、結果をタスクセンターに報告します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 종료 후에도 마이그레이션된 앱을 계속 감시합니다. ShipIt 업데이트 실패 시 복구를 시도하고 결과를 작업 센터에 알립니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blijf gemigreerde apps volgen nadat AppPorts is afgesloten. Probeer herstel wanneer een ShipIt-update mislukt en meld het resultaat in het taakcentrum."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontynuuj monitorowanie przeniesionych aplikacji po zamknięciu AppPorts. Podejmuj próbę odzyskania po nieudanej aktualizacji ShipIt i zgłaszaj wynik w centrum zadań."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue monitorando os apps migrados após encerrar o AppPorts. Tente recuperar quando uma atualização do ShipIt falhar e informe o resultado na central de tarefas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продолжать отслеживать перенесённые приложения после выхода из AppPorts. Пытаться выполнить восстановление при сбое обновления ShipIt и сообщать результат в центре задач."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เฝ้าดูแอปที่ย้ายแล้วต่อไปหลังจากปิด AppPorts พยายามกู้คืนเมื่อการอัปเดต ShipIt ล้มเหลว และรายงานผลในศูนย์งาน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts kapatıldıktan sonra taşınan uygulamaları izlemeye devam eder. Bir ShipIt güncellemesi başarısız olduğunda kurtarmayı dener ve sonucu görev merkezinde bildirir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp tục theo dõi các ứng dụng đã di chuyển sau khi thoát AppPorts. Thử khôi phục khi bản cập nhật ShipIt thất bại và báo kết quả trong trung tâm tác vụ."
           }
         },
         "zh-Hans" : {
@@ -234834,6 +236189,12 @@
             "state" : "translated",
             "value" : "結束 AppPorts 後繼續監聽已遷移的應用程式。ShipIt 更新失敗時嘗試接手復原，並將結果同步至工作中心。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退絀 AppPorts 後繼續监听已遷迻の應詠。ShipIt 哽噺失敗時嘗試啑手恢復，並將結果茼步↘任务㊥心。"
+          }
         }
       }
     },
@@ -234841,10 +236202,118 @@
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سلوك النقل"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠃⠑⠓⠁⠧⠊⠕⠗"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrationsverhalten"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Migration behavior"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konduto de migrado"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comportamiento de migración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comportement de migration"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "माइग्रेशन व्यवहार"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perilaku migrasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comportamento di migrazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行の動作"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마이그레이션 동작"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migratiegedrag"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowanie migracji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comportamento da migração"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поведение переноса"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "พฤติกรรมการย้ายข้อมูล"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taşıma davranışı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hành vi di chuyển"
           }
         },
         "zh-Hans" : {
@@ -234858,16 +236327,130 @@
             "state" : "translated",
             "value" : "遷移行為"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷迻荇为"
+          }
         }
       }
     },
     "Not configured. In App Store Settings, enable external installation for apps larger than 1 GB and choose the same external drive as AppPorts." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير مُعدّ. في إعدادات App Store، فعّل التثبيت الخارجي للتطبيقات الأكبر من 1 غيغابايت واختر نفس القرص الخارجي المستخدم في AppPorts."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠝⠕⠞ ⠉⠕⠝⠋⠊⠛⠥⠗⠑⠙⠲ ⠠⠊⠝ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠂ ⠑⠝⠁⠃⠇⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝ ⠋⠕⠗ ⠁⠏⠏⠎ ⠇⠁⠗⠛⠑⠗ ⠞⠓⠁⠝ ⠼⠁ ⠠⠛⠠⠃ ⠁⠝⠙ ⠉⠓⠕⠕⠎⠑ ⠞⠓⠑ ⠎⠁⠍⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠁⠎ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht konfiguriert. Aktiviere in den App Store-Einstellungen die externe Installation für Apps über 1 GB und wähle dasselbe externe Laufwerk wie in AppPorts."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not configured. In App Store Settings, enable external installation for apps larger than 1 GB and choose the same external drive as AppPorts."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne agordita. En la agordoj de App Store, ŝaltu eksteran instaladon por apoj pli grandaj ol 1 GB kaj elektu la saman eksteran diskon kiel AppPorts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin configurar. En los Ajustes de App Store, activa la instalación externa para apps de más de 1 GB y elige la misma unidad externa que AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non configuré. Dans les réglages de l’App Store, activez l’installation externe pour les apps de plus de 1 Go et choisissez le même disque externe qu’AppPorts."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कॉन्फ़िगर नहीं है। App Store सेटिंग्ज़ में 1 GB से बड़े ऐप्स के लिए बाहरी इंस्टॉलेशन चालू करें और AppPorts वाली समान बाहरी ड्राइव चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum dikonfigurasi. Di Pengaturan App Store, aktifkan instalasi eksternal untuk aplikasi lebih dari 1 GB dan pilih drive eksternal yang sama dengan AppPorts."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non configurato. Nelle Impostazioni dell’App Store, attiva l’installazione esterna per le app superiori a 1 GB e scegli la stessa unità esterna di AppPorts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定です。App Store の設定で 1 GB 超のアプリの外部インストールを有効にし、AppPorts と同じ外部ドライブを選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정되지 않았습니다. App Store 설정에서 1 GB 초과 앱의 외장 설치를 켜고 AppPorts와 동일한 외장 드라이브를 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet geconfigureerd. Schakel in de App Store-instellingen externe installatie in voor apps groter dan 1 GB en kies dezelfde externe schijf als in AppPorts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieskonfigurowano. W ustawieniach App Store włącz instalację zewnętrzną dla aplikacji większych niż 1 GB i wybierz ten sam dysk zewnętrzny co w AppPorts."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não configurado. Nos Ajustes da App Store, ative a instalação externa para apps maiores que 1 GB e escolha a mesma unidade externa do AppPorts."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не настроено. В настройках App Store включите внешнюю установку для приложений больше 1 ГБ и выберите тот же внешний диск, что и в AppPorts."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังไม่ได้ตั้งค่า ในการตั้งค่า App Store ให้เปิดใช้การติดตั้งภายนอกสำหรับแอปที่มีขนาดเกิน 1 GB และเลือกไดรฟ์ภายนอกเดียวกับ AppPorts"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yapılandırılmadı. App Store Ayarları’nda 1 GB’tan büyük uygulamalar için harici kurulumu etkinleştirin ve AppPorts ile aynı harici diski seçin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa cấu hình. Trong Cài đặt App Store, hãy bật cài đặt ngoài cho ứng dụng lớn hơn 1 GB và chọn cùng ổ đĩa ngoài với AppPorts."
           }
         },
         "zh-Hans" : {
@@ -234881,16 +236464,130 @@
             "state" : "translated",
             "value" : "尚未設定。請在 App Store 設定中開啟大於 1 GB 的 App 外部安裝，並選擇與 AppPorts 相同的外接磁碟。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未設寘。請╪ App Store 設寘㊥開啟大於 1 GB の應詠外荹安装，並選擇與 AppPorts 相茼の外盤。"
+          }
         }
       }
     },
     "Reconnect the selected external drive to check the App Store installation setting." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أعد توصيل القرص الخارجي المحدد للتحقق من إعداد التثبيت في App Store."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠗⠑⠉⠕⠝⠝⠑⠉⠞ ⠞⠓⠑ ⠎⠑⠇⠑⠉⠞⠑⠙ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠞⠕ ⠉⠓⠑⠉⠅ ⠞⠓⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝ ⠎⠑⠞⠞⠊⠝⠛⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbinde das ausgewählte externe Laufwerk erneut, um die App Store-Installationseinstellung zu prüfen."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reconnect the selected external drive to check the App Store installation setting."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rekonektu la elektitan eksteran diskon por kontroli la instal-agordon de App Store."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a conectar la unidad externa seleccionada para comprobar el ajuste de instalación de App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconnectez le disque externe sélectionné pour vérifier le réglage d’installation de l’App Store."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store इंस्टॉलेशन सेटिंग जाँचने के लिए चुनी गई बाहरी ड्राइव को फिर से कनेक्ट करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sambungkan kembali drive eksternal yang dipilih untuk memeriksa pengaturan instalasi App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricollega l’unità esterna selezionata per verificare l’impostazione di installazione dell’App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store のインストール設定を確認するには、選択した外部ドライブを再接続してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 설치 설정을 확인하려면 선택한 외장 드라이브를 다시 연결하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluit de geselecteerde externe schijf opnieuw aan om de installatie-instelling van de App Store te controleren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podłącz ponownie wybrany dysk zewnętrzny, aby sprawdzić ustawienie instalacji App Store."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconecte a unidade externa selecionada para verificar o ajuste de instalação da App Store."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторно подключите выбранный внешний диск, чтобы проверить настройку установки App Store."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โปรดเชื่อมต่อไดรฟ์ภายนอกที่เลือกอีกครั้งเพื่อตรวจสอบการตั้งค่าการติดตั้งของ App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store kurulum ayarını kontrol etmek için seçili harici diski yeniden bağlayın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy kết nối lại ổ đĩa ngoài đã chọn để kiểm tra cài đặt cài đặt của App Store."
           }
         },
         "zh-Hans" : {
@@ -234904,16 +236601,130 @@
             "state" : "translated",
             "value" : "請重新連接所選外接磁碟，再檢查 App Store 安裝設定。"
           }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請重噺連啑所選外盤，再檢查 App Store 安装設寘。"
+          }
         }
       }
     },
     "Settings: You can complete this later in AppPorts Settings, even after choosing “Don’t remind me again”." : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإعدادات: يمكنك إكمال هذا الإجراء لاحقًا من إعدادات AppPorts حتى بعد اختيار «عدم التذكير مرة أخرى»."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠑⠞⠞⠊⠝⠛⠎⠒ ⠠⠽⠕⠥ ⠉⠁⠝ ⠉⠕⠍⠏⠇⠑⠞⠑ ⠞⠓⠊⠎ ⠇⠁⠞⠑⠗ ⠊⠝ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠂ ⠑⠧⠑⠝ ⠁⠋⠞⠑⠗ ⠉⠓⠕⠕⠎⠊⠝⠛ “⠠⠙⠕⠝⠄⠞ ⠗⠑⠍⠊⠝⠙ ⠍⠑ ⠁⠛⠁⠊⠝”⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen: Du kannst dies später jederzeit in den AppPorts-Einstellungen nachholen, selbst wenn du „Nicht mehr erinnern“ auswählst."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Settings: You can complete this later in AppPorts Settings, even after choosing “Don’t remind me again”."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agordoj: Vi povos plenumi tion poste en la agordoj de AppPorts, eĉ post elekto de «Ne plu memorigu min»."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes: Puedes completar esto más tarde en los Ajustes de AppPorts, incluso si eliges «No volver a recordármelo»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages : Vous pourrez terminer cette opération plus tard dans les réglages d’AppPorts, même après avoir choisi « Ne plus me le rappeler »."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेटिंग्ज़: “मुझे फिर याद न दिलाएँ” चुनने के बाद भी आप इसे बाद में AppPorts सेटिंग्ज़ में पूरा कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pengaturan: Anda tetap dapat menyelesaikannya nanti di Pengaturan AppPorts meskipun telah memilih “Jangan ingatkan lagi”."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni: Puoi completare questa operazione più tardi nelle Impostazioni di AppPorts, anche dopo aver scelto «Non ricordarmelo più»."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定：「今後は通知しない」を選んだあとでも、AppPorts の設定からいつでもこの操作を行えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정: ‘다시 알리지 않음’을 선택한 뒤에도 나중에 AppPorts 설정에서 이 작업을 완료할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instellingen: Je kunt dit later altijd nog voltooien in de AppPorts-instellingen, zelfs nadat je ‘Niet meer herinneren’ hebt gekozen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawienia: Możesz dokończyć to później w ustawieniach AppPorts, nawet po wybraniu opcji „Nie przypominaj ponownie”."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes: Você pode concluir isso mais tarde nos Ajustes do AppPorts, mesmo após escolher “Não lembrar novamente”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки: Вы сможете выполнить это позже в настройках AppPorts, даже если выберете «Больше не напоминать»."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การตั้งค่า: คุณสามารถดำเนินการนี้ภายหลังในการตั้งค่า AppPorts ได้ แม้ว่าจะเลือก “ไม่ต้องเตือนฉันอีก” ไปแล้วก็ตาม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayarlar: “Bir daha hatırlatma” seçeneğini belirleseniz bile bunu daha sonra AppPorts Ayarları’ndan tamamlayabilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài đặt: Bạn vẫn có thể hoàn tất việc này sau trong Cài đặt AppPorts ngay cả khi đã chọn “Không nhắc lại”."
           }
         },
         "zh-Hans" : {
@@ -234922,7 +236733,7 @@
             "value" : "设置：即使选择「不再提醒」，以后仍可在 AppPorts 设置里完成这项操作。"
           }
         },
-        "zh-Hant" : {
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定：即使選擇「不再提醒」，之後仍可在 AppPorts 設定中完成這項操作。"
@@ -234933,3 +236744,711 @@
   },
   "version" : "1.1"
 }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم App Store حاليًا «%@». اختر نفس القرص الخارجي المستخدم في AppPorts من إعدادات App Store."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠉⠥⠗⠗⠑⠝⠞⠇⠽ ⠥⠎⠑⠎ “%@”⠲ ⠠⠉⠓⠕⠕⠎⠑ ⠞⠓⠑ ⠎⠁⠍⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠁⠎ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠝ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App Store verwendet derzeit „%@“. Wähle in den App Store-Einstellungen dasselbe externe Laufwerk wie in AppPorts."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store nun uzas «%@». Elektu la saman eksteran diskon kiel AppPorts en la agordoj de App Store."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store usa actualmente «%@». Elige la misma unidad externa que AppPorts en los Ajustes de App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store utilise actuellement « %@ ». Choisissez le même disque externe qu’AppPorts dans les réglages de l’App Store."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store अभी “%@” का उपयोग कर रहा है। App Store सेटिंग्ज़ में AppPorts वाली समान बाहरी ड्राइव चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store saat ini menggunakan “%@”. Pilih drive eksternal yang sama dengan AppPorts di Pengaturan App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store usa attualmente «%@». Scegli la stessa unità esterna di AppPorts nelle Impostazioni dell’App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store は現在「%@」を使用しています。App Store の設定で AppPorts と同じ外部ドライブを選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store가 현재 ‘%@’을(를) 사용 중입니다. App Store 설정에서 AppPorts와 동일한 외장 드라이브를 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De App Store gebruikt momenteel ‘%@’. Kies in de App Store-instellingen dezelfde externe schijf als in AppPorts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store używa obecnie dysku „%@”. Wybierz ten sam dysk zewnętrzny co w AppPorts w ustawieniach App Store."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A App Store usa atualmente “%@”. Escolha a mesma unidade externa do AppPorts nos Ajustes da App Store."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store сейчас использует «%@». Выберите тот же внешний диск, что и в AppPorts, в настройках App Store."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขณะนี้ App Store ใช้ “%@” อยู่ โปรดเลือกไดรฟ์ภายนอกเดียวกับ AppPorts ในการตั้งค่า App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store şu anda “%@” diskini kullanıyor. App Store Ayarları’nda AppPorts ile aynı harici diski seçin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store hiện đang dùng “%@”. Hãy chọn cùng ổ đĩa ngoài với AppPorts trong Cài đặt App Store."
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 當前選擇の是「%@」。請╪ App Store 設寘㊥改为與 AppPorts 相茼の外盤。"
+          }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم App Store حاليًا «%@». اختر «%@» ليطابق AppPorts."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠉⠥⠗⠗⠑⠝⠞⠇⠽ ⠥⠎⠑⠎ “%@”⠲ ⠠⠎⠑⠇⠑⠉⠞ “%@” ⠞⠕ ⠍⠁⠞⠉⠓ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App Store verwendet derzeit „%@“. Wähle „%@“, um mit AppPorts übereinzustimmen."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store nun uzas «%@». Elektu «%@» por kongrui kun AppPorts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store usa actualmente «%@». Selecciona «%@» para coincidir con AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store utilise actuellement « %@ ». Sélectionnez « %@ » pour correspondre à AppPorts."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store अभी “%@” का उपयोग कर रहा है। AppPorts से मिलान करने के लिए “%@” चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store saat ini menggunakan “%@”. Pilih “%@” agar sesuai dengan AppPorts."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store usa attualmente «%@». Seleziona «%@» per usare la stessa unità di AppPorts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store は現在「%@」を使用しています。AppPorts に合わせるには「%@」を選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store가 현재 ‘%@’을(를) 사용 중입니다. AppPorts와 일치시키려면 ‘%@’을(를) 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De App Store gebruikt momenteel ‘%@’. Selecteer ‘%@’ om overeen te komen met AppPorts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store używa obecnie dysku „%@”. Wybierz „%@”, aby dopasować go do AppPorts."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A App Store usa atualmente “%@”. Selecione “%@” para coincidir com o AppPorts."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store сейчас использует «%@». Выберите «%@», чтобы диск совпадал с AppPorts."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขณะนี้ App Store ใช้ “%@” อยู่ โปรดเลือก “%@” เพื่อให้ตรงกับ AppPorts"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store şu anda “%@” diskini kullanıyor. AppPorts ile eşleşmesi için “%@” seçeneğini belirleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store hiện đang dùng “%@”. Hãy chọn “%@” để khớp với AppPorts."
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 當前選擇の是「%@」。請選擇「%@」，與 AppPorts 使詠茼一塊外盤。"
+          }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سيقوم App Store أيضًا بتثبيت التطبيقات المحمّلة حديثًا التي يتجاوز حجمها 1 غيغابايت على هذا القرص وإدارة تحديثاتها."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠺⠊⠇⠇ ⠁⠇⠎⠕ ⠊⠝⠎⠞⠁⠇⠇ ⠝⠑⠺⠇⠽ ⠙⠕⠺⠝⠇⠕⠁⠙⠑⠙ ⠁⠏⠏⠎ ⠇⠁⠗⠛⠑⠗ ⠞⠓⠁⠝ ⠼⠁ ⠠⠛⠠⠃ ⠕⠝ ⠞⠓⠊⠎ ⠙⠗⠊⠧⠑ ⠁⠝⠙ ⠍⠁⠝⠁⠛⠑ ⠞⠓⠑⠊⠗ ⠥⠏⠙⠁⠞⠑⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der App Store installiert neu geladene Apps über 1 GB ebenfalls auf diesem Laufwerk und verwaltet deren Updates."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store ankaŭ instalos novajn elŝutitajn apojn pli grandajn ol 1 GB sur ĉi tiu disko kaj administros iliajn ĝisdatigojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store también instalará en esta unidad las nuevas apps descargadas de más de 1 GB y gestionará sus actualizaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store installera également sur ce disque les nouvelles apps téléchargées de plus de 1 Go et gérera leurs mises à jour."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 1 GB से बड़े नए डाउनलोड किए गए ऐप्स को भी इसी ड्राइव पर इंस्टॉल करेगा और उनके अपडेट प्रबंधित करेगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store juga akan menginstal aplikasi baru yang diunduh berukuran lebih dari 1 GB di drive ini serta mengelola pembaruannya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store installerà su questa unità anche le nuove app scaricate superiori a 1 GB e ne gestirà gli aggiornamenti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store でも、新しくダウンロードする 1 GB 超のアプリがこのドライブにインストールされ、アップデートも管理されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store도 새로 다운로드하는 1 GB 초과 앱을 이 드라이브에 설치하고 업데이트를 관리합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De App Store installeert nieuw gedownloade apps groter dan 1 GB ook op deze schijf en beheert hun updates."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store będzie również instalować na tym dysku nowo pobrane aplikacje większe niż 1 GB i zarządzać ich aktualizacjami."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A App Store também instalará nesta unidade os novos apps baixados maiores que 1 GB e gerenciará suas atualizações."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store также будет устанавливать на этот диск новые загружаемые приложения размером более 1 ГБ и управлять их обновлениями."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store จะติดตั้งแอปที่ดาวน์โหลดใหม่ซึ่งมีขนาดเกิน 1 GB ลงในไดรฟ์นี้และจัดการการอัปเดตให้ด้วย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store ayrıca 1 GB’tan büyük yeni indirilen uygulamaları bu diske yükler ve güncellemelerini yönetir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store cũng sẽ cài đặt các ứng dụng mới tải về lớn hơn 1 GB lên ổ đĩa này và quản lý cập nhật của chúng."
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 也會把噺下载の大於 1 GB の應詠安装↘這塊外盤，並管理這些應詠の哽噺。"
+          }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يمكن لـ AppPorts نقل تطبيقات App Store بأي حجم، بما في ذلك التطبيقات الأصغر من 1 غيغابايت، إلى:"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠉⠁⠝ ⠍⠊⠛⠗⠁⠞⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠕⠋ ⠁⠝⠽ ⠎⠊⠵⠑⠂ ⠊⠝⠉⠇⠥⠙⠊⠝⠛ ⠁⠏⠏⠎ ⠥⠝⠙⠑⠗ ⠼⠁ ⠠⠛⠠⠃⠂ ⠞⠕⠒"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts kann App Store-Apps jeder Größe – auch unter 1 GB – migrieren nach:"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts povas migri apojn el App Store de ajna grandeco, inkluzive de apoj sub 1 GB, al:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts puede migrar apps de App Store de cualquier tamaño, incluidas las menores de 1 GB, a:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts peut migrer les apps de l’App Store de toute taille, y compris celles de moins de 1 Go, vers :"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts किसी भी आकार के App Store ऐप्स (1 GB से छोटे ऐप्स सहित) को यहाँ माइग्रेट कर सकता है:"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts dapat memigrasikan aplikasi App Store berukuran apa pun, termasuk di bawah 1 GB, ke:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts può migrare app dell’App Store di qualsiasi dimensione, incluse quelle inferiori a 1 GB, su:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts は 1 GB 未満を含むあらゆるサイズの App Store アプリを次の場所へ移行できます："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts는 1 GB 미만 앱을 포함해 모든 크기의 App Store 앱을 다음 위치로 마이그레이션할 수 있습니다:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts kan App Store-apps van elke grootte, inclusief apps kleiner dan 1 GB, migreren naar:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts może przenosić aplikacje z App Store o dowolnym rozmiarze, w tym mniejsze niż 1 GB, do:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O AppPorts pode migrar apps da App Store de qualquer tamanho, inclusive menores que 1 GB, para:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts может переносить приложения из App Store любого размера, включая приложения меньше 1 ГБ, в:"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts สามารถย้ายแอปจาก App Store ได้ทุกขนาด รวมถึงแอปที่มีขนาดต่ำกว่า 1 GB ไปยัง:"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts, 1 GB altındakiler dahil her boyuttaki App Store uygulamasını şuraya taşıyabilir:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts có thể di chuyển ứng dụng App Store ở mọi dung lượng, kể cả ứng dụng dưới 1 GB, đến:"
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 遷迻 App Store 應詠⑧受 1 GB 限制，曉於 1 GB の應詠也可以遷迻↘："
+          }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حارس تحديث التطبيقات"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝ ⠥⠏⠙⠁⠞⠑ ⠛⠥⠁⠗⠙⠊⠁⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wächter für App-Updates"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gardanto de ap-ĝisdatigoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardián de actualización de aplicaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gardien de mise à jour des applications"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप अपडेट संरक्षक"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penjaga pembaruan aplikasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custode aggiornamenti delle app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ更新ガーディアン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 업데이트 가디언"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-updatebewaker"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strażnik aktualizacji aplikacji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardião de atualização de aplicativos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Страж обновления приложений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผู้ดูแลการอัปเดตแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama güncelleme koruyucusu"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình bảo vệ cập nhật ứng dụng"
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應詠哽噺守護"
+          }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جاري تطبيق إعدادات الخلفية…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠇⠽⠊⠝⠛ ⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙ ⠎⠑⠞⠞⠊⠝⠛⠎⠲⠲⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hintergrundeinstellungen werden angewendet…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikante fonajn agordojn…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicando ajustes en segundo plano…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application des réglages d’arrière-plan…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैकग्राउंड सेटिंग्ज़ लागू की जा रही हैं…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menerapkan pengaturan latar belakang…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applicazione delle impostazioni in background…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックグラウンド設定を適用中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백그라운드 설정 적용 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achtergrondinstellingen toepassen…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stosowanie ustawień działania w tle…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicando ajustes em segundo plano…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Применение фоновых настроек…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังใช้การตั้งค่าการทำงานเบื้องหลัง…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arka plan ayarları uygulanıyor…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang áp dụng cài đặt chạy nền…"
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正╪應詠後台設寘…"
+          }
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عند تسجيل الدخول أو إعادة توصيل قرص خارجي، يستعيد وحدات البيانات المنقولة ومكتبة التطبيقات، مع إبقاء وحدات بيانات APFS التي يديرها AppPorts مخفية."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠞ ⠇⠕⠛⠊⠝ ⠕⠗ ⠺⠓⠑⠝ ⠁⠝ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑ ⠗⠑⠉⠕⠝⠝⠑⠉⠞⠎⠂ ⠗⠑⠎⠞⠕⠗⠑ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠙⠁⠞⠁ ⠧⠕⠇⠥⠍⠑⠎ ⠁⠝⠙ ⠞⠓⠑ ⠁⠏⠏ ⠇⠊⠃⠗⠁⠗⠽⠂ ⠁⠝⠙ ⠅⠑⠑⠏ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠤⠍⠁⠝⠁⠛⠑⠙ ⠠⠁⠠⠏⠠⠋⠠⠎ ⠙⠁⠞⠁ ⠧⠕⠇⠥⠍⠑⠎ ⠓⠊⠙⠙⠑⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellt beim Anmelden oder erneuten Verbinden eines externen Laufwerks migrierte Datenvolumes und die App-Mediathek wieder her und hält von AppPorts verwaltete APFS-Datenvolumes ausgeblendet."
+          }
+        },
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設寘：即使選擇「⑧再提醒」，以後仍可╪ AppPorts 設寘裏唍成這項操莋。"
+          }

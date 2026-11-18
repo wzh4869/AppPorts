@@ -277,7 +277,11 @@ final class LocalizationAuditTests: XCTestCase {
         let strings = try XCTUnwrap(rawObject["strings"] as? [String: Any])
 
         let localizedPattern = try NSRegularExpression(
-            pattern: #""((?:[^"\\]|\\.)*)"\.localized"#
+            pattern: #"(?<!")"((?:[^"\\]|\\.)*)"\.localized"#
+        )
+        let multilineLocalizedPattern = try NSRegularExpression(
+            pattern: #"\"\"\"\n(.*?)\n([ \t]*)\"\"\"\.localized"#,
+            options: [.dotMatchesLineSeparators]
         )
         let nsLocalizedPattern = try NSRegularExpression(
             pattern: #"NSLocalizedString\(\s*"((?:[^"\\]|\\.)*)""#
@@ -316,6 +320,29 @@ final class LocalizationAuditTests: XCTestCase {
                         findings.append("\(relativePath):\(lineIndex + 1) 缺少 string catalog key -> \(key)")
                     }
                 }
+            }
+
+            let fullRange = NSRange(content.startIndex..<content.endIndex, in: content)
+            multilineLocalizedPattern.enumerateMatches(in: content, range: fullRange) { match, _, _ in
+                guard let match,
+                      match.numberOfRanges > 2,
+                      let bodyRange = Range(match.range(at: 1), in: content),
+                      let indentRange = Range(match.range(at: 2), in: content),
+                      let matchStartRange = Range(match.range, in: content) else {
+                    return
+                }
+                let lineNumber = content[..<matchStartRange.lowerBound].filter { $0 == "\n" }.count + 1
+                let rawBody = String(content[bodyRange])
+                if rawBody.contains("\\(") {
+                    findings.append("\(relativePath):\(lineNumber) 禁止对插值后的字符串直接做本地化 -> \(rawBody)")
+                    return
+                }
+                let key = decodeSwiftMultilineStringLiteralContent(
+                    rawBody,
+                    closingIndent: String(content[indentRange])
+                )
+                guard !key.isEmpty, strings[key] == nil else { return }
+                findings.append("\(relativePath):\(lineNumber) 缺少 string catalog key -> \(key)")
             }
         }
 
@@ -633,7 +660,11 @@ final class LocalizationAuditTests: XCTestCase {
 
     private func localizedStringUsages(in sourceFiles: [URL]) throws -> [LocalizedStringUsage] {
         let localizedPattern = try NSRegularExpression(
-            pattern: #""((?:[^"\\]|\\.)*)"\.localized"#
+            pattern: #"(?<!")"((?:[^"\\]|\\.)*)"\.localized"#
+        )
+        let multilineLocalizedPattern = try NSRegularExpression(
+            pattern: #"\"\"\"\n(.*?)\n([ \t]*)\"\"\"\.localized"#,
+            options: [.dotMatchesLineSeparators]
         )
         let nsLocalizedPattern = try NSRegularExpression(
             pattern: #"NSLocalizedString\(\s*"((?:[^"\\]|\\.)*)""#
@@ -672,6 +703,31 @@ final class LocalizationAuditTests: XCTestCase {
                         )
                     }
                 }
+            }
+
+            let fullRange = NSRange(content.startIndex..<content.endIndex, in: content)
+            multilineLocalizedPattern.enumerateMatches(in: content, range: fullRange) { match, _, _ in
+                guard let match,
+                      match.numberOfRanges > 2,
+                      let bodyRange = Range(match.range(at: 1), in: content),
+                      let indentRange = Range(match.range(at: 2), in: content),
+                      let matchStartRange = Range(match.range, in: content) else {
+                    return
+                }
+                let rawBody = String(content[bodyRange])
+                guard !rawBody.isEmpty, !rawBody.contains("\\(") else { return }
+                let lineNumber = content[..<matchStartRange.lowerBound].filter { $0 == "\n" }.count + 1
+                let key = decodeSwiftMultilineStringLiteralContent(
+                    rawBody,
+                    closingIndent: String(content[indentRange])
+                )
+                usages.append(
+                    LocalizedStringUsage(
+                        relativePath: relativePath,
+                        line: lineNumber,
+                        key: key
+                    )
+                )
             }
         }
 
@@ -734,6 +790,18 @@ final class LocalizationAuditTests: XCTestCase {
             .replacingOccurrences(of: "\\t", with: "\t")
             .replacingOccurrences(of: "\\\"", with: "\"")
             .replacingOccurrences(of: "\\\\", with: "\\")
+    }
+
+    private func decodeSwiftMultilineStringLiteralContent(_ rawBody: String, closingIndent: String) -> String {
+        let strippedLines = rawBody.components(separatedBy: "\n").map { line -> String in
+            if line.hasPrefix(closingIndent) {
+                return String(line.dropFirst(closingIndent.count))
+            }
+            return line
+        }
+        let joined = strippedLines.joined(separator: "\n")
+            .replacingOccurrences(of: #"\\\n[ \t]*"#, with: "", options: .regularExpression)
+        return decodeSwiftStringLiteralContent(joined)
     }
 
     private func placeholderSignature(in value: String) -> [String] {

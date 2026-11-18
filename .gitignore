@@ -30,7 +30,6 @@ User_docs/node_modules/
 
 # Other
 *.xcscmblueprint
-AppPorts/Localizable.xcstrings
 .claude/settings.json
 .kilo/
 .momocode/
