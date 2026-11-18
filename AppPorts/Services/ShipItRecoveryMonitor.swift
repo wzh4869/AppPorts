@@ -51,7 +51,7 @@ final class ShipItRecoveryMonitor {
         started = true
         events = ShipItUpdateEventMonitor(caches: recovery.cacheDirectory, latency: eventLatency,
             watchedFiles: [recovery.records.storageURL]) { [weak self] in
-            Task { @MainActor in self?.requestCheck() }
+            Task { @MainActor [weak self] in self?.requestCheck() }
         }
         operationState.$recordsRevision.dropFirst().sink { [weak self] _ in
             guard let self, !self.recovering else { return }
@@ -160,7 +160,7 @@ final class ShipItRecoveryMonitor {
 
     private func reporter(_ candidate: ShipItUpdateRecovery.Candidate) -> ShipItUpdateRecovery.Reporter {
         { [weak self] step in
-            await MainActor.run { self?.display(candidate, status: .running, message: step.message) }
+            await MainActor.run { [weak self] in self?.display(candidate, status: .running, message: step.message) }
         }
     }
 
