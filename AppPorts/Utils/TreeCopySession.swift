@@ -1049,9 +1049,14 @@ actor TreeCopySession {
         // Workers pull the next file as soon as they finish; a slow file no
         // longer stalls every subsequent group of four. Keep enumeration order
         // in the result slots and keep scratch buffers private to each worker.
+        // Each worker uses an independent serial queue (backed by Darwin's
+        // overcommit root pool) rather than DispatchQueue.global(qos: .userInitiated).
+        // Calling captureBatch from NCPU Swift Concurrency cooperative threads
+        // simultaneously blocks the non-overcommit .userInitiated pool in group.wait
+        // and would otherwise starve global-queue workers into a livelock.
         for _ in 0..<min(workerCount, reads.count) {
             group.enter()
-            DispatchQueue.global(qos: .userInitiated).async {
+            DispatchQueue(label: "com.shimoko.AppPorts.scan-read", qos: .userInitiated).async {
                 defer { group.leave() }
                 let hasher = FileContentHasher()
                 DataTransferSession.$current.withValue(session) {

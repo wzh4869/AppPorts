@@ -214,6 +214,32 @@ final class TreeCopySessionTests: XCTestCase {
         XCTAssertNil(DataTransferSession.progress)
     }
 
+    func testConcurrentSnapshotsAcrossCooperativePoolDoNotStarveBatchWorkers() async throws {
+        let w = try workspace()
+        defer { cleanup(w.root) }
+        for index in 0..<8 {
+            try Data(repeating: UInt8(index), count: 8192).write(to: w.source.appendingPathComponent("file-\(index)"))
+        }
+        let expected = try TreeCopySession.$concurrentScanReads.withValue(1) {
+            try TreeCopySession.snapshot(at: w.source)
+        }
+        let width = max(2, ProcessInfo.processInfo.activeProcessorCount)
+        let barrier = CooperativePoolBarrier(parties: width)
+        try await withThrowingTaskGroup(of: TreeCopySnapshot.self) { group in
+            for _ in 0..<width {
+                group.addTask(priority: .userInitiated) {
+                    barrier.arriveAndWait()
+                    return try TreeCopySession.$concurrentScanReads.withValue(4) {
+                        try TreeCopySession.snapshot(at: w.source)
+                    }
+                }
+            }
+            for try await snapshot in group {
+                XCTAssertEqual(snapshot, expected)
+            }
+        }
+    }
+
     func testParallelScanBridgesTaskCancellationAndIndependentRetryStillWorks() async throws {
         let w = try workspace()
         defer { cleanup(w.root) }
@@ -1365,5 +1391,28 @@ private final class SmallCopyProbe: @unchecked Sendable {
         condition.unlock()
         if failFirst, number == 1 { errno = EIO; return -1 }
         return lseek(fd, offset, kind)
+    }
+}
+
+private final class CooperativePoolBarrier: @unchecked Sendable {
+    private let condition = NSCondition()
+    private let parties: Int
+    private var arrived = 0
+
+    init(parties: Int) {
+        self.parties = parties
+    }
+
+    func arriveAndWait() {
+        condition.lock()
+        arrived += 1
+        if arrived >= parties {
+            condition.broadcast()
+            condition.unlock()
+            return
+        }
+        let deadline = Date().addingTimeInterval(2)
+        while arrived < parties, condition.wait(until: deadline) {}
+        condition.unlock()
     }
 }
