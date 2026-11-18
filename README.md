@@ -59,26 +59,27 @@ If a **different app stops opening after migration**, check the drive connection
 
 | Readiness Check | Main Interface |
 |:---:|:---:|
-| ![AppPorts 1.9.0 readiness check](assets/screenshots/en/appports-readiness.png) | ![AppPorts 1.9.0 English interface](assets/screenshots/en/appports-main.png) |
+| ![AppPorts readiness check](assets/screenshots/en/appports-readiness.png) | ![AppPorts English interface](assets/screenshots/en/appports-main.png) |
 
 | App Data  | Language Switching (Chinese UI) |
 |:---:|:---:|
-| ![AppPorts 1.9.0 app data directories](assets/screenshots/en/appports-app-data.png) | ![AppPorts 1.9.0 Chinese interface](assets/screenshots/en/appports-chinese.png) |
+| ![AppPorts app data directories](assets/screenshots/en/appports-app-data.png) | ![AppPorts Chinese interface](assets/screenshots/en/appports-chinese.png) |
 
 ## 🚀 Key Features
 
-* **📦 Arrow-Free Migration**: Move large apps to an external drive and keep lightweight local launchers with familiar icons. View local and external apps side by side, and synchronize existing Dock shortcuts when migrating or restoring.
-* **🛡️ Auto-Update Protection**: Detect Sparkle, Electron, and other update mechanisms. Offer **locked migration** for suitable apps to protect external copies. Unlock before updating; network volumes do not use these local file locks.
-* **✍️ Code Signature Management**: Check signature status and offer repair steps for apps marked “Signature replaced.” Save complete original-app backups and restore original signatures when supported. Default mode refuses to re-sign sandboxed apps.
-* **🔴 Orphaned Link Detection**: Mark unavailable targets so you can check the drive connection, locate missing apps, or clean up leftover launchers.
-* **🍎 macOS 15.1+ App Store Support**: Work with native external installation and in-place updates for eligible App Store apps, subject to the system's location and format requirements.
-* **↩️ Restore Anytime**: Connect the original drive and restore apps or data when your Mac has enough space. Check running apps and name conflicts before operations; attempt recovery on failure, retaining copies and reporting their locations when recovery cannot safely finish.
-* **📊 Data Directory Management**: Browse associated app data in grouped trees, search and sort directories, and choose whether to show zero-byte folders. Also manage tool directories such as `~/.npm` and folders you select yourself.
-* **💾 APFS Container Migration**: Mount dedicated external APFS volumes at the original paths of suitable Containers and Group Containers data, preserving app signatures. Check for unencrypted APFS storage, connectivity, and available space before migration; mount, unmount, restore, or reconnect data afterward.
+* **📦 Arrow-Free Migration**: Move large apps to an external drive (or an **APFS App Library Image** on a NAS/SMB share) and keep lightweight local launchers with familiar icons. Filter and sort local and external apps, synchronize Dock shortcuts, and exclude external copies from duplicate Spotlight results via `AppPorts.noindex`.
+* **🛡️ Unlocked Updates & Application Guardian**: Detect Sparkle, Electron, and other self-updaters. Default to **Unlocked Migration** so in-app updates can continue normally, pair with the optional **Application update guardian** to recover failed ShipIt updates (with verified rollback in **Task Center**), or still opt into **Locked Migration**.
+* **✍️ Code Signature Management**: Check signature status and offer repair steps for apps marked “Signature replaced.” Save complete original-app backups in `AppPorts Backups` and restore original signatures when supported. Default mode refuses to re-sign sandboxed apps.
+* **🔴 Orphaned Link Detection & Force Unlink**: Mark unavailable targets so you can check the drive connection, relink missing entries, or remove local launchers; data symlinks also offer **Force Unlink** offline without deleting external originals.
+* **🍎 macOS 15.1+ App Store Support**: Work alongside macOS native App Store external installation and migrate App Store apps of **any size** (including under 1 GB), with dismissible setup guidance.
+* **↩️ Task Center & Recovery**: Queue, pause, resume, cancel, or run migrations in the background inside **Task Center** with resource locking; recover cleanly from interrupted operations, inspect retained old copies, authorize root-owned cleanup, or use verified **Roll Back Update**.
+* **📊 Data Directory & WeChat Split Migration**: Browse associated app data in grouped trees, manage developer tools (`~/.npm`, `~/.gradle`, etc.) and custom folders, and choose **Whole migration**, **Split migration (`msg + business`)**, or **Large files & videos only (`msg/file + msg/video`)** for WeChat accounts.
+* **💾 Encrypted APFS & App Library Images**: Migrate suitable Containers and Group Containers onto dedicated external **APFS volumes (including encrypted APFS** with optional Keychain password storage), or store applications on SMB/non-APFS media inside an auto-recovered **`.sparsebundle` APFS image**; eject whole physical disks or unmount individual images/volumes cleanly with persistent auto-mount pause controls.
+* **🔄 In-App Updates**: Check release notes inside AppPorts and download verified updates from GitHub Releases or the official China mirror with SHA-256 and signature checks.
 * **📐 Clearer Space Totals**: Distinguish local data that can be moved from data already migrated. Avoid counting parent and child directories twice, and flag incomplete totals when reads fail.
-* **🔎 Readiness Checks**: Check Full Disk Access, app management, and external storage. Show the running app's version and path to help verify which copy has permission.
-* **🎨 Modern UI**: Native SwiftUI with Dark Mode, animated directory expansion, and a resizable information panel.
-* **♿️ Accessibility**: VoiceOver labels, keyboard shortcuts, and a Braille language option.
+* **🔎 Readiness Checks**: Check Full Disk Access, app management, and external storage, with floating drag-and-drop guidance and clear app identity verification.
+* **🎨 Modern UI**: Native SwiftUI with a resizable sidebar navigation, Dark Mode, and animated directory expansion.
+* **♿️ Accessibility**: VoiceOver labels, keyboard shortcuts, Reduced Motion support, and a Braille language option.
 * **🌍 Global Ready**: 20+ languages including English, Chinese, Japanese, Korean, German, French, Spanish, Italian, Portuguese, Russian, Arabic, Hindi, Vietnamese, Thai, Turkish, Dutch, Polish, Indonesian, Esperanto, Braille, and 👽 Martian.
 
 ## 🏆 Why AppPorts?
@@ -102,12 +103,12 @@ AppPorts selects a migration method based on the app type, update behavior, and 
 
 | App Type | Strategy | Default | Notes |
 | :--- | :--- | :--- | :--- |
-| **Native Mac apps** | Stub Portal | ✅ Enabled | Lightweight local entry, full app in external library |
-| **Self-updating apps** (Sparkle, Electron, etc.) | Stub Portal + lock where applicable | Based on detection and migration options | Unlock before updating; local file locks are skipped on network volumes |
+| **Native Mac apps** | Stub Portal | ✅ Enabled | Lightweight local entry, full app in external library or APFS image |
+| **Self-updating apps** (Sparkle, Electron, etc.) | Stub Portal + Unlocked (default) or Locked | ✅ Unlocked default | Works with optional Application update guardian; Locked Migration also available |
 | **iPhone/iPad apps** | iOS Stub Portal | ✅ Available automatically on macOS 15.1+; setting on older systems | Extracts the icon; running the app still depends on hardware, OS, and app support |
-| **Mac App Store apps** | Integrates with native external installation | ✅ Available automatically on macOS 15.1+; setting on older systems | Configure native installation in App Store; older systems may require migrating again after updates |
+| **Mac App Store apps** | Integrates with native external installation | ✅ Available automatically on macOS 15.1+; setting on older systems | Migrates App Store apps of any size (including under 1 GB); macOS 15.1+ can share App Store's external disk setting |
 | **App suites** (folders containing multiple apps) | Folder mirror | ✅ Enabled | Internal apps use launchers; other contents link to external copies |
-| **Container data** (Containers / Group Containers) | APFS mount migration | ✅ Default method | Currently requires unencrypted external APFS storage; preserves paths and signatures |
+| **Container data** (Containers / Group Containers) | APFS mount migration | ✅ Default method | Supports unencrypted or encrypted external APFS storage and APFS images; preserves paths and signatures |
 | **Ordinary data, tool directories, and custom folders** | Symbolic links | Where suitable | Original paths link to external data |
 | **System apps** | Blocked | ❌ | Protected from migration |
 | **Running apps** | Blocked | ❌ | Quit the app first |
@@ -115,15 +116,15 @@ AppPorts selects a migration method based on the app type, update behavior, and 
 
 Classic data migration mode is off by default. It retains older container symlink and sandboxed-app re-signing behavior, with compatibility depending on the app and macOS version. APFS mount migration is the recommended default; keep container data locally if the drive does not meet its requirements.
 
-**Before upgrading to macOS 27, update and open AppPorts once** so it can update any installed background re-signing script. On macOS 27 and later, login re-signing is disabled and old tasks are cleaned up; retry from Settings if cleanup fails. For affected apps, follow the [repair guide](https://docs-appports.shimoko.com/en/docs/macos-27): restore container data migrated through older symbolic links first, then restore the original signature or reinstall from an official source. Updating AppPorts does not automatically convert old migrations or restore replaced signatures.
+**Background automatic re-signing at login is retired across all macOS versions** — open AppPorts once after updating so it disables and cleans up any legacy login task (retry in Settings if cleanup reports incomplete). Before upgrading to macOS 27, follow the [repair guide](https://docs-appports.shimoko.com/en/docs/macos-27) if you have older symlink container migrations or replaced signatures: restore container data first, then restore the original signature or reinstall from an official source. Updating AppPorts does not automatically convert old migrations or restore replaced signatures.
 
 ## 🛠️ Installation
 
 ### System Requirements
 
 * macOS 12.0 (Monterey) or newer, on Apple Silicon or Intel Macs.
-* A stable external SSD with enough free space is recommended. Format requirements depend on the migration method.
-* Container mount migration currently requires **unencrypted APFS** external storage. Older systems may require administrator authorization and opening AppPorts to mount data after login.
+* A stable external SSD with enough free space is recommended, or a mounted SMB share / drive hosted **APFS App Library Image (`.sparsebundle`)**.
+* Container mount migration requires **APFS external storage (unencrypted or encrypted APFS supported)**; encrypted volumes support optional login Keychain password storage or manual unlocking. Older systems may require administrator authorization for mount tasks.
 
 ### Download and Installation
 
@@ -150,6 +151,11 @@ Use the readiness checks to configure **Full Disk Access** for protected app dat
 git clone https://github.com/wzh4869/AppPorts.git
 ```
 Open the project with **Xcode** and build.
+
+## 👥 Community
+
+* [QQ Group (384270587)](https://qm.qq.com/q/BhhRJ2rDz4)
+* *If you're outside mainland China and would like an English community channel (Discord/Matrix/Telegram), feel free to open an issue!*
 
 ## 🤝 Contributing
 

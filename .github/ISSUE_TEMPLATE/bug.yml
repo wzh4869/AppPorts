@@ -60,6 +60,9 @@ body:
       label: "AppPorts 版本 / AppPorts version"
       description: "在“关于 AppPorts”查看；其他版本可在下方补充。 / Check About AppPorts; add unlisted versions below."
       options:
+        - "2.3.0"
+        - "2.2.0"
+        - "2.1.0"
         - "2.0.0"
         - "1.9.3"
         - "1.9.2"
@@ -76,7 +79,7 @@ body:
     attributes:
       label: "Build 号（选填） / Build number (optional)"
       description: "“关于 AppPorts”中版本后的括号数字，找不到可留空。 / The number in parentheses after the version in About AppPorts; leave blank if unknown."
-      placeholder: "例如 50 / e.g. 50"
+      placeholder: "例如 74 / e.g. 74"
     validations:
       required: false
 

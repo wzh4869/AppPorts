@@ -12,7 +12,7 @@
 
 ## 1. 起點：遷移成功，為什麼應用打不開 {#starting-point}
 
-[公開問題 #65](https://github.com/wzh4869/AppPorts/issues/65)報告了企業微信遷移部分資料後啟動崩潰。AppPorts 的操作日誌記錄了複製和掛載成功，這隻能說明遷移動作完成，不能證明原應用接受了新的目錄佈局。
+[公開問題 #65](https://github.com/wzh4869/AppPorts/issues/65)報告了企業微信遷移部分資料後啟動崩潰。AppPorts 的操作日誌記錄了複製和掛載成功，這只能說明遷移動作完成，不能證明原應用接受了新的目錄佈局。
 
 問題報告與復現實驗的環境並不完全相同：
 
@@ -152,7 +152,7 @@ AppPorts 當前保護**普通容器根、`Data` 本身，以及下面 11 個精�
 
 還有兩項獨立規則：
 
-- **共享容器根**：`~/Library/Group Containers/组标识` 自身受保護。共享容器有獨立佈局和授權關係，不能直接把上表套在它的根上；下級目錄仍需其他檢查。
+- **共享容器根**：`~/Library/Group Containers/組標識` 自身受保護。共享容器有獨立佈局和授權關係，不能直接把上表套在它的根上；下級目錄仍需其他檢查。
 - **微信相容範圍**：對 `com.tencent.xinWeChat`，當前路徑策略只放行 `Data/Documents/xwechat_files` 下的直接帳戶子目錄，以及 `Data/Library/Application Support/com.tencent.xinWeChat`。帳戶名稱不影響這裡的解釋，本文不展示真實標識。
 
 微信規則比普通結構表更保守。早期實驗曾在更高的 `xwechat_files` 層級完成訪問，因此不能把它的全部限制都說成“macOS 明文禁止”。這是 AppPorts 當前選定的相容範圍；是否可以實際執行，還要通過卷狀態、佔用和父子路徑等檢查。[路徑策略原始碼](https://github.com/wzh4869/AppPorts/blob/468c7889f367281543c96e9c8f40515c37b65403/AppPorts/Models/DataPathPolicy.swift)

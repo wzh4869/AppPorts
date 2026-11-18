@@ -28,7 +28,7 @@
 
 ## App Store 與非原生應用 {#app-store}
 
-macOS 15.1 及以上顯示「App Store 應用程式外部安装」卡片，AppPorts 會唯讀核對系統 App Store 的外接安裝設定是否與目前所選外接磁碟一致：
+macOS 15.1 及以上顯示「App Store 應用程式外部安裝」卡片，AppPorts 會唯讀核對系統 App Store 的外接安裝設定是否與目前所選外接磁碟一致：
 
 - 一致時顯示「已設定」及實際 `Applications` 目錄；不一致或尚未開啟時，提供「開啟 App Store 設定」入口。
 - App Store 自身只對新下載大於 1 GB 的大型應用使用該設定並管理後續更新；**AppPorts 遷移不受 1 GB 限制，任意大小（包括小於 1 GB）的 App Store 應用都可由 AppPorts 遷入該目錄**。

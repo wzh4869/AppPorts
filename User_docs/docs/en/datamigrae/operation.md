@@ -56,10 +56,11 @@ Mount migration does not replace the app's signature. System authorization and c
 
 Choose migration for a recognized WeChat account directory, then select a mode in the account migration panel:
 
-- Whole migration moves the selected account's entire directory.
-- Split migration moves media files only, keeping databases and configuration local. The confirmation shows media size and data retained locally separately.
+- **Whole migration** moves the selected account's entire directory.
+- **Split migration (`msg + business`)** moves media directories while keeping databases (`db_storage`) and configuration local. The confirmation displays moved media size and locally retained size separately.
+- **Large files & videos only (`msg/file + msg/video`)** moves only received files and videos while leaving databases and `msg/attach` chat image thumbnails on internal storage, freeing large cold-storage space while keeping everyday messages and thumbnails local.
 
-Wait for a complete size calculation before starting. Fully restore before changing between modes. Other WeChat data is unaffected by this account operation. When the drive is offline after split migration, media entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether text messages remain readable still depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
+Wait for a complete size calculation before starting. All three modes are mutually exclusive: fully restore the active group before changing modes. Other WeChat accounts remain unaffected. When the drive is offline after split migration, moved `msg`, `msg/file` or `msg/video` entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether existing messages remain readable depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
 
 ## Read migration progress {#progress}
 

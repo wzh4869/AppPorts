@@ -13,7 +13,7 @@ Decide whether you want to change the **storage location** or the **access entry
 | A data volume is online but not attached at the original directory | Mount / Resume automatic mounting | Data stays external; access at the original path and automatic remounting resume. |
 | Temporarily detach a single mounted data volume | Unmount | Data stays external; a read-only empty directory remains locally and automatic mounting stays paused. |
 | Drive is unavailable; remove only a data symlink and start with an empty folder | Link Details → Force Unlink | An empty folder is created locally while external originals remain untouched. |
-| Remove only an app's local entry | Trash button in the local list | The real external app is retained. |
+| Remove only an app's local entry | Row `…` (More Actions) or context menu in Local Apps → Delete Local Entry | The real external app is retained. |
 
 ## Move an app back locally {#apps}
 
@@ -41,7 +41,7 @@ These actions do not move data back internally. If new content has appeared at t
 
 ## Unlink an application or force-unlink data {#unlink}
 
-In the local app list, click the linked app's trash button. Its tooltip is “Disconnect this link and delete files”; an orphaned link also offers Delete Orphaned Link in its context menu. This removes the local entry managed by AppPorts while retaining the real external app. **It does not restore a data directory.** You can use Link Back to Local again later.
+In the local app list, open the linked app row's `…` (More Actions) menu or context menu and choose Delete Local Entry; an orphaned link also offers Delete Orphaned Link. This removes the local entry managed by AppPorts while retaining the real external app. **It does not restore a data directory.** You can use Link Back to Local again later.
 
 For a tool directory or ordinary data directory whose external drive is unavailable, if you do not need old contents back and only want the app to generate fresh local data, choose Force Unlink inside Link Details. After confirmation, AppPorts removes the local symlink, clears the old link record and creates an empty directory at the original path without requiring the drive online or deleting external originals. Newly created local files will not merge automatically with old external data later.
 

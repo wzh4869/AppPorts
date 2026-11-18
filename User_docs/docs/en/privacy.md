@@ -65,7 +65,7 @@ The Software makes network requests only in these circumstances. Request content
 - In-app update downloads: when you explicitly choose Update via China mirror or Update via GitHub in an update prompt, the Software downloads the release package from the official download mirror (`file.shimoko.com`) or the corresponding GitHub Release asset URL and verifies its hash and code signature locally.
 - Information display: opening “About AppPorts” requests GitHub contributors and the documentation site's sponsor list at `docs-appports.shimoko.com/sponsors.json`.
 
-These requests use a fixed User-Agent, AppPorts or AppPorts-UpdateChecker. HTTP inherently allows recipient servers to see your IP address and request time. Recipients include GitHub and the servers of this project's official website, download mirror, and documentation site; their information processing follows their respective privacy policies.
+These requests use a fixed User-Agent: `AppPorts`, `AppPorts-UpdateChecker`, or `AppPorts-Updater`. HTTP inherently allows recipient servers to see your IP address and request time. Recipients include GitHub and the servers of this project's official website, download mirror, and documentation site; their information processing follows their respective privacy policies.
 
 Opening the website, documentation, repository, sponsor page, or other external links, or manually downloading releases through web links, is handled by your default browser rather than performed independently by the Software.
 
@@ -81,6 +81,7 @@ The Software stores these files and settings on your local devices without provi
 - ~/Library/Application Support/AppPorts/contributors-cache.json: contributor cache to reduce repeated requests.
 - ~/Library/Application Support/AppPorts/sponsors-cache.json: sponsor cache for offline display.
 - Migration, mount, signing, and recovery records under ~/Library/Application Support/AppPorts/ (including update recovery receipts, rollback intents, and per-request task status files under `shipit-recovery/`): app identity, paths, volume identifiers, and operation states needed for reconnection, signature restoration, background update-guardian status synchronization, and unfinished operations.
+- `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` and `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`: user LaunchAgent definitions written only when you enable the corresponding background agent (automatic container/image mounting or Application update guardian) to run local recovery at login or when external storage mounts; disabling an agent in Settings removes it.
 - AppPorts Backups at a suitable external drive's root: since 1.9.1 build 31, verified official originals are saved automatically before manual re-signing, with README.txt. They restore app contents and signatures; they are not backups of chats, documents, or other personal data.
 - Preference files under ~/Library/Preferences: interface language, external and custom scan paths, app library image location records (SMB share URL without credentials, or backing volume and internal APFS volume identifiers), background-agent switches, guidance dismissal state, and feature switches.
 
@@ -101,8 +102,9 @@ You may delete caches, logs, and preferences. Before deleting migration or recov
 The Software may use these permissions:
 
 - Full Disk Access to read and write relevant /Applications and ~/Library directories. You must enable this manually in System Settings → Privacy & Security. The Software cannot grant it to itself or bypass it.
-- Automation (Apple Events) to move or delete App Store apps through Finder. macOS asks for consent. You may refuse or revoke it in System Settings → Privacy & Security → Automation.
-- Administrator privileges only when re-signing or repairing ownership of root-owned app installations. Your password goes directly to macOS through its system dialog; the Software does not read, record, or store it.
+- App Management permission, prompted by macOS when updating or modifying protected application bundles during migration, portal creation, restoration, or cleanup of old app copies. You can manage this in System Settings → Privacy & Security → App Management.
+- Automation (Apple Events) when operations use Finder to move or delete App Store apps or request disk ejection. macOS asks for consent. You may refuse or revoke it in System Settings → Privacy & Security → Automation.
+- Administrator privileges when moving, restoring, re-signing, or repairing ownership of root-owned app installations, cleaning up root-owned retained old data copies during manual retry, or when macOS requires administrator authorization for specific volume mount or unmount operations. Your password goes directly to macOS through its system dialog; the Software does not read, record, or store it.
 
 The Software requests no Contacts, Calendar, Photos, microphone, camera, location, Bluetooth, or similar permissions and uses only its local login Keychain items when you choose to save encrypted data-volume passwords.
 
@@ -110,9 +112,9 @@ App Sandbox is disabled because the Software must read and write apps and data a
 
 ## Article 10. Cookies and similar technologies {#section-10}
 
-The official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They do not use cookies for analytics, third-party advertising or social plugins, or cross-site tracking pixels.
+The official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They do not use cookies for analytics, third-party advertising or social plugins, or cross-site tracking pixels; the open-source documentation site repository and exported site bundle contain no third-party analytics or tracking scripts.
 
-Both sites use the open-source Umami tool to count visits and improve content, under these rules:
+Where the official website uses cookie-free aggregate page-view counting (such as Umami) to understand usage and improve content, it applies these rules:
 
 - No cookies, personally identifying collection, or cross-site tracking.
 - Raw IP addresses are not stored. They are used at request time only to infer an approximate region and deduplicate visits.

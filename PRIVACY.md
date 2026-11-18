@@ -6,8 +6,8 @@
 
 # AppPorts 隐私政策
 
-**更新日期：** 2026 年 9 月 17 日
-**生效日期：** 2026 年 9 月 17 日
+**更新日期：** 2026 年 11 月 18 日
+**生效日期：** 2026 年 11 月 18 日
 **适用版本：** AppPorts 1.8.1 及后续版本
 
 AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用程序迁移工具。本隐私政策（以下称“本政策”）阐释我们如何收集、使用、共享与保护您的个人信息，以及您就此享有的权利。
@@ -47,7 +47,7 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 - 本软件不集成任何广告或消息推送类软件开发工具包，不进行个性化广告投放；
 - 本软件不生成、不读取任何设备标识符（如 IDFA、IDFV、硬件序列号、硬件 UUID）；
 - 本软件不申请、不获取通讯录、日历、提醒事项、照片、麦克风、摄像头、定位、蓝牙、健康等任何系统权限；
-- 本软件不访问系统钥匙串；
+- 本软件仅在您选择保存加密 APFS 数据卷密码时读写本机登录钥匙串中的对应项目（`com.appports.encrypted-apfs-volume`），不读取其他应用的密码；
 - 本软件不为统计分析或广告目的设置、读取 Cookie。
 
 ## 第五条  本软件在本机读取的信息
@@ -57,31 +57,42 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 - 应用程序目录（如 `/Applications`）中的应用程序包、图标及其代码签名信息；
 - `~/Library` 目录下与应用程序相关的数据目录，用于识别可迁移的数据并计算其占用空间；
 - 您自行添加的自定义扫描路径；
-- 您指定的外部存储介质路径，用作迁移目标位置及链接状态校验；
+- 您指定的外部存储介质路径或 APFS 应用库映像路径，用作迁移目标位置及链接状态校验；
+- 已连接存储卷的标识、连接类型、可写状态和剩余空间，用于核对迁移位置，并在需要保存签名原包时自动选择合适外盘；
 - 当前正在运行的应用程序列表，用于在迁移前确认目标应用程序未处于运行状态，以避免数据损坏；
+- 系统 App Store 外置安装偏好（`com.apple.appstored` 中的目标卷设置，仅只读核对是否与所选外置存储一致），以及已迁移应用在本机产生的 ShipIt 更新状态与日志（仅在启用“应用更新守护”时用于识别明确失败的更新并执行恢复或清理重试记录）；
 - 设备基本运行信息，包括 macOS 版本、处理器核心数、物理内存容量以及外部存储介质读写速度，仅用于生成本地日志与迁移性能报告。
 
 ## 第六条  网络访问与信息接收方
 
 本软件仅在下列情形下发起网络请求，且请求内容不包含您的任何个人信息，亦不包含账号标识、设备标识、文件路径及文件名称：
 
-- **版本检查**：本软件在启动时进行一次静默版本检查，或依您的操作发起检查，请求地址为 `appports.shimoko.com/latest.json`；同时查询 GitHub 平台上的版本信息（`api.github.com`），在该接口不可用时回退至 `github.com` 提供的 `releases.atom` 地址。
+- **版本检查**：本软件在启动时进行一次静默版本检查，或依您的操作发起检查，请求地址为用户文档站的 `docs-appports.shimoko.com/latest.json`（及官方网站对应发布信息），并按需要查询 GitHub 平台上的版本信息（`api.github.com`），在该接口不可用时回退至 `github.com` 提供的 `releases.atom` 地址；
+- **应用内更新下载**：当您在更新提示中主动点击“国内更新”或“GitHub 更新”时，本软件会从官方下载源（`file.shimoko.com`）或对应 GitHub Release 附件地址下载新版本安装包，并在本机完成 SHA-256 哈希与代码签名核验；
 - **信息展示**：在您打开“关于 AppPorts”窗口时，本软件请求 GitHub 平台的贡献者名单，以及用户文档站的赞助者名单（`docs-appports.shimoko.com/sponsors.json`）。
 
-上述请求仅携带固定的 User-Agent 标识（`AppPorts` 或 `AppPorts-UpdateChecker`）。基于 HTTP 协议的固有属性，接收方服务器可获取您的 IP 地址与请求时间。前述接收方为 GitHub 平台及本项目用户文档站的服务器，其个人信息处理行为分别适用其各自的隐私政策。
+上述请求仅携带固定的 User-Agent 标识（`AppPorts`、`AppPorts-UpdateChecker` 或 `AppPorts-Updater`）。基于 HTTP 协议的固有属性，接收方服务器可获取您的 IP 地址与请求时间。前述接收方为 GitHub 平台及本项目官方网站、下载源与用户文档站的服务器，其个人信息处理行为分别适用其各自的隐私政策。
 
-下列行为不由本软件自行实施，而是交由您的默认浏览器完成：下载新版本；打开官方网站、用户文档、代码仓库及赞助页等外部链接。
+打开官方网站、用户文档、代码仓库、赞助页等外部链接，或通过网页下载链接手动获取安装包时，不由本软件自行实施，而是交由您的默认浏览器完成。
 
 ## 第七条  信息的本地存储
 
 本软件在您的设备本地存储下列文件与配置，相关内容不涉及个人信息的对外提供：
 
 - `~/Library/Application Support/AppPorts/AppPorts_Log.txt`：操作日志与诊断信息；
-- `~/Library/Application Support/AppPorts/contributors-cache.json`：贡献者名单缓存，用于减少重复的网络请求；
-- `~/Library/Application Support/AppPorts/sponsors-cache.json`：赞助者名单缓存，用于离线状态下展示；
-- `~/Library/Preferences` 目录下的偏好设置文件：界面语言、外部存储路径、自定义扫描路径及各项功能开关。
+- 本机登录钥匙串：仅在您选择保存时存储对应加密 APFS 数据卷的密码（`com.appports.encrypted-apfs-volume`），不同步；密码不写入日志或迁移记录，未保存时仅在进程内临时使用；
+- 应用和工具目录大小缓存、应用搜索位置记录（`app-search-records.json`）：用于显示大小、缓存时间及维护应用库和本地入口，不上传文件清单；
+- `migration-task-history.json`：任务名称、类别、相关路径、时间和展示结果；仅用于任务历史展示，不是自动重新执行的队列；
+- `disk-ejection-pauses.plist` 与 `launch-locks`：分别保存主动弹盘、卸载应用库映像或卸载单个数据卷后的自动挂载暂停信息，以及供本机进程协调迁移期间启动保护的锁文件，不会上传；
+- `~/Library/Application Support/AppPorts/contributors-cache.json` 与 `sponsors-cache.json`：贡献者与赞助者名单缓存，用于减少重复网络请求及离线展示；
+- `~/Library/Application Support/AppPorts/` 下的迁移、挂载、签名与恢复记录（含日志、事务 journal 与 `shipit-recovery/` 下的更新恢复收据、回退意图与单次更新状态文件）：保存应用身份、相关路径、卷标识及操作状态，用于接回数据、恢复签名、同步后台更新守护结果和继续未完成的操作；
+- `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` 与 `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`：仅当您启用对应“后台代理”（容器数据与映像自动挂载或应用更新守护）时按需写入的用户级启动代理定义，用于在登录或外置存储挂载事件发生时于本机执行自动恢复，可随时在设置中关闭移除；
+- 外盘根目录的 `AppPorts Backups` 文件夹：自 1.9.1 build 31 起，保存手动重签前经核对的官方应用原包，内附 `README.txt`；这些原包用于恢复应用内容和签名，不是聊天记录、文档等个人数据的备份；
+- `~/Library/Preferences` 目录下的偏好设置文件：界面语言、外部存储路径、应用库映像位置记录（SMB 共享地址不含密码，或底层卷与映像内 APFS 卷标识）、自定义扫描路径、后台代理开关、引导提醒状态及各项功能开关。
 
-您可以随时删除上述文件及本软件，以清除全部本地数据。
+重签过程中还会在真实应用旁建立临时工作副本；仍有恢复价值的旧内盘原包，会在满足条件并完成外盘复制核验后迁出。原包、索引和上述操作记录均保存在本地存储设备，不会因保存或自动维护而上传。
+
+您可以删除缓存、日志、配置和启动代理；在删除迁移或恢复记录前，请先通过本软件完成相关还原与收尾，避免丢失数据接回或签名恢复所需的信息。卸载本软件不会自动还原已迁移的数据，也不会自动删除外盘上的应用、数据或签名原包。
 
 ## 第八条  诊断包
 
@@ -96,23 +107,24 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 为实现上述功能，本软件可能涉及下列系统权限：
 
 - **完全磁盘访问权限**：用于读写 `/Applications` 及 `~/Library` 下的相关目录。该权限需由您在“系统设置 - 隐私与安全性”中手动开启，本软件无法自行申请，亦无法绕过该权限限制。
-- **自动化权限（Apple 事件）**：在迁移 App Store 应用程序时，本软件通过 Finder 完成移动或删除操作。macOS 将就此向您征求同意，您有权拒绝，并可随时在“系统设置 - 隐私与安全性 - 自动化”中关闭该权限。
-- **管理员权限**：仅在您对归属 root 用户安装的应用程序执行重新签名或修复所有权时触发。您输入的管理员密码由 macOS 系统对话框直接提交至操作系统，本软件不读取、不记录、不存储该密码。
+- **App 管理权限**：在 macOS 系统机制要求更新或修改受保护应用包内容时触发，用于在迁移、创建本地入口、恢复或清理旧应用副本时完成应用目录写入。您可在“系统设置 - 隐私与安全性 - App 管理”中管理授权。
+- **自动化权限（Apple 事件）**：在特定场景需要通过 Finder 协助移动或清理应用，或请求将外置磁盘弹出时，macOS 将向您征求同意。您有权拒绝，并可随时在“系统设置 - 隐私与安全性 - 自动化”中关闭该权限。
+- **管理员权限**：在对归属 root 用户安装的应用执行移动、恢复、重签或修复所有权，在手工重试时清理归属 root 的保留数据旧副本，或系统要求以管理员身份完成特定磁盘挂载/卸载操作时触发。您输入的管理员密码由 macOS 系统对话框直接提交至操作系统，本软件不读取、不记录、不存储该密码。
 
-本软件未申请通讯录、日历、照片、麦克风、摄像头、定位、蓝牙等任何权限，亦不访问系统钥匙串。
+本软件未申请通讯录、日历、照片、麦克风、摄像头、定位、蓝牙等任何权限，仅在您选择保存加密数据卷密码时使用本机登录钥匙串中的对应项目。
 
 本软件未启用 App Sandbox（因需跨磁盘读写应用程序与数据目录），但已启用 Hardened Runtime。发行版本未经 Apple 公证，首次运行时您可能需要在“系统设置 - 隐私与安全性”中手动允许。
 
 ## 第十条  Cookie 与同类技术
 
-我们的官方网站（appports.shimoko.com）与用户文档站（docs-appports.shimoko.com）均为静态站点，不使用 Cookie 进行统计分析，不包含第三方广告或社交插件，也不设置跨站跟踪像素。
+我们的官方网站（appports.shimoko.com）与用户文档站（docs-appports.shimoko.com）均为静态站点，不使用 Cookie 进行统计分析，不包含第三方广告或社交插件，也不设置跨站跟踪像素；开源用户文档站代码本身亦未内嵌第三方统计脚本。
 
-两个站点均使用开源统计工具 Umami 统计页面访问量，以便了解各页面的使用情况并改进内容，其处理规则如下：
+如官方网站使用开源、无 Cookie 的页面汇总统计工具（如 Umami）来了解页面访问概况并改进内容，其处理规则如下：
 
 - 不使用 Cookie，不采集可识别您个人身份的信息，不进行跨站追踪；
 - 不存储您的原始 IP 地址，该地址仅在请求发生时用于判断粗略地区并对访问去重；
 - 仅记录页面访问量、来源站点、浏览器与操作系统类型、粗略地区等汇总数据；
-- 您可以随时通过浏览器的内容拦截扩展或网络过滤器屏蔽该脚本，此举不影响页面的正常访问与阅读。
+- 您可以随时通过浏览器的内容拦截扩展或网络过滤器屏蔽统计请求，此举不影响页面的正常访问与阅读。
 
 若您所在国家或地区的法律将 IP 地址或类似标识视为个人信息，我们将以同等标准对待此类标识。
 
@@ -120,7 +132,7 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 ## 第十一条  赞助者信息的公开
 
-当您通过赞助二维码支持本项目，并按提示在留言中填写昵称与链接时，该等信息（昵称、链接、金额、时间）将公开显示于用户文档站的赞助页及本软件“关于 AppPorts”窗口的赞助者区块。
+当您通过赞助二维码支持本项目，并在留言中填写昵称时，昵称将公开显示于用户文档站的赞助页及本软件“关于 AppPorts”窗口的赞助者区块。个人链接为选填，未提供时仅展示昵称；赞助金额仅在网站赞助页展示。
 
 上述情形是本项目中唯一涉及个人信息公开的场景，且以您的自愿提供为前提。若您不希望昵称或链接被公开，可在赞助时不作填写，或依第十八条载明的方式要求更正、删除。
 
@@ -154,7 +166,7 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 您可以通过下列方式行使您的权利：
 
-- 删除本软件，以及 `~/Library/Application Support/AppPorts/` 目录下的缓存与日志文件，即可清除全部本地数据；
+- 按第七条说明管理或删除本地缓存、日志、配置、启动代理及恢复材料；删除前请先完成仍由本软件管理的迁移还原，卸载软件不会自动删除外盘上的应用、数据或签名原包；
 - 就已公开的赞助者信息，随时依第十八条载明的方式要求更正或删除；
 - 若您认为我们的个人信息处理行为损害了您的合法权益，您有权向有关监管部门投诉、举报。
 
@@ -176,15 +188,15 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 # AppPorts Privacy Policy
 
-**Last updated:** September 17, 2026
-**Effective date:** September 17, 2026
+**Last updated:** November 18, 2026
+**Effective date:** November 18, 2026
 **Applies to:** AppPorts 1.8.1 and later
 
 AppPorts (the "Software") is an application migration tool for macOS. This Privacy Policy (the "Policy") explains how we collect, use, share, and protect your personal information, and the rights you have in that regard.
 
 This Policy applies to the Software and to our official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com). In addition to this Policy, for each feature that needs to read your information we also explain that feature's information-handling rules in the relevant interface.
 
-Please read this Policy in full and make sure you understand it before using the Software or visiting those sites. By using the Software or visiting those sites, you confirm that you have read, understood, and accepted this Policy. This Policy does not govern how third parties define or use your personal information; we recommend reading their privacy policies before interacting with them.
+Please read this Policy in full and make sure you understand it before using the Software or visiting those sites. By using the Software or visiting those sites, you confirm that you have read, understood, and accepted this Policy. This Policy does not govern how third parties define or use your personal information; review their policies before interacting with them.
 
 ## 1. Definitions
 
@@ -198,64 +210,75 @@ For the purposes of this Policy:
 
 ## 2. Scope
 
-This Policy applies to your interactions with us through the Software, the official website, and the documentation site. Both sites are static and have no user accounts and no user-generated content features.
+This Policy covers your interactions with us through the Software, official website, and documentation site. Both sites are static, with no user accounts and no user-generated content features.
 
-This Policy does not apply to third-party services linked from those sites; such services are governed by their own privacy policies.
+This Policy does not apply to third-party services linked from these sites; such services are governed by their own privacy policies.
 
 ## 3. Our Commitment
 
-We believe in and respect fundamental privacy rights, and we believe those rights should not depend on the country or region in which you live.
+We believe in and respect fundamental privacy rights, regardless of your country or region.
 
-Consistent with that principle, we do not build features at the expense of your privacy. The Software's core functions run entirely on your device: there is no account system, no usage tracking, and no personalised recommendations. Where a feature genuinely needs to read your information, we state its scope and purpose in this Policy or in the relevant interface.
+Consistent with that principle, we do not design features at the expense of your privacy. Core functionality runs entirely on your device: there is no account system, no usage tracking, and no personalised recommendations. Where a feature genuinely needs to read your information, we state its scope and purpose in this Policy or in the relevant interface.
 
 ## 4. Personal Information We Collect and Use
 
 We do not collect, use, or disclose any of your personal information, and we retain no data about you on any server. Specifically:
 
-- The Software has no account system, offers no registration or sign-in, and collects no identifiers such as phone numbers, email addresses, or names;
-- The Software includes no analytics, behavioural tracking, A/B testing, or crash-reporting SDK;
-- The Software includes no advertising or push-notification SDK and serves no personalised advertising;
+- The Software has no account registration or sign-in and collects no identifiers such as phone numbers, email addresses, or names;
+- The Software includes no analytics, behavioural tracking, A/B testing, or crash-reporting SDKs;
+- The Software includes no advertising or push-notification SDKs and serves no personalised advertising;
 - The Software neither generates nor reads any device identifier (such as IDFA, IDFV, hardware serial number, or hardware UUID);
-- The Software requests no access to contacts, calendars, reminders, photos, microphone, camera, location, Bluetooth, or health data;
-- The Software does not access the system keychain;
+- The Software requests no Contacts, Calendar, Reminders, Photos, microphone, camera, location, Bluetooth, or health permissions;
+- The Software reads or writes only its own encrypted APFS data-volume password items (`com.appports.encrypted-apfs-volume`) in your local login Keychain when you choose to save them, and never reads other applications' passwords;
 - The Software sets and reads no cookies for analytics or advertising purposes.
 
 ## 5. Information Read Locally
 
-To provide its core function — migrating applications and their data to external storage — the Software reads the following information on your device. All of this reading takes place locally and does not constitute disclosure to any third party:
+To migrate applications and their data to external storage, the Software reads the following information on your device. All of this reading takes place locally and does not disclose personal information to third parties:
 
-- Application bundles, icons, and code-signing information in application directories such as `/Applications`;
-- Application-related data directories under `~/Library`, used to identify migratable data and measure its size;
-- Custom scan paths that you add yourself;
-- The external storage path you select, used as the migration target and to verify link status;
-- The list of currently running applications, used to confirm that a target application is not running before migration so that data is not corrupted;
-- Basic device information, including the macOS version, processor core count, physical memory, and external drive read/write speed, used only to produce local logs and migration performance reports.
+- Application bundles, icons, and code-signature information in application directories such as `/Applications`;
+- Application-related data directories under `~/Library`, used to identify migratable data and measure sizes;
+- Custom scan paths you add;
+- External-storage paths or APFS app library disk-image paths you select, for migration targets and link-state verification;
+- Connected volumes' identifiers, connection types, writability, and free space, to verify migration locations and select a suitable external drive when saving signature originals;
+- Currently running applications, to check that a target app is not running before migration and avoid data corruption;
+- System App Store external-installation preferences (`PreferredVolume` in `com.apple.appstored`, read-only to check consistency with the selected external drive) and local ShipIt update status and logs produced by migrated applications (used only when Application update guardian is enabled to identify explicitly failed updates and perform recovery or clean up retry state);
+- Basic device operational information, including the macOS version, processor core count, physical memory, and external drive read/write speed, used only to generate local logs and migration performance reports.
 
 ## 6. Network Access and Recipients
 
-The Software makes network requests only in the following cases, and those requests contain none of your personal information, nor any account identifier, device identifier, file path, or file name:
+The Software makes network requests only in the following cases, and request contents exclude personal information, account identifiers, device identifiers, file paths, and file names:
 
-- **Version checks**: the Software performs one silent version check at launch, or when you initiate a check. It requests `appports.shimoko.com/latest.json` and also queries version information on GitHub (`api.github.com`), falling back to the `releases.atom` feed if that interface is unavailable.
-- **Displayed information**: when you open the "About AppPorts" window, the Software requests the list of contributors from GitHub and the list of sponsors from the documentation site (`docs-appports.shimoko.com/sponsors.json`).
+- **Version checks**: one silent version check at launch or a check you initiate requests `docs-appports.shimoko.com/latest.json` (and corresponding official release metadata), and queries GitHub version information (`api.github.com`) when needed, falling back to `github.com`'s `releases.atom` feed if that API is unavailable;
+- **In-app update downloads**: when you explicitly choose Update via China mirror or Update via GitHub in an update prompt, the Software downloads the release package from the official download mirror (`file.shimoko.com`) or the corresponding GitHub Release asset URL and verifies its SHA-256 hash and code signature locally;
+- **Displayed information**: when you open "About AppPorts", the Software requests the contributor list from GitHub and the sponsor list from the documentation site (`docs-appports.shimoko.com/sponsors.json`).
 
-These requests carry only a fixed User-Agent string (`AppPorts` or `AppPorts-UpdateChecker`). As an inherent property of HTTP, the receiving server can obtain your IP address and the time of the request. Those recipients are the servers of GitHub and of this project's documentation site, and each handles personal information under its own privacy policy.
+These requests carry only a fixed User-Agent string (`AppPorts`, `AppPorts-UpdateChecker`, or `AppPorts-Updater`). As an inherent property of HTTP, recipient servers can obtain your IP address and the time of the request. Recipients include GitHub and the servers of this project's official website, download mirror, and documentation site, each governed by its own privacy policy.
 
-The following are not performed by the Software itself but handed to your default browser: downloading a new version; opening external links such as the official website, documentation, code repository, and sponsor page.
+Opening the website, documentation, repository, sponsor page, or other external links, or manually downloading releases through web links, is handled by your default browser rather than performed by the Software itself.
 
 ## 7. Local Storage
 
 The Software stores the following files and settings locally on your device. None of this involves disclosing personal information to any third party:
 
 - `~/Library/Application Support/AppPorts/AppPorts_Log.txt`: operation logs and diagnostic information;
-- `~/Library/Application Support/AppPorts/contributors-cache.json`: a cached contributor list, used to reduce repeated network requests;
-- `~/Library/Application Support/AppPorts/sponsors-cache.json`: a cached sponsor list, used so it can be shown offline;
-- Preference files under `~/Library/Preferences`: interface language, external storage path, custom scan paths, and feature toggles.
+- Local login Keychain: passwords for encrypted APFS data volumes (`com.appports.encrypted-apfs-volume`) only when you choose to save them, without syncing; passwords are never written to logs or migration records and otherwise stay only temporarily in memory;
+- App and tool-directory size caches and application search-location records (`app-search-records.json`): used to display sizes and cache timestamps and maintain app libraries and local entries; file inventories are never uploaded;
+- `migration-task-history.json`: task names, categories, associated paths, times, and display results; display history only, not a queue that automatically repeats operations;
+- `disk-ejection-pauses.plist` and `launch-locks`: local mounting-pause state after an explicit physical-disk eject, app library image unmount, or individual data-volume unmount, plus lock files used by local processes to coordinate launch protection during migration; never uploaded;
+- `~/Library/Application Support/AppPorts/contributors-cache.json` and `sponsors-cache.json`: cached contributor and sponsor lists to reduce repeated requests and support offline display;
+- Migration, mount, signing, and recovery records under `~/Library/Application Support/AppPorts/` (including operation logs, journals, and update recovery receipts, rollback intents, and per-request status files under `shipit-recovery/`): app identity, paths, volume identifiers, and operation states for reconnection, signature restoration, background update-guardian synchronization, and unfinished operations;
+- `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` and `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`: user LaunchAgent definitions written only when you enable the corresponding background agent (automatic container/image mounting or Application update guardian) to run local recovery on login or storage mount events; disabling an agent in Settings removes it;
+- `AppPorts Backups` at a suitable external drive's root: since 1.9.1 build 31, verified official app originals are saved automatically before manual re-signing, with `README.txt`; these restore app bundles and signatures, not personal files such as chat logs or documents;
+- Preference files under `~/Library/Preferences`: interface language, external storage path, app library image location records (SMB share address without credentials, or backing volume and internal APFS volume identifiers), custom scan paths, background-agent toggles, guidance dismissal state, and feature switches.
 
-You may delete these files and the Software itself at any time to erase all local data.
+Signing also creates a temporary working copy beside the real app; useful older internal originals move externally after verification passes. Originals, indexes, and operation records stay on local storage devices and are never uploaded.
+
+You may delete caches, logs, preferences, and LaunchAgents at any time. Before deleting migration or recovery records, complete restoration and finalization through the Software so reconnection or signature recovery information is not lost. Uninstalling the Software does not automatically restore migrated data or delete external apps, data, or signature originals.
 
 ## 8. Diagnostic Package
 
-The "export diagnostic package" function runs only when you click it, and:
+The "Export Diagnostics" function runs only when you click it, and:
 
 - you choose the destination file location in the system save panel;
 - before export, the Software replaces usernames in the logs with `~`, replaces `/Users/<username>` with `/Users/<redacted-user>`, and redacts the names of your external storage volumes;
@@ -265,48 +288,49 @@ The "export diagnostic package" function runs only when you click it, and:
 
 To provide the functions described above, the Software may involve the following system permissions:
 
-- **Full Disk Access**: used to read and write `/Applications` and the relevant directories under `~/Library`. You enable it yourself in System Settings → Privacy & Security. The Software cannot request this permission on its own and cannot work around that restriction.
-- **Automation (Apple Events)**: when migrating App Store applications, the Software uses Finder to perform the move or deletion. macOS asks for your consent; you may decline, and you may turn the permission off at any time in System Settings → Privacy & Security → Automation.
-- **Administrator privileges**: triggered only when you re-sign or repair the ownership of an application installed under the root user. The administrator password you enter is submitted by the macOS system dialog directly to the operating system; the Software does not read, record, or store it.
+- **Full Disk Access**: used to read and write relevant directories under `/Applications` and `~/Library`. You enable it manually in System Settings → Privacy & Security. The Software cannot grant itself this permission or bypass it.
+- **App Management**: prompted by macOS when an operation needs to modify or update protected application bundles while moving apps, creating local portals, restoring bundles, or cleaning up old app copies. Manageable in System Settings → Privacy & Security → App Management.
+- **Automation (Apple Events)**: when an operation needs Finder to move or delete an app or to request disk ejection, macOS asks for your consent. You may decline and revoke it at any time in System Settings → Privacy & Security → Automation.
+- **Administrator privileges**: triggered when moving, restoring, re-signing, or repairing ownership of root-owned app installations, cleaning up root-owned retained old data copies on manual retry, or when macOS requires administrator authorization for specific disk mount/unmount operations. Your administrator password is submitted by the macOS system dialog directly to macOS; the Software does not read, record, or store it.
 
-The Software requests no access to contacts, calendars, photos, microphone, camera, location, or Bluetooth, and does not access the system keychain.
+The Software requests no Contacts, Calendar, Photos, microphone, camera, location, or Bluetooth permissions, and accesses only its own encrypted data-volume Keychain items when you choose to save them.
 
-The Software does not run in the App Sandbox (it requires cross-volume access to application and data directories) but does enable the Hardened Runtime. Release builds are not notarised by Apple, so the first launch may require your approval in System Settings → Privacy & Security.
+App Sandbox is disabled because cross-volume reading and writing of applications and data directories is required; Hardened Runtime is enabled. Release builds are not notarized by Apple, so first launch may require your approval in System Settings → Privacy & Security.
 
 ## 10. Cookies and Similar Technologies
 
-Our official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They use no cookies for analytics, contain no third-party advertising or social plugins, and set no cross-site tracking pixels.
+Our official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They use no cookies for analytics, contain no third-party advertising or social plugins, and set no cross-site tracking pixels; the open-source documentation site repository likewise embeds no third-party analytics or tracking scripts.
 
-Both sites use the open source analytics tool Umami to count page views so that we can understand how each page is used and improve it. Its handling rules are as follows:
+Where the official website uses cookie-free aggregate page-view statistics (such as Umami) to understand usage and improve content, it applies these rules:
 
 - no cookies, no personally identifiable information, and no cross-site tracking;
-- your raw IP address is not stored — it is used only at the time of the request to determine an approximate region and to de-duplicate visits;
+- your raw IP address is not stored — it is used only at request time to infer an approximate region and deduplicate visits;
 - only aggregate data is recorded, such as page views, referring site, browser and operating system type, and approximate region;
-- you can block the script at any time with a content blocker or network filter, which does not affect your ability to visit or read the pages.
+- you can block analytics requests at any time with a content blocker or network filter without affecting normal browsing or reading.
 
-If the law of your country or region treats IP addresses or similar identifiers as personal information, we treat such identifiers to the same standard.
+If local law treats IP addresses or similar identifiers as personal information, we treat them to the same standard.
 
 The hosting provider may retain standard access logs for operations and security purposes.
 
 ## 11. Publication of Sponsor Information
 
-If you support the project through the sponsor QR code and, as prompted, leave a nickname and a link in the payment note, that information (nickname, link, amount, date) will be published on the sponsor page of the documentation site and in the sponsor section of the "About AppPorts" window.
+If you support the project through the sponsor QR code and provide a nickname in the payment note, that nickname will be published on the documentation site's sponsor page and in the "About AppPorts" window. Providing a personal link is optional; sponsorship amounts are displayed only on the website sponsor page.
 
-This is the only case in this project in which personal information is made public, and it depends on your voluntary provision. If you would rather not have your nickname or link published, simply leave it out when sponsoring, or request correction or removal in the manner set out in clause 18.
+This is the only case in this project in which personal information is made public, and it depends on your voluntary provision. If you prefer not to publish a nickname or link, leave those fields blank, or request correction or removal under clause 18.
 
 ## 12. Third-Party Platforms
 
-In the following cases, the relevant information is handled independently by third-party platforms under their own privacy policies, and we are not responsible for their information-handling practices:
+In the following cases, information is handled independently by third-party platforms under their own privacy policies, and we are not responsible for their handling practices:
 
-- when you file an issue or pull request on GitHub, the relevant information is handled by GitHub;
-- when you sponsor the project through platforms such as Bilibili, WeChat, or Alipay, payment information is handled by those platforms, and we never have access to your payment account details;
-- when you open a third-party link from the Software or from those sites, that third party may collect information about you on its own.
+- when you submit an Issue or Pull Request on GitHub, that information is handled by GitHub;
+- when you sponsor the project through platforms such as Bilibili, WeChat, or Alipay, payment details are handled by those platforms, and we never have access to your payment-account details;
+- when you open a third-party link from the Software or from those sites, that third party may collect information on its own.
 
 ## 13. Cross-Border Transfers
 
 The Software collects and stores no personal information on any server, so no transfer of personal information abroad is initiated by us.
 
-When you interact with us through platforms such as GitHub or Bilibili, the relevant information may be transferred to servers in the country or region where those platforms operate. Such transfers and processing are carried out independently by those platforms under their own privacy policies.
+When you interact with us through platforms such as GitHub or Bilibili, information may be transferred to servers in countries or regions where those platforms operate, governed independently by their privacy policies.
 
 ## 14. Minors
 
@@ -314,29 +338,29 @@ The Software is not designed for minors and does not actively collect their pers
 
 ## 15. Information Security
 
-Because the Software collects and stores no personal information on any server, there is no risk of your personal information being exposed through a server-side data breach. The security of the files the Software reads and writes on your device depends on the safeguards of your device and operating system themselves; we recommend that you keep your device secure and your system up to date.
+Because the Software collects and stores no personal information on any server, there is no risk of exposure through a server-side data breach. The security of locally read and written files depends on your device and operating system safeguards; keep your device secure and your system up to date.
 
 ## 16. Your Privacy Rights
 
-We respect your ability to know about, access, correct, transfer, restrict the processing of, and delete your personal information. Because we do not collect or store your personal information, we hold no personal information that could be accessed, corrected, or deleted; we do, however, guarantee your right to communicate with us about this Policy, and we undertake not to treat you differently for exercising those rights.
+We respect your ability to know about, access, correct, transfer, restrict the processing of, and delete personal information. Because we do not collect or store personal information, we hold no records to query, correct, or delete; we guarantee your right to communicate with us about this Policy without discrimination.
 
-If we ever rely on your consent as the legal basis for processing personal information, you may withdraw that consent at any time, without affecting the lawfulness of processing carried out on the basis of your consent before its withdrawal.
+If we ever rely on your consent as a legal basis for processing personal information, you may withdraw consent at any time without affecting the lawfulness of prior processing.
 
 You may exercise your rights as follows:
 
-- delete the Software, together with the caches and logs under `~/Library/Application Support/AppPorts/`, to erase all local data;
-- request correction or removal of published sponsor information at any time, in the manner set out in clause 18;
-- if you believe our handling of personal information has harmed your lawful rights and interests, you have the right to complain to the relevant supervisory authority.
+- manage or delete local caches, logs, preferences, LaunchAgents, and recovery materials as described in Article 7 after completing restoration of any managed migrations; uninstalling the Software does not automatically delete external apps, data, or signature originals;
+- request correction or removal of published sponsor information at any time under clause 18;
+- lodge a complaint with the relevant supervisory authority if you believe our handling infringed your lawful rights.
 
 ## 17. Changes to This Policy
 
-We may revise this Policy from time to time. When we do, the "Last updated" and "Effective date" at the top of this page will be revised accordingly. For material revisions that substantially change your rights, we will give notice in the changelog and the GitHub release notes.
+We may revise this Policy from time to time. When we do, the "Last updated" and "Effective date" at the top of this page will be updated accordingly. For material revisions that substantially affect your rights, we will give notice in the changelog and GitHub release notes.
 
 The Simplified Chinese version of this Policy prevails; translations are provided for reference only.
 
 ## 18. Contact
 
-For any question, comment, or complaint about this Policy or about the protection of personal information, you may contact us as follows:
+For any question, comment, or complaint about this Policy or about the protection of personal information, contact us at:
 
 **Email: a@shimoko.com**
 

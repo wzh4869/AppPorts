@@ -2,6 +2,15 @@
 
 These entries describe changes at the time of each release. **Historical features may have been retired and should not be treated as current instructions.** Current guides describe the latest interface and behavior. Older behavior, versions, and alternatives remain in the [historical feature archive](/docs/archive/overview).
 
+## v2.3.0 {#v2-3-0}
+
+- Add the Large files & videos only (`msg/file + msg/video`) mode for WeChat accounts: mutually exclusive with Whole migration and Split migration (`msg + business`), allowing databases and `msg/attach` chat thumbnails to stay local while cold files and videos move externally, measured in a single filesystem pass.
+- Make Unlocked Migration the default for self-updating apps and add the optional Application update guardian background agent to handle failed ShipIt updates, sync status into Task Center, and offer verified Roll Back Update recovery.
+- Remove the 1 GB threshold check when migrating Mac App Store apps, allowing App Store apps of any size (including under 1 GB) to move externally alongside macOS 15.1+ external-install consistency checks and dismissible guidance.
+- Harden runtime status, task locking and disk operations: lock active-task row and batch actions in place, fix whole-disk ejection volume resolution across multi-partition disks, detect running migrated external apps accurately, prune hidden filter selections, cache writable storage capability probes, deduplicate per-scan volume status queries, and eliminate redundant snapshot cleanup hashing.
+
+[View v2.3.0](https://github.com/wzh4869/AppPorts/releases/tag/2.3.0) · Guides: [WeChat split migration](/docs/datamigrae/operation#wechat) · [update protection and guardian](/docs/migration-strategy/portal#updates) · [App Store settings](/docs/settings#app-store) · [Task Center](/docs/datamigrae/operation#task-center)
+
 ## v2.2.0 {#v2-2-0}
 
 - Add APFS app library disk images (`.sparsebundle`): create, open and remount an image inside a mounted SMB share or external drive to store migrated apps while preserving signatures and filesystem attributes, verified by backing storage identity and the image's APFS volume UUID.

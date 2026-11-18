@@ -42,7 +42,7 @@ Application update guardian currently covers only explicitly failed ShipIt updat
 
 - Move the real app onto the internal drive: use Move Back to Local.
 - App still exists externally but has no local entry: use Link Back to Local.
-- Remove only the local entry: use its trash button, labeled “Disconnect this link and delete files”.
+- Remove only the local entry: click the `…` (More Actions) button or open the context menu on the row in Local Apps and choose Delete Local Entry.
 
 See [Restore, reconnect and unlink](/docs/restore) for the distinctions and steps. If an app will not open, check the drive and [status messages](/docs/badges), then follow [troubleshooting](/docs/faq#launch).
 
