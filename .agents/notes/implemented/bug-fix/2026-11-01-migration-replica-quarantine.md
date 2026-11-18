@@ -26,6 +26,10 @@ hardened 进程对该副本的 open、pread、fgetxattr、
 - `prepareCandidate` 直接使用复制器返回的清单校验副本。清单已不含 quarantine，
   因此删除标记的循环没有处理对象，`withoutQuarantine` 转换也无作用，两者均移除。
   副本校验、原有签名校验、同步、记账、入口切换与恢复清理流程保持不变。
+- 相同系统属性边界同步应用到 `SignatureCompatibilityCopy`（跳过 `com.apple.quarantine` 与
+  `com.apple.macl` 的重放）、本地 portal 重签前的 detritus 清理（按 `XATTR_NOFOLLOW` 跳过
+  `provenance`/`quarantine`/`macl`/`decmpfs`，不再整树执行 `xattr -crs`）以及
+  `GitHubUpdatePackage`（`xattr -drs com.apple.quarantine` 被内核拒绝时仅记警告，不阻断自更新校验）。
 
 ## Alternatives considered
 

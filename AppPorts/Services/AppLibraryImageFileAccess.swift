@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 /// Filesystem metadata on an offline SMB mount can block inside the kernel.
@@ -9,6 +10,7 @@ struct AppLibraryImageFileAccess: Sendable {
         case capture(AppLibraryImageService.Record)
         case resolve(AppLibraryImageService.Record)
         case source(AppLibraryImageService.Record)
+        case linkTarget(String)
         case creationDirectory(String)
         case occupied(String)
         case mountedUUID(String)
@@ -85,6 +87,10 @@ struct AppLibraryImageFileAccess: Sendable {
             if let expected = record.backingVolumeUUID,
                uuid?.caseInsensitiveCompare(expected) != .orderedSame { throw CocoaError(.fileReadUnknown) }
             return Reply(uuid: uuid, value: true)
+        case .linkTarget(let path):
+            let target = URL(fileURLWithPath: path)
+            try requireRegularFileOrDirectory(target)
+            return Reply(uuid: DiskUtility.mountedVolumeUUID(at: target), value: true)
         case .creationDirectory(let path):
             let directory = URL(fileURLWithPath: path)
             try requireDirectory(directory)
@@ -108,6 +114,18 @@ struct AppLibraryImageFileAccess: Sendable {
     private static func requireDirectory(_ url: URL) throws {
         guard url.isFileURL, url.standardizedFileURL.path == url.resolvingSymlinksInPath().path,
               (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
+            throw CocoaError(.fileReadNoSuchFile)
+        }
+    }
+
+    private static func requireRegularFileOrDirectory(_ url: URL) throws {
+        var statBuffer = stat()
+        guard url.isFileURL, url.standardizedFileURL.path == url.resolvingSymlinksInPath().path,
+              lstat(url.path, &statBuffer) == 0 else {
+            throw CocoaError(.fileReadNoSuchFile)
+        }
+        let mode = statBuffer.st_mode & S_IFMT
+        guard mode == S_IFDIR || mode == S_IFREG else {
             throw CocoaError(.fileReadNoSuchFile)
         }
     }

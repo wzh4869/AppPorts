@@ -1987,14 +1987,8 @@ struct AppMigrationService {
         // 5. 写入 PkgInfo
         try "APPL????".write(to: localContents.appendingPathComponent("PkgInfo"), atomically: true, encoding: .utf8)
 
-        // 6. 清除隔离属性（iOS stub 不需要代码签名，shell script 无法被 codesign 处理）
-        let xattr = Process()
-        xattr.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
-        xattr.arguments = ["-cr", localURL.path]
-        xattr.standardOutput = FileHandle.nullDevice
-        xattr.standardError = FileHandle.nullDevice
-        try? xattr.run()
-        xattr.waitUntilExit()
+        // 6. 清除可移扩展属性（iOS stub 为脚本壳，不需要代码签名）
+        Self.stripNonSystemExtendedAttributes(in: localURL)
 
         AppLogger.shared.log("已创建 iOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
     }
@@ -2162,17 +2156,9 @@ struct AppMigrationService {
             guard entry.links == 1 else { throw CocoaError(.fileWriteNoPermission) }
         }
         // Only staged portal resources are cleaned; the external original is never modified.
-        let attributes = Process()
-        attributes.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
-        attributes.arguments = ["-crs", appURL.path]
-        attributes.standardOutput = FileHandle.nullDevice
-        attributes.standardError = FileHandle.nullDevice
-        try attributes.run()
-        attributes.waitUntilExit()
-        guard attributes.terminationStatus == 0 else {
-            throw NSError(domain: "AppPorts.PortalSigning", code: Int(attributes.terminationStatus),
-                          userInfo: [NSLocalizedDescriptionKey: "无法准备入口签名资料".localized])
-        }
+        // Skip system-protected attributes (quarantine/provenance/macl/decmpfs) which macOS 27
+        // refuses to remove with EACCES, while stripping FinderInfo/ResourceFork detritus before codesign.
+        try Self.stripDetritusExtendedAttributesForSigning(in: appURL)
         for arguments in [["--force", "--sign", "-", appURL.path], ["--verify", "--strict", appURL.path]] {
             try recheckWriterAdmission()
             let process = Process()
@@ -2219,6 +2205,56 @@ struct AppMigrationService {
             }
         } catch {
             AppLogger.shared.log("lsregister 递归刷新失败: \(folderURL.lastPathComponent)", level: "WARN")
+        }
+    }
+
+    private static let systemProtectedExtendedAttributes: Set<String> = [
+        "com.apple.provenance", "com.apple.quarantine", "com.apple.macl", "com.apple.decmpfs"
+    ]
+
+    private static func stripNonSystemExtendedAttributes(in root: URL) {
+        try? stripExtendedAttributes(in: root, strict: false)
+    }
+
+    private static func stripDetritusExtendedAttributesForSigning(in root: URL) throws {
+        do {
+            try stripExtendedAttributes(in: root, strict: true)
+        } catch {
+            throw NSError(domain: "AppPorts.PortalSigning", code: (error as NSError).code,
+                          userInfo: [NSLocalizedDescriptionKey: "无法准备入口签名资料".localized, NSUnderlyingErrorKey: error])
+        }
+    }
+
+    private static func stripExtendedAttributes(in root: URL, strict: Bool) throws {
+        var pending = [root]
+        while let current = pending.popLast() {
+            var info = stat()
+            guard lstat(current.path, &info) == 0 else {
+                if strict { throw PortalStaging.posixError(current) }
+                continue
+            }
+            let size = listxattr(current.path, nil, 0, XATTR_NOFOLLOW)
+            if size > 0 {
+                var buffer = [CChar](repeating: 0, count: size)
+                let actual = buffer.withUnsafeMutableBufferPointer {
+                    listxattr(current.path, $0.baseAddress, size, XATTR_NOFOLLOW)
+                }
+                if actual > 0 {
+                    let names = buffer.prefix(actual).split(separator: 0).compactMap {
+                        String(bytes: $0.map { UInt8(bitPattern: $0) }, encoding: .utf8)
+                    }
+                    for name in names where !systemProtectedExtendedAttributes.contains(name) {
+                        if removexattr(current.path, name, XATTR_NOFOLLOW) != 0,
+                           errno != ENOATTR, errno != EACCES, errno != EPERM, strict {
+                            throw PortalStaging.posixError(current)
+                        }
+                    }
+                }
+            }
+            if info.st_mode & S_IFMT == S_IFDIR {
+                let children = (try? FileManager.default.contentsOfDirectory(atPath: current.path)) ?? []
+                pending.append(contentsOf: children.map { current.appendingPathComponent($0) })
+            }
         }
     }
 

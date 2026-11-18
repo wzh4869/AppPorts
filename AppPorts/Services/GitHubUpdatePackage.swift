@@ -171,16 +171,32 @@ struct GitHubUpdatePackage: Sendable {
             }
             let staged = workspace.appendingPathComponent("AppPorts.app")
             try await validateApplication(staged, version: update.version, currentApplication: destination)
-            // Only remove quarantine from the downloaded, verified application, never system policy.
-            _ = try await command("/usr/bin/xattr", ["-dr", "com.apple.quarantine", staged.path])
+            // Only remove quarantine from the downloaded, verified application (without following symlinks).
+            // On macOS 27+, kernel policy may refuse removing quarantine with EACCES; let system policy decide.
+            let quarantineCleanup = try await runner.run(executable: "/usr/bin/xattr",
+                                                         arguments: ["-drs", "com.apple.quarantine", staged.path],
+                                                         timeout: 120)
+            guard !quarantineCleanup.timedOut else { throw AppUpdateError.application }
+            if quarantineCleanup.status != 0 {
+                AppLogger.shared.logContext("更新包隔离属性未能完全清除，交由系统策略处理",
+                                            details: [("status", String(quarantineCleanup.status)),
+                                                      ("error", quarantineCleanup.combinedText)],
+                                            level: "WARN")
+            }
             guard try Self.identity(at: destination) == original else { throw AppUpdateError.changed }
             return PreparedAppUpdate(workspace: workspace, destination: destination, originalIdentity: original,
                                      stagedIdentity: try Self.identity(at: staged), version: update.version)
         } catch {
             // A failed detach must never turn recursive cleanup into deletion through a mounted volume.
             let mount = workspace.appendingPathComponent("mount")
-            let mountedVolume = try? mount.resourceValues(forKeys: [.volumeURLKey]).volume
-            if mountedVolume?.standardizedFileURL.path != mount.path {
+            var mountExists = false
+            var info = stat()
+            if lstat(mount.path, &info) == 0 { mountExists = true }
+            if !mountExists {
+                try? FileManager.default.removeItem(at: workspace)
+            } else if !DiskUtility.isMountPoint(mount),
+                      let mountedVolume = try? mount.resourceValues(forKeys: [.volumeURLKey]).volume,
+                      mountedVolume.standardizedFileURL.path != mount.standardizedFileURL.path {
                 try? FileManager.default.removeItem(at: workspace)
             }
             throw error

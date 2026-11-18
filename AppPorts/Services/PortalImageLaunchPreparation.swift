@@ -218,12 +218,12 @@ enum PortalImageLaunchPreparation {
             verifyLink: { try await verifyLink($0, files: service.files) }))
     }
 
-    private static func verifyLink(_ link: ManagedDataLinkRecord, files: AppLibraryImageFileAccess) async throws {
+    static func verifyLink(_ link: ManagedDataLinkRecord, files: AppLibraryImageFileAccess) async throws {
         let original = URL(fileURLWithPath: link.originalPath)
         let raw = try FileManager.default.destinationOfSymbolicLink(atPath: original.path)
         let destination = URL(fileURLWithPath: raw, relativeTo: original.deletingLastPathComponent()).standardizedFileURL
         guard destination.path == link.destinationPath else { throw CocoaError(.fileReadUnknown) }
-        let result = try await files.inspect(.source(.init(imageURL: destination)))
+        let result = try await files.inspect(.linkTarget(destination.path))
         guard result.value == true,
               let expectedUUID = link.destinationIdentity.volumeUUID,
               result.uuid?.caseInsensitiveCompare(expectedUUID) == .orderedSame else {

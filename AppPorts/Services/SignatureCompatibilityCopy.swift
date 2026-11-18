@@ -205,8 +205,9 @@ enum SignatureCompatibilityCopy {
         // A non-cloned file is copied through its logical data view; ordinary
         // xattr enumeration hides compression backing forks. Never attach the
         // old decmpfs representation to that already copied logical data.
-        let names = try attributeNames(source, path: path).filter { $0 != "com.apple.decmpfs" && $0 != "com.apple.provenance" }
-        for name in try attributeNames(destination, path: path) where name != "com.apple.provenance" && !names.contains(name) {
+        let systemManaged: Set<String> = ["com.apple.decmpfs", "com.apple.provenance", "com.apple.quarantine", "com.apple.macl"]
+        let names = try attributeNames(source, path: path).filter { !systemManaged.contains($0) }
+        for name in try attributeNames(destination, path: path) where !systemManaged.contains(name) && !names.contains(name) {
             guard fremovexattr(destination, name, 0) == 0 else { throw failure(path) }
         }
         for name in names {
