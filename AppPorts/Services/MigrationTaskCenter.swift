@@ -168,11 +168,14 @@ final class MigrationJob: ObservableObject, Identifiable {
         status = .running
     }
 
-    var elapsed: TimeInterval {
+    func elapsed(at now: TimeInterval = ProcessInfo.processInfo.systemUptime) -> TimeInterval {
         if let restoredElapsed { return restoredElapsed }
         guard let startedUptime else { return 0 }
-        return max(0, (finishedAt ?? ProcessInfo.processInfo.systemUptime) - startedUptime)
+        let end = finishedAt ?? now
+        return max(0, end - startedUptime - control.pausedDuration(at: end))
     }
+
+    var elapsed: TimeInterval { elapsed() }
     var stateTitle: String {
         if status == .completed, let observedResult {
             return observedResult == .recovered ? "已接手成功".localized : "已回退更新".localized
@@ -380,11 +383,12 @@ final class MigrationTaskCenter: ObservableObject {
     }
 
     func cancel(_ ids: Set<UUID>) {
+        let now = ProcessInfo.processInfo.systemUptime
         for job in jobs where ids.contains(job.id) && job.supportsExecutionControls && !job.status.isFinished {
-            job.control.cancel()
+            job.control.cancel(at: now)
             if job.status == .queued {
                 job.status = .cancelled
-                job.finishedAt = ProcessInfo.processInfo.systemUptime
+                job.finishedAt = now
                 job.operation = nil
                 job.completion = nil
                 job.recoveryHandler = nil
@@ -497,9 +501,10 @@ final class MigrationTaskCenter: ObservableObject {
                 }
             }
         }
-        job.finishedAt = ProcessInfo.processInfo.systemUptime
+        let finishedUptime = ProcessInfo.processInfo.systemUptime
+        job.finishedAt = finishedUptime
         job.restoredPaused = false
-        job.control.resume()
+        job.control.resume(at: finishedUptime)
         job.worker = nil
         job.operation = nil
         job.recoveryHandler = nil

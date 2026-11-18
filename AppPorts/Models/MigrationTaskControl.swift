@@ -11,10 +11,33 @@ final class MigrationTaskControl: @unchecked Sendable {
     private let condition = NSCondition()
     private var state = State()
     private var criticalSection = false
+    private var accumulatedPausedDuration: TimeInterval = 0
+    private var pausedSinceUptime: TimeInterval?
 
     func snapshot() -> State {
         condition.lock(); defer { condition.unlock() }
         return state
+    }
+
+    func pausedDuration(at now: TimeInterval = ProcessInfo.processInfo.systemUptime) -> TimeInterval {
+        condition.lock(); defer { condition.unlock() }
+        var total = accumulatedPausedDuration
+        if let since = pausedSinceUptime {
+            total += max(0, now - since)
+        }
+        return total
+    }
+
+    private func setPausedLocked(_ newValue: Bool, now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        if newValue {
+            if pausedSinceUptime == nil {
+                pausedSinceUptime = now
+            }
+        } else if let since = pausedSinceUptime {
+            accumulatedPausedDuration += max(0, now - since)
+            pausedSinceUptime = nil
+        }
+        state.paused = newValue
     }
 
     func pause() {
@@ -23,18 +46,18 @@ final class MigrationTaskControl: @unchecked Sendable {
         state.pauseRequested = true
     }
 
-    func resume() {
+    func resume(at now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         condition.lock(); defer { condition.unlock() }
         state.pauseRequested = false
-        state.paused = false
+        setPausedLocked(false, now: now)
         condition.broadcast()
     }
 
-    func cancel() {
+    func cancel(at now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         condition.lock(); defer { condition.unlock() }
         state.cancelled = true
         state.pauseRequested = false
-        state.paused = false
+        setPausedLocked(false, now: now)
         condition.broadcast()
     }
 
@@ -43,10 +66,10 @@ final class MigrationTaskControl: @unchecked Sendable {
         condition.lock()
         defer { condition.unlock() }
         while state.pauseRequested && !state.cancelled && !criticalSection && !Thread.isMainThread {
-            state.paused = true
+            setPausedLocked(true)
             condition.wait()
         }
-        state.paused = false
+        setPausedLocked(false)
         if state.cancelled { throw CancellationError() }
     }
 
@@ -61,10 +84,10 @@ final class MigrationTaskControl: @unchecked Sendable {
     private func shouldWaitForPause() -> Bool {
         condition.lock(); defer { condition.unlock() }
         if !state.pauseRequested || state.cancelled || criticalSection {
-            state.paused = false
+            setPausedLocked(false)
             return false
         }
-        state.paused = true
+        setPausedLocked(true)
         return true
     }
 
@@ -72,7 +95,7 @@ final class MigrationTaskControl: @unchecked Sendable {
         condition.lock(); defer { condition.unlock() }
         criticalSection = value
         if value {
-            state.paused = false
+            setPausedLocked(false)
             condition.broadcast()
         }
     }

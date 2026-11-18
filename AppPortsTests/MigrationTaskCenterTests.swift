@@ -394,6 +394,43 @@ struct MigrationTaskCenterTests {
         #expect(job.elapsed == finished - started)
     }
 
+    @Test("Paused jobs freeze elapsed duration until resumed or finished")
+    func pausedJobFreezesElapsedDuration() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let gate = AsyncGate()
+        let reachedCheckpoint = AsyncGate()
+        let pauseApplied = AsyncGate()
+        let id = fixture.center.submit(title: "Paused elapsed", category: .appData, resources: fixture.resources) { _ in
+            try await Task.sleep(nanoseconds: 40_000_000)
+            await reachedCheckpoint.open()
+            await pauseApplied.wait()
+            try await MigrationExecution.control?.checkpointAsync()
+            await gate.wait()
+            return nil
+        }
+        let job = try #require(fixture.center.jobs.first(where: { $0.id == id }))
+        await reachedCheckpoint.wait()
+        fixture.center.pause([id])
+        await pauseApplied.open()
+        let deadline = Date().addingTimeInterval(2)
+        while !job.control.snapshot().paused, Date() < deadline {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        #expect(job.control.snapshot().paused)
+        let frozen = job.elapsed
+        try await Task.sleep(nanoseconds: 120_000_000)
+        #expect(abs(job.elapsed - frozen) < 0.001)
+
+        fixture.center.resume([id])
+        try await Task.sleep(nanoseconds: 80_000_000)
+        await gate.open()
+        await job.worker?.value
+        #expect(job.status == .completed)
+        #expect(job.elapsed >= frozen + 0.05)
+        #expect(job.elapsed < frozen + 0.5)
+    }
+
     @Test("Pause requested inside critical section does not persist as paused after completion")
     func pauseRequestedInCriticalSectionClearsOnCompletion() async throws {
         let fixture = try Fixture()
