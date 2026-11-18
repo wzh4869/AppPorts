@@ -207,10 +207,22 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
             && [.preparing, .copying, .needsRecovery].contains(phase)
     }
 
+    private var preparationQuarantinePaths: [String] {
+        guard preparationRemovalBaseline != nil else { return [] }
+        return Array(Set([stagingPath, preparationPath].compactMap { path -> String? in
+            guard let path else { return nil }
+            return URL(fileURLWithPath: path)
+                .deletingLastPathComponent()
+                .appendingPathComponent(".appports-deleting-" + operationID.uuidString)
+                .path
+        }))
+    }
+
     var materialPaths: [String] {
         guard retainedCopyRemovedAt == nil else { return [] }
-        return Array(Set([preparationPath, stagingPath, backupPath,
-                   destinationPath == originalPath ? nil : destinationPath].compactMap { $0 })).sorted()
+        return Array(Set(([preparationPath, stagingPath, backupPath,
+                           destinationPath == originalPath ? nil : destinationPath].compactMap { $0 })
+                         + preparationQuarantinePaths)).sorted()
     }
 
     /// Cleanup errors do not undo the committed data switch.
@@ -284,8 +296,8 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
         let origin: DataPathTopology.Origin = isDataSwitchComplete ? .retained : .transfer
         if rollbackCompletedAt != nil {
             // The source is usable again. Only this attempt's private candidate
-            // remains reserved; it must not block a later operation at the source.
-            return Array(Set([stagingPath, preparationPath].compactMap { $0 })).map {
+            // (including any partially removed quarantine sibling) remains reserved.
+            return Array(Set(([stagingPath, preparationPath].compactMap { $0 }) + preparationQuarantinePaths)).map {
                 .init(path: $0, origin: .retained, operationID: operationID, volumeUUID: createdVolumeUUID)
             }
         }

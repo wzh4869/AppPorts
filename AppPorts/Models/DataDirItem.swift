@@ -380,6 +380,9 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
         lhs.pathPolicy == rhs.pathPolicy &&
         lhs.hasManagedLinkRecord == rhs.hasManagedLinkRecord &&
         lhs.recoveryOperationID == rhs.recoveryOperationID &&
+        lhs.hasMountTransferRecord == rhs.hasMountTransferRecord &&
+        lhs.weChatSplitMembers == rhs.weChatSplitMembers &&
+        lhs.children == rhs.children &&
         lhs.migrationWarning == rhs.migrationWarning &&
         lhs.requiresMountMigration == rhs.requiresMountMigration
     }

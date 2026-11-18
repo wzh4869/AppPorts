@@ -41,6 +41,11 @@ final class AppTransferStore: @unchecked Sendable {
             .sorted { $0.createdAt < $1.createdAt }
     }
 
+    func withLock<T>(_ body: () throws -> T) rethrows -> T {
+        lock.lock(); defer { lock.unlock() }
+        return try body()
+    }
+
     func inventory() throws -> Inventory {
         lock.lock(); defer { lock.unlock() }
         var records: [AppTransferRecord] = []
@@ -305,6 +310,7 @@ final class AppUpdateProtectionStore {
 
     private typealias Entry = AppUpdateProtectionRelocation.Entry
     private typealias Record = AppUpdateProtectionRelocation
+    private let transferStore: AppTransferStore
     private let directory: URL
     private let writerDataDirectory: URL
 
@@ -322,20 +328,23 @@ final class AppUpdateProtectionStore {
     }
 
     init(transferStore: AppTransferStore = .shared) {
+        self.transferStore = transferStore
         directory = transferStore.directoryURL.appendingPathComponent("update-protection", isDirectory: true)
         writerDataDirectory = transferStore.directoryURL.deletingLastPathComponent()
     }
 
     func captureForExchange(at root: URL) throws -> AppUpdateProtectionRelocation? {
-        try matchingRecord(root)
+        try transferStore.withLock { try matchingRecord(root) }
     }
 
     func suspendForExchange(_ relocation: AppUpdateProtectionRelocation, at root: URL) throws {
-        guard root.standardizedFileURL.path == relocation.path,
-              try matchingRecord(root) == relocation else {
-            throw AppTransferTransaction.failure("应用更新保护记录已改变，未改写锁。".localized, at: root)
+        try transferStore.withLock {
+            guard root.standardizedFileURL.path == relocation.path,
+                  try matchingRecord(root) == relocation else {
+                throw AppTransferTransaction.failure("应用更新保护记录已改变，未改写锁。".localized, at: root)
+            }
+            try setProtection(false, record: relocation, root: root)
         }
-        try setProtection(false, record: relocation, root: root)
     }
 
     /// A signature receipt proves the unchanged parent and original/candidate
@@ -343,97 +352,111 @@ final class AppUpdateProtectionStore {
     /// the previously owned protection bits never acquire new authority.
     func rebaseExchangePath(_ relocation: AppUpdateProtectionRelocation, to root: URL,
                             parentIdentity: DataPathIdentity) throws -> AppUpdateProtectionRelocation {
-        try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
-        guard try DataPathIdentity.capture(root.deletingLastPathComponent()).matchesFilesystemObject(parentIdentity) else {
-            throw CodeSigner.SigningError.applicationChanged
+        try transferStore.withLock {
+            try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
+            guard try DataPathIdentity.capture(root.deletingLastPathComponent()).matchesFilesystemObject(parentIdentity) else {
+                throw CodeSigner.SigningError.applicationChanged
+            }
+            let identity = try DataPathIdentity.capture(root)
+            let rebound = Record(id: relocation.id, path: root.path, identity: relocation.identity,
+                                 entries: relocation.entries, adoptedLegacyLock: relocation.adoptedLegacyLock)
+            let current = try currentRecord(relocation, at: root, identity: identity)
+            guard current == relocation || current == rebound
+                || ((current.path == relocation.path || current.path == root.path) && current.identity.matchesFilesystemObject(identity)) else {
+                throw CodeSigner.SigningError.applicationChanged
+            }
+            if current.path != root.path {
+                let relocated = Record(id: current.id, path: root.path, identity: current.identity,
+                                       entries: current.entries, adoptedLegacyLock: current.adoptedLegacyLock)
+                try DurableFileIO.write(try PropertyListEncoder().encode(relocated), to: recordURL(relocated))
+            }
+            return rebound
         }
-        let identity = try DataPathIdentity.capture(root)
-        let rebound = Record(id: relocation.id, path: root.path, identity: relocation.identity, entries: relocation.entries)
-        let current = try currentRecord(relocation, at: root, identity: identity)
-        guard current == relocation || current == rebound
-            || ((current.path == relocation.path || current.path == root.path) && current.identity.matchesFilesystemObject(identity)) else {
-            throw CodeSigner.SigningError.applicationChanged
-        }
-        if current.path != root.path {
-            let relocated = Record(id: current.id, path: root.path, identity: current.identity, entries: current.entries)
-            try DurableFileIO.write(try PropertyListEncoder().encode(relocated), to: recordURL(relocated))
-        }
-        return rebound
     }
 
     /// A same-volume rename preserves every filesystem object. Rebind only the
     /// previously recorded bits; never adopt immutable flags found at the new path.
     func commitSameObjectMove(_ relocation: AppUpdateProtectionRelocation, to root: URL) throws {
-        try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
-        let identity = try DataPathIdentity.capture(root)
-        let rebound = Record(id: relocation.id, path: root.standardizedFileURL.path,
-                             identity: identity, entries: relocation.entries)
-        let current = try currentRecord(relocation, at: root, identity: identity)
-        guard relocation.identity.matchesFilesystemObject(identity),
-              current == relocation || current == rebound else {
-            throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: root)
+        try transferStore.withLock {
+            try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
+            let identity = try DataPathIdentity.capture(root)
+            let rebound = Record(id: relocation.id, path: root.standardizedFileURL.path,
+                                 identity: identity, entries: relocation.entries,
+                                 adoptedLegacyLock: relocation.adoptedLegacyLock)
+            let current = try currentRecord(relocation, at: root, identity: identity)
+            guard relocation.identity.matchesFilesystemObject(identity),
+                  current == relocation || current == rebound else {
+                throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: root)
+            }
+            if current != rebound {
+                try DurableFileIO.write(try PropertyListEncoder().encode(rebound), to: recordURL(rebound))
+            }
+            try setProtection(true, record: rebound, root: root)
         }
-        if current != rebound {
-            try DurableFileIO.write(try PropertyListEncoder().encode(rebound), to: recordURL(rebound))
-        }
-        try setProtection(true, record: rebound, root: root)
     }
 
     /// The caller persists this token before suspension and invokes this only
     /// after its own verified same-path exchange. A bundle ID is not authority.
     func commitExchange(_ relocation: AppUpdateProtectionRelocation, to root: URL) throws {
-        try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
-        guard root.standardizedFileURL.path == relocation.path else {
-            throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: root)
+        try transferStore.withLock {
+            try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
+            guard root.standardizedFileURL.path == relocation.path else {
+                throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: root)
+            }
+            let identity = try DataPathIdentity.capture(root)
+            let current = try currentRecord(relocation, at: root, identity: identity)
+            if current.identity.matchesFilesystemObject(identity) {
+                try setProtection(true, record: current, root: root)
+                return
+            }
+            guard current == relocation else {
+                throw AppTransferTransaction.failure("应用更新保护已属于另一次安装，未改写。".localized, at: root)
+            }
+            let entries = try relocation.entries.compactMap { entry -> Entry? in
+                let url = entry.relativePath.isEmpty ? root : root.appendingPathComponent(entry.relativePath)
+                guard try AppTransferStore.exists(url) else { return nil }
+                return Entry(relativePath: entry.relativePath, identity: try DataPathIdentity.capture(url))
+            }
+            let rebound = Record(id: relocation.id, path: relocation.path, identity: identity,
+                                 entries: entries, adoptedLegacyLock: relocation.adoptedLegacyLock)
+            try DurableFileIO.write(try PropertyListEncoder().encode(rebound), to: recordURL(rebound))
+            try setProtection(true, record: rebound, root: root)
         }
-        let identity = try DataPathIdentity.capture(root)
-        let current = try currentRecord(relocation, at: root, identity: identity)
-        if current.identity.matchesFilesystemObject(identity) {
-            try setProtection(true, record: current, root: root)
-            return
-        }
-        guard current == relocation else {
-            throw AppTransferTransaction.failure("应用更新保护已属于另一次安装，未改写。".localized, at: root)
-        }
-        let entries = try relocation.entries.compactMap { entry -> Entry? in
-            let url = entry.relativePath.isEmpty ? root : root.appendingPathComponent(entry.relativePath)
-            guard try AppTransferStore.exists(url) else { return nil }
-            return Entry(relativePath: entry.relativePath, identity: try DataPathIdentity.capture(url))
-        }
-        let rebound = Record(id: relocation.id, path: relocation.path, identity: identity, entries: entries)
-        try DurableFileIO.write(try PropertyListEncoder().encode(rebound), to: recordURL(rebound))
-        try setProtection(true, record: rebound, root: root)
     }
 
     /// Persist intent before setting flags. A process interruption during this
     /// loop still leaves an exact list of bits AppPorts is allowed to revoke.
     func protect(_ root: URL) throws {
-        try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
-        guard !FileCopier.isNetworkVolume(at: root) else { return }
-        if let record = try matchingRecord(root) {
+        try transferStore.withLock {
+            try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
+            guard !FileCopier.isNetworkVolume(at: root) else { return }
+            if let record = try matchingRecord(root) {
+                try setProtection(true, record: record, root: root)
+                return
+            }
+            let identity = try DataPathIdentity.capture(root)
+            let entries = try SignatureSnapshot.items(in: root).compactMap { url -> Entry? in
+                let info = try SignatureSnapshot.info(at: url)
+                guard info.st_flags & UInt32(UF_IMMUTABLE) == 0 else { return nil }
+                return Entry(relativePath: String(url.path.dropFirst(root.path.count)).trimmingCharacters(in: CharacterSet(charactersIn: "/")),
+                             identity: try DataPathIdentity.capture(url))
+            }
+            let record = Record(id: UUID(), path: root.standardizedFileURL.path, identity: identity, entries: entries)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try DurableFileIO.write(try PropertyListEncoder().encode(record), to: recordURL(record))
             try setProtection(true, record: record, root: root)
-            return
         }
-        let identity = try DataPathIdentity.capture(root)
-        let entries = try SignatureSnapshot.items(in: root).compactMap { url -> Entry? in
-            let info = try SignatureSnapshot.info(at: url)
-            guard info.st_flags & UInt32(UF_IMMUTABLE) == 0 else { return nil }
-            return Entry(relativePath: String(url.path.dropFirst(root.path.count)).trimmingCharacters(in: CharacterSet(charactersIn: "/")),
-                         identity: try DataPathIdentity.capture(url))
-        }
-        let record = Record(id: UUID(), path: root.standardizedFileURL.path, identity: identity, entries: entries)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try DurableFileIO.write(try PropertyListEncoder().encode(record), to: recordURL(record))
-        try setProtection(true, record: record, root: root)
     }
 
     /// Keep the fact while a location operation is in flight, so cancellation
     /// can reapply exactly these bits without adopting a user's existing lock.
     @discardableResult
     func suspend(_ root: URL) throws -> Bool {
-        guard let record = try matchingRecord(root) else { return false }
-        try setProtection(false, record: record, root: root)
-        return true
+        try transferStore.withLock {
+            guard let record = try matchingRecord(root) else { return false }
+            try setProtection(false, record: record, root: root)
+            return true
+        }
     }
 
     /// The update lock is AppPorts' own protection, and 1.9.0 wrote it with
@@ -448,22 +471,24 @@ final class AppUpdateProtectionStore {
     /// Only `UF_IMMUTABLE` is ever cleared — no other flag is touched.
     @discardableResult
     func adoptLegacyLock(_ root: URL, evidence: AppUpdateProtectionAdoption) throws -> AppUpdateProtectionRelocation? {
-        try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
-        if let existing = try matchingRecord(root) { return existing }
-        guard !FileCopier.isNetworkVolume(at: root) else { return nil }
-        // Record every locked node; an unlocked tree produces none and needs no
-        // record at all.
-        let identity = try DataPathIdentity.capture(root)
-        let entries = try unlockableEntries(at: root)
-        guard !entries.isEmpty else { return nil }
-        let record = Record(id: UUID(), path: root.standardizedFileURL.path, identity: identity,
-                            entries: entries, adoptedLegacyLock: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try DurableFileIO.write(try PropertyListEncoder().encode(record), to: recordURL(record))
-        AppLogger.shared.logContext("已记录迁移前的应用更新保护",
-            details: [("path", record.path), ("entry_count", String(entries.count)),
-                      ("local_entry", evidence.managedLocalEntry?.path ?? "-")], level: "WARN")
-        return record
+        try transferStore.withLock {
+            try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
+            if let existing = try matchingRecord(root) { return existing }
+            guard !FileCopier.isNetworkVolume(at: root) else { return nil }
+            // Record every locked node; an unlocked tree produces none and needs no
+            // record at all.
+            let identity = try DataPathIdentity.capture(root)
+            let entries = try unlockableEntries(at: root)
+            guard !entries.isEmpty else { return nil }
+            let record = Record(id: UUID(), path: root.standardizedFileURL.path, identity: identity,
+                                entries: entries, adoptedLegacyLock: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try DurableFileIO.write(try PropertyListEncoder().encode(record), to: recordURL(record))
+            AppLogger.shared.logContext("已记录迁移前的应用更新保护",
+                details: [("path", record.path), ("entry_count", String(entries.count)),
+                          ("local_entry", evidence.managedLocalEntry?.path ?? "-")], level: "WARN")
+            return record
+        }
     }
 
     /// Every node carrying `UF_IMMUTABLE`, whatever the rest of the tree looks
@@ -483,30 +508,34 @@ final class AppUpdateProtectionStore {
     }
 
     func resume(_ root: URL, requiringRecord: Bool = false) throws {
-        guard let record = try matchingRecord(root) else {
-            if requiringRecord {
-                throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: root)
+        try transferStore.withLock {
+            guard let record = try matchingRecord(root) else {
+                if requiringRecord {
+                    throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: root)
+                }
+                return
             }
-            return
+            try setProtection(true, record: record, root: root)
         }
-        try setProtection(true, record: record, root: root)
     }
 
     func forget(path: String, identity: DataPathIdentity) throws {
-        try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
-        guard try AppTransferStore.exists(directory) else { return }
-        let inventory = try inventory()
-        try rejectIssues(inventory.issues, path: path, identity: identity)
-        let path = URL(fileURLWithPath: path).standardizedFileURL.path
-        for record in inventory.records where record.path == path && record.identity.matchesFilesystemObject(identity) {
-            // Re-read by the exact id before deleting bookkeeping; a corrupt
-            // or replaced file must not be discarded as the old valid record.
-            guard try read(record.id) == record else {
-                throw AppTransferTransaction.failure("应用更新保护记录已改变，未改写锁。".localized, at: recordURL(record))
+        try transferStore.withLock {
+            try WriterAdmission.recheck(dataDirectory: writerDataDirectory)
+            guard try AppTransferStore.exists(directory) else { return }
+            let inventory = try inventory()
+            try rejectIssues(inventory.issues, path: path, identity: identity)
+            let path = URL(fileURLWithPath: path).standardizedFileURL.path
+            for record in inventory.records where record.path == path && record.identity.matchesFilesystemObject(identity) {
+                // Re-read by the exact id before deleting bookkeeping; a corrupt
+                // or replaced file must not be discarded as the old valid record.
+                guard try read(record.id) == record else {
+                    throw AppTransferTransaction.failure("应用更新保护记录已改变，未改写锁。".localized, at: recordURL(record))
+                }
+                try FileManager.default.removeItem(at: recordURL(record))
             }
-            try FileManager.default.removeItem(at: recordURL(record))
+            try DurableFileIO.syncDirectory(at: directory)
         }
-        try DurableFileIO.syncDirectory(at: directory)
     }
 
     private func matchingRecord(_ root: URL) throws -> Record? {
@@ -517,26 +546,28 @@ final class AppUpdateProtectionStore {
     }
 
     func inventory() throws -> Inventory {
-        guard try AppTransferStore.exists(directory) else { return .init() }
-        guard try SignatureSnapshot.info(at: directory).st_mode & S_IFMT == S_IFDIR else {
-            throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: directory)
-        }
-        var inventory = Inventory()
-        for url in try SignatureRecordFile.children(in: directory) where url.pathExtension == "plist" {
-            try Task.checkCancellation()
-            var association: Association?
-            do {
-                let data = try SignatureRecordFile.data(at: url)
-                association = try? PropertyListDecoder().decode(Association.self, from: data)
-                inventory.records.append(try decode(data, at: url))
-            } catch is CancellationError { throw CancellationError() }
-            catch {
-                let path = association?.path.flatMap { Self.normalizedPath($0) }
-                inventory.issues.append(.init(url: url, recordID: association?.id, path: path,
-                    identity: association?.identity, detail: error.localizedDescription))
+        try transferStore.withLock {
+            guard try AppTransferStore.exists(directory) else { return .init() }
+            guard try SignatureSnapshot.info(at: directory).st_mode & S_IFMT == S_IFDIR else {
+                throw AppTransferTransaction.failure("应用更新保护来源无法确认。".localized, at: directory)
             }
+            var inventory = Inventory()
+            for url in try SignatureRecordFile.children(in: directory) where url.pathExtension == "plist" {
+                try Task.checkCancellation()
+                var association: Association?
+                do {
+                    let data = try SignatureRecordFile.data(at: url)
+                    association = try? PropertyListDecoder().decode(Association.self, from: data)
+                    inventory.records.append(try decode(data, at: url))
+                } catch is CancellationError { throw CancellationError() }
+                catch {
+                    let path = association?.path.flatMap { Self.normalizedPath($0) }
+                    inventory.issues.append(.init(url: url, recordID: association?.id, path: path,
+                        identity: association?.identity, detail: error.localizedDescription))
+                }
+            }
+            return inventory
         }
-        return inventory
     }
 
     private func currentRecord(_ relocation: Record, at root: URL, identity: DataPathIdentity) throws -> Record {

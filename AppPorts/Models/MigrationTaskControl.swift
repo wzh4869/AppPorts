@@ -51,23 +51,30 @@ final class MigrationTaskControl: @unchecked Sendable {
     }
 
     func checkpointAsync() async throws {
-        while snapshot().pauseRequested {
-            setPaused()
+        while shouldWaitForPause() {
             try await Task.sleep(nanoseconds: 100_000_000)
         }
         try checkpoint()
         try Task.checkCancellation()
     }
 
-    private func setPaused() {
+    private func shouldWaitForPause() -> Bool {
         condition.lock(); defer { condition.unlock() }
-        if state.pauseRequested { state.paused = true }
+        if !state.pauseRequested || state.cancelled || criticalSection {
+            state.paused = false
+            return false
+        }
+        state.paused = true
+        return true
     }
 
     func setCriticalSection(_ value: Bool) {
         condition.lock(); defer { condition.unlock() }
         criticalSection = value
-        if value { state.paused = false }
+        if value {
+            state.paused = false
+            condition.broadcast()
+        }
     }
 }
 

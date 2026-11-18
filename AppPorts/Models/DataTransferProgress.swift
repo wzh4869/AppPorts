@@ -158,7 +158,8 @@ final class DataTransferProgress: @unchecked Sendable {
     }
 
     func track<Result>(_ operation: (@escaping FileCopier.ProgressHandler) async throws -> Result) async rethrows -> Result {
-        try await DataTransferSession.$progress.withValue(self) {
+        defer { MigrationExecution.control?.setCriticalSection(false) }
+        return try await DataTransferSession.$progress.withValue(self) {
             try await DataTransferSession.run {
                 try await operation { self.update($0) }
             }

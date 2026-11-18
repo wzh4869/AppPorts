@@ -52,14 +52,97 @@ actor AppScanner {
         if let cached = infoPlistCache[appURL] {
             return cached.isEmpty ? nil : cached
         }
-        let infoPlistURL = appURL.appendingPathComponent("Contents/Info.plist")
-        guard let plistData = try? Data(contentsOf: infoPlistURL),
+        guard let infoPlistURL = infoPlistURL(for: appURL),
+              let plistData = try? Data(contentsOf: infoPlistURL),
               let plist = try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any] else {
             infoPlistCache[appURL] = [:]
             return nil
         }
         infoPlistCache[appURL] = plist
         return plist
+    }
+
+    private func infoPlistURL(for appURL: URL) -> URL? {
+        let macOSPlist = appURL.appendingPathComponent("Contents/Info.plist")
+        if FileManager.default.fileExists(atPath: macOSPlist.path) {
+            return macOSPlist
+        }
+
+        let root = (DiskUtility.resolvedPath(appURL.path).map { URL(fileURLWithPath: $0) }
+            ?? appURL.resolvingSymlinksInPath()).standardizedFileURL
+        var visited = Set<String>()
+        return Self.findBundleInfoPlist(at: root, root: root, depth: 0, visited: &visited)
+    }
+
+    private static func findBundleInfoPlist(
+        at url: URL,
+        root: URL,
+        depth: Int,
+        visited: inout Set<String>
+    ) -> URL? {
+        let bundleURL = (DiskUtility.resolvedPath(url.path).map { URL(fileURLWithPath: $0) }
+            ?? url.resolvingSymlinksInPath()).standardizedFileURL
+        guard isInsideBundleRoot(bundleURL, root: root),
+              visited.insert(bundleURL.path).inserted,
+              depth <= 8 else {
+            return nil
+        }
+
+        let fm = FileManager.default
+        for relativePath in ["Contents/Info.plist", "Info.plist"] {
+            let plistURL = bundleURL.appendingPathComponent(relativePath)
+            guard fm.fileExists(atPath: plistURL.path) else { continue }
+            let resolvedPlist = (DiskUtility.resolvedPath(plistURL.path).map { URL(fileURLWithPath: $0) }
+                ?? plistURL.resolvingSymlinksInPath()).standardizedFileURL
+            guard isInsideBundleRoot(resolvedPlist, root: root) else { return nil }
+            return plistURL
+        }
+
+        let wrapped = bundleURL.appendingPathComponent("WrappedBundle")
+        if (try? fm.destinationOfSymbolicLink(atPath: wrapped.path)) != nil || fm.fileExists(atPath: wrapped.path) {
+            guard let resolvedPath = DiskUtility.resolvedPath(wrapped.path) else { return nil }
+            let target = URL(fileURLWithPath: resolvedPath).standardizedFileURL
+            var isDir: ObjCBool = false
+            guard isInsideBundleRoot(target, root: root),
+                  fm.fileExists(atPath: target.path, isDirectory: &isDir),
+                  isDir.boolValue else {
+                return nil
+            }
+            return findBundleInfoPlist(at: target, root: root, depth: depth + 1, visited: &visited)
+        }
+
+        let wrapper = bundleURL.appendingPathComponent("Wrapper")
+        guard fm.fileExists(atPath: wrapper.path),
+              let resolvedWrapperPath = DiskUtility.resolvedPath(wrapper.path),
+              isInsideBundleRoot(URL(fileURLWithPath: resolvedWrapperPath), root: root),
+              let entries = try? fm.contentsOfDirectory(
+                  at: wrapper,
+                  includingPropertiesForKeys: [.isDirectoryKey],
+                  options: .skipsHiddenFiles
+              ) else {
+            return nil
+        }
+
+        let candidates = entries.filter { candidate in
+            guard candidate.pathExtension.lowercased() == "app" else { return false }
+            if (try? fm.destinationOfSymbolicLink(atPath: candidate.path)) != nil { return true }
+            return (try? candidate.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+        }
+        guard candidates.count == 1,
+              let candidate = candidates.first,
+              let resolvedCandidatePath = DiskUtility.resolvedPath(candidate.path) else {
+            return nil
+        }
+        return findBundleInfoPlist(
+            at: URL(fileURLWithPath: resolvedCandidatePath),
+            root: root,
+            depth: depth + 1,
+            visited: &visited
+        )
+    }
+
+    private static func isInsideBundleRoot(_ url: URL, root: URL) -> Bool {
+        url.standardizedFileURL.pathComponents.starts(with: root.standardizedFileURL.pathComponents)
     }
 
     private struct ScanCandidate {
@@ -668,9 +751,15 @@ actor AppScanner {
         let receiptURL = appURL.appendingPathComponent("Contents/_MASReceipt")
         let hasMASReceipt = fileManager.fileExists(atPath: receiptURL.path)
 
-        // 2. 检测 WrappedBundle（iOS 应用容器）
+        // 2. 检测 WrappedBundle / Wrapper/*.app（iOS 应用容器）
         let wrappedBundleURL = appURL.appendingPathComponent("WrappedBundle")
         let hasWrappedBundle = fileManager.fileExists(atPath: wrappedBundleURL.path)
+        let wrapperURL = appURL.appendingPathComponent("Wrapper")
+        let hasWrapperBundle = (try? fileManager.contentsOfDirectory(
+            at: wrapperURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: .skipsHiddenFiles
+        ))?.contains(where: { $0.pathExtension.lowercased() == "app" }) == true
 
         var isIOSApp = false
         var isAppStore = hasMASReceipt
@@ -697,8 +786,8 @@ actor AppScanner {
             }
         }
 
-        // 4. 如果有 WrappedBundle，肯定是 iOS 应用
-        if hasWrappedBundle {
+        // 4. 如果有 WrappedBundle 或 Wrapper/*.app，肯定是 iOS 应用
+        if hasWrappedBundle || hasWrapperBundle {
             isIOSApp = true
             isAppStore = true
         }

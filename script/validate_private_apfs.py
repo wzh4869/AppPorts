@@ -61,7 +61,7 @@ class Coordinator:
         self.image_gib = image_gib
         stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         self.output = repository / "build/Validation" / ("v3-real-mount-" + stamp + "-" + uuid.uuid4().hex[:8])
-        self.output.mkdir(mode=0o700)
+        self.output.mkdir(parents=True, mode=0o700)
         self.commands = []
         self.fixture = None
 

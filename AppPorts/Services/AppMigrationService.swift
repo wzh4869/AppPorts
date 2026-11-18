@@ -78,7 +78,7 @@ struct AppMigrationService {
         signatureFactStore: SignatureFactStore = SignatureFactStore(),
         transferHooks: AppTransferHooks = .init(),
         writerAdmissionCheck: (() throws -> Void)? = nil,
-        updaterCacheDirectory: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches"),
+        updaterCacheDirectory: URL? = nil,
         runningApplications: @escaping () -> [AppRunningState.RunningApplication] = {
             NSWorkspace.shared.runningApplications.map {
                 .init(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
@@ -86,7 +86,11 @@ struct AppMigrationService {
         }
     ) {
         self.fileManager = fileManager
-        self.updaterCacheDirectory = updaterCacheDirectory
+        self.updaterCacheDirectory = updaterCacheDirectory ?? (
+            transferStore === AppTransferStore.shared
+                ? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches")
+                : FileManager.default.temporaryDirectory.appendingPathComponent("AppPorts-IsolatedUpdaterCaches")
+        )
         self.portalCreationOverride = portalCreationOverride
         self.dockShortcutUpdater = dockShortcutUpdater ?? { source, destination in
             try DockShortcutService.shared.redirectShortcuts(from: source, to: destination)
@@ -1706,12 +1710,21 @@ struct AppMigrationService {
             AppLogger.shared.log("已创建符号链接: \(localURL.path) -> \(externalURL.path)")
 
         case .deepContentsWrapper:
-            try fileManager.createDirectory(at: localURL, withIntermediateDirectories: false, attributes: nil)
-            let localContentsURL = localURL.appendingPathComponent("Contents")
+            let stageURL = localURL.deletingLastPathComponent()
+                .appendingPathComponent(".appports-create-\(UUID().uuidString).app")
+            var installed = false
+            defer {
+                if !installed { try? fileManager.removeItem(at: stageURL) }
+            }
+            try fileManager.createDirectory(at: stageURL, withIntermediateDirectories: false, attributes: nil)
+            let stagedContentsURL = stageURL.appendingPathComponent("Contents")
             let externalContentsURL = externalURL.appendingPathComponent("Contents")
-            try fileManager.createSymbolicLink(at: localContentsURL, withDestinationURL: externalContentsURL)
-            AppLogger.shared.log("已创建 Contents 符号链接: \(localContentsURL.path) -> \(externalContentsURL.path)")
-            try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: localURL.path)
+            try fileManager.createSymbolicLink(at: stagedContentsURL, withDestinationURL: externalContentsURL)
+            try? fileManager.setAttributes([.modificationDate: Date()], ofItemAtPath: stageURL.path)
+            try recheckWriterAdmission()
+            try fileManager.moveItem(at: stageURL, to: localURL)
+            installed = true
+            AppLogger.shared.log("已创建 Contents 符号链接: \(localURL.appendingPathComponent("Contents").path) -> \(externalContentsURL.path)")
 
         case .stubPortal:
             try createStubPortal(at: localURL, pointingTo: externalURL)
@@ -1738,7 +1751,17 @@ struct AppMigrationService {
 
         // Existing entries, including concurrently installed real folders, must not be overwritten.
         try recheckWriterAdmission()
-        try fm.createDirectory(at: localFolderURL, withIntermediateDirectories: false, attributes: nil)
+        if (try? fm.attributesOfItem(atPath: localFolderURL.path)) != nil {
+            throw CocoaError(.fileWriteFileExists, userInfo: [NSFilePathErrorKey: localFolderURL.path])
+        }
+
+        let stageFolderURL = localFolderURL.deletingLastPathComponent()
+            .appendingPathComponent(".appports-create-\(UUID().uuidString)")
+        var installed = false
+        defer {
+            if !installed { try? fm.removeItem(at: stageFolderURL) }
+        }
+        try fm.createDirectory(at: stageFolderURL, withIntermediateDirectories: false, attributes: nil)
 
         let entries = (try? fm.contentsOfDirectory(
             at: externalFolderURL,
@@ -1750,31 +1773,34 @@ struct AppMigrationService {
         var linkCount = 0
         for entry in entries {
             try recheckWriterAdmission()
-            let localEntry = localFolderURL.appendingPathComponent(entry.lastPathComponent)
+            let stagedEntry = stageFolderURL.appendingPathComponent(entry.lastPathComponent)
             if entry.pathExtension == "app" {
                 do {
-                    try createStubPortal(at: localEntry, pointingTo: entry)
+                    try createStubPortal(at: stagedEntry, pointingTo: entry, register: false)
                     stubCount += 1
                 } catch {
                     AppLogger.shared.logError(
                         "Folder Mirror：创建内部 Stub 失败，回退为符号链接",
                         error: error,
                         errorCode: "FOLDER-MIRROR-STUB-FAILED",
-                        relatedURLs: [("local", localEntry), ("external", entry)]
+                        relatedURLs: [("local", stagedEntry), ("external", entry)]
                     )
                     // Exclusive creation must fail if a real app appeared while staging.
                     try recheckWriterAdmission()
-                    try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+                    try fm.createSymbolicLink(at: stagedEntry, withDestinationURL: entry)
                     linkCount += 1
                 }
             } else {
-                try fm.createSymbolicLink(at: localEntry, withDestinationURL: entry)
+                try fm.createSymbolicLink(at: stagedEntry, withDestinationURL: entry)
                 linkCount += 1
             }
         }
 
-        try writeFolderPortalMarker(in: localFolderURL, externalFolderURL: externalFolderURL)
-        try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: localFolderURL.path)
+        try writeFolderPortalMarker(in: stageFolderURL, externalFolderURL: externalFolderURL)
+        try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: stageFolderURL.path)
+        try recheckWriterAdmission()
+        try fm.moveItem(at: stageFolderURL, to: localFolderURL)
+        installed = true
 
         AppLogger.shared.log(
             "已创建 Folder Mirror: \(localFolderURL.lastPathComponent) (stubs=\(stubCount), links=\(linkCount)) -> \(externalFolderURL.path)"
@@ -1934,8 +1960,18 @@ struct AppMigrationService {
     }
 
     /// iOS 应用的 Stub Portal
-    private func createIOSStubPortal(at localURL: URL, pointingTo externalURL: URL) throws {
+    private func createIOSStubPortal(at destinationURL: URL, pointingTo externalURL: URL) throws {
         let fm = fileManager
+        try recheckWriterAdmission()
+        if (try? fm.attributesOfItem(atPath: destinationURL.path)) != nil {
+            throw CocoaError(.fileWriteFileExists, userInfo: [NSFilePathErrorKey: destinationURL.path])
+        }
+        let localURL = destinationURL.deletingLastPathComponent()
+            .appendingPathComponent(".appports-create-\(UUID().uuidString).app")
+        var installed = false
+        defer {
+            if !installed { try? fm.removeItem(at: localURL) }
+        }
         let localContents = localURL.appendingPathComponent("Contents")
         let localMacOS = localContents.appendingPathComponent("MacOS")
         let localResources = localContents.appendingPathComponent("Resources")
@@ -1965,7 +2001,7 @@ struct AppMigrationService {
             throw AppMoverError.generalError(CocoaError(.fileReadCorruptFile))
         }
         do {
-            let appName = metadata["title"] as? String ?? localURL.deletingPathExtension().lastPathComponent
+            let appName = metadata["title"] as? String ?? destinationURL.deletingPathExtension().lastPathComponent
             let version = identityMetadata?["CFBundleShortVersionString"] as? String ?? metadata["bundleShortVersionString"] as? String ?? "1.0"
 
             let plist: [String: Any] = [
@@ -1987,10 +2023,13 @@ struct AppMigrationService {
         // 5. 写入 PkgInfo
         try "APPL????".write(to: localContents.appendingPathComponent("PkgInfo"), atomically: true, encoding: .utf8)
 
-        // 6. 清除可移扩展属性（iOS stub 为脚本壳，不需要代码签名）
+        // 6. 清除可移扩展属性并原子落位（iOS stub 为脚本壳，不需要代码签名）
         Self.stripNonSystemExtendedAttributes(in: localURL)
+        try recheckWriterAdmission()
+        try fm.moveItem(at: localURL, to: destinationURL)
+        installed = true
 
-        AppLogger.shared.log("已创建 iOS Stub Portal: \(localURL.lastPathComponent) -> \(externalURL.path)")
+        AppLogger.shared.log("已创建 iOS Stub Portal: \(destinationURL.lastPathComponent) -> \(externalURL.path)")
     }
 
     /// macOS 应用的 Stub Portal. The private workspace owns only newly created files.
@@ -2175,39 +2214,6 @@ struct AppMigrationService {
         }
     }
 
-    private func refreshLaunchServices(for appURL: URL) {
-        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: lsregister)
-        process.arguments = ["-f", appURL.path]
-        do {
-            try process.run()
-            process.waitUntilExit()
-            if process.terminationStatus != 0 {
-                AppLogger.shared.log("lsregister 退出码: \(process.terminationStatus)", level: "WARN")
-            }
-        } catch {
-            AppLogger.shared.log("lsregister 刷新失败: \(appURL.lastPathComponent)", level: "WARN")
-        }
-    }
-
-    /// 递归刷新 Launch Services（Folder Mirror：需注册文件夹内部的所有 Stub）
-    private func refreshLaunchServicesRecursive(for folderURL: URL) {
-        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: lsregister)
-        process.arguments = ["-f", "-R", folderURL.path]
-        do {
-            try process.run()
-            process.waitUntilExit()
-            if process.terminationStatus != 0 {
-                AppLogger.shared.log("lsregister 退出码: \(process.terminationStatus)", level: "WARN")
-            }
-        } catch {
-            AppLogger.shared.log("lsregister 递归刷新失败: \(folderURL.lastPathComponent)", level: "WARN")
-        }
-    }
-
     private static let systemProtectedExtendedAttributes: Set<String> = [
         "com.apple.provenance", "com.apple.quarantine", "com.apple.macl", "com.apple.decmpfs"
     ]
@@ -2255,6 +2261,39 @@ struct AppMigrationService {
                 let children = (try? FileManager.default.contentsOfDirectory(atPath: current.path)) ?? []
                 pending.append(contentsOf: children.map { current.appendingPathComponent($0) })
             }
+        }
+    }
+
+    private func refreshLaunchServices(for appURL: URL) {
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: lsregister)
+        process.arguments = ["-f", appURL.path]
+        do {
+            try process.run()
+            process.waitUntilExit()
+            if process.terminationStatus != 0 {
+                AppLogger.shared.log("lsregister 退出码: \(process.terminationStatus)", level: "WARN")
+            }
+        } catch {
+            AppLogger.shared.log("lsregister 刷新失败: \(appURL.lastPathComponent)", level: "WARN")
+        }
+    }
+
+    /// 递归刷新 Launch Services（Folder Mirror：需注册文件夹内部的所有 Stub）
+    private func refreshLaunchServicesRecursive(for folderURL: URL) {
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: lsregister)
+        process.arguments = ["-f", "-R", folderURL.path]
+        do {
+            try process.run()
+            process.waitUntilExit()
+            if process.terminationStatus != 0 {
+                AppLogger.shared.log("lsregister 退出码: \(process.terminationStatus)", level: "WARN")
+            }
+        } catch {
+            AppLogger.shared.log("lsregister 递归刷新失败: \(folderURL.lastPathComponent)", level: "WARN")
         }
     }
 

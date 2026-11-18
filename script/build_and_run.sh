@@ -21,8 +21,15 @@ if [[ "$appports_configuration" == Release ]]; then
   appports_inject_base_entitlements=NO
 fi
 
-if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode.app/Contents/Developer ]]; then
-  export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+if [[ -z "${DEVELOPER_DIR:-}" ]]; then
+  if [[ -d /Applications/Xcode.app/Contents/Developer ]]; then
+    export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+  elif [[ -f /Applications/Xcode.app/Contents/Resources/real_app_path.txt ]]; then
+    appports_real_xcode="$(tr -d '\r\n' < /Applications/Xcode.app/Contents/Resources/real_app_path.txt)"
+    if [[ -n "$appports_real_xcode" && -d "$appports_real_xcode/Contents/Developer" ]]; then
+      export DEVELOPER_DIR="$appports_real_xcode/Contents/Developer"
+    fi
+  fi
 fi
 
 xcodebuild build \
@@ -35,6 +42,10 @@ xcodebuild build \
   CODE_SIGN_IDENTITY="$appports_signing_identity" \
   CODE_SIGN_INJECT_BASE_ENTITLEMENTS="$appports_inject_base_entitlements" \
   DEVELOPMENT_TEAM="$appports_signing_team"
+
+if [[ -d "$appports_bundle" ]]; then
+  appports_bundle="$(cd "$appports_bundle" && pwd -P)"
+fi
 
 if [[ "$appports_mode" == --build-only ]]; then
   printf 'Built AppPorts: %s\n' "$appports_bundle"

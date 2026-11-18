@@ -2644,10 +2644,25 @@ actor ContainerVolumeMigrator {
                 // 迁移前建的卷（或标记被删掉的卷）在这里补上防索引标记；失败只记日志，不影响挂载。
                 return
             case .reportedByDiskUtil:
-                // statfs 还没看到挂载表更新，但磁盘仲裁已经确认卷在目标路径上了，按成功处理。
-                // 这时不写防索引标记：标记是普通文件，写错地方会落在容器里的空目录上。
+                // statfs 尚未观察到新挂载，等待挂载表刷新并复核所有权后再放行，不重复执行 mount 命令。
+                for settleAttempt in 1...Self.maximumMountAttempts {
+                    try? await Task.sleep(nanoseconds: Self.mountRetrySettleNanoseconds)
+                    let refreshed = try await mountLanding(volumeUUID: volumeUUID, at: mountPoint)
+                    if refreshed.landing == .mountPointVisible {
+                        AppLogger.shared.logContext(
+                            "等待挂载表刷新后挂载点已就位",
+                            details: [
+                                ("operation_id", operationID),
+                                ("settle_attempt", "\(settleAttempt)/\(Self.maximumMountAttempts)"),
+                                ("mount_point", mountPoint.path)
+                            ]
+                        )
+                        if requireOwnership { try requireOwners(at: mountPoint) }
+                        return
+                    }
+                }
                 AppLogger.shared.logContext(
-                    "挂载校验以磁盘仲裁结果为准（statfs 尚未刷新）",
+                    "磁盘仲裁已报告挂载，但挂载表超时仍未刷新",
                     details: [("operation_id", operationID), ("mount_point", mountPoint.path)],
                     level: "WARN"
                 )

@@ -123,7 +123,7 @@ actor OperationMaintenance {
                     return []
                 }
                 if transfer.mode == .symlink {
-                    let warning = try await DataDirMover().resumeVerifiedTransfer(operationID: retryOperationID, progressHandler: nil)
+                    let warning = try await DataDirMover(allowsAdministratorPrompt: interactive).resumeVerifiedTransfer(operationID: retryOperationID, progressHandler: nil)
                     return warning.map { [$0] } ?? []
                 }
                 return await migrator.performAutomaticMaintenance(only: retryOperationID, ignoresRetryBackoff: true)
@@ -146,7 +146,7 @@ actor OperationMaintenance {
                 if !interactive, transfer.isDataSwitchComplete,
                    CleanupRetryBackoff.shouldDefer(until: transfer.nextAutomaticRetryAt, now: Date()) { continue }
                 do {
-                    let warning = try await DataDirMover().resumeVerifiedTransfer(operationID: transfer.operationID, progressHandler: nil)
+                    let warning = try await DataDirMover(allowsAdministratorPrompt: interactive).resumeVerifiedTransfer(operationID: transfer.operationID, progressHandler: nil)
                     if let warning { warnings.append(warning) }
                     if warning != nil { CleanupRetryContext.recordFailureIfUnchanged(transfer, store: store) }
                 } catch {

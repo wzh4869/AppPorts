@@ -171,21 +171,34 @@ enum CustomDirValidator {
 
         let localPath = normalizedPath(localURL)
         let externalBasePath = normalizedPath(externalBaseURL)
-        let finalPath = normalizedPath(
-            externalBaseURL.appendingPathComponent(localURL.lastPathComponent)
+        let resolvedExternalBasePath = normalizedPath(externalBaseURL.resolvingSymlinksInPath())
+        let finalURL = externalBaseURL.appendingPathComponent(localURL.lastPathComponent)
+        let finalPath = normalizedPath(finalURL)
+        let resolvedFinalPath = normalizedPath(
+            fileManager.fileExists(atPath: finalURL.path)
+                ? finalURL.resolvingSymlinksInPath()
+                : externalBaseURL.resolvingSymlinksInPath().appendingPathComponent(localURL.lastPathComponent)
         )
 
-        if isDescendant(finalPath, of: localPath) {
+        if isDescendant(finalPath, of: localPath) || isDescendant(resolvedFinalPath, of: resolvedLocalPath) {
+        let resolvedLocalPath = normalizedPath(localURL.resolvingSymlinksInPath())
             throw CustomDirValidationError.externalInsideLocal
         }
 
-        if isDescendant(localPath, of: finalPath) || localPath == externalBasePath {
+        if isDescendant(localPath, of: finalPath) || localPath == externalBasePath
+            || isDescendant(resolvedLocalPath, of: resolvedFinalPath) || resolvedLocalPath == resolvedExternalBasePath {
             throw CustomDirValidationError.localInsideExternal
         }
 
         for config in existingConfigs {
-            if pathsOverlap(finalPath, normalizedPath(config.localURL))
-                || pathsOverlap(finalPath, normalizedPath(config.externalDestinationURL)) {
+            let existingLocal = normalizedPath(config.localURL)
+            let resolvedExistingLocal = normalizedPath(config.localURL.resolvingSymlinksInPath())
+            let existingExternal = normalizedPath(config.externalDestinationURL)
+            let resolvedExistingExternal = normalizedPath(config.externalDestinationURL.resolvingSymlinksInPath())
+            if pathsOverlap(finalPath, existingLocal)
+                || pathsOverlap(finalPath, existingExternal)
+                || pathsOverlap(resolvedFinalPath, resolvedExistingLocal)
+                || pathsOverlap(resolvedFinalPath, resolvedExistingExternal) {
                 throw CustomDirValidationError.externalOverlapsManagedDirectory
             }
         }
@@ -203,9 +216,12 @@ enum CustomDirValidator {
         guard fileManager.fileExists(atPath: externalBasePath, isDirectory: &isExternalDir),
               isExternalDir.boolValue else {
             throw CustomDirValidationError.externalNotDirectory
+        let resolvedExternalBasePath = normalizedPath(externalBaseURL.resolvingSymlinksInPath())
         }
+        let resolvedHomePath = normalizedPath(homeURL.resolvingSymlinksInPath())
 
-        if isSameOrDescendant(externalBasePath, of: homePath) {
+        if isSameOrDescendant(externalBasePath, of: homePath)
+            || isSameOrDescendant(resolvedExternalBasePath, of: resolvedHomePath) {
             throw CustomDirValidationError.externalInsideHome
         }
     }

@@ -334,12 +334,38 @@ enum SignatureSnapshot {
 
     /// codesign --deep 不能通过工作副本里的链接修改包外代码（包括原应用）。
     static func validateLinksForSigning(in root: URL) throws {
-        let prefix = root.resolvingSymlinksInPath().path + "/"
+        let rootStandardized = root.standardizedFileURL.path
+        let resolvedRoot = (DiskUtility.resolvedPath(root.path) ?? root.resolvingSymlinksInPath().path)
+        let resolvedPrefix = resolvedRoot + "/"
+        let lexicalPrefix = rootStandardized + "/"
         for url in try items(in: root) where try info(at: url).st_mode & S_IFMT == S_IFLNK {
-            guard url.resolvingSymlinksInPath().path.hasPrefix(prefix) else {
+            let raw = try FileManager.default.destinationOfSymbolicLink(atPath: url.path)
+            let lexical = URL(fileURLWithPath: raw, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
+            guard lexical.path != rootStandardized,
+                  lexical.path.hasPrefix(lexicalPrefix),
+                  resolvedTargetincludingMissing(lexical).hasPrefix(resolvedPrefix) else {
                 throw CodeSigner.SigningError.codesignFailed("应用包含指向包外的符号链接，已停止重签名以保护原始文件。".localized)
             }
         }
+    }
+
+    private static func resolvedTargetincludingMissing(_ target: URL) -> String {
+        var current = target.standardizedFileURL
+        var trailing: [String] = []
+        while current.path != "/" {
+            if let real = DiskUtility.resolvedPath(current.path) {
+                var combined = URL(fileURLWithPath: real)
+                for component in trailing.reversed() {
+                    combined.appendPathComponent(component)
+                }
+                return combined.standardizedFileURL.path
+            }
+            trailing.append(current.lastPathComponent)
+            let parent = current.deletingLastPathComponent()
+            if parent.path == current.path { break }
+            current = parent
+        }
+        return target.resolvingSymlinksInPath().standardizedFileURL.path
     }
 
     /// 同卷交换，失败时两边都保持原样。明确拒绝不支持该能力的存储，不降级为先删后复制。

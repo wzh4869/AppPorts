@@ -434,15 +434,27 @@ final class ContainerMountStore: @unchecked Sendable {
                 current.remountInterventions.removeValue(forKey: existing.volumeUUID.uppercased())
             }
             try verifyingFilesystem()
+            guard additionalMaterialPaths.allSatisfy(self.validPath) else {
+                throw StoreError.invalidState("Invalid additional rollback material path")
+            }
             if let reason {
                 guard !reason.isEmpty else { throw StoreError.invalidState("Preserved material requires a reason") }
                 var pending = expected
                 pending.rollbackCompletedAt = pending.rollbackCompletedAt ?? Date()
                 pending.phase = .needsRecovery
                 pending.recoverableReason = reason
+                let knownRoots = pending.topologyEntries.map(\.path)
+                guard additionalMaterialPaths.allSatisfy({ extra in
+                    knownRoots.contains { DataPathTopology.overlaps(DataPathTopology.relationship($0, extra)) }
+                }) else {
+                    throw StoreError.invalidState("Rollback material path is not reserved by the journal")
+                }
                 current.transfers[index] = pending
                 current.schemaVersion = max(current.schemaVersion, 9)
             } else {
+                guard additionalMaterialPaths.isEmpty else {
+                    throw StoreError.invalidState("Cannot retire rollback while material paths remain")
+                }
                 current.transfers.remove(at: index)
             }
         }

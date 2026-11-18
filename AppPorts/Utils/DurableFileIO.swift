@@ -142,7 +142,7 @@ enum DurableFileIO {
                 }
                 defer { _ = close(childDescriptor) }
                 try syncNode(childDescriptor, url: childURL, device: device,
-                             exclusions: exclusions, barrier: barrier)
+                             exclusions: [], barrier: barrier)
             }
             try synchronize(descriptor, url: url, full: false)
         default:

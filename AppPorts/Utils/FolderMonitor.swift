@@ -35,27 +35,31 @@ class FolderMonitor {
     /// 被监控的目录 URL
     private let url: URL
 
-    /// 目录的文件描述符
-    private var fileDescriptor: CInt = -1
+    /// 状态互斥锁（防止并发启动/停止/析构竞争）
+    private let stateLock = NSLock()
 
     /// GCD 文件系统监控源
     private var dispatchSource: DispatchSourceFileSystemObject?
 
-    /// 监控事件的调度队列（并发队列）
-    private let queue = DispatchQueue(label: "com.shimoko.AppPorts.folderMonitor", attributes: .concurrent)
+    /// 监控事件的串行调度队列
+    private let queue = DispatchQueue(label: "com.shimoko.AppPorts.folderMonitor")
 
     /// 文件夹变化时的回调闭包
     private var onChange: (() -> Void)?
 
     /// 防抖计时器
     private var debounceTimer: DispatchWorkItem?
+
+    /// 测试钩子：观察每次描述符关闭结果 (fd, closeReturnCode)
+    private let onDescriptorClosed: (@Sendable (Int32, Int32) -> Void)?
     
     // MARK: - 初始化
     
     /// 创建文件夹监控器
     /// - Parameter url: 要监控的目录 URL
-    init(url: URL) {
+    init(url: URL, onDescriptorClosed: (@Sendable (Int32, Int32) -> Void)? = nil) {
         self.url = url
+        self.onDescriptorClosed = onDescriptorClosed
     }
     
     // MARK: - 监控 API
@@ -67,7 +71,7 @@ class FolderMonitor {
     /// - Note: 如果目录不存在，监控不会启动
     /// - Note: 回调在后台队列执行，需要在主线程更新 UI
     func startMonitoring(onChange: @escaping () -> Void) {
-        self.onChange = onChange
+        stopMonitoring()
         AppLogger.shared.logContext("FolderMonitor 开始监控请求", details: [("path", url.path)], level: "TRACE")
         
         // 确保文件夹存在
@@ -80,9 +84,9 @@ class FolderMonitor {
             return
         }
         
-        // 打开目录获取文件描述符（只读模式）
-        fileDescriptor = open(url.path, O_EVTONLY)
-        guard fileDescriptor != -1 else {
+        // 打开目录获取文件描述符（只读事件模式，禁止子进程继承描述符）
+        let descriptor = open(url.path, O_EVTONLY | O_CLOEXEC)
+        guard descriptor != -1 else {
             let error = NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: [NSLocalizedDescriptionKey: String(cString: strerror(errno))])
             AppLogger.shared.logError(
                 "FolderMonitor 启动失败：无法打开目录",
@@ -94,31 +98,49 @@ class FolderMonitor {
         }
         
         // 创建文件系统监控源（监听写操作事件）
-        dispatchSource = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fileDescriptor, eventMask: .write, queue: queue)
+        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: queue)
         
         // 设置事件处理器（1 秒防抖，避免迁移期间扫描风暴）
-        dispatchSource?.setEventHandler { [weak self] in
-            guard let self else { return }
-            self.debounceTimer?.cancel()
-            let work = DispatchWorkItem { [weak self] in
-                guard let self else { return }
-                AppLogger.shared.logContext("FolderMonitor 检测到目录变化", details: [("path", self.url.path)], level: "TRACE")
-                self.onChange?()
+        source.setEventHandler { [weak self, weak source] in
+            guard let self, let source, !source.isCancelled else { return }
+            let work = DispatchWorkItem { [weak self, weak source] in
+                let callback: (() -> Void)? = {
+                    guard let self, let source, !source.isCancelled else { return nil }
+                    self.stateLock.lock()
+                    defer { self.stateLock.unlock() }
+                    guard self.dispatchSource === source else { return nil }
+                    return self.onChange
+                }()
+                guard let callback else { return }
+                AppLogger.shared.logContext("FolderMonitor 检测到目录变化", details: [("path", self?.url.path)], level: "TRACE")
+                callback()
             }
-            self.debounceTimer = work
-            self.queue.asyncAfter(deadline: .now() + 1.0, execute: work)
+            self.stateLock.lock()
+            let isCurrent = self.dispatchSource === source
+            if isCurrent {
+                self.debounceTimer?.cancel()
+                self.debounceTimer = work
+            }
+            self.stateLock.unlock()
+            if isCurrent {
+                self.queue.asyncAfter(deadline: .now() + 1.0, execute: work)
+            }
         }
         
-        // 设置取消处理器（清理资源）
-        dispatchSource?.setCancelHandler { [weak self] in
-            guard let self = self else { return }
-            close(self.fileDescriptor)
-            self.fileDescriptor = -1
-            self.dispatchSource = nil
+        // 取消处理器直接关闭本次独立捕获的描述符，不依赖 self 存活，避免析构/切换泄漏外置盘 FD
+        let closedObserver = self.onDescriptorClosed
+        source.setCancelHandler {
+            let rc = close(descriptor)
+            closedObserver?(descriptor, rc)
         }
         
+        stateLock.lock()
+        self.onChange = onChange
+        self.dispatchSource = source
+        stateLock.unlock()
+
         // 启动监控
-        dispatchSource?.resume()
+        source.resume()
         AppLogger.shared.logContext("FolderMonitor 已启动", details: [("path", url.path)], level: "TRACE")
     }
     
@@ -126,13 +148,19 @@ class FolderMonitor {
     ///
     /// - Note: 会触发取消处理器，自动关闭文件描述符
     func stopMonitoring() {
-        debounceTimer?.cancel()
+        stateLock.lock()
+        let timer = debounceTimer
+        let source = dispatchSource
         debounceTimer = nil
-        if dispatchSource != nil {
+        dispatchSource = nil
+        onChange = nil
+        stateLock.unlock()
+
+        timer?.cancel()
+        if let source {
             AppLogger.shared.logContext("FolderMonitor 停止监控", details: [("path", url.path)], level: "TRACE")
+            source.cancel()
         }
-        dispatchSource?.cancel()
-        // 取消处理器会关闭文件描述符
     }
     
     // MARK: - 生命周期

@@ -36,7 +36,10 @@ final class AppOperationState: ObservableObject {
     func setMigrationCount(_ count: Int) {
         let wasBusy = isBusy
         migrationCount = count
-        if wasBusy && !isBusy { recordsRevision &+= 1 }
+        if wasBusy && !isBusy {
+            recordsRevision &+= 1
+            completeTerminationIfIdle()
+        }
     }
 
     func begin() -> UUID? {
@@ -53,10 +56,16 @@ final class AppOperationState: ObservableObject {
         // Publish once at the end of a foreground operation, not on every
         // journal phase. Idle windows also observe background store changes.
         recordsRevision &+= 1
-        let reply = terminationReply
+        completeTerminationIfIdle()
+        if terminationReply == nil {
+            MigrationTaskCenter.shared.schedule()
+        }
+    }
+
+    private func completeTerminationIfIdle() {
+        guard !isBusy, let reply = terminationReply else { return }
         terminationReply = nil
-        reply?()
-        MigrationTaskCenter.shared.schedule()
+        reply()
     }
 
     func registerCancellation(for token: UUID, _ cancel: @escaping () -> Void) {

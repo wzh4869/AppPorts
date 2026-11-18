@@ -317,7 +317,7 @@ final class OperationLockTests: XCTestCase {
         XCTAssertFalse(maintenance.contains("OperationLock.shared"))
         let lockGuard = try XCTUnwrap(maintenance.range(of: "guard await lock.acquire("))
         for mutation in ["await migrator.performAutomaticMaintenance(ignoresRetryBackoff: interactive)", "await migrator.remountAvailableRecords()",
-                         "await DataDirMover().resumeVerifiedTransfer("] {
+                         "await DataDirMover(allowsAdministratorPrompt: interactive).resumeVerifiedTransfer("] {
             let operation = try XCTUnwrap(maintenance.range(of: mutation))
             XCTAssertLessThan(lockGuard.lowerBound, operation.lowerBound)
             XCTAssertTrue(maintenance[lockGuard.upperBound..<operation.lowerBound].contains("return ["),

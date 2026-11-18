@@ -268,8 +268,12 @@ final class AppDelegate: NSObject {
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         proc.arguments = ["-e", script]
-        try? proc.run()
-        proc.waitUntilExit()
+        do {
+            try proc.run()
+            proc.waitUntilExit()
+        } catch {
+            logger.error("Dialog helper failed: \(String(describing: error), privacy: .public)")
+        }
     }
 }
 
