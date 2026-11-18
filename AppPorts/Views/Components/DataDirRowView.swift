@@ -24,6 +24,8 @@ struct DataDirRowView: View {
     var onMountRestore: ((DataDirItem) -> Void)? = nil
     /// 经典模式：容器目录同时提供符号链接「迁移」
     var classicModeActive: Bool = false
+    var activeStatus: String? = nil
+    var onViewTask: (() -> Void)? = nil
 
     @State private var isHovered = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -102,8 +104,8 @@ struct DataDirRowView: View {
                 }
 
                 // 状态徽章
-                DataDirStatusBadge(status: item.displayedStatus)
-                if item.autoMountPaused {
+                DataDirStatusBadge(status: activeStatus ?? item.displayedStatus)
+                if activeStatus == nil, item.autoMountPaused {
                     DataDirStatusBadge(status: DataDirStatus.mountPaused)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
@@ -150,7 +152,8 @@ struct DataDirRowView: View {
             onMount: onMount,
             onUnmount: onUnmount,
             onMountRestore: onMountRestore,
-            classicModeActive: classicModeActive
+            classicModeActive: classicModeActive,
+            onViewTask: onViewTask
         )
     }
 
@@ -180,6 +183,7 @@ struct DataDirOperationButtons: View {
     var classicModeActive: Bool = false
     /// 行内保留全部直接操作，次要操作使用图标以节省名称空间。
     var inline = false
+    var onViewTask: (() -> Void)? = nil
 
     private var existingContainerRecovery: Bool {
         !classicModeActive && (item.type == .containers || item.type == .groupContainers)
@@ -187,7 +191,11 @@ struct DataDirOperationButtons: View {
 
     @ViewBuilder
     var body: some View {
-        if !item.weChatSplitMembers.isEmpty {
+        if let onViewTask {
+            migrationButton(title: "查看进度".localized, icon: "clock.arrow.circlepath") {
+                onViewTask()
+            }
+        } else if !item.weChatSplitMembers.isEmpty {
             HStack(spacing: 6) {
                 if item.autoMountPaused, let onMount {
                     migrationButton(title: item.status == DataDirStatus.mounted ? "恢复自动挂载".localized : "挂载".localized, icon: "externaldrive.fill.badge.checkmark", compact: inline) { onMount(item) }
@@ -486,6 +494,9 @@ struct DataDirStatusBadge: View {
         case "待挂载": return "externaldrive.badge.plus"
         case DataDirStatus.mountPaused: return "pause.circle"
         case "卷丢失": return "externaldrive.badge.xmark"
+        case "处理中": return "arrow.triangle.2.circlepath"
+        case "等待中": return "clock"
+        case "已暂停": return "pause.circle"
         default:       return "questionmark"
         }
     }
@@ -498,8 +509,10 @@ struct DataDirStatusBadge: View {
         case "待接回": return .indigo
         case "本地":   return .secondary
         case "已挂载": return .purple
-        case "待挂载", DataDirStatus.mountPaused: return .orange
+        case "待挂载", DataDirStatus.mountPaused, "已暂停": return .orange
         case "卷丢失": return .red
+        case "处理中": return .blue
+        case "等待中": return .secondary
         default:       return .gray
         }
     }
@@ -512,8 +525,10 @@ struct DataDirStatusBadge: View {
         case "待接回": return .indigo.opacity(0.14)
         case "本地":   return Color.primary.opacity(0.05)
         case "已挂载": return .purple.opacity(0.12)
-        case "待挂载", DataDirStatus.mountPaused: return .orange.opacity(0.14)
+        case "待挂载", DataDirStatus.mountPaused, "已暂停": return .orange.opacity(0.14)
         case "卷丢失": return .red.opacity(0.12)
+        case "处理中": return .blue.opacity(0.12)
+        case "等待中": return Color.primary.opacity(0.06)
         default:       return .gray.opacity(0.08)
         }
     }

@@ -35,6 +35,12 @@ enum CustomDirStatus {
             return "目标冲突".localized
         case retainedCopy:
             return "保留副本".localized
+        case "处理中":
+            return "处理中".localized
+        case "等待中":
+            return "等待中".localized
+        case "已暂停":
+            return "已暂停".localized
         default:
             return status
         }
@@ -170,6 +176,7 @@ enum CustomDirValidator {
         )
 
         let localPath = normalizedPath(localURL)
+        let resolvedLocalPath = normalizedPath(localURL.resolvingSymlinksInPath())
         let externalBasePath = normalizedPath(externalBaseURL)
         let resolvedExternalBasePath = normalizedPath(externalBaseURL.resolvingSymlinksInPath())
         let finalURL = externalBaseURL.appendingPathComponent(localURL.lastPathComponent)
@@ -181,7 +188,6 @@ enum CustomDirValidator {
         )
 
         if isDescendant(finalPath, of: localPath) || isDescendant(resolvedFinalPath, of: resolvedLocalPath) {
-        let resolvedLocalPath = normalizedPath(localURL.resolvingSymlinksInPath())
             throw CustomDirValidationError.externalInsideLocal
         }
 
@@ -210,15 +216,15 @@ enum CustomDirValidator {
         fileManager: FileManager = .default
     ) throws {
         let externalBasePath = normalizedPath(externalBaseURL)
+        let resolvedExternalBasePath = normalizedPath(externalBaseURL.resolvingSymlinksInPath())
         let homePath = normalizedPath(homeURL)
+        let resolvedHomePath = normalizedPath(homeURL.resolvingSymlinksInPath())
 
         var isExternalDir: ObjCBool = false
         guard fileManager.fileExists(atPath: externalBasePath, isDirectory: &isExternalDir),
               isExternalDir.boolValue else {
             throw CustomDirValidationError.externalNotDirectory
-        let resolvedExternalBasePath = normalizedPath(externalBaseURL.resolvingSymlinksInPath())
         }
-        let resolvedHomePath = normalizedPath(homeURL.resolvingSymlinksInPath())
 
         if isSameOrDescendant(externalBasePath, of: homePath)
             || isSameOrDescendant(resolvedExternalBasePath, of: resolvedHomePath) {

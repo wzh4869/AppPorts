@@ -279,6 +279,97 @@ struct MigrationTaskCenterTests {
         #expect(loaded.supportsExecutionControls)
     }
 
+    @Test("Conflicting unfinished operations on overlapping subjectPaths reuse the running job instead of queuing")
+    func conflictingOperationOnSameSubjectOpensRunningJob() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let account = fixture.root.appendingPathComponent("xwechat_files/wxid_1")
+        let member = account.appendingPathComponent("msg/file")
+        let firstResources = MigrationResources(
+            paths: [account, member, fixture.root.appendingPathComponent("WeChat.app")],
+            keys: ["apfs-layout", "application:com.tencent.xinWeChat"],
+            subjectPaths: [account, member]
+        )
+        let runningID = fixture.center.submit(
+            title: "Migrate split",
+            category: .appData,
+            resources: firstResources,
+            presentDetails: true,
+            operation: { _ in
+                while !Task.isCancelled {
+                    try await Task.sleep(nanoseconds: 20_000_000)
+                }
+                throw CancellationError()
+            }
+        )
+        fixture.center.detailID = nil
+
+        let reverseResources = MigrationResources(
+            paths: [account, member, fixture.root.appendingPathComponent("WeChat.app")],
+            keys: ["apfs-layout", "application:com.tencent.xinWeChat"],
+            subjectPaths: [account, member]
+        )
+        let duplicateID = fixture.center.submit(
+            title: "Restore split",
+            category: .appData,
+            resources: reverseResources,
+            presentDetails: true,
+            operation: { _ in
+                Issue.record("Conflicting reverse task must not enqueue")
+                return nil
+            }
+        )
+        #expect(duplicateID == runningID)
+        #expect(fixture.center.jobs.count == 1)
+        #expect(fixture.center.detailID == runningID)
+        fixture.center.cancel([runningID])
+        await fixture.center.jobs.first?.worker?.value
+    }
+
+    @Test("Disjoint subjectPaths sharing lock keys still queue while row matching stays scoped")
+    func disjointSubjectsSharingAppQueueCleanly() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let appURL = fixture.root.appendingPathComponent("WeChat.app")
+        let account1 = fixture.root.appendingPathComponent("xwechat_files/wxid_1")
+        let account2 = fixture.root.appendingPathComponent("xwechat_files/wxid_2")
+        let id1 = fixture.center.submit(
+            title: "Migrate account 1",
+            category: .appData,
+            resources: MigrationResources(
+                paths: [account1, appURL],
+                keys: ["apfs-layout", "application:com.tencent.xinWeChat"],
+                subjectPaths: [account1]
+            ),
+            operation: { _ in
+                while !Task.isCancelled {
+                    try await Task.sleep(nanoseconds: 20_000_000)
+                }
+                throw CancellationError()
+            }
+        )
+        let id2 = fixture.center.submit(
+            title: "Migrate account 2",
+            category: .appData,
+            resources: MigrationResources(
+                paths: [account2, appURL],
+                keys: ["apfs-layout", "application:com.tencent.xinWeChat"],
+                subjectPaths: [account2]
+            ),
+            operation: { _ in nil }
+        )
+        #expect(id1 != id2)
+        #expect(fixture.center.jobs.count == 2)
+        #expect(fixture.center.activeJob(overlappingSubject: [account1])?.id == id1)
+        #expect(fixture.center.activeJob(overlappingSubject: [account2])?.id == id2)
+        #expect(fixture.center.activeJob(overlappingAllPaths: [appURL])?.id == id1)
+        #expect(fixture.center.jobs.first(where: { $0.id == id2 })?.badgeStatus == "等待中")
+        fixture.center.cancel([id1])
+        await fixture.center.jobs.first(where: { $0.id == id1 })?.worker?.value
+        await fixture.center.jobs.first(where: { $0.id == id2 })?.worker?.value
+        #expect(fixture.center.jobs.first(where: { $0.id == id2 })?.status == .completed)
+    }
+
     @MainActor
     private struct Fixture {
         let root: URL

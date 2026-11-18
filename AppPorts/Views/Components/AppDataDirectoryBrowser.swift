@@ -8,6 +8,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
     let isFiltering: Bool
     var showLockedStructure: Bool = false
     var revealRequest: DataDirTree.RevealRequest? = nil
+    var statusOverride: ((DataDirItem) -> String?)? = nil
     let actions: (DataDirItem) -> Actions
 
     @State private var selectedItemID: String?
@@ -142,6 +143,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
                                         isContext: !matchingItemIDs.contains(row.id),
                                         isSelected: selectedItemID == row.id,
                                         isOutlineFocused: isOutlineFocused,
+                                        activeStatus: statusOverride?(row.item),
                                         onToggle: { toggleDirectory(row.item) },
                                         actions: actions(row.item)
                                     )
@@ -467,6 +469,7 @@ private struct AppDataDirectoryRow<Actions: View>: View {
     let isContext: Bool
     let isSelected: Bool
     let isOutlineFocused: Bool
+    var activeStatus: String? = nil
     let onToggle: () -> Void
     let actions: Actions
     @Environment(\.controlActiveState) private var controlActiveState
@@ -532,8 +535,8 @@ private struct AppDataDirectoryRow<Actions: View>: View {
                     .font(.system(size: 13, weight: .medium))
                     .monospacedDigit()
                     .foregroundColor(isEmphasized ? .white : (row.item.size == nil ? .secondary : .primary))
-                DataDirStatusBadge(status: row.item.displayedStatus, isEmphasized: isEmphasized)
-                if row.item.autoMountPaused {
+                DataDirStatusBadge(status: activeStatus ?? row.item.displayedStatus, isEmphasized: isEmphasized)
+                if activeStatus == nil, row.item.autoMountPaused {
                     DataDirStatusBadge(status: DataDirStatus.mountPaused, isEmphasized: isEmphasized)
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)

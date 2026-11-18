@@ -13,6 +13,8 @@ struct CustomDirRowView: View {
     let isSelected: Bool
     let onDeleteLink: (CustomDirEntry) -> Void
     let onRemove: (CustomDirConfig) -> Void
+    var activeStatus: String? = nil
+    var onViewTask: (() -> Void)? = nil
 
     private var showsDeleteLinkButton: Bool {
         entry.kind == .local
@@ -40,7 +42,22 @@ struct CustomDirRowView: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                         .help(entry.url.path)
-                    CustomDirStatusBadge(status: entry.status)
+                    HStack(spacing: 6) {
+                        CustomDirStatusBadge(status: activeStatus ?? entry.status)
+                        if let onViewTask {
+                            Button(action: onViewTask) {
+                                Label("查看进度".localized, systemImage: "clock.arrow.circlepath")
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundColor(.accentColor)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.accentColor.opacity(0.10))
+                                    .cornerRadius(5)
+                            }
+                            .buttonStyle(.plain)
+                            .help("查看进度".localized)
+                        }
+                    }
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             }
@@ -78,12 +95,17 @@ struct CustomDirRowView: View {
         Button("在 Finder 中显示".localized) {
             NSWorkspace.shared.activateFileViewerSelecting([entry.url])
         }
-        if showsDeleteLinkButton {
+        if let onViewTask {
             Divider()
-            Button("断开链接".localized) { onDeleteLink(entry) }
+            Button("查看进度".localized, action: onViewTask)
+        } else {
+            if showsDeleteLinkButton {
+                Divider()
+                Button("断开链接".localized) { onDeleteLink(entry) }
+            }
+            Divider()
+            Button("移除记录".localized) { onRemove(entry.config) }
         }
-        Divider()
-        Button("移除记录".localized) { onRemove(entry.config) }
     }
 }
 
@@ -92,11 +114,11 @@ private struct CustomDirStatusBadge: View {
 
     private var color: Color {
         switch status {
-        case CustomDirStatus.local:
+        case CustomDirStatus.local, "处理中":
             return .blue
         case CustomDirStatus.linked:
             return .green
-        case CustomDirStatus.pendingRelink:
+        case CustomDirStatus.pendingRelink, "已暂停":
             return .orange
         case CustomDirStatus.orphanedLink, CustomDirStatus.destinationConflict:
             return .red

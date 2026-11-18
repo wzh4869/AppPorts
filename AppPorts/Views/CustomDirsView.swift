@@ -40,6 +40,7 @@ struct CustomDirsView: View {
     var onScanningChanged: ((Bool) -> Void)? = nil
     @Environment(\.locale) private var locale
     @ObservedObject private var operationState = AppOperationState.shared
+    @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
     @ObservedObject private var configStore = CustomDirConfigStore.shared
     private var configs: [CustomDirConfig] { configStore.configs }
     @State private var pairs: [CustomDirPair] = []
@@ -86,12 +87,26 @@ struct CustomDirsView: View {
         pairs.filter { selectedExternalIDs.contains($0.external.id) }
     }
 
+    private func activeJob(for config: CustomDirConfig) -> MigrationJob? {
+        migrationTasks.activeJob(overlappingSubject: [config.localURL, config.externalDestinationURL])
+    }
+
+    private var idleAttentionTransfers: [DataTransferRecord] {
+        retainedTransfers.filter { transfer in
+            transfer.needsAttention && !migrationTasks.hasActiveJob(
+                overlappingSubject: [transfer.originalPath, transfer.activePath, transfer.destinationPath]
+                    + [transfer.backupPath, transfer.stagingPath].compactMap { $0 }
+            )
+        }
+    }
+
     private var migratablePairs: [CustomDirPair] {
-        selectedLocalPairs.filter { $0.local.status == CustomDirStatus.local }
+        selectedLocalPairs.filter { $0.local.status == CustomDirStatus.local && activeJob(for: $0.config) == nil }
     }
 
     private var relinkablePairs: [CustomDirPair] {
         selectedExternalPairs.filter {
+            activeJob(for: $0.config) == nil &&
             $0.external.status == CustomDirStatus.pendingRelink
                 && !CustomDirRecoveryEligibility.isRetainedExternalCopy(config: $0.config, groups: transferGroups)
         }
@@ -99,18 +114,20 @@ struct CustomDirsView: View {
 
     private var restorablePairs: [CustomDirPair] {
         selectedExternalPairs.filter {
-            $0.external.status == CustomDirStatus.linked
-                || ($0.external.status == CustomDirStatus.pendingRelink
-                    && CustomDirRecoveryEligibility.canRestoreMissingSource(config: $0.config, managedLinks: managedLinks))
+            activeJob(for: $0.config) == nil && (
+                $0.external.status == CustomDirStatus.linked
+                    || ($0.external.status == CustomDirStatus.pendingRelink
+                        && CustomDirRecoveryEligibility.canRestoreMissingSource(config: $0.config, managedLinks: managedLinks))
+            )
         }
     }
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                if retainedTransfers.contains(where: { $0.needsAttention }) {
+                if !idleAttentionTransfers.isEmpty {
                     HStack {
-                        Text(retainedTransfers.contains(where: { $0.cleanupDisposition == .deferred })
+                        Text(idleAttentionTransfers.contains(where: { $0.cleanupDisposition == .deferred })
                             ? "部分操作已暂停，可手动重试。".localized
                             : "部分数据操作尚未完成，副本已保留。".localized).foregroundStyle(.secondary)
                         Spacer()
@@ -197,11 +214,14 @@ struct CustomDirsView: View {
                     List(selection: $selectedLocalIDs) {
                         ForEach(Array(localEntries.enumerated()), id: \.element.id) { indexed in
                         let entry = indexed.element
+                        let activeJob = activeJob(for: entry.config)
                         CustomDirRowView(
                             entry: entry,
                             isSelected: selectedLocalIDs.contains(entry.id),
                             onDeleteLink: deleteLocalLink,
-                            onRemove: removeConfig
+                            onRemove: removeConfig,
+                            activeStatus: activeJob?.badgeStatus,
+                            onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                         )
                         .tag(entry.id)
                         .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
@@ -252,11 +272,14 @@ struct CustomDirsView: View {
                     List(selection: $selectedExternalIDs) {
                         ForEach(Array(externalEntries.enumerated()), id: \.element.id) { indexed in
                         let entry = indexed.element
+                        let activeJob = activeJob(for: entry.config)
                         CustomDirRowView(
                             entry: entry,
                             isSelected: selectedExternalIDs.contains(entry.id),
                             onDeleteLink: deleteLocalLink,
-                            onRemove: removeConfig
+                            onRemove: removeConfig,
+                            activeStatus: activeJob?.badgeStatus,
+                            onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                         )
                         .tag(entry.id)
                         .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
@@ -350,6 +373,7 @@ struct CustomDirsView: View {
     }
 
     private func removeConfig(_ config: CustomDirConfig) {
+        if let job = activeJob(for: config) { migrationTasks.openJobDetail(job); return }
         guard !operationState.isBusy else { return }
         do { try configStore.remove(id: config.id) }
         catch { errorMessage = error.localizedDescription; showError = true; return }
@@ -428,7 +452,7 @@ struct CustomDirsView: View {
     }
 
     private func retryPendingOperations() {
-        let operationIDs = retainedTransfers.filter(\.needsAttention).map(\.operationID)
+        let operationIDs = idleAttentionTransfers.map(\.operationID)
         guard !operationIDs.isEmpty else { return }
         MigrationTaskCenter.shared.submit(title: "正在继续处理目录".localized, category: .directories,
             resources: MigrationResources(paths: [], keys: ["all-file-operations"]), operation: { _ in
@@ -519,6 +543,7 @@ struct CustomDirsView: View {
     }
 
     private func deleteLocalLink(_ entry: CustomDirEntry) {
+        if let job = activeJob(for: entry.config) { migrationTasks.openJobDetail(job); return }
         guard entry.kind == .local, let operationID = beginOperation() else { return }
 
         AppLogger.shared.logContext(

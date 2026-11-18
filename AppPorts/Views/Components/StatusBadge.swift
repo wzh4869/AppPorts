@@ -57,6 +57,12 @@ private func localizedStatusBadgeText(_ text: String) -> String {
         return "签名已替换".localized
     case "签名待检查":
         return "签名待检查".localized
+    case "处理中":
+        return "处理中".localized
+    case "等待中":
+        return "等待中".localized
+    case "已暂停":
+        return "已暂停".localized
     default:
         return text
     }
@@ -67,6 +73,8 @@ struct StatusBadge: View {
     let app: AppItem
     /// 签名被替换时的修复入口：给了回调就点开修复面板，没给就只是个静态徽章。
     var onRepairSignature: ((AppItem) -> Void)? = nil
+    var activeTaskStatus: String? = nil
+    var onViewTask: (() -> Void)? = nil
     @State private var externalAppLocked: Bool?
 
     private struct LockRequest: Hashable {
@@ -271,14 +279,35 @@ struct StatusBadge: View {
     }
 
     private var signatureAccessibilityLabel: String {
-        if app.signatureReplaced { return "签名已替换".localized + ", " }
-        if app.signatureCheckUnavailable { return "签名待检查".localized + ", " }
-        if app.isResigned { return "已重签名".localized + ", " }
-        return ""
+        var prefix = activeTaskStatus.map { localizedStatusBadgeText($0) + ", " } ?? ""
+        if app.signatureReplaced { prefix += "签名已替换".localized + ", " }
+        else if app.signatureCheckUnavailable { prefix += "签名待检查".localized + ", " }
+        else if app.isResigned { prefix += "已重签名".localized + ", " }
+        return prefix
+    }
+
+    private var activeTaskBadgeConfig: BadgeConfig? {
+        guard let activeTaskStatus else { return nil }
+        switch activeTaskStatus {
+        case "已暂停":
+            return BadgeConfig(text: activeTaskStatus, icon: "pause.circle", color: .orange, isTappable: true)
+        case "等待中":
+            return BadgeConfig(text: activeTaskStatus, icon: "clock", color: .secondary, isTappable: true)
+        default:
+            return BadgeConfig(text: activeTaskStatus, icon: "arrow.triangle.2.circlepath", color: .blue, isTappable: true)
+        }
     }
 
     private var badgeContent: some View {
         Group {
+            if let taskBadge = activeTaskBadgeConfig {
+                if let onViewTask {
+                    TappableBadge(badge: taskBadge, action: onViewTask, actionHelp: "查看进度".localized)
+                } else {
+                    badgeView(for: taskBadge)
+                }
+            }
+
             ForEach(badges) { badge in
                 if badge.isTappable, let message = badgeInfoMessage(for: badge) {
                     TappableBadge(badge: badge, message: message)
@@ -312,6 +341,7 @@ private struct TappableBadge: View {
     var message: String? = nil
     /// 点击后执行的动作，优先级高于 `message`。
     var action: (() -> Void)? = nil
+    var actionHelp: String = "查看修复步骤".localized
     @State private var isPresented = false
 
     var body: some View {
@@ -337,7 +367,7 @@ private struct TappableBadge: View {
                 isPresented = true
             }
         }
-        .help(action == nil ? (message ?? "") : "查看修复步骤".localized)
+        .help(action == nil ? (message ?? "") : actionHelp)
         .popover(isPresented: $isPresented) {
             Text(message ?? "")
                 .font(.system(size: 12))

@@ -136,6 +136,9 @@ enum DataDirStatus {
     static let waitingForUnlock = "等待解锁"
     /// 挂载迁移：找不到外置卷（外部存储未连接或卷已删除）
     static let volumeMissing = "卷丢失"
+    static let processing = "处理中"
+    static let queued = "等待中"
+    static let taskPaused = "已暂停"
 
     /// 由挂载迁移管理的三种状态
     static let mountStatuses: Set<String> = [mounted, pendingMount, waitingForUnlock, volumeMissing]
@@ -169,6 +172,12 @@ enum DataDirStatus {
         case volumeMissing:
             // 最常见的原因只是外部存储没接上；「卷丢失」听起来像数据没了，界面上不这么说。
             return "外置盘未连接".localized
+        case processing:
+            return "处理中".localized
+        case queued:
+            return "等待中".localized
+        case taskPaused:
+            return "已暂停".localized
         default:
             return status
         }
@@ -269,6 +278,11 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     var recoveryOperationID: UUID? = nil
     var hasMountTransferRecord = false
     var weChatSplitMembers: [DataDirItem] = []
+    var weChatExpectedMemberCount: Int = PartialWeChatMigrationPolicy.memberNames.count
+
+    var isWeChatFilesAndVideosSplit: Bool {
+        weChatSplitMembers.contains { $0.path.standardizedFileURL.deletingLastPathComponent().lastPathComponent == "msg" }
+    }
 
     var canRestore: Bool {
         hasManagedLinkRecord || DataDirStatus.mountStatuses.contains(status)
@@ -278,11 +292,6 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     /// 已迁移或需要恢复的目录不能再次迁移，但不属于“不支持迁移”。
     var isMigrationUnsupported: Bool {
         !isMigratable && !canRestore && !hasMountTransferRecord && recoveryOperationID == nil
-    var weChatExpectedMemberCount: Int = PartialWeChatMigrationPolicy.memberNames.count
-
-    var isWeChatFilesAndVideosSplit: Bool {
-        weChatSplitMembers.contains { $0.path.standardizedFileURL.deletingLastPathComponent().lastPathComponent == "msg" }
-    }
     }
 
     /// Standard container shortcuts are user-folder entry points, not app-owned data.
@@ -389,9 +398,9 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
         lhs.recoveryOperationID == rhs.recoveryOperationID &&
         lhs.hasMountTransferRecord == rhs.hasMountTransferRecord &&
         lhs.weChatSplitMembers == rhs.weChatSplitMembers &&
+        lhs.weChatExpectedMemberCount == rhs.weChatExpectedMemberCount &&
         lhs.children == rhs.children &&
         lhs.migrationWarning == rhs.migrationWarning &&
         lhs.requiresMountMigration == rhs.requiresMountMigration
     }
 }
-        lhs.weChatExpectedMemberCount == rhs.weChatExpectedMemberCount &&

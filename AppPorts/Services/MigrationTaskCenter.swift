@@ -29,14 +29,29 @@ enum MigrationCategory: String, Codable, Equatable, Sendable {
 
 struct MigrationResources: Codable, Sendable {
     let paths: Set<String>
+    let subjectPaths: Set<String>
     let keys: Set<String>
 
-    init(paths urls: [URL], keys: Set<String> = []) {
+    private enum CodingKeys: String, CodingKey {
+        case paths, subjectPaths, keys
+    }
+
+    init(paths urls: [URL], keys: Set<String> = [], subjectPaths subjectURLs: [URL]? = nil) {
         // Claim both spellings: a local link and its external target must not
         // permit two jobs to edit the same object through different aliases.
         paths = Set(urls.flatMap { [$0.standardizedFileURL.path,
                                    $0.resolvingSymlinksInPath().standardizedFileURL.path] })
+        let targetURLs = subjectURLs ?? urls
+        subjectPaths = Set(targetURLs.flatMap { [$0.standardizedFileURL.path,
+                                                 $0.resolvingSymlinksInPath().standardizedFileURL.path] })
         self.keys = keys
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        paths = try container.decode(Set<String>.self, forKey: .paths)
+        keys = try container.decode(Set<String>.self, forKey: .keys)
+        subjectPaths = try container.decodeIfPresent(Set<String>.self, forKey: .subjectPaths) ?? paths
     }
 
     static func application(paths: [URL], appURL: URL) -> Self {
@@ -49,14 +64,34 @@ struct MigrationResources: Codable, Sendable {
         return Self(paths: paths, keys: keys)
     }
 
+    static func pathsOverlap(_ lhs: String, _ rhs: String) -> Bool {
+        lhs == rhs || lhs.hasPrefix(rhs == "/" ? "/" : rhs + "/")
+            || rhs.hasPrefix(lhs == "/" ? "/" : lhs + "/")
+    }
+
+    func overlapsSubject(with other: Self) -> Bool {
+        subjectPaths.contains { lhs in
+            other.subjectPaths.contains { rhs in Self.pathsOverlap(lhs, rhs) }
+        }
+    }
+
+    func overlapsSubjectPaths(_ queryPaths: Set<String>) -> Bool {
+        subjectPaths.contains { lhs in
+            queryPaths.contains { rhs in Self.pathsOverlap(lhs, rhs) }
+        }
+    }
+
+    func overlapsAllPaths(_ queryPaths: Set<String>) -> Bool {
+        paths.contains { lhs in
+            queryPaths.contains { rhs in Self.pathsOverlap(lhs, rhs) }
+        }
+    }
+
     func conflicts(with other: Self) -> Bool {
         if keys.contains("all-file-operations") || other.keys.contains("all-file-operations") { return true }
         if !keys.isDisjoint(with: other.keys) { return true }
         return paths.contains { lhs in
-            other.paths.contains { rhs in
-                lhs == rhs || lhs.hasPrefix(rhs == "/" ? "/" : rhs + "/")
-                    || rhs.hasPrefix(lhs == "/" ? "/" : lhs + "/")
-            }
+            other.paths.contains { rhs in Self.pathsOverlap(lhs, rhs) }
         }
     }
 }
@@ -146,6 +181,10 @@ final class MigrationJob: ObservableObject, Identifiable {
         return status.title
     }
     var fraction: Double { status == .completed ? 1 : (restoredFraction ?? progress.snapshot().overallFraction) }
+    var badgeStatus: String {
+        if control.snapshot().pauseRequested { return "已暂停" }
+        return status == .queued ? "等待中" : "处理中"
+    }
 }
 
 /// Owns execution, reservations, results and presentation independently of pages.
@@ -201,6 +240,49 @@ final class MigrationTaskCenter: ObservableObject {
     var hasAttention: Bool { jobs.contains { $0.status == .attention } }
     var detail: MigrationJob? { jobs.first { $0.id == detailID } }
 
+    func openJobDetail(_ job: MigrationJob) {
+        showsList = false
+        detailID = job.id
+    }
+
+    private static func normalizedPathSet(_ urls: [URL]) -> Set<String> {
+        Set(urls.flatMap { [$0.standardizedFileURL.path,
+                            $0.resolvingSymlinksInPath().standardizedFileURL.path] })
+    }
+
+    func activeJob(overlappingSubject urls: [URL], includeObserved: Bool = false) -> MigrationJob? {
+        let queryPaths = Self.normalizedPathSet(urls)
+        guard !queryPaths.isEmpty else { return nil }
+        return jobs.first { job in
+            guard !job.status.isFinished, (includeObserved || job.supportsExecutionControls) else { return false }
+            return job.resources.overlapsSubjectPaths(queryPaths)
+        }
+    }
+
+    func activeJob(overlappingAllPaths urls: [URL], includeObserved: Bool = false) -> MigrationJob? {
+        let queryPaths = Self.normalizedPathSet(urls)
+        guard !queryPaths.isEmpty else { return nil }
+        return jobs.first { job in
+            guard !job.status.isFinished, (includeObserved || job.supportsExecutionControls) else { return false }
+            return job.resources.overlapsAllPaths(queryPaths)
+        }
+    }
+
+    func hasActiveJob(overlappingSubject pathStrings: [String]) -> Bool {
+        let urls = pathStrings.filter { !$0.isEmpty }.map { URL(fileURLWithPath: $0) }
+        return activeJob(overlappingSubject: urls) != nil
+    }
+
+    private func conflictingUnfinishedJob(for resources: MigrationResources) -> MigrationJob? {
+        jobs.first { job in
+            guard !job.status.isFinished, job.supportsExecutionControls else { return false }
+            if job.resources.keys.contains("all-file-operations") && resources.keys.contains("all-file-operations") {
+                return true
+            }
+            return job.resources.overlapsSubject(with: resources)
+        }
+    }
+
     /// Observed work retains its own operation token and filesystem locks.
     @discardableResult
     func updateObserved(key: String, title: String, resources: MigrationResources,
@@ -253,11 +335,8 @@ final class MigrationTaskCenter: ObservableObject {
         } else {
             retryIndex = nil
         }
-        if retry == nil, let existing = jobs.first(where: {
-            !$0.status.isFinished && $0.title == title && $0.category == category
-                && $0.resources.paths == resources.paths && $0.resources.keys == resources.keys
-        }) {
-            if presentDetails { showsList = false; detailID = existing.id }
+        if retry == nil, let existing = conflictingUnfinishedJob(for: resources) {
+            if presentDetails { openJobDetail(existing) }
             return existing.id
         }
         let job = MigrationJob(id: retry?.jobID ?? UUID(), title: title, category: category, resources: resources)

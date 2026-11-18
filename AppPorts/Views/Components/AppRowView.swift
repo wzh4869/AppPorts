@@ -22,6 +22,8 @@ struct AppRowView: View {
     var onRepairDock: ((AppItem) -> Void)? = nil
     /// 签名被替换的应用：打开修复面板
     var onRepairSignature: ((AppItem) -> Void)? = nil
+    var activeTaskStatus: String? = nil
+    var onViewTask: (() -> Void)? = nil
     
     @State private var showDeleteConfirmation = false
     
@@ -36,8 +38,16 @@ struct AppRowView: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                         .help(app.displayName)
-                    StatusBadge(app: app, onRepairSignature: onRepairSignature)
-                    signatureRepairButton
+                    StatusBadge(
+                        app: app,
+                        onRepairSignature: onRepairSignature,
+                        activeTaskStatus: activeTaskStatus,
+                        onViewTask: onViewTask
+                    )
+                    if onViewTask == nil {
+                        signatureRepairButton
+                    }
+                    viewTaskButton
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             }
@@ -81,60 +91,85 @@ struct AppRowView: View {
             NSWorkspace.shared.activateFileViewerSelecting([app.path])
         }
 
-        if app.status == AppStatus.linked || app.status == AppStatus.partialLinked,
-           let onRepairDock {
+        if let onViewTask {
             Divider()
-            Button("修复 Dock 图标".localized) {
-                onRepairDock(app)
+            Button("查看进度".localized, action: onViewTask)
+        } else {
+            if app.status == AppStatus.linked || app.status == AppStatus.partialLinked,
+               let onRepairDock {
+                Divider()
+                Button("修复 Dock 图标".localized) {
+                    onRepairDock(app)
+                }
+            }
+
+            if (app.status == AppStatus.local || app.status == AppStatus.pendingMoveOut) && !app.isSystemApp, let onMoveOutWholeSymlink {
+                Divider()
+                Button("使用传统链接迁移".localized) {
+                    onMoveOutWholeSymlink(app)
+                }
+            }
+
+            if app.needsSignatureAttention, let onRepairSignature {
+                Divider()
+                Button(signatureActionTitle) {
+                    onRepairSignature(app)
+                }
+            }
+
+            // A confirmed re-signed installation offers restoration. Unknown
+            // history still permits a fresh service inspection before signing.
+            if !app.isResigned,
+               !app.isFolder,
+               !app.isSystemApp,
+               app.status != AppStatus.orphanedLink,
+               app.displayURL.pathExtension.lowercased() == "app",
+               let onResign {
+                Divider()
+                Button("重签名此应用".localized) {
+                    onResign(app)
+                }
+                .disabled(app.isRunning)
+            }
+
+            if let onRestoreSignature, app.isResigned || app.signatureCheckUnavailable {
+                Divider()
+                Button("恢复原始签名".localized) {
+                    onRestoreSignature(app)
+                }
+            }
+
+            if showMoveBackButton {
+                Divider()
+                Button("将应用迁移回本地".localized) { onMoveBack(app) }
+            }
+
+            if canDeleteLink {
+                Divider()
+                Button(role: .destructive) { showDeleteConfirmation = true } label: {
+                    Text(deleteActionTitle)
+                }
             }
         }
+    }
 
-        if (app.status == AppStatus.local || app.status == AppStatus.pendingMoveOut) && !app.isSystemApp, let onMoveOutWholeSymlink {
-            Divider()
-            Button("使用传统链接迁移".localized) {
-                onMoveOutWholeSymlink(app)
+    @ViewBuilder
+    private var viewTaskButton: some View {
+        if let onViewTask {
+            Button(action: onViewTask) {
+                Label("查看进度".localized, systemImage: "clock.arrow.circlepath")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.accentColor)
+                    .padding(.horizontal, 8)
+                    .frame(height: 26)
+                    .background(Color.accentColor.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                    .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Color.accentColor.opacity(0.18)))
+                    .contentShape(RoundedRectangle(cornerRadius: 7))
             }
-        }
-
-        if app.needsSignatureAttention, let onRepairSignature {
-            Divider()
-            Button(signatureActionTitle) {
-                onRepairSignature(app)
-            }
-        }
-
-        // A confirmed re-signed installation offers restoration. Unknown
-        // history still permits a fresh service inspection before signing.
-        if !app.isResigned,
-           !app.isFolder,
-           !app.isSystemApp,
-           app.status != AppStatus.orphanedLink,
-           app.displayURL.pathExtension.lowercased() == "app",
-           let onResign {
-            Divider()
-            Button("重签名此应用".localized) {
-                onResign(app)
-            }
-            .disabled(app.isRunning)
-        }
-
-        if let onRestoreSignature, app.isResigned || app.signatureCheckUnavailable {
-            Divider()
-            Button("恢复原始签名".localized) {
-                onRestoreSignature(app)
-            }
-        }
-
-        if showMoveBackButton {
-            Divider()
-            Button("将应用迁移回本地".localized) { onMoveBack(app) }
-        }
-
-        if canDeleteLink {
-            Divider()
-            Button(role: .destructive) { showDeleteConfirmation = true } label: {
-                Text(deleteActionTitle)
-            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("查看进度".localized)
+            .help("查看进度".localized)
         }
     }
 

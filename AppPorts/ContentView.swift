@@ -1002,6 +1002,7 @@ struct ContentView: View {
                     List(selection: $selectedLocalApps) {
                         ForEach(entries) { entry in
                         let app = entry.app
+                        let activeJob = activeJob(for: app)
                         AppRowView(
                             app: app,
                             isSelected: selectedLocalApps.contains(entry.id),
@@ -1013,7 +1014,9 @@ struct ContentView: View {
                             onRestoreSignature: performRestoreSignature,
                             onMoveOutWholeSymlink: performMoveOutWholeSymlink,
                             onRepairDock: performRepairDockShortcuts,
-                            onRepairSignature: { signatureRepairApp = $0 }
+                            onRepairSignature: { signatureRepairApp = $0 },
+                            activeTaskStatus: activeJob?.badgeStatus,
+                            onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                         )
                         .tag(entry.id)
                         .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
@@ -1096,6 +1099,7 @@ struct ContentView: View {
                 List(selection: $selectedExternalApps) {
                     ForEach(entries) { entry in
                     let app = entry.app
+                    let activeJob = activeJob(for: app)
                     AppRowView(
                         app: app,
                         isSelected: selectedExternalApps.contains(entry.id),
@@ -1105,7 +1109,9 @@ struct ContentView: View {
                         onMoveBack: performMoveBack,
                         onResign: { performSingleResign(app: $0) },
                         onRestoreSignature: performRestoreSignature,
-                        onRepairSignature: { signatureRepairApp = $0 }
+                        onRepairSignature: { signatureRepairApp = $0 },
+                        activeTaskStatus: activeJob?.badgeStatus,
+                        onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                     )
                     .tag(entry.id)
                     .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
@@ -1136,7 +1142,7 @@ struct ContentView: View {
                     .frame(minWidth: 100, minHeight: 22)
             }
             .buttonStyle(AppListPrimaryButtonStyle(isSecondary: true))
-            .disabled(selectedExternalApps.isEmpty)
+            .disabled(!canMoveBack)
 
             Button(action: performLinkIn) {
                 Label(getLinkButtonTitle(), systemImage: "link")
@@ -1244,11 +1250,15 @@ struct ContentView: View {
 
     // MARK: - 逻辑函数
     
+    private func activeJob(for app: AppItem) -> MigrationJob? {
+        migrationTasks.activeJob(overlappingAllPaths: [app.path, app.displayURL], includeObserved: true)
+    }
+
     func getMoveButtonTitle() -> (text: String, isError: Bool) {
         // 获取所有选中且可迁移的应用
         let validApps = selectedLocalApps.compactMap { id in
             localApps.first { $0.id == id }
-        }.filter { !$0.isSystemApp && !$0.isRunning && $0.status != AppStatus.linked }
+        }.filter { !$0.isSystemApp && !$0.isRunning && $0.status != AppStatus.linked && activeJob(for: $0) == nil }
         
         if selectedLocalApps.isEmpty {
             return ("迁移到外部".localized, false)
@@ -1257,6 +1267,7 @@ struct ContentView: View {
         if validApps.isEmpty {
             // 检查是否全是不可迁移的
             let selectedAppsData = selectedLocalApps.compactMap { id in localApps.first { $0.id == id } }
+            if selectedAppsData.contains(where: { activeJob(for: $0) != nil }) { return ("查看进度".localized, false) }
             if selectedAppsData.contains(where: { $0.isSystemApp }) { return ("含系统应用".localized, true) }
             if selectedAppsData.contains(where: { $0.isRunning }) { return ("含运行中应用".localized, true) }
             if selectedAppsData.contains(where: { $0.status == AppStatus.linked }) { return ("已链接".localized, false) }
@@ -1276,7 +1287,7 @@ struct ContentView: View {
         // 至少有一个可迁移的应用
         let validApps = selectedLocalApps.compactMap { id in
             localApps.first { $0.id == id }
-        }.filter { !$0.isSystemApp && !$0.isRunning && $0.status != AppStatus.linked }
+        }.filter { !$0.isSystemApp && !$0.isRunning && $0.status != AppStatus.linked && activeJob(for: $0) == nil }
         
         return !validApps.isEmpty
     }
@@ -1285,15 +1296,21 @@ struct ContentView: View {
         // 至少有一个可链接的应用
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
+        }.filter { ($0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked) && activeJob(for: $0) == nil }
         
         return !validApps.isEmpty
+    }
+
+    var canMoveBack: Bool {
+        !selectedExternalApps.compactMap { id in
+            externalApps.first { $0.id == id }
+        }.filter { activeJob(for: $0) == nil }.isEmpty
     }
     
     func getLinkButtonTitle() -> String {
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
+        }.filter { ($0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked) && activeJob(for: $0) == nil }
         
         if selectedExternalApps.isEmpty || validApps.isEmpty {
             return "链接回本地".localized
@@ -1934,6 +1951,7 @@ struct ContentView: View {
     }
 
     func performMoveOutWholeSymlink(_ app: AppItem) {
+        if let job = activeJob(for: app) { migrationTasks.openJobDetail(job); return }
         guard let dest = externalDriveURL else { return }
         confirmUpdateProtection(for: [app]) { lockExternal in
             confirmUnrecognizedAppReplacements(apps: [app], destination: dest) { choices in
@@ -1985,7 +2003,7 @@ struct ContentView: View {
             localApps.first { $0.id == id }
         }.filter { app in
             // 基本过滤条件
-            guard !app.isSystemApp && !app.isRunning && app.status != AppStatus.linked else { return false }
+            guard !app.isSystemApp && !app.isRunning && app.status != AppStatus.linked && activeJob(for: app) == nil else { return false }
             
             // 如果启用了迁移 iOS 应用，iOS 应用可以迁移
             if app.isIOSApp {
@@ -2333,7 +2351,7 @@ struct ContentView: View {
         // 获取所有选中且可链接的应用
         let validApps = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { $0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked }
+        }.filter { ($0.status == AppStatus.unlinked || $0.status == AppStatus.external || $0.status == AppStatus.partialLinked) && activeJob(for: $0) == nil }
 
         guard !validApps.isEmpty else { return }
 
@@ -2362,6 +2380,7 @@ struct ContentView: View {
     }
     
     func performDeleteLink(app: AppItem) {
+        if let job = activeJob(for: app) { migrationTasks.openJobDetail(job); return }
         guard let activityToken = operationState.begin() else { return }
         defer { operationState.finish(activityToken) }
         AppLogger.shared.logContext(
@@ -2439,6 +2458,7 @@ struct ContentView: View {
     }
 
     func performMoveBack(app: AppItem) {
+        if let job = activeJob(for: app) { migrationTasks.openJobDetail(job); return }
         // 已链接的应用：传进来的可能是本地入口记录，不是本体。直接用它会变成「入口还原到入口自己」，
         // 入口检查认不出，于是报「本地已存在同名真实文件，无法覆盖」。先换成外部本体记录。
         let target = AppMigrationService().externalCounterpart(of: app, in: externalApps) ?? app
@@ -2461,11 +2481,16 @@ struct ContentView: View {
     /// 批量迁移回本地
     func performBatchMoveBack() {
         // 获取所有选中的外部应用
-        let validApps = selectedExternalApps.compactMap { id in
+        let selected = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
         }
-        
-        guard !validApps.isEmpty else { return }
+        let validApps = selected.filter { activeJob(for: $0) == nil }
+        if validApps.isEmpty {
+            if let job = selected.compactMap({ activeJob(for: $0) }).first {
+                migrationTasks.openJobDetail(job)
+            }
+            return
+        }
         // 还原读取的是外部副本；外部盘存不住的能力，在迁出时就已丢失。
         // 只要其中任意一个来自降级的卷，先统一说明一次再动手。
         if degradedRestoreRequest == nil,
@@ -2488,15 +2513,13 @@ struct ContentView: View {
     }
 
     func getMoveBackButtonTitle() -> String {
-        if selectedExternalApps.isEmpty {
+        let validCount = selectedExternalApps.compactMap { id in
+            externalApps.first { $0.id == id }
+        }.filter { activeJob(for: $0) == nil }.count
+        if validCount <= 1 {
             return "迁移回本地".localized
         }
-        
-        if selectedExternalApps.count == 1 {
-            return "迁移回本地".localized
-        }
-        
-        return String(format: "迁移 %lld 个应用".localized, Int64(selectedExternalApps.count))
+        return String(format: "迁移 %lld 个应用".localized, Int64(validCount))
     }
     
     // MARK: - 独立签名与官方修复
@@ -2505,6 +2528,7 @@ struct ContentView: View {
         app: AppItem,
         approvedTarget: DataMigrationWorkflow.SigningTarget? = nil
     ) {
+        if let job = activeJob(for: app) { migrationTasks.openJobDetail(job); return }
         guard !isAppRunning(url: app.displayURL) else {
             showError(title: "签名失败".localized, message: AppMoverError.appIsRunning.localizedDescription)
             return
@@ -2569,6 +2593,7 @@ struct ContentView: View {
     }
 
     func performRestoreSignature(app: AppItem) {
+        if let job = activeJob(for: app) { migrationTasks.openJobDetail(job); return }
         restoreSignature(app: app, originalApplication: nil)
     }
 

@@ -288,7 +288,7 @@ final class OperationLockTests: XCTestCase {
         }
         XCTAssertGreaterThanOrEqual(audited, 8)
         XCTAssertTrue(dataDirsViewSource.contains("MigrationTaskCenter.shared.submit("))
-        XCTAssertTrue(dataDirsViewSource.contains("resources: MigrationResources(paths: paths, keys: keys)"))
+        XCTAssertTrue(dataDirsViewSource.contains("resources: MigrationResources(paths: paths, keys: keys, subjectPaths: subjectPaths)"))
         let scheduler = try String(contentsOf: root.appendingPathComponent("AppPorts/Services/MigrationTaskCenter.swift"), encoding: .utf8)
         let acquire = try XCTUnwrap(scheduler.range(of: "guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else"))
         let execution = try XCTUnwrap(scheduler.range(of: "return try await operation(progress)"))

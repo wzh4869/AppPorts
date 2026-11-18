@@ -35,9 +35,10 @@ struct DataDirProgressContent: View {
             }
 
             HStack {
-                Text((URL(fileURLWithPath: snapshot.directoryPath).pathExtension.lowercased() == "app"
+                let directoryURL = URL(fileURLWithPath: snapshot.directoryPath)
+                Text((directoryURL.pathExtension.lowercased() == "app"
                     ? "当前应用".localized : "当前目录".localized)
-                    + "：" + URL(fileURLWithPath: snapshot.directoryPath).lastPathComponent)
+                    + "：" + PartialWeChatMigrationPolicy.displayMemberLabel(for: directoryURL))
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.middle)

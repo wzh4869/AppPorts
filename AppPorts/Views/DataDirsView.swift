@@ -26,6 +26,7 @@ struct DataDirsView: View {
     @Environment(\.locale) private var locale
     @ObservedObject private var languageManager = LanguageManager.shared
     @ObservedObject private var operationState = AppOperationState.shared
+    @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
 
     // MARK: - 外部依赖
     var isActive: Bool = true
@@ -180,11 +181,11 @@ struct DataDirsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if selectedTab == .appDirs && (dataTransfers.contains(where: { $0.needsAttention }) || !pendingCleanups.isEmpty || !preservedMaterials.isEmpty) {
+            if selectedTab == .appDirs && (!attentionTransfers.isEmpty || !attentionCleanups.isEmpty || !attentionMaterials.isEmpty) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("部分数据操作尚未完成，已保留副本。".localized)
-                        if let reason = dataTransfers.filter({ $0.needsAttention }).compactMap(\.recoverableReason).first ?? preservedMaterials.first?.reason {
+                        if let reason = attentionTransfers.compactMap(\.recoverableReason).first ?? attentionMaterials.first?.reason {
                             Text(verbatim: reason).font(.caption).foregroundStyle(.secondary)
                                 .lineLimit(2).help(reason)
                         }
@@ -372,6 +373,7 @@ struct DataDirsView: View {
                     ScrollView {
                         LazyVStack(spacing: 4) {
                             ForEach(filteredDotFolderItems) { item in
+                                let activeJob = activeJob(for: item)
                                 DataDirRowView(
                                     item: item,
                                     isSelected: selectedItemID == item.id,
@@ -379,7 +381,9 @@ struct DataDirsView: View {
                                     onRestore: { askRestore($0) },
                                     onManageExistingLink: { askManageExistingLink($0) },
                                     onNormalizeManagedLink: { askNormalizeManagedLink($0) },
-                                    onRelinkExternalData: { askRelinkExternalData($0) }
+                                    onRelinkExternalData: { askRelinkExternalData($0) },
+                                    activeStatus: activeJob?.badgeStatus,
+                                    onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                                 )
                                 .onTapGesture { selectedItemID = item.id }
                                 .padding(.horizontal, 12)
@@ -544,6 +548,7 @@ struct DataDirsView: View {
                             isFiltering: hasActiveAppDataFilters || !directorySearchText.isEmpty,
                             showLockedStructure: showLockedDirectoryStructure,
                             revealRequest: directoryRevealRequest,
+                            statusOverride: { activeJob(for: $0)?.badgeStatus },
                             actions: directoryOperationButtons
                         )
                     }
@@ -953,6 +958,36 @@ struct DataDirsView: View {
         }
     }
 
+    private func activeJob(for item: DataDirItem) -> MigrationJob? {
+        var urls = [item.path] + item.weChatSplitMembers.map(\.path)
+        if let target = item.linkedDestination { urls.append(target) }
+        return migrationTasks.activeJob(overlappingSubject: urls)
+    }
+
+    private var attentionTransfers: [DataTransferRecord] {
+        dataTransfers.filter { transfer in
+            transfer.needsAttention && !migrationTasks.hasActiveJob(
+                overlappingSubject: [transfer.originalPath, transfer.activePath, transfer.destinationPath]
+                    + [transfer.backupPath, transfer.stagingPath].compactMap { $0 }
+            )
+        }
+    }
+
+    private var attentionCleanups: [ContainerCleanupRecord] {
+        pendingCleanups.filter { cleanup in
+            !migrationTasks.hasActiveJob(
+                overlappingSubject: [cleanup.localPath, cleanup.mountRecord.mountPointPath]
+                    + [cleanup.restoreStagingPath].compactMap { $0 }
+            )
+        }
+    }
+
+    private var attentionMaterials: [DataTransferMaterial] {
+        preservedMaterials.filter { material in
+            !migrationTasks.hasActiveJob(overlappingSubject: [material.originalPath] + material.paths)
+        }
+    }
+
     private func directoryOperationButtons(for item: DataDirItem) -> DataDirOperationButtons {
         DataDirOperationButtons(
             item: item,
@@ -966,7 +1001,8 @@ struct DataDirsView: View {
             onUnmount: performUnmount,
             onMountRestore: askMountRestore,
             classicModeActive: classicModeActive,
-            inline: true
+            inline: true,
+            onViewTask: activeJob(for: item).map { job in { migrationTasks.openJobDetail(job) } }
         )
     }
 
@@ -1485,6 +1521,7 @@ struct DataDirsView: View {
     // MARK: - 迁移 / 还原 确认
 
     private func askMigrate(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if selectedTab == .appDirs, !AppInstallationLocation.confirmIfNeeded() { return }
         if !item.weChatSplitMembers.isEmpty, item.hasMountTransferRecord {
             weChatMigrationMode = item.isWeChatFilesAndVideosSplit ? .filesAndVideos : .split
@@ -1526,6 +1563,7 @@ struct DataDirsView: View {
     }
 
     private func askRestore(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if !item.weChatSplitMembers.isEmpty { askMountRestore(item); return }
         // 检查关联应用是否正在运行
         if let runningAppName = runningAssociatedAppName(for: item) {
@@ -1553,6 +1591,7 @@ struct DataDirsView: View {
     }
 
     private func askManageExistingLink(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         guard let linkedDest = item.linkedDestination else {
             AppLogger.shared.logError(
                 "请求接管现有软链失败：无法读取目标路径",
@@ -1601,6 +1640,7 @@ struct DataDirsView: View {
     }
 
     private func askNormalizeManagedLink(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if isContainerSymlinkOperationBlocked(item) { return }
         // 检查关联应用是否正在运行
         if let runningAppName = runningAssociatedAppName(for: item) {
@@ -1666,6 +1706,7 @@ struct DataDirsView: View {
     }
 
     private func askRelinkExternalData(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if isContainerSymlinkOperationBlocked(item) { return }
         // 检查关联应用是否正在运行
         if let runningAppName = runningAssociatedAppName(for: item) {
@@ -1708,8 +1749,9 @@ struct DataDirsView: View {
             showError = true
             return
         }
-        var paths = [item.path] + destinations + item.weChatSplitMembers.map(\.path)
-        if let target = item.linkedDestination { paths.append(target) }
+        var subjectPaths = [item.path] + destinations + item.weChatSplitMembers.map(\.path)
+        if let target = item.linkedDestination { subjectPaths.append(target) }
+        var paths = subjectPaths
         if let app { paths += [app.path, app.displayURL] }
         var keys: Set<String> = mount ? ["apfs-layout"] : []
         let identifier = app.flatMap { try? resolveRealAppURL($0) }.flatMap { CodeSigner.bundleIdentifier(at: $0) }
@@ -1720,7 +1762,7 @@ struct DataDirsView: View {
         let category: MigrationCategory = item.type == .dotFolder ? .tools : .appData
         let taskTitle = title.contains(item.name) ? title : title + " · " + item.name
         MigrationTaskCenter.shared.submit(title: taskTitle, category: category,
-            resources: MigrationResources(paths: paths, keys: keys),
+            resources: MigrationResources(paths: paths, keys: keys, subjectPaths: subjectPaths),
             retrying: retrying, recovery: recovery, operation: { progress in
                 try await MigrationExecution.control?.checkpointAsync()
                 let directory = ContainerMountStore.shared.fileURLForDeletionAuthorization.deletingLastPathComponent()
@@ -1903,6 +1945,7 @@ struct DataDirsView: View {
     // MARK: - 挂载迁移（沙盒应用容器数据）
 
     private func askMountMigrate(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         guard AppInstallationLocation.confirmIfNeeded() else { return }
         if partialWeChatMigrationEnabled, selectedWeChatPolicy.isAccount(item.path) {
             if requestAssociatedAppExit(for: item, continuing: { askMountMigrate(item) }) { return }
@@ -2020,6 +2063,7 @@ struct DataDirsView: View {
 
     private func performMount(_ item: DataDirItem, retrying: MigrationJob.RetryToken? = nil) {
         if let retrying, !MigrationTaskCenter.shared.canRetry(retrying) { return }
+        if retrying == nil, let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         let paths = item.weChatSplitMembers.isEmpty ? [item.path] : item.weChatSplitMembers.map(\.path)
         let records = paths.compactMap { ContainerMountStore.shared.record(forMountPoint: $0) }
         guard !records.isEmpty else {
@@ -2042,6 +2086,7 @@ struct DataDirsView: View {
     }
 
     private func performUnmount(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         guard let record = ContainerMountStore.shared.record(forMountPoint: item.path) else {
             errorMessage = "找不到该目录的挂载记录".localized
             showError = true
@@ -2054,8 +2099,13 @@ struct DataDirsView: View {
     }
 
     private func askMountRestore(_ item: DataDirItem) {
+        if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if !item.weChatSplitMembers.isEmpty {
             if requestAssociatedAppExit(for: item, continuing: { askMountRestore(item) }) { return }
+            let restoreMode: WeChatAccountMigrationService.Mode = item.isWeChatFilesAndVideosSplit ? .filesAndVideos : .split
+            let restoreMessage = item.isWeChatFilesAndVideosSplit
+                ? "将这个账号的 msg/file 与 msg/video 一起还原到本地。校验并切换成功后，自动清理外置旧副本。".localized
+                : "将这个账号的 msg 和 business 一起还原到本地。校验并切换成功后，自动清理外置旧副本。".localized
             confirmRequest = makeConfirmRequest(title: "还原微信账号数据".localized, actionTitle: "还原".localized,
                 message: restoreMessage) {
                     performWeChatSplitOperation(item, mode: restoreMode, restoring: true)
@@ -2104,10 +2154,6 @@ struct DataDirsView: View {
                                                encryption: APFSVolumeEncryption.Credentials? = nil,
                                                retrying: MigrationJob.RetryToken? = nil) {
         if let retrying, !MigrationTaskCenter.shared.canRetry(retrying) { return }
-            let restoreMode: WeChatAccountMigrationService.Mode = item.isWeChatFilesAndVideosSplit ? .filesAndVideos : .split
-            let restoreMessage = item.isWeChatFilesAndVideosSplit
-                ? "将这个账号的 msg/file 与 msg/video 一起还原到本地。校验并切换成功后，自动清理外置旧副本。".localized
-                : "将这个账号的 msg 和 business 一起还原到本地。校验并切换成功后，自动清理外置旧副本。".localized
         if requestAssociatedAppExit(for: item, retrying: retrying, continuing: {
             performWeChatSplitOperation(item, mode: mode, restoring: restoring, encryption: encryption, retrying: retrying)
         }) { return }
@@ -2136,6 +2182,14 @@ struct DataDirsView: View {
             let fresh = try await preparation?.refresh(item, progress: progress) ?? item
             let service = WeChatAccountMigrationService(enabled: splitEnabled,
                 containerIdentifier: containerIdentifier, encryption: encryption)
+            let activeUnits: [URL]
+            if restoring {
+                activeUnits = members
+            } else {
+                let planned = try service.plannedMembers(of: fresh.path, for: mode)
+                activeUnits = planned.isEmpty ? members : planned
+            }
+            progress.configureUnits(activeUnits)
             let warnings: [String]
             if restoring {
                 warnings = try await service.restoreSplit(account: item.path, progress: { progress.update($0) })
@@ -2182,14 +2236,6 @@ struct DataDirsView: View {
                                           continuing action: @escaping () -> Void) -> Bool {
         if let retrying, !MigrationTaskCenter.shared.canRetry(retrying) { return true }
         let app = associatedApp ?? (useSelectedApp && selectedTab == .appDirs ? selectedApp : nil)
-            let activeUnits: [URL]
-            if restoring {
-                activeUnits = members
-            } else {
-                let planned = try service.plannedMembers(of: fresh.path, for: mode)
-                activeUnits = planned.isEmpty ? members : planned
-            }
-            progress.configureUnits(activeUnits)
         let appURL = app.map { (try? resolveRealAppURL($0)) ?? $0.displayURL }
         let bundleID = appURL.flatMap { CodeSigner.bundleIdentifier(at: $0) } ?? item.associatedBundleIdentifier
         let running = NSWorkspace.shared.runningApplications.filter { candidate in
