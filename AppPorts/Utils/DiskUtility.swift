@@ -252,10 +252,21 @@ struct DiskUtility: Sendable {
         case administratorPromptCancelled(command: String)
         case privilegeRequired(command: String)
 
+        static func readableOutput(_ output: String) -> String {
+            let trimmed = output.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.contains("<plist"),
+               let plist = try? PropertyListSerialization.propertyList(from: Data(trimmed.utf8), format: nil) as? [String: Any],
+               let message = (plist["ErrorMessage"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !message.isEmpty {
+                return message
+            }
+            return output
+        }
+
         var errorDescription: String? {
             switch self {
             case .commandFailed(let command, let output):
-                return String(format: "磁盘命令执行失败（%@）：%@".localized, command, output)
+                return String(format: "磁盘命令执行失败（%@）：%@".localized, command, Self.readableOutput(output))
             case .timedOut(let command):
                 return String(format: "磁盘命令超时（%@）".localized, command)
             case .unexpectedOutput(let command, let output):

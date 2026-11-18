@@ -14,7 +14,7 @@ Finder 已能联动弹出分散挂载的 APFS 卷，但 AppPorts 的主程序和
 
 在外部应用库标题旁加入弹出入口及暂停后的重试、恢复入口。用户于 2026-10-23 确认实施；新增文案现已[补齐全部 22 语言](../testing/2026-10-23-本地化覆盖与英文占位守卫.md)，临时中英文范围与定向英文回退已结束。
 
-弹出服务与数据操作共用 OperationLock，先确认目标是外置物理盘，按当前磁盘清单收集整盘卷 UUID、容器 UUID 和挂载路径，排除 EFI 分区身份，再持久化暂停状态后向 Finder 发送 eject Apple event。Finder 负责系统占用提示；脚本返回成功仅证明请求已接受，必须另查物理介质是否离线。NSWorkspace 原型在占用时仅返回 OSStatus -47，不符合复用 Finder 提示的目标。
+弹出服务与数据操作共用 OperationLock，先确认目标是外置物理盘，按当前磁盘清单收集整盘卷 UUID、容器 UUID 和挂载路径，排除 EFI 分区身份，再持久化暂停状态后向 Finder 发送 eject Apple event。当外部应用库选择在磁盘子目录（例如 `/Volumes/<disk>/<subdir>`）时，初次弹出入口先通过包含它的真实挂载点（并以清单挂载路径前缀兜底）查询 `diskutil info -plist`，不将卷内子路径直接传给 `diskutil`；`DiskUtility.Failure.commandFailed` 对带 `<plist>` 的错误输出自动提取 `ErrorMessage`，避免在弹窗里直接暴露原始 XML。Finder 负责系统占用提示；脚本返回成功仅证明请求已接受，必须另查物理介质是否离线。NSWorkspace 原型在占用时仅返回 OSStatus -47，不符合复用 Finder 提示的目标。
 
 暂停文件与迁移账本分开，沿用同一数据目录和操作锁；读取失败时停止自动维护，不能默认为没有暂停。暂停按卷/容器和精确路径边界影响目标盘。主程序、登录代理、自动恢复和底层挂载入口共同检查。WriterAdmission 能力更新，避免运行中的旧代理忽略新状态。
 

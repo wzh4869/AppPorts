@@ -8,6 +8,7 @@ struct DiskEjectionService: Sendable {
     let inventory: @Sendable () async throws -> ExternalDiskInventory
     let physicalState: @Sendable (String) -> PhysicalDiskState
     let mountedDevices: @Sendable () throws -> Set<String>
+    let mountedVolumePath: @Sendable (URL) -> String?
     let requestFinderEject: @Sendable (URL) async throws -> Void
     let selectedImage: @Sendable () -> AppLibraryImageService.Record?
     let imageService: AppLibraryImageService
@@ -16,12 +17,14 @@ struct DiskEjectionService: Sendable {
          inventory: (@Sendable () async throws -> ExternalDiskInventory)? = nil,
          physicalState: @escaping @Sendable (String) -> PhysicalDiskState = { PhysicalDiskState.query($0) },
          mountedDevices: @escaping @Sendable () throws -> Set<String> = { Set(try DiskUtility.kernelMountTable().keys) },
+         mountedVolumePath: @escaping @Sendable (URL) -> String? = { DiskUtility.mountedVolumePath(containing: $0) },
          requestFinderEject: @escaping @Sendable (URL) async throws -> Void = { try await Self.ejectUsingFinder($0) },
          selectedImage: @escaping @Sendable () -> AppLibraryImageService.Record? = { AppLibraryImageRecovery.selectedRecord() },
          imageService: AppLibraryImageService = AppLibraryImageService()) {
         self.disk = disk
         self.physicalState = physicalState
         self.mountedDevices = mountedDevices
+        self.mountedVolumePath = mountedVolumePath
         self.pauses = DiskEjectionPauseStore(store: store)
         let lockURL = store.fileURLForDeletionAuthorization.deletingLastPathComponent().appendingPathComponent("operation.lock")
         self.makeLock = { OperationLock(fileURL: lockURL) }
@@ -29,6 +32,23 @@ struct DiskEjectionService: Sendable {
         self.requestFinderEject = requestFinderEject
         self.selectedImage = selectedImage
         self.imageService = imageService
+    }
+
+    private func resolvedVolumeTarget(for url: URL, in inventory: ExternalDiskInventory) -> String {
+        if let mounted = mountedVolumePath(url), mounted != "/" {
+            return mounted
+        }
+        let path = url.standardizedFileURL.path
+        let matches = Set(inventory.disks.flatMap(\.mountPaths).filter { root in
+            path == root || path.hasPrefix(root == "/" ? "/" : root + "/")
+        })
+        if let longestLength = matches.map(\.count).max() {
+            let longest = matches.filter { $0.count == longestLength }
+            if longest.count == 1, let root = longest.first {
+                return root
+            }
+        }
+        return path
     }
 
     /// Finder's eject event is asynchronous: returning is not proof of ejection.
@@ -55,7 +75,9 @@ struct DiskEjectionService: Sendable {
             }
             target = candidate
         } else {
-            guard let url, let uuid = try await disk.volumeInfo(for: url.path).volumeUUID else {
+            guard let url else { throw DiskEjectionError.unavailable }
+            let volumeTarget = resolvedVolumeTarget(for: url, in: inventory)
+            guard let uuid = try await disk.volumeInfo(for: volumeTarget).volumeUUID else {
                 throw DiskEjectionError.unavailable
             }
             target = try inventory.disk(volumeUUID: uuid)

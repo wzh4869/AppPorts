@@ -404,6 +404,35 @@ struct DiskEjectionTests {
         #expect(snapshot.blocks(deletion))
     }
 
+    @Test("Subdirectory external library path resolves to mount point before diskutil info")
+    func subdirectoryTargetResolvesToMountPoint() async throws {
+        let f = try Fixture(); defer { f.remove() }
+        let calls = Calls()
+        let viaMount = DiskEjectionService(disk: f.disk, store: f.store,
+            mountedVolumePath: { _ in "/Volumes/USB" },
+            requestFinderEject: { await calls.append($0.path) })
+        try await viaMount.request(at: URL(fileURLWithPath: "/Volumes/USB/Apps"))
+        #expect(await calls.paths == ["/Volumes/USB"])
+
+        let f2 = try Fixture(); defer { f2.remove() }
+        let calls2 = Calls()
+        let viaInventory = DiskEjectionService(disk: f2.disk, store: f2.store,
+            mountedVolumePath: { _ in nil },
+            requestFinderEject: { await calls2.append($0.path) })
+        try await viaInventory.request(at: URL(fileURLWithPath: "/Volumes/USB/Apps"))
+        #expect(await calls2.paths == ["/Volumes/USB"])
+
+        let plistData = try PropertyListSerialization.data(
+            fromPropertyList: ["Error": true, "ErrorMessage": "Could not find disk: /Volumes/USB/Apps", "ExitCode": 1],
+            format: .xml, options: 0
+        )
+        let failure = DiskUtility.Failure.commandFailed(command: "diskutil info -plist /Volumes/USB/Apps",
+                                                        output: String(decoding: plistData, as: UTF8.self))
+        let description = try #require(failure.errorDescription)
+        #expect(description.contains("Could not find disk: /Volumes/USB/Apps"))
+        #expect(!description.contains("<plist"))
+    }
+
     private actor Calls {
         var paths: [String] = []
         func append(_ path: String) { paths.append(path) }
@@ -429,8 +458,20 @@ struct DiskEjectionTests {
     }
     private struct InfoRunner: ShellCommandRunning {
         func run(executable: String, arguments: [String], timeout: TimeInterval) async throws -> ShellCommandResult {
-            guard arguments.starts(with: ["info", "-plist"]) else { throw DiskEjectionError.unavailable }
-            let isData = arguments.last == DiskEjectionTests.data || arguments.last == "/tmp/container"
+            guard arguments.starts(with: ["info", "-plist"]), let target = arguments.last else {
+                throw DiskEjectionError.unavailable
+            }
+            guard [DiskEjectionTests.main, DiskEjectionTests.data, "/Volumes/USB", "/tmp/container"].contains(target) else {
+                let errorPlist: [String: Any] = [
+                    "Error": true,
+                    "ErrorMessage": "Could not find disk: \(target)",
+                    "ExitCode": 1
+                ]
+                return ShellCommandResult(status: 1,
+                    standardOutput: try PropertyListSerialization.data(fromPropertyList: errorPlist, format: .xml, options: 0),
+                    standardError: Data(), timedOut: false)
+            }
+            let isData = target == DiskEjectionTests.data || target == "/tmp/container"
             let info: [String: Any] = ["DeviceIdentifier": isData ? "disk7s2" : "disk7s1",
                 "VolumeUUID": isData ? DiskEjectionTests.data : DiskEjectionTests.main,
                 "VolumeName": "USB", "FilesystemType": "apfs", "APFSContainerReference": "disk7",
