@@ -153,6 +153,15 @@ final class SponsorsTests: XCTestCase {
         XCTAssertNotNil(bundled.updatedAt)
     }
 
+    func testRankedBySponsorshipSortsUnpaddedDatesChronologically() {
+        let ranked = [
+            Sponsor(name: "Late", link: "", amount: 50, date: "2026-10-12"),
+            Sponsor(name: "Early", link: "", amount: 50, date: "2026-10-5"),
+            Sponsor(name: "Top", link: "", amount: 100, date: "2026-11-1")
+        ].rankedBySponsorship()
+        XCTAssertEqual(ranked.map(\.name), ["Top", "Early", "Late"])
+    }
+
     private func makeService() -> SponsorsService {
         SponsorsService(session: session, cacheURL: cacheURL)
     }

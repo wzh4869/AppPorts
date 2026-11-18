@@ -197,15 +197,40 @@ struct Sponsor: Identifiable, Codable, Equatable {
     }
 }
 
-private extension Array where Element == Sponsor {
+extension Array where Element == Sponsor {
     /// 赞助金额从高到低；金额相同时按赞助时间从早到晚
     func rankedBySponsorship() -> [Sponsor] {
         sorted { lhs, rhs in
             if lhs.amount != rhs.amount {
                 return lhs.amount > rhs.amount
             }
-            return lhs.date < rhs.date
+            return Self.compareDates(lhs.date, rhs.date)
         }
+    }
+
+    private static func compareDates(_ lhs: String, _ rhs: String) -> Bool {
+        switch (parsedYMD(lhs), parsedYMD(rhs)) {
+        case let (.some(a), .some(b)):
+            if a != b { return a < b }
+            return lhs < rhs
+        case (.some, .none):
+            return true
+        case (.none, .some):
+            return false
+        case (.none, .none):
+            return lhs < rhs
+        }
+    }
+
+    private static func parsedYMD(_ raw: String) -> (Int, Int, Int)? {
+        let parts = raw.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "-")
+        guard parts.count == 3,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]),
+              let day = Int(parts[2]) else {
+            return nil
+        }
+        return (year, month, day)
     }
 }
 
@@ -429,7 +454,7 @@ struct AboutView: View {
                         ProgressView().controlSize(.small)
                     }
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .leading)], alignment: .leading, spacing: 10) {
-                        ForEach(sponsorsViewModel.sponsors) { sponsor in
+                        ForEach(Array(sponsorsViewModel.sponsors.enumerated()), id: \.offset) { _, sponsor in
                             if let url = sponsor.profileURL {
                                 Link(destination: url) { Text(verbatim: sponsor.name) }
                                     .fixedSize(horizontal: false, vertical: true)

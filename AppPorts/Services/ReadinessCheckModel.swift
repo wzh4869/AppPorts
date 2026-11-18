@@ -7,6 +7,7 @@ final class ReadinessCheckModel: ObservableObject {
     @Published private(set) var isChecking = false
     private let checker: LaunchReadinessChecker
     private let didCheck: ([LaunchReadinessChecker.Item]) -> Void
+    private var needsFollowUpRefresh = false
 
     init(checker: LaunchReadinessChecker = LaunchReadinessChecker(),
          didCheck: (([LaunchReadinessChecker.Item]) -> Void)? = nil) {
@@ -15,11 +16,19 @@ final class ReadinessCheckModel: ObservableObject {
     }
 
     func refresh() {
-        guard !isChecking else { return }
+        if isChecking {
+            needsFollowUpRefresh = true
+            return
+        }
         isChecking = true
+        needsFollowUpRefresh = false
         Task {
-            items = await checker.check()
-            didCheck(items)
+            while true {
+                items = await checker.check()
+                didCheck(items)
+                guard needsFollowUpRefresh else { break }
+                needsFollowUpRefresh = false
+            }
             isChecking = false
         }
     }

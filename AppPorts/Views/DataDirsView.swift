@@ -243,7 +243,7 @@ struct DataDirsView: View {
         }
         .onChange(of: operationState.recordsRevision) { _ in
             appDataScanCache.removeAll()
-            if isActive, selectedTab == .appDirs { reloadCurrentTab() }
+            if isActive { reloadCurrentTab() }
         }
         .onChange(of: externalDriveURL) { _ in
             appDataScanCache.removeAll()
@@ -251,11 +251,11 @@ struct DataDirsView: View {
         }
         .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { _ in
             appDataScanCache.removeAll()
-            if isActive, selectedTab == .appDirs { reloadCurrentTab() }
+            if isActive { reloadCurrentTab() }
         }
         .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { _ in
             appDataScanCache.removeAll()
-            if isActive, selectedTab == .appDirs { reloadCurrentTab() }
+            if isActive { reloadCurrentTab() }
         }
         .onChange(of: refreshTrigger) { _ in
             appDataScanCache.removeAll()
@@ -753,35 +753,40 @@ struct DataDirsView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("迁移建议".localized)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.secondary)
-                ForEach(DataDirPriority.allCases, id: \.self) { priority in
-                    Toggle(priority.localizedTitle, isOn: priorityFilterBinding(priority))
-                        .toggleStyle(.checkbox)
-                }
-            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("迁移建议".localized)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.secondary)
+                        ForEach(DataDirPriority.allCases, id: \.self) { priority in
+                            Toggle(priority.localizedTitle, isOn: priorityFilterBinding(priority))
+                                .toggleStyle(.checkbox)
+                        }
+                    }
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("链接状态".localized)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.secondary)
-                ForEach(appDataStatusOrder, id: \.self) { status in
-                    Toggle(DataDirStatus.localized(status), isOn: statusFilterBinding(status))
-                        .toggleStyle(.checkbox)
-                }
-            }
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("链接状态".localized)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.secondary)
+                        ForEach(appDataStatusOrder, id: \.self) { status in
+                            Toggle(DataDirStatus.localized(status), isOn: statusFilterBinding(status))
+                                .toggleStyle(.checkbox)
+                        }
+                    }
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("数据类型".localized)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.secondary)
-                ForEach(appDataFilterTypes, id: \.self) { type in
-                    Toggle(type.localizedTitle, isOn: typeFilterBinding(type))
-                        .toggleStyle(.checkbox)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("数据类型".localized)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.secondary)
+                        ForEach(appDataFilterTypes, id: \.self) { type in
+                            Toggle(type.localizedTitle, isOn: typeFilterBinding(type))
+                                .toggleStyle(.checkbox)
+                        }
+                    }
                 }
             }
+            .frame(maxHeight: 420)
         }
         .padding(16)
         .frame(width: 300)
@@ -1029,7 +1034,7 @@ struct DataDirsView: View {
     }
 
     /// 链接状态优先级：已链接、挂载迁移、待规范、现有软链优先展示
-    private let statusPriority: [String] = ["已链接", "已挂载", "待挂载", "等待解锁", "卷丢失", "待规范", "现有软链", "用户目录入口", "待接回", "本地", "未找到"]
+    private let statusPriority: [String] = ["已链接", "已挂载", "待挂载", "等待解锁", "卷丢失", "待完成", "待规范", "现有软链", "用户目录入口", "待接回", "本地", "未找到"]
 
     private func statusSortKey(_ status: String) -> Int {
         statusPriority.firstIndex(of: status) ?? statusPriority.count
@@ -1110,7 +1115,7 @@ struct DataDirsView: View {
     }
 
     private var appDataFilterTypes: [DataDirType] {
-        DataDirType.allCases.filter { $0 != .dotFolder }
+        DataDirType.allCases.filter { $0 != .dotFolder && $0 != .custom }
     }
 
     private func matchesAppDataFilters(_ item: DataDirItem) -> Bool {
@@ -1864,7 +1869,9 @@ struct DataDirsView: View {
         let execute = { performMigrate(item, to: destinationPath.deletingLastPathComponent(), associatedApp: associatedApp) }
         if classicModeActive, item.requiresMountMigration {
             var actions: [WarningAction] = [
-                WarningAction("改用挂载迁移".localized) { askMountMigrate(item) }
+                WarningAction("改用挂载迁移".localized) {
+                    DispatchQueue.main.async { askMountMigrate(item) }
+                }
             ]
             if let associatedApp, let onResignApp {
                 actions.append(WarningAction("先手动重签".localized) { onResignApp(associatedApp) })
@@ -2008,7 +2015,9 @@ struct DataDirsView: View {
                     switch action.kind {
                     case .migrate:
                         if case .encrypted = outcome {
-                            encryptedMigrationRequest = EncryptedMigrationRequest(item: item)
+                            DispatchQueue.main.async {
+                                encryptedMigrationRequest = EncryptedMigrationRequest(item: item)
+                            }
                         } else { performMountMigrate(item) }
                     case .chooseDestination:
                         if let chosenDestination = onSelectExternalDrive() {
@@ -2017,10 +2026,12 @@ struct DataDirsView: View {
                     case .openGuide(let page, let anchor):
                         NSWorkspace.shared.open(DocumentationLink.url(page: page, anchor: anchor))
                     case .recheck:
-                        if !item.weChatSplitMembers.isEmpty, item.hasMountTransferRecord {
-                            checkMountMigrationDestination(for: item, destination: externalDriveURL)
-                        } else {
-                            askMountMigrate(item)
+                        DispatchQueue.main.async {
+                            if !item.weChatSplitMembers.isEmpty, item.hasMountTransferRecord {
+                                checkMountMigrationDestination(for: item, destination: externalDriveURL)
+                            } else {
+                                askMountMigrate(item)
+                            }
                         }
                     }
                 }
@@ -2211,8 +2222,10 @@ struct DataDirsView: View {
                 intro: error.localizedDescription, cancelTitle: "稍后".localized,
                 actions: [WarningAction("解锁数据卷".localized, style: .preferred) {
                     if let retryToken, !MigrationTaskCenter.shared.canRetry(retryToken) { return }
-                    encryptedMigrationRequest = EncryptedMigrationRequest(item: item, volumeUUID: uuid,
-                        retryToken: retryToken, retry: retry)
+                    DispatchQueue.main.async {
+                        encryptedMigrationRequest = EncryptedMigrationRequest(item: item, volumeUUID: uuid,
+                            retryToken: retryToken, retry: retry)
+                    }
                 }])
             return
         }

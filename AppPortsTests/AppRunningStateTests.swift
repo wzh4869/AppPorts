@@ -56,6 +56,56 @@ struct AppRunningStateTests {
         ]) == false)
     }
 
+    @Test("Offline native stub portals match running external apps without accepting stub processes")
+    func detectsOfflineNativeStubPortalTarget() throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let offlineExternal = workspace.root.appendingPathComponent("MissingVolume/Chat.app")
+        let portal = workspace.root.appendingPathComponent("Chat.app")
+        let identifier = "com.appports.tests.offline.chat"
+        try makeBundle(at: portal, identifier: identifier + ".appports.stub")
+        try PropertyListSerialization.data(fromPropertyList: [
+            "CFBundlePackageType": "APPL",
+            "CFBundleVersion": "1",
+            "CFBundleIdentifier": identifier + ".appports.stub",
+            "AppPortsTargetBundleIdentifier": identifier
+        ], format: .xml, options: 0).write(to: portal.appendingPathComponent("Contents/Info.plist"))
+        try offlineExternal.path.write(
+            to: portal.appendingPathComponent("Contents/Resources/real_app_path.txt"),
+            atomically: true, encoding: .utf8
+        )
+
+        #expect(AppRunningState.isRunning(appURL: portal, applications: [
+            .init(bundleURL: offlineExternal, bundleIdentifier: nil)
+        ]))
+        #expect(AppRunningState.isRunning(appURL: portal, applications: [
+            .init(bundleURL: nil, bundleIdentifier: identifier)
+        ]))
+        #expect(AppRunningState.isRunning(appURL: portal, applications: [
+            .init(bundleURL: nil, bundleIdentifier: identifier + ".appports.stub"),
+            .init(bundleURL: portal, bundleIdentifier: nil)
+        ]) == false)
+    }
+
+    @Test("Wrapped iOS apps resolve their Wrapper payload bundle identifier for running checks")
+    func detectsRunningWrappedIOSApp() throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let outer = workspace.root.appendingPathComponent("MobileGame.app")
+        let inner = outer.appendingPathComponent("Wrapper/Payload.app")
+        try FileManager.default.createDirectory(at: inner, withIntermediateDirectories: true)
+        let info: [String: Any] = [
+            "CFBundleIdentifier": "com.appports.tests.mobilegame",
+            "CFBundleVersion": "1"
+        ]
+        try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+            .write(to: inner.appendingPathComponent("Info.plist"))
+
+        #expect(AppRunningState.isRunning(appURL: outer, applications: [
+            .init(bundleURL: nil, bundleIdentifier: "com.appports.tests.mobilegame")
+        ]))
+    }
+
     @Test("A running application URL can itself be a relative symlink")
     func resolvesRunningApplicationLink() throws {
         let workspace = try Workspace()

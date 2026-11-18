@@ -350,10 +350,10 @@ struct ContentView: View {
             refreshMASGuidance()
         }
         
-        .alert(LocalizedStringKey(alertTitle.localized), isPresented: $showAlert) {
+        .alert(Text(verbatim: alertTitle), isPresented: $showAlert) {
             Button("好的".localized, role: .cancel) { }
         } message: {
-            Text(LocalizedStringKey(alertMessage.localized))
+            Text(verbatim: alertMessage)
         }
         .warningSheet($signatureRepairReminderRequest)
         .warningSheet($signatureRestoreSourceRequest)
@@ -914,8 +914,13 @@ struct ContentView: View {
             .clipShape(Capsule())
             .fixedSize()
             .onChange(of: appConnectionFilter) { _ in
-                selectedLocalApps.formIntersection(Set(filteredLocalApps.map(\.id)))
-                selectedExternalApps.formIntersection(Set(filteredExternalApps.map(\.id)))
+                pruneHiddenAppSelections()
+            }
+            .onChange(of: searchText) { _ in
+                pruneHiddenAppSelections()
+            }
+            .onChange(of: localAppFilter) { _ in
+                pruneHiddenAppSelections()
             }
 
             Button {
@@ -960,9 +965,14 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .foregroundColor(.primary)
-        .disabled(operationState.blocksInteraction || isCurrentPageRefreshing || mainTab == .tasks)
+        .disabled(operationState.blocksInteraction || isCurrentPageRefreshing || mainTab == .tasks || mainTab == .settings)
         .help("刷新缓存".localized)
         .accessibilityLabel("刷新缓存".localized)
+    }
+
+    private func pruneHiddenAppSelections() {
+        selectedLocalApps.formIntersection(Set(filteredLocalApps.map(\.id)))
+        selectedExternalApps.formIntersection(Set(filteredExternalApps.map(\.id)))
     }
 
     // MARK: - 应用页两个面板（拆出以减轻 body 的类型推断负担）
@@ -1464,11 +1474,16 @@ struct ContentView: View {
             let customPaths = request.customPaths
             let localDirs = [URL(fileURLWithPath: "/Applications")]
                 + customPaths.map { URL(fileURLWithPath: $0) }
-            
+            let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
+
             let scanner = AppScanner()
             var newApps: [AppItem] = []
             for localDir in localDirs {
-                let scannedApps = await scanner.scanExternalApps(at: scanDir, localAppsDir: localDir)
+                let scannedApps = await scanner.scanExternalApps(
+                    at: scanDir,
+                    localAppsDir: localDir,
+                    runningAppURLs: runningAppURLs
+                )
                 newApps = self.mergeExternalApps(newApps, with: scannedApps)
             }
             
@@ -1489,9 +1504,11 @@ struct ContentView: View {
         var mergedApps = existingApps
         for app in scannedApps {
             if let index = mergedApps.firstIndex(where: { $0.path.standardizedFileURL == app.path.standardizedFileURL }) {
+                let isRunning = mergedApps[index].isRunning || app.isRunning
                 if shouldPreferExternalApp(app, over: mergedApps[index]) {
                     mergedApps[index] = app
                 }
+                mergedApps[index].isRunning = isRunning
             } else {
                 mergedApps.append(app)
             }
@@ -1631,14 +1648,14 @@ struct ContentView: View {
             guard self.isCurrentScan(request, isLocal: isLocal) else { return false }
             if isLocal {
                 self.localApps = filled
-                self.selectedLocalApps.formIntersection(Set(filled.map(\.id)))
+                self.selectedLocalApps.formIntersection(Set(self.filteredLocalApps.map(\.id)))
                 // 兜底路径：启动快检之后本会话新签名的应用，仍然会在扫描完成时提醒一次。
                 self.presentSignatureRepairReminderIfNeeded(
                     apps: filled.filter(\.signatureReplaced).map(\.signatureRepairEntry)
                 )
             } else {
                 self.externalApps = filled
-                self.selectedExternalApps.formIntersection(Set(filled.map(\.id)))
+                self.selectedExternalApps.formIntersection(Set(self.filteredExternalApps.map(\.id)))
             }
             return true
         }
@@ -2120,7 +2137,11 @@ struct ContentView: View {
         appStoreInstall.makeGuidanceRequest(onOpenAppStore: AppStoreExternalInstallSection.openAppStoreSettings) {
             appStoreInstall.refresh(for: externalDriveURL)
             if appStoreInstall.state == .ready { scanExternalApps() }
-            else { masGuidanceRequest = makeMASGuidanceRequest() }
+            else {
+                DispatchQueue.main.async {
+                    masGuidanceRequest = makeMASGuidanceRequest()
+                }
+            }
         }
     }
 
@@ -2151,7 +2172,9 @@ struct ContentView: View {
                     pendingProtectedApps = []
                     pendingMigrationAfterWarning = []
                     if let dest = externalDriveURL {
-                        proceedWithMigration(validApps: apps, dest: dest)
+                        DispatchQueue.main.async {
+                            proceedWithMigration(validApps: apps, dest: dest)
+                        }
                     }
                 }
             ]
@@ -2182,11 +2205,13 @@ struct ContentView: View {
                     let apps = pendingStorageLimitationApps
                     pendingStorageLimitationApps = []
                     storageLimitationRequest = nil
-                    proceedWithMigration(
-                        validApps: apps,
-                        dest: dest,
-                        skipStorageLimitationCheck: true
-                    )
+                    DispatchQueue.main.async {
+                        proceedWithMigration(
+                            validApps: apps,
+                            dest: dest,
+                            skipStorageLimitationCheck: true
+                        )
+                    }
                 }
             ]
         )
@@ -2815,7 +2840,11 @@ struct ContentView: View {
             if let externalDir {
                 let localDirs = [localDir] + customPaths.map { URL(fileURLWithPath: $0) }
                 for directory in localDirs {
-                    let scannedApps = await scanner.scanExternalApps(at: externalDir, localAppsDir: directory)
+                    let scannedApps = await scanner.scanExternalApps(
+                        at: externalDir,
+                        localAppsDir: directory,
+                        runningAppURLs: runningAppURLs
+                    )
                     newExternalApps = self.mergeExternalApps(newExternalApps, with: scannedApps)
                 }
             }
@@ -2845,14 +2874,14 @@ struct ContentView: View {
                 // 单侧手动刷新可能已取代本轮请求，另一侧仍应完成更新。
                 if localIsCurrent {
                     self.localApps = filledLocal
-                    self.selectedLocalApps.formIntersection(Set(filledLocal.map(\.id)))
+                    self.selectedLocalApps.formIntersection(Set(self.filteredLocalApps.map(\.id)))
                     if missesLocal.isEmpty {
                         self.localScanState.finish(localRequest)
                     }
                 }
                 if externalIsCurrent {
                     self.externalApps = filledExternal
-                    self.selectedExternalApps.formIntersection(Set(filledExternal.map(\.id)))
+                    self.selectedExternalApps.formIntersection(Set(self.filteredExternalApps.map(\.id)))
                     // 此侧已经完成时立即恢复按钮，不等待另一侧的目录体积计算。
                     if missesExternal.isEmpty {
                         self.externalScanState.finish(externalRequest)
@@ -2903,8 +2932,12 @@ struct ContentView: View {
     private func signatureRepairSheet(for app: AppItem) -> some View {
         SignatureRepairSheet(
             app: localApps.first(where: { $0.id == app.id }) ?? app,
-            onRestoreSignature: { performRestoreSignature(app: $0) },
-            onMoveBack: { performMoveBack(app: $0) },
+            onRestoreSignature: { target in
+                DispatchQueue.main.async { performRestoreSignature(app: target) }
+            },
+            onMoveBack: { target in
+                DispatchQueue.main.async { performMoveBack(app: target) }
+            },
             onOpenDataDirs: { target in
                 selectedDataDirsApp = target
                 selectedDataDirsTab = .appDirs
@@ -2912,7 +2945,9 @@ struct ContentView: View {
             },
             onDismiss: { signatureRepairApp = nil },
             onChooseOfficialOriginal: { target in
-                offerOriginalApplication(for: target, reason: "选择同版本的官方原版应用".localized)
+                DispatchQueue.main.async {
+                    offerOriginalApplication(for: target, reason: "选择同版本的官方原版应用".localized)
+                }
             }
         )
     }

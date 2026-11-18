@@ -246,6 +246,8 @@ struct StatusBadge: View {
         .overlay(
             Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(localizedStatusBadgeText(badge.text))
     }
 
     var body: some View {
@@ -256,12 +258,7 @@ struct StatusBadge: View {
                 VStack(alignment: .leading, spacing: 6) { badgeContent }
             }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            signatureAccessibilityLabel +
-            badges.map { localizedStatusBadgeText($0.text) }.joined(separator: ", ")
-        )
-        .accessibilityAddTraits(.isStaticText)
+        .accessibilityElement(children: .contain)
         .task(id: LockRequest(path: app.path, status: app.status, needsLock: app.needsLock,
                               hasSelfUpdater: app.hasSelfUpdater, version: app.version)) {
             externalAppLocked = nil
@@ -345,28 +342,32 @@ private struct TappableBadge: View {
     @State private var isPresented = false
 
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: badge.icon)
-                .font(.system(size: 9, weight: .bold))
-            Text(localizedStatusBadgeText(badge.text))
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .lineLimit(1)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .foregroundColor(badge.color)
-        .background(badge.color.opacity(0.1))
-        .clipShape(Capsule())
-        .overlay(
-            Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
-        )
-        .onTapGesture {
+        Button {
             if let action {
                 action()
             } else {
                 isPresented = true
             }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: badge.icon)
+                    .font(.system(size: 9, weight: .bold))
+                Text(localizedStatusBadgeText(badge.text))
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .foregroundColor(badge.color)
+            .background(badge.color.opacity(0.1))
+            .clipShape(Capsule())
+            .overlay(
+                Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
+            )
+            .contentShape(Capsule())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localizedStatusBadgeText(badge.text))
         .help(action == nil ? (message ?? "") : actionHelp)
         .popover(isPresented: $isPresented) {
             Text(message ?? "")

@@ -294,6 +294,7 @@ actor AppScanner {
         let fileManager = FileManager.default
         var candidates: [ScanCandidate] = []
         let externalComparisonIndex = makeExternalComparisonIndex(for: externalAppsDir)
+        let runningPaths = normalizedRunningPaths(runningAppURLs)
 
         // 性能优化：预先获取需要的资源键
         let keys: [URLResourceKey] = [.isSymbolicLinkKey, .isDirectoryKey]
@@ -312,7 +313,7 @@ actor AppScanner {
                     externalComparisonIndex: externalComparisonIndex
                 )
                 let isSystem = itemURL.path.hasPrefix("/System")
-                let isRunning = runningAppURLs.contains(itemURL)
+                let isRunning = matchesRunningApp(itemURL, in: runningPaths)
                 let version = readBundleVersion(from: itemURL)
                 
                 // 检测是否为 App Store 应用和 iOS 应用
@@ -352,8 +353,8 @@ actor AppScanner {
                     let baseStatus = detectLocalFolderStatus(at: itemURL)
 
                     let hasRunning = appsInFolder.contains { bundleURL in
-                        runningAppURLs.contains(bundleURL)
-                            || runningAppURLs.contains(itemURL.appendingPathComponent(bundleURL.lastPathComponent))
+                        matchesRunningApp(bundleURL, in: runningPaths)
+                            || matchesRunningApp(itemURL.appendingPathComponent(bundleURL.lastPathComponent), in: runningPaths)
                     }
 
                     if appCount == 1, let bundleURL = appsInFolder.first {
@@ -692,6 +693,30 @@ actor AppScanner {
         return nil
     }
 
+    private func normalizedRunningPaths(_ urls: Set<URL>) -> Set<String> {
+        var paths: Set<String> = []
+        paths.reserveCapacity(urls.count * 2)
+        for url in urls {
+            paths.insert(url.standardizedFileURL.path)
+            paths.insert(url.resolvingSymlinksInPath().standardizedFileURL.path)
+        }
+        return paths
+    }
+
+    private func matchesRunningApp(_ url: URL, in runningPaths: Set<String>) -> Bool {
+        guard !runningPaths.isEmpty else { return false }
+        if runningPaths.contains(url.standardizedFileURL.path)
+            || runningPaths.contains(url.resolvingSymlinksInPath().standardizedFileURL.path) {
+            return true
+        }
+        if let target = externalTargetForLocalApp(at: url),
+           runningPaths.contains(target.standardizedFileURL.path)
+               || runningPaths.contains(target.resolvingSymlinksInPath().standardizedFileURL.path) {
+            return true
+        }
+        return false
+    }
+
     private func isDescendantOrSame(_ url: URL, under root: URL) -> Bool {
         let normalizedURL = url.standardizedFileURL.path
         let normalizedRoot = root.standardizedFileURL.path
@@ -1011,7 +1036,12 @@ actor AppScanner {
     /// - Returns: 应用列表，按链接状态和名称排序
     ///
     /// - Note: 通过检查本地是否存在同名符号链接来判断应用是否已链接
-    func scanExternalApps(at dir: URL, localAppsDir: URL, grouping: ExternalGrouping = .applicationIdentity) -> [AppItem] {
+    func scanExternalApps(
+        at dir: URL,
+        localAppsDir: URL,
+        grouping: ExternalGrouping = .applicationIdentity,
+        runningAppURLs: Set<URL> = []
+    ) -> [AppItem] {
         let scanID = AppLogger.shared.makeOperationID(prefix: "app-scanner-external")
         AppLogger.shared.logContext(
             "AppScanner 开始扫描外部应用",
@@ -1027,6 +1057,7 @@ actor AppScanner {
         var candidates: [ScanCandidate] = []
         let keys: [URLResourceKey] = [.isSymbolicLinkKey, .isDirectoryKey]
         let items = AppSearchExclusionService.applicationItems(in: dir)
+        let runningPaths = normalizedRunningPaths(runningAppURLs)
 
         for itemURL in items {
             if itemURL.pathExtension == "app" {
@@ -1050,7 +1081,7 @@ actor AppScanner {
                     bundleURL: itemURL,
                     status: status,
                     isSystemApp: false,
-                    isRunning: false,
+                    isRunning: matchesRunningApp(itemURL, in: runningPaths),
                     isAppStoreApp: isAppStore,
                     isIOSApp: isIOS,
                     isResigned: signing.isResigned,
@@ -1093,7 +1124,7 @@ actor AppScanner {
                             bundleURL: bundleURL,
                             status: status,
                             isSystemApp: false,
-                            isRunning: false,
+                            isRunning: matchesRunningApp(bundleURL, in: runningPaths),
                             isAppStoreApp: isAppStore,
                             isIOSApp: isIOS,
                             isResigned: signing.isResigned,
@@ -1126,7 +1157,7 @@ actor AppScanner {
                             path: itemURL,
                             status: status,
                             isSystemApp: false,
-                            isRunning: false,
+                            isRunning: appsInFolder.contains { matchesRunningApp($0, in: runningPaths) },
                             isFolder: true,
                             containerKind: .appSuiteFolder,
                             appCount: appCount
@@ -1154,7 +1185,7 @@ actor AppScanner {
                     bundleURL: externalTargetURL,
                     status: AppStatus.linked,
                     isSystemApp: false,
-                    isRunning: false,
+                    isRunning: matchesRunningApp(externalTargetURL, in: runningPaths) || matchesRunningApp(localItemURL, in: runningPaths),
                     isAppStoreApp: isAppStore,
                     isIOSApp: isIOS,
                     isResigned: signing.isResigned,
@@ -1185,7 +1216,7 @@ actor AppScanner {
                     bundleURL: bundleURL,
                     status: AppStatus.linked,
                     isSystemApp: false,
-                    isRunning: false,
+                    isRunning: matchesRunningApp(bundleURL, in: runningPaths),
                     isAppStoreApp: isAppStore,
                     isIOSApp: isIOS,
                     isResigned: signing.isResigned,
@@ -1201,7 +1232,7 @@ actor AppScanner {
                     path: externalTargetURL,
                     status: AppStatus.linked,
                     isSystemApp: false,
-                    isRunning: false,
+                    isRunning: appsInFolder.contains { matchesRunningApp($0, in: runningPaths) },
                     isFolder: true,
                     containerKind: .appSuiteFolder,
                     appCount: appsInFolder.count
@@ -1230,7 +1261,7 @@ actor AppScanner {
                     bundleURL: itemURL,
                     status: status,
                     isSystemApp: false,
-                    isRunning: false,
+                    isRunning: matchesRunningApp(itemURL, in: runningPaths),
                     isAppStoreApp: isAppStore,
                     isMASExternal: true,
                     isIOSApp: isIOS,

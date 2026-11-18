@@ -85,7 +85,7 @@ enum PrivilegedAppTransfer {
         guard geteuid() == 0, arguments.count == 4, let owner = uid_t(arguments[3]), owner != 0 else {
             throw POSIXError(.EPERM)
         }
-        let fd = open(arguments[2], O_RDONLY | O_NOFOLLOW)
+        let fd = open(arguments[2], O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
         guard fd >= 0 else { throw POSIXError(.EACCES) }
         let handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
         defer { try? handle.close() }

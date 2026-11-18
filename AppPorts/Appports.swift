@@ -168,6 +168,7 @@ struct AppMoverApp: App {
         }
         .windowStyle(HiddenTitleBarWindowStyle())
         .commands {
+            CommandGroup(replacing: .newItem) {}
             // 原有的关于菜单
             CommandGroup(replacing: .appInfo) {
                 Button("关于 AppPorts...".localized) {

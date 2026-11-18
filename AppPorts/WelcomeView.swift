@@ -26,6 +26,7 @@ struct WelcomeView: View {
 
     /// 语言管理器，用于多语言切换
     @ObservedObject private var languageManager = LanguageManager.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 走完欢迎屏后置为 true，之后不再自动出现
     @AppStorage(WelcomeView.completionDefaultsKey) private var welcomeCompleted = false
@@ -75,7 +76,7 @@ struct WelcomeView: View {
             LanguageSwitcher(languageManager: languageManager)
                 .padding(18)
                 .opacity(contentIn ? 1 : 0)
-                .animation(.easeOut(duration: 0.5).delay(0.5), value: contentIn)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.5).delay(0.5), value: contentIn)
         }
         .onAppear {
             contentIn = true
@@ -102,13 +103,13 @@ struct WelcomeView: View {
                 )
                 .opacity(step == 1 ? 1 : 0)
             }
-            .animation(.easeInOut(duration: 0.3), value: step)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.3), value: step)
         }
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
         .opacity(contentIn ? 1 : 0)
-        .offset(y: contentIn ? 0 : 10)
-        .animation(.easeOut(duration: 0.55).delay(0.15), value: contentIn)
+        .offset(y: (contentIn || reduceMotion) ? 0 : 10)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.55).delay(0.15), value: contentIn)
     }
 
     private func stepCaption(title: String, subtitle: String) -> some View {
@@ -136,10 +137,10 @@ struct WelcomeView: View {
             }
         }
         .transition(.opacity)
-        .animation(.easeInOut(duration: 0.28), value: step)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.28), value: step)
         .opacity(contentIn ? 1 : 0)
-        .offset(y: contentIn ? 0 : 12)
-        .animation(.easeOut(duration: 0.5).delay(0.34), value: contentIn)
+        .offset(y: (contentIn || reduceMotion) ? 0 : 12)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.5).delay(0.34), value: contentIn)
     }
 
     private var introCards: some View {
@@ -220,8 +221,8 @@ struct WelcomeView: View {
         }
         .background(.bar)
         .opacity(contentIn ? 1 : 0)
-        .offset(y: contentIn ? 0 : 8)
-        .animation(.easeOut(duration: 0.5).delay(0.44), value: contentIn)
+        .offset(y: (contentIn || reduceMotion) ? 0 : 8)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.5).delay(0.44), value: contentIn)
     }
 
     private var pageIndicator: some View {
@@ -232,7 +233,7 @@ struct WelcomeView: View {
                     .frame(width: index == step ? 16 : 6, height: 6)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: step)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: step)
     }
 
     // MARK: - 行为
@@ -242,21 +243,33 @@ struct WelcomeView: View {
             finish()
             return
         }
-        withAnimation(.easeInOut(duration: 0.28)) {
+        if reduceMotion {
             step += 1
+        } else {
+            withAnimation(.easeInOut(duration: 0.28)) {
+                step += 1
+            }
         }
     }
 
     private func goBack() {
-        withAnimation(.easeInOut(duration: 0.28)) {
+        if reduceMotion {
             step -= 1
+        } else {
+            withAnimation(.easeInOut(duration: 0.28)) {
+                step -= 1
+            }
         }
     }
 
     private func finish() {
         welcomeCompleted = true
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+        if reduceMotion {
             showWelcomeScreen = false
+        } else {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                showWelcomeScreen = false
+            }
         }
     }
 }
@@ -306,6 +319,7 @@ private struct FeatureCard: View {
 /// 两屏共用同一个实例，切换步骤时不会重新播放。
 private struct HeroIcon: View {
     private let size: CGFloat = 84
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var appeared = false
     @State private var glowExpanded = false
@@ -336,10 +350,10 @@ private struct HeroIcon: View {
                 .overlay(shine)
         }
         .frame(width: size * 1.5, height: size * 1.5)
-        .scaleEffect(appeared ? 1 : 0.7)
-        .opacity(appeared ? 1 : 0)
-        .blur(radius: appeared ? 0 : 14)
-        .offset(y: (appeared ? 0 : 18) + (floating ? -5 : 0))
+        .scaleEffect((appeared || reduceMotion) ? 1 : 0.7)
+        .opacity((appeared || reduceMotion) ? 1 : 0)
+        .blur(radius: (appeared || reduceMotion) ? 0 : 14)
+        .offset(y: ((appeared || reduceMotion) ? 0 : 18) + (floating ? -5 : 0))
         .onAppear(perform: start)
     }
 
@@ -373,6 +387,10 @@ private struct HeroIcon: View {
     }
 
     private func start() {
+        if reduceMotion {
+            appeared = true
+            return
+        }
         withAnimation(.spring(response: 0.9, dampingFraction: 0.7)) {
             appeared = true
         }

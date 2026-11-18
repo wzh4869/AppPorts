@@ -491,6 +491,32 @@ final class AppScannerTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(afterDeletion.first(where: { $0.name == "Suite" })).status, AppStatus.partialLinked)
     }
 
+    func testScanLocalAndExternalMarkRunningMigratedAppsViaStubPortalTarget() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let externalApp = workspace.externalRootURL.appendingPathComponent("RunningExt.app")
+        let localPortal = workspace.localAppsURL.appendingPathComponent("RunningExt.app")
+        try createAppBundle(at: externalApp, payloadSize: 16, bundleID: "com.example.runningext", version: "1.0")
+        try createScannerStub(at: localPortal, pointingTo: externalApp, bundleID: "com.example.runningext")
+
+        let scanner = AppScanner()
+        let runningSet: Set<URL> = [externalApp]
+        let localItems = await scanner.scanLocalApps(
+            at: workspace.localAppsURL,
+            runningAppURLs: runningSet,
+            externalAppsDir: workspace.externalRootURL
+        )
+        let externalItems = await scanner.scanExternalApps(
+            at: workspace.externalRootURL,
+            localAppsDir: workspace.localAppsURL,
+            runningAppURLs: runningSet
+        )
+
+        XCTAssertTrue(try XCTUnwrap(localItems.first(where: { $0.name == "RunningExt.app" })).isRunning)
+        XCTAssertTrue(try XCTUnwrap(externalItems.first(where: { $0.name == "RunningExt.app" })).isRunning)
+    }
+
     private func makeFolderMirror(at local: URL, pointingTo external: URL, children: [String]) throws {
         try fileManager.createDirectory(at: local, withIntermediateDirectories: true)
         let marker: [String: Any] = ["externalPath": external.standardizedFileURL.path, "createdBy": "AppPorts", "kind": "folderMirror", "version": 1]

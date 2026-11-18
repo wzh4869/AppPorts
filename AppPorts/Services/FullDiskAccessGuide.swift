@@ -90,7 +90,7 @@ final class FullDiskAccessGuide {
     private func followSettings() {
         guard let panel else { return }
         if hasSeenSettings, let identifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
-           identifier != "com.apple.systempreferences", identifier != Bundle.main.bundleIdentifier {
+           identifier != "com.apple.systempreferences" {
             hide()
             return
         }
