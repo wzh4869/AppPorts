@@ -6,7 +6,7 @@
 
 - 微信账号数据迁移新增“仅大文件与视频（`msg/file + msg/video`）”模式：与整账号及“拆分迁移（`msg + business`）”互斥，允许把聊天图片附件与数据库留在本地，仅迁出文件与视频冷数据；并统一采用单遍目录遍历测算大小。
 - 自更新应用迁移与接回默认改为“非锁定迁移”，并新增可选“应用更新守护”后台代理：接手失败的 ShipIt 更新并在“任务中心”同步进度，支持经签名与版本核验的“回退更新”。
-- 解除 Mac App Store 外置安装的大小门限，支持迁移任意大小（含小于 1 GB）的 App Store 应用；结合 macOS 15.1+ 系统设置只读核对，并支持主界面提示的“不再提醒”。
+- Mac App Store 外置安装引导改为只读核对 macOS 15.1+ 系统真实设置（不再以空目录存在判定完成），新增持久化的“不再提醒”，并在设置中明确说明系统商店对新下载大于 1 GB 应用的自动安装规则与 AppPorts 对任意大小应用的迁移范围。
 - 深化本地应用与任务并发安全：任务执行期间原地锁定列表行与批量操作并收敛异常横幅；修复整块外置盘多分区挂载时的弹出目标判定；优化外置应用运行态识别、应用筛选勾选裁剪、存储能力探测缓存、单次卷状态查询及临时快照清理速度。
 
 [查看 v2.3.0 发布](https://github.com/wzh4869/AppPorts/releases/tag/2.3.0) · 操作说明：[微信拆分迁移](/docs/datamigrae/operation#wechat) · [更新保护与更新守护](/docs/migration-strategy/portal#updates) · [App Store 设置](/docs/settings#app-store) · [任务中心](/docs/datamigrae/operation#task-center)

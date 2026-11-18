@@ -6,7 +6,7 @@
 
 - 微信帳號資料遷移新增「僅大檔案與影片（`msg/file + msg/video`）」模式：與整帳號及「拆分遷移（`msg + business`）」互斥，允許將聊天圖片附件與資料庫留在本機，僅遷出檔案與影片冷資料；並統一採用單遍目錄遍歷測算大小。
 - 自更新應用遷移與接回預設改為「非鎖定遷移」，並新增可選「應用程式更新守護」背景代理：接手失敗的 ShipIt 更新並在「任務中心」同步進度，支援經簽名與版本核驗的「復原更新」。
-- 解除 Mac App Store 外接安裝的大小門檻，支援遷移任意大小（含小於 1 GB）的 App Store 應用；結合 macOS 15.1+ 系統設定唯讀核對，並支援主介面提示的「不再提醒」。
+- Mac App Store 外接安裝引導改為唯讀核對 macOS 15.1+ 系統真實設定（不再以空目錄存在判定完成），新增持久化的「不再提醒」，並在設定中明確說明系統商店對新下載大於 1 GB 應用的自動安裝規則與 AppPorts 對任意大小應用的遷移範圍。
 - 深化本地應用與任務並行安全：任務執行期間原地鎖定列與批次操作並收斂異常橫幅；修復整塊外接磁碟多分區掛載時的退出目標判定；最佳化外接應用執行狀態辨識、應用篩選勾選裁剪、儲存能力探測快取、單次卷宗狀態查詢及暫存快照清理速度。
 
 [檢視 v2.3.0 釋出](https://github.com/wzh4869/AppPorts/releases/tag/2.3.0) · 操作說明：[微信拆分遷移](/docs/datamigrae/operation#wechat) · [更新保護與更新守護](/docs/migration-strategy/portal#updates) · [App Store 設定](/docs/settings#app-store) · [任務中心](/docs/datamigrae/operation#task-center)
