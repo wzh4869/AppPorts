@@ -32603,6 +32603,143 @@
         }
       }
     },
+    "为保证微信数据稳定，不支持直接迁移此目录：%@。请在“应用数据”页选择微信，对账号目录迁移或开启“微信账号拆分迁移”。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "للحفاظ على استقرار بيانات WeChat، لا يُدعم ترحيل هذا المجلد مباشرةً: %@. اختر WeChat ضمن «بيانات التطبيق» لترحيل مجلد الحساب أو فعّل «ترحيل حسابات WeChat المنقسم»."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠕ ⠅⠑⠑⠏ ⠠⠺⠑⠠⠉⠓⠁⠞ ⠙⠁⠞⠁ ⠎⠞⠁⠃⠇⠑⠂ ⠍⠊⠛⠗⠁⠞⠊⠝⠛ ⠞⠓⠊⠎ ⠙⠊⠗⠑⠉⠞⠕⠗⠽ ⠙⠊⠗⠑⠉⠞⠇⠽ ⠊⠎ ⠝⠕⠞ ⠎⠥⠏⠏⠕⠗⠞⠑⠙⠒ %@⠲ ⠠⠎⠑⠇⠑⠉⠞ ⠠⠺⠑⠠⠉⠓⠁⠞ ⠥⠝⠙⠑⠗ ⠠⠁⠏⠏ ⠠⠙⠁⠞⠁ ⠞⠕ ⠍⠊⠛⠗⠁⠞⠑ ⠞⠓⠑ ⠁⠉⠉⠕⠥⠝⠞ ⠋⠕⠇⠙⠑⠗ ⠕⠗ ⠑⠝⠁⠃⠇⠑ “⠠⠎⠏⠇⠊⠞ ⠠⠺⠑⠠⠉⠓⠁⠞ ⠁⠉⠉⠕⠥⠝⠞ ⠍⠊⠛⠗⠁⠞⠊⠕⠝”⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um die Stabilität der WeChat-Daten zu gewährleisten, wird die direkte Migration dieses Ordners nicht unterstützt: %@. Wähle WeChat unter App-Daten aus, um den Kontoordner zu migrieren, oder aktiviere „Split-Migration für WeChat-Konten“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To keep WeChat data stable, migrating this directory directly is not supported: %@. Select WeChat under App Data to migrate the account folder or enable “Split WeChat account migration”."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por teni WeChat-datumojn stabilaj, rekta migrado de ĉi tiu dosierujo ne estas subtenata: %@. Elektu WeChat sub Datenoj de la aplikaĵo por migri la kontodosierujon aŭ ŝaltu «Divida migrado de WeChat-kontoj»."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para mantener estables los datos de WeChat, no se admite migrar este directorio directamente: %@. Selecciona WeChat en Datos de la app para migrar la carpeta de la cuenta o activa «Migración dividida de cuentas de WeChat»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour préserver la stabilité des données WeChat, la migration directe de ce dossier n’est pas prise en charge : %@. Sélectionnez WeChat dans Données de l’app pour migrer le dossier du compte ou activez « Migration scindée des comptes WeChat »."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat डेटा की स्थिरता बनाए रखने के लिए इस निर्देशिका का सीधा माइग्रेशन समर्थित नहीं है: %@। खाता फ़ोल्डर माइग्रेट करने या “WeChat खाते का विभाजित माइग्रेशन” चालू करने के लिए ऐप डेटा में WeChat चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demi menjaga kestabilan data WeChat, migrasi langsung direktori ini tidak didukung: %@. Pilih WeChat di Data aplikasi untuk memigrasikan folder akun atau aktifkan “Migrasi terpisah akun WeChat”."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per mantenere stabili i dati di WeChat, la migrazione diretta di questa cartella non è supportata: %@. Seleziona WeChat in Dati dell’app per migrare la cartella dell’account o attiva «Migrazione separata degli account WeChat»."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat データの安定性を保つため、このディレクトリの直接移行には対応していません：%@。「アプリデータ」で WeChat を選択し、アカウントフォルダを移行するか「WeChat アカウントの分割移行」を有効にしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat 데이터 안정성을 위해 이 디렉터리의 직접 마이그레이션은 지원하지 않습니다: %@. ‘앱 데이터’에서 WeChat을 선택해 계정 폴더를 마이그레이션하거나 ‘WeChat 계정 분할 마이그레이션’을 켜세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor stabiele WeChat-gegevens wordt het rechtstreeks migreren van deze map niet ondersteund: %@. Selecteer WeChat onder App-gegevens om de accountmap te migreren of schakel ‘Gesplitste migratie van WeChat-accounts’ in."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aby zachować stabilność danych WeChat, bezpośrednie przenoszenie tego katalogu nie jest obsługiwane: %@. Wybierz WeChat w sekcji Dane aplikacji, aby przenieść folder konta lub włączyć „Migracja dzielona kont WeChat”."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para manter os dados do WeChat estáveis, não há suporte para migrar esta pasta diretamente: %@. Selecione o WeChat em Dados do app para migrar a pasta da conta ou ative “Migração dividida de contas do WeChat”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для стабильности данных WeChat прямой перенос этого каталога не поддерживается: %@. Выберите WeChat на вкладке «Данные приложений», чтобы перенести папку аккаунта или включить «Раздельный перенос аккаунтов WeChat»."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพื่อความเสถียรของข้อมูล WeChat จึงไม่รองรับการย้ายโฟลเดอร์นี้โดยตรง: %@ โปรดเลือก WeChat ในหน้าข้อมูลแอปเพื่อย้ายโฟลเดอร์บัญชี หรือเปิด “การย้ายบัญชี WeChat แบบแยกส่วน”"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WeChat verilerinin kararlılığını korumak için bu dizinin doğrudan taşınması desteklenmiyor: %@. Hesap klasörünü taşımak veya “WeChat hesabı bölünmüş taşıma” seçeneğini etkinleştirmek için Uygulama verileri altında WeChat’i seçin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Để giữ ổn định dữ liệu WeChat, không hỗ trợ di chuyển trực tiếp thư mục này: %@. Hãy chọn WeChat trong Dữ liệu ứng dụng để di chuyển thư mục tài khoản hoặc bật “Di chuyển tách riêng tài khoản WeChat”."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为保证微信数据稳定，不支持直接迁移此目录：%@。请在“应用数据”页选择微信，对账号目录迁移或开启“微信账号拆分迁移”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為保證微信資料穩定，不支援直接遷移此目錄：%@。請在「應用程式資料」頁選擇微信，對帳號目錄遷移或開啟「微信帳號拆分遷移」。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为葆證微信數據稳定，⑧支持直啑遷迻此目錄：%@。請╪“應詠數據”頁選擇微信，對账号目錄遷迻或開啟“微信账号拆汾遷迻”。"
+          }
+        }
+      }
+    },
     "仅在原件与已复制内容一致、且没有占用或路径冲突时清理。清理后无法通过这份原件撤销。" : {
       "extractionState" : "manual",
       "localizations" : {

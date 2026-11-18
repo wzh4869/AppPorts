@@ -6,13 +6,20 @@ import Foundation
 /// reads throw: a corrupt document can never authorize a destructive operation.
 struct DataOperationSafety: Sendable {
     enum Failure: LocalizedError {
-        case protectedPath(String), conflict(String), occupied(String), inspection(String)
+        case protectedPath(String, DataPathPolicy.Reason? = nil)
+        case conflict(String), occupied(String), inspection(String)
         case inspectionTimedOut(String)
         case writers(String, [String])
         case accessDenied(String)
         var errorDescription: String? {
             switch self {
-            case .protectedPath(let path):
+            case .protectedPath(let path, let reason):
+                if reason == .weChatCompatibility {
+                    return String(
+                        format: "为保证微信数据稳定，不支持直接迁移此目录：%@。请在“应用数据”页选择微信，对账号目录迁移或开启“微信账号拆分迁移”。".localized,
+                        path
+                    )
+                }
                 return String(format: "此目录受迁移策略保护，请选择允许的子目录：%@".localized, path)
             case .conflict(let path):
                 return String(format: "此目录与已有迁移或保留副本重叠，请先处理原迁移：%@".localized, path)
@@ -86,9 +93,10 @@ struct DataOperationSafety: Sendable {
         let protectedRoots = ["Library/Containers", "Library/Group Containers"].map {
             homeDirectory.appendingPathComponent($0).path
         }
-        guard policy.evaluate(url).canMigrate,
+        let decision = policy.evaluate(url)
+        guard decision.canMigrate,
               !protectedRoots.contains(where: { [.same, .ancestor].contains(DataPathTopology.relationship(url.path, $0)) }) else {
-            throw Failure.protectedPath(url.path)
+            throw Failure.protectedPath(url.path, decision.reason)
         }
     }
 

@@ -30,6 +30,38 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         XCTAssertFalse(policy.evaluate(account).partialSubdirectory)
     }
 
+    func testWeChatCompatibilityRejectionUsesDedicatedGuidanceInsteadOfSystemProtectionCopy() throws {
+        let disallowed = account.appendingPathComponent("msg/attach")
+        let safety = DataOperationSafety(homeDirectory: home, partialWeChatMigrationEnabled: false)
+        XCTAssertThrowsError(try safety.requirePolicy(at: disallowed)) { error in
+            guard case DataOperationSafety.Failure.protectedPath(_, let reason) = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+            XCTAssertEqual(reason, .weChatCompatibility)
+            let text = error.localizedDescription
+            let expectedPrefix = String(
+                format: "为保证微信数据稳定，不支持直接迁移此目录：%@。请在“应用数据”页选择微信，对账号目录迁移或开启“微信账号拆分迁移”。".localized,
+                disallowed.path
+            )
+            XCTAssertEqual(text, expectedPrefix)
+        }
+
+        let moverWeChatError = DataDirError.protectedPath(disallowed, .weChatCompatibility)
+        let expectedMoverText = String(
+            format: "为保证微信数据稳定，不支持直接迁移此目录：%@。请在“应用数据”页选择微信，对账号目录迁移或开启“微信账号拆分迁移”。".localized,
+            disallowed.lastPathComponent
+        )
+        XCTAssertEqual(moverWeChatError.localizedDescription, expectedMoverText)
+
+        let systemDir = home.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data")
+        let moverSystemError = DataDirError.protectedPath(systemDir, .systemManagedStructure)
+        let expectedSystemText = String(
+            format: "该目录受 macOS 系统保护，无法迁移：%@。请改为迁移容器内的子目录。".localized,
+            systemDir.lastPathComponent
+        )
+        XCTAssertEqual(moverSystemError.localizedDescription, expectedSystemText)
+    }
+
     func testSpecialSharedDirectoriesAreNotAccounts() {
         let policy = PartialWeChatMigrationPolicy(homeDirectory: home)
         for name in ["all_users", "config", "resource"] {

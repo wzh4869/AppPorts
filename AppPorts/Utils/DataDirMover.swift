@@ -1570,7 +1570,7 @@ actor DataDirMover {
 
     private func requirePolicy(_ path: URL) throws {
         do { try safety.requirePolicy(at: path) }
-        catch DataOperationSafety.Failure.protectedPath { throw DataDirError.protectedPath(path) }
+        catch let DataOperationSafety.Failure.protectedPath(_, reason) { throw DataDirError.protectedPath(path, reason) }
     }
 
     private func copy(from source: URL, to destination: URL, final: URL, operationID: UUID? = nil,
@@ -1958,7 +1958,7 @@ enum DataDirError: LocalizedError {
     case notASymlink(URL)
     case invalidSymlink(URL)
     case externalNotFound(URL)
-    case protectedPath(URL)
+    case protectedPath(URL, DataPathPolicy.Reason? = nil)
 
     var errorDescription: String? {
         switch self {
@@ -1980,7 +1980,13 @@ enum DataDirError: LocalizedError {
             return String(format: "无法读取符号链接目标：%@".localized, url.lastPathComponent)
         case .externalNotFound(let url):
             return String(format: "外部存储目录不存在：%@".localized, url.path)
-        case .protectedPath(let url):
+        case .protectedPath(let url, let reason):
+            if reason == .weChatCompatibility {
+                return String(
+                    format: "为保证微信数据稳定，不支持直接迁移此目录：%@。请在“应用数据”页选择微信，对账号目录迁移或开启“微信账号拆分迁移”。".localized,
+                    url.lastPathComponent
+                )
+            }
             return String(format: "该目录受 macOS 系统保护，无法迁移：%@。请改为迁移容器内的子目录。".localized, url.lastPathComponent)
         }
     }

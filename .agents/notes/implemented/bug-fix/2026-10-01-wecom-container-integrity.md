@@ -31,7 +31,7 @@ macOS 27.0 / 26A428 的 AppContainer 原函数先比较 Data 与容器父目录�
 
 ## Related decisions
 
-- [微信账号拆分迁移](../feature/2026-10-20-微信账号拆分迁移.md)在显式开关下扩展账号的 msg 和 business 精确成员；本篇容器骨架保护不变。
+- [微信账号拆分迁移](../feature/2026-10-20-微信账号拆分迁移.md)在显式开关下扩展账号的 `msg + business` 或 `msg/file + msg/video` 精确成员，并将微信兼容性拦截说明与容器骨架保护区分展示；本篇容器骨架保护不变。
 
 - 执行拓扑与复制保全见[目录显示、执行权限与严格数据复制分开约束](../architecture/2026-10-01-data-path-copy-safety.md)。
 - 子目录通过结构检查后的运行时取舍见[临时目录的结构资格与迁移推荐分开](../../proposed/feature/2026-10-01-temporary-directory-migration-policy.md)。
