@@ -6,7 +6,7 @@ Classic Data Migration Mode retains the earlier way of handling container data w
 
 Eligible container items can offer legacy link migration and related link-management actions. Protected directories and conflicts are still checked; enabling the option does not make every directory movable.
 
-In the current 2.0.0 version, **migration and re-signing are separate actions**. Classic mode neither authorizes automatic re-signing nor restores the old “re-sign after migration” workflow. See [settings and permissions](/docs/settings#manual-signing) for manual signing and its restrictions.
+In current builds, **migration and re-signing are separate actions**. Classic mode neither authorizes automatic re-signing nor restores the old “re-sign after migration” workflow. See [settings and permissions](/docs/settings#manual-signing) for manual signing and its restrictions.
 
 ## Why it is not the default {#why}
 
@@ -16,7 +16,7 @@ This does not establish that every app fails, or that re-signing again fixes the
 
 ## Find and disable the setting {#settings}
 
-Look for Classic Data Migration Mode (Not Recommended) in settings. Read the confirmation before enabling it. Leave it off if you do not need legacy migration.
+Open Settings in the main window and look for Classic Data Migration Mode (Not Recommended). Read the confirmation before enabling it. Leave it off if you do not need legacy migration.
 
 **Turning it off does not restore existing links or signatures changed earlier.** Handle existing data according to its actual state; the switch position alone does not establish that an upgrade is complete.
 

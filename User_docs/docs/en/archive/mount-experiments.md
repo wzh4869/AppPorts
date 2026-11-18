@@ -10,7 +10,7 @@ One option was to place an APFS disk image on external storage and attach its in
 
 In two unexpected-disconnection rounds on the tested USB device, sparsebundle images could not be mounted after reconnection. A native APFS volume also suffered database corruption. The ASIF attempt stopped before a valid unplug test, so there was no success or failure conclusion. See the [unexpected-disconnection experiment](/docs/blog/why-mount-and-apfs#unplug-experiment) for procedures and counts.
 
-Container migration therefore does not currently offer images as a workaround for the APFS requirement. This does not establish that every image fails in every environment, and the small sample is not a failure-rate estimate.
+Container migration therefore does not offer per-directory disk images as a workaround for the external APFS requirement. This does not establish that every image fails in every environment, and the small sample is not a failure-rate estimate. Note: the [app library image](/docs/storage-guide#app-library-image) introduced in 2.2.0 hosts an external application library (for example on an SMB share or non-APFS drive) and differs from this earlier per-container data image experiment.
 
 ## Fixing a location in the system mount table {#fstab}
 

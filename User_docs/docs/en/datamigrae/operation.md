@@ -6,9 +6,11 @@ Data migration moves application data, tool directories or your own folders. It 
 
 | Content | Where to start |
 | --- | --- |
-| Messages, caches and other app-related data | Data Directories → App Data; select an app and expand its directories. |
-| Package-manager caches, models and tool data | Data Directories → Tool Directories; inspect detected items. |
-| Your projects, media or other folders | Directory Migration; use + in the local folder area and choose the source and external destination. |
+| Messages, caches and other app-related data | App Data in the sidebar; select an app and expand its directories. |
+| Package-manager caches, models and tool data | Tool Directories in the sidebar; inspect detected items. |
+| Your projects, media or other folders | Directory Migration in the sidebar; use + in the local folder area and choose the source and external destination. |
+
+App Data reuses complete scan results within the current page session so revisiting an app does not rescan every time. Changes to permissions, the destination drive, migration records or mount state trigger fresh checks automatically, and Refresh Cache at the bottom of the sidebar forces remeasurement. When Full Disk Access is not ready, the page displays the permission state and a check entry rather than treating restricted reads as missing data.
 
 App Data shows eligible items and those needing attention by default. Show locked directory structure adds locked ancestors of actionable items to explain the hierarchy; locked directories with no actionable descendants remain hidden. Enable Show unsupported migration directories to see all ineligible directories. A third switch controls zero-byte directories. **An available migration action does not guarantee execution checks will pass.** Space, permissions, processes using data and parent/child relationships with existing migrations still need checking.
 
@@ -18,9 +20,9 @@ A User folder shortcut to Desktop, Downloads or Pictures is not data owned exclu
 
 ## Prepare before migration {#prepare}
 
-1. Back up important data, connect the destination drive and check space.
+1. Back up important data, connect the destination drive and check space in the sidebar.
 2. Save work and quit apps, tools and background jobs using the data completely.
-3. Check permissions under Settings → Readiness. Run AppPorts from Applications.
+3. Click the settings gear at the bottom of the sidebar and check permissions under Readiness. AppPorts must run from Applications when moving data out.
 4. Check directory name and location rather than guessing ownership from size.
 
 If a related app is running, AppPorts may offer Quit app and continue to request a normal quit. If the app still needs a save or exit confirmation, handle that prompt, then return to AppPorts and choose Continue.
@@ -33,6 +35,8 @@ Examples include npm and Gradle caches and some model or editor data. Quit the t
 
 A custom folder must be a real directory inside your home, not the entire home folder, and must not overlap managed directories. Check the destination shown when adding it before migration.
 
+If an existing link points to a disconnected external drive and you want the app to start fresh locally rather than bringing old contents back, choose Force Unlink inside Link Details. After confirmation, AppPorts removes the local link and creates an empty directory without requiring the external drive online or deleting external originals; see [Restore, reconnect and unlink](/docs/restore#unlink).
+
 ## Mount migration for container data {#mount}
 
 In default mode, eligible container data uses the Migrate button and follows mount migration after checks. In classic mode, the separate action is Mount Migration. It needs **APFS external storage**, enough space and correct permissions.
@@ -44,6 +48,8 @@ In default mode, eligible container data uses the Migrate button and follows mou
 5. Open the original app. If macOS requests Removable Volumes access, authorize according to your preference.
 6. Check existing content and perform a normal save.
 
+Clicking Unmount on an individual Mounted data volume unmounts that volume and **persistently pauses automatic remounting** for it without affecting other volumes on the same drive. Restarting AppPorts or reconnecting the drive does not clear this pause; choose Mount explicitly to resume (or Resume automatic mounting if unmounting failed while the volume stayed online).
+
 Mount migration does not replace the app's signature. System authorization and compatibility still apply. If original data is not visible, stop further writes and follow [missing-data checks](/docs/faq#missing-data).
 
 ## WeChat accounts: whole or split migration {#wechat}
@@ -53,7 +59,7 @@ Choose migration for a recognized WeChat account directory, then select a mode i
 - Whole migration moves the selected account's entire directory.
 - Split migration moves media files only, keeping databases and configuration local. The confirmation shows media size and data retained locally separately.
 
-Wait for a complete size calculation before starting. Fully restore before changing between modes. Other WeChat data is unaffected by this account operation. Offline text-message availability after splitting depends on the WeChat version; not all content is guaranteed to work without the drive. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
+Wait for a complete size calculation before starting. Fully restore before changing between modes. Other WeChat data is unaffected by this account operation. When the drive is offline after split migration, media entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether text messages remain readable still depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
 
 ## Read migration progress {#progress}
 
@@ -63,7 +69,7 @@ Scanning and verification show processed items, bytes read or the current file. 
 
 ## After completion and when things go wrong {#after}
 
-Connect the drive and confirm reconnection before opening the app. For Pending Mount, follow the mount prompt. External drive not connected does not mean data was deleted. See [data states](/docs/badges#data) for other labels.
+Connect the drive and confirm reconnection before opening the app; if an app or its data lives inside the selected [APFS app library image](/docs/storage-guide#app-library-image), launching through a refreshed local entry runs a windowless check to reattach the image and its data volumes first. For Awaiting Mount, follow the mount prompt. While an external drive is offline or unmounted, managed local directories appear as read-only empty folders to protect mount points; External Drive Disconnected or a readable empty directory does not mean data was deleted or restored locally. See [data states](/docs/badges#data) for other labels.
 
 Read [restoration and reconnection](/docs/restore) to return data locally or rebuild an entry. After interruption, or when only cleanup remains, preserve the copies AppPorts identifies and do not repeatedly start new migrations.
 
@@ -73,14 +79,15 @@ For the reasons behind protected directories and parent/child limits, read [data
 
 ## Manage migrations in Task Center {#task-center}
 
-Use Task Center in the toolbar to see app, app-data, tool-directory and custom-folder tasks. Select a task name to open its details. Run in Background dismisses the detail window while work continues inside AppPorts, so you can visit other pages and return later. It does not let work continue after quitting AppPorts.
+Open Task Center in the sidebar (which displays active task counts and attention indicators) to see app, app-data, tool-directory and custom-folder tasks. Select a task name to open its details. Run in Background dismisses the detail window while work continues inside AppPorts, so you can visit other pages and return later. It does not let an active migration continue after quitting AppPorts.
 
-- Select one or more tasks and choose Pause, Continue or Cancel Task. Pausing takes effect at a safe checkpoint; critical steps such as switching entries may finish first.
+- Select one or more migration tasks and choose Pause, Continue or Cancel Task. Pausing takes effect at a safe checkpoint; critical steps such as switching entries may finish first.
 - If cancellation says it is waiting for safe cleanup, keep the drive connected and wait. Cancellation does not undo completed migration steps or guarantee immediate space recovery.
 - Tasks with independent resources can run concurrently. Tasks with conflicting paths or resources wait in the queue; waiting does not necessarily mean a stall.
+- With Application update guardian enabled, ShipIt update recoveries handled in the background also appear in Task Center with their stage and result. These observed records do not offer pause or cancel controls, and offer Roll Back Update in details when recovery fails or stops.
 - Clear Completed and the row removal button remove display history only. They do not delete files or resolve pending recovery or cleanup.
 
-After reopening AppPorts, check migration records for tasks that were unfinished. Display history alone never automatically restarts a migration. For Needs Attention, open the task's details and choose Resolve Issues, then follow the current records. See [recovery](/docs/restore#recovery).
+After reopening AppPorts, check migration records for tasks that were unfinished. Display history alone never automatically restarts a migration. For Needs Attention, open the task's details and choose Resolve Issues (or Roll Back Update for an observed update task), then follow the current records. See [recovery](/docs/restore#recovery).
 
 ## Launch protection during migration {#launch-protection}
 

@@ -15,6 +15,8 @@ flowchart LR
 
 The last step explains why app and data migration are separate: messages and other data may stay local after the app moves.
 
+When an app lives inside an [APFS app library image](/docs/storage-guide#app-library-image) (or uses data volumes inside that image), a local entry refreshed to format 8 runs a silent windowless preparation step before launching the real app to reattach the required image and its data volumes; local entries for apps on ordinary physical drives continue to launch directly without that step.
+
 ## Entries for different kinds of content {#types}
 
 | Content | How AppPorts handles it |
@@ -27,13 +29,16 @@ The last step explains why app and data migration are separate: messages and oth
 
 Whole-app links and Contents-based entries can still appear in existing migrations. Recognizing them does not mean they are the default for new moves. Dependencies on particular directory structures or internal paths may also affect compatibility.
 
-## Why update protection exists {#updates}
+## Update protection and guardian {#updates}
 
-Some self-updaters replace or delete the app they are updating. AppPorts provides locked migration where protection is needed to reduce unintended changes to the external copy during updates.
+Self-updating apps behave differently on external storage: some update cleanly in place, some fail with permission-attribution errors when writing back across volumes, and others replace or delete the external bundle while updating.
 
-A lock can also prevent self-updating. If an update fails, follow AppPorts' instructions, or move the app back locally, update it and move it out again. Do not repeatedly delete unfamiliar files by hand.
+For apps with detected self-updaters (excluding apps such as NetEase Music and WorkBuddy that are handled directly as ordinary apps), AppPorts offers two options before migrating or relinking:
 
-Sparkle and Electron identify frameworks or updater clues. Neither label alone means an app must be locked or cannot update. See [updates after migration](/docs/core#updates).
+- **Unlocked Migration (default):** leaves the external app bundle unlocked so the app can attempt in-app updates. With **Application update guardian** enabled under Settings → Background agents, AppPorts keeps watching migrated apps after quitting; when an eligible ShipIt update has explicitly failed, it verifies the Developer ID signature of the complete cached build, installs or atomically swaps it while preserving the previous bundle, clears stale ShipIt retry state, and publishes results to Task Center (where failed tasks offer Roll Back Update).
+- **Locked Migration:** locks the external app bundle to reduce unintended changes during updates, which may restrict in-app updating. Move the app back locally through AppPorts when you need to update it; switching to Unlocked Migration or moving back locally also clears protection locks from the app's user caches (`Caches/<Bundle ID>` and `.ShipIt`).
+
+App lists no longer display `Sparkle` or `Electron` framework badges; update behavior is communicated directly through migration confirmation and lock-status badges. The update guardian never re-signs apps or applies delta patches, and does not guarantee compatibility with every updater framework or every ShipIt variant. See [updates after migration](/docs/core#updates).
 
 ## What this means in practice {#limits}
 

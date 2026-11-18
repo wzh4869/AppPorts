@@ -6,11 +6,15 @@ This page explains terms used in AppPorts and its documentation. The first secti
 
 ### Local entry, launcher, Stub Portal {#local-portal}
 
-A small entry left on the Mac after migration that opens the real external app. It is neither a complete app nor a backup. It cannot run the full program when the external drive is offline. See [app migration methods](/docs/migration-strategy/portal#portal).
+A small entry left on the Mac after migration that opens the real external app. It is neither a complete app nor a backup. It cannot run the full program when the external drive is offline. When an app lives inside a managed app library image, refreshed entries attempt a windowless reattachment of the image and its data volumes before launch. See [app migration methods](/docs/migration-strategy/portal#portal).
 
 ### Real app, external copy {#real-app}
 
 The complete application bundle, as distinct from its local launcher. After migration, the “external copy” may be the only real app in use. Do not delete it merely because it is called a copy.
+
+### App Library Image {#app-library-image}
+
+An APFS sparse bundle disk image (`.sparsebundle`) stored on a mounted SMB share or external drive and mounted as an external application library to preserve signatures and filesystem attributes. It occupies space according to written data, is not an independent backup, and does not replace a physical external drive for saving signature originals. See [using an APFS app library image](/docs/storage-guide#app-library-image).
 
 ### Folder Mirror {#folder-mirror}
 
@@ -46,6 +50,10 @@ Restoring access to external data at its original path while keeping that data o
 
 Removing an app's local entry managed by AppPorts while retaining the real external app. It is not deletion of the external app or restoration of a data directory.
 
+### Force Unlink {#force-unlink}
+
+Removing a data directory's local symbolic link inside Link Details and creating an empty directory at the original path without requiring the external drive online or deleting external originals. Use it to start fresh locally; it is not restoration. See [unlinking apps and force-unlinking data](/docs/restore#unlink).
+
 ### Normalize {#normalize}
 
 Adjusting a recognized managed directory or existing link into the layout AppPorts uses. Check the real target first. In the current default mode, this does not recreate old-style container links.
@@ -58,7 +66,11 @@ A compatibility mode for old container link migration, off by default. Directory
 
 ### Locked Migration, update protection {#update-protection}
 
-Restricting certain updaters from changing the real external app so updates do not break the migration. This is not disk encryption and cannot prevent drive failure. See [update protection](/docs/migration-strategy/portal#updates).
+Locking the real external app to prevent certain updaters from altering the external bundle directly, whereas Unlocked Migration leaves it unlocked so in-app updates can be attempted. This is not disk encryption and cannot prevent drive failure. See [update protection and guardian](/docs/migration-strategy/portal#updates).
+
+### Disk maintenance agent and Application update guardian {#background-agents}
+
+Two background login services in Settings that are enabled by default and independently configurable: Disk maintenance agent restores managed container data volumes and the selected app library image at login, reconnection or scheduled checks; Application update guardian watches migrated apps after AppPorts quits, attempts signature-verified installation when an eligible ShipIt update fails, and reports results and Roll Back Update in Task Center. See [background agents](/docs/settings#mount-agent).
 
 ### Pending Move Out {#pending-move}
 

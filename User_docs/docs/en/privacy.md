@@ -1,8 +1,8 @@
 # AppPorts Privacy Policy
 
-Updated: October 15, 2026
+Updated: November 18, 2026
 
-Effective: October 15, 2026
+Effective: November 18, 2026
 
 Applies to: AppPorts 1.8.1 and later
 
@@ -54,18 +54,20 @@ To migrate applications and their data to external storage, the Software reads t
 - External-storage paths you select, for destinations and link-state checks.
 - Connected volumes' identifiers, connection types, writability, and free space, to verify locations and select a suitable external drive when saving signature originals.
 - Running applications, to check that a target is not running before migration and reduce the risk of data damage.
+- System App Store external-installation preferences (`PreferredVolume` in `com.apple.appstored`, read-only to check whether it matches the selected external drive) and local ShipIt update status and logs produced by migrated applications (used only when Application update guardian is enabled to identify explicitly failed updates and perform recovery or clean up retry state).
 - Basic operational information: macOS version, processor core count, physical memory, and external-storage read/write speed, used only in local logs and migration performance reports.
 
 ## Article 6. Network requests and recipients {#section-6}
 
 The Software makes network requests only in these circumstances. Request contents exclude personal information, account or device identifiers, and file paths or names:
 
-- Version checks: one silent check at launch or a check you initiate requests appports.shimoko.com/latest.json and GitHub version information at api.github.com. If the API is unavailable, it falls back to github.com's releases.atom feed.
-- Information display: opening “About AppPorts” requests GitHub contributors and the documentation site's sponsor list at docs-appports.shimoko.com/sponsors.json.
+- Version checks: one silent check at launch or a check you initiate requests `docs-appports.shimoko.com/latest.json` (and corresponding official release metadata), and queries GitHub version information at `api.github.com` when needed. If the API is unavailable, it falls back to `github.com`'s `releases.atom` feed.
+- In-app update downloads: when you explicitly choose Update via China mirror or Update via GitHub in an update prompt, the Software downloads the release package from the official download mirror (`file.shimoko.com`) or the corresponding GitHub Release asset URL and verifies its hash and code signature locally.
+- Information display: opening “About AppPorts” requests GitHub contributors and the documentation site's sponsor list at `docs-appports.shimoko.com/sponsors.json`.
 
-These requests use a fixed User-Agent, AppPorts or AppPorts-UpdateChecker. HTTP inherently allows recipient servers to see your IP address and request time. Recipients include GitHub and this project's documentation-site server; their information processing follows their respective privacy policies.
+These requests use a fixed User-Agent, AppPorts or AppPorts-UpdateChecker. HTTP inherently allows recipient servers to see your IP address and request time. Recipients include GitHub and the servers of this project's official website, download mirror, and documentation site; their information processing follows their respective privacy policies.
 
-Downloading releases and opening the website, documentation, repository, sponsor page, or other external links are handled by your default browser, not performed independently by the Software.
+Opening the website, documentation, repository, sponsor page, or other external links, or manually downloading releases through web links, is handled by your default browser rather than performed independently by the Software.
 
 ## Article 7. Local storage {#section-7}
 
@@ -75,12 +77,12 @@ The Software stores these files and settings on your local devices without provi
 - Local login Keychain: passwords for encrypted data volumes only when you choose to save them, without syncing; passwords are not written to logs or migration records and otherwise remain temporary process credentials;
 - App and tool-directory size caches and application search-location records: used to display sizes and cache times and maintain app libraries and local entries; file inventories are not uploaded;
 - `migration-task-history.json`: task names, categories, associated paths, times and display results; this is display history, not a queue that automatically repeats operations;
-- `disk-ejection-pauses.plist` and `launch-locks`: local mounting-pause information after an explicit eject request, and lock files used by local processes to coordinate launch protection during migration; these are not uploaded;
+- `disk-ejection-pauses.plist` and `launch-locks`: local mounting-pause information after an explicit physical-disk eject, app library image unmount, or individual data-volume unmount, and lock files used by local processes to coordinate launch protection during migration; these are not uploaded;
 - ~/Library/Application Support/AppPorts/contributors-cache.json: contributor cache to reduce repeated requests.
 - ~/Library/Application Support/AppPorts/sponsors-cache.json: sponsor cache for offline display.
-- Migration, mount, signing, and recovery records under ~/Library/Application Support/AppPorts/: app identity, paths, volume identifiers, and operation states needed for reconnection, signature restoration, and unfinished operations.
+- Migration, mount, signing, and recovery records under ~/Library/Application Support/AppPorts/ (including update recovery receipts, rollback intents, and per-request task status files under `shipit-recovery/`): app identity, paths, volume identifiers, and operation states needed for reconnection, signature restoration, background update-guardian status synchronization, and unfinished operations.
 - AppPorts Backups at a suitable external drive's root: since 1.9.1 build 31, verified official originals are saved automatically before manual re-signing, with README.txt. They restore app contents and signatures; they are not backups of chats, documents, or other personal data.
-- Preference files under ~/Library/Preferences: interface language, external and custom scan paths, and feature switches.
+- Preference files under ~/Library/Preferences: interface language, external and custom scan paths, app library image location records (SMB share URL without credentials, or backing volume and internal APFS volume identifiers), background-agent switches, guidance dismissal state, and feature switches.
 
 Signing also creates a temporary working copy beside the real app. Useful older internal originals move externally after the required conditions and copy verification pass. Originals, indexes, and operation records stay on local storage and are not uploaded through saving or automatic maintenance.
 

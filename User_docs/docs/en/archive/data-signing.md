@@ -1,7 +1,7 @@
 # Archived: legacy data links and automatic re-signing
 
 ::: warning Historical feature
-This page documents older releases. Current 2.0.0 builds separate migration from manual signing and disable automatic login re-signing on every OS version. For new operations, see [migrate data](/docs/datamigrae/operation); for recovery, see [upgrade and repair](/docs/macos-27).
+This page documents older releases. Current builds separate migration from manual signing and disable automatic login re-signing on every OS version. For new operations, see [migrate data](/docs/datamigrae/operation); for recovery, see [upgrade and repair](/docs/macos-27).
 :::
 
 ## Versions and status {#versions}

@@ -1,10 +1,29 @@
 # Changelog
 
-These entries describe changes at the time of each release. **Historical features may have been retired and should not be treated as current instructions.** Current guides describe 2.0.0 (build 50). Older behavior, versions, and alternatives remain in the [historical feature archive](/docs/archive/overview).
+These entries describe changes at the time of each release. **Historical features may have been retired and should not be treated as current instructions.** Current guides describe the latest interface and behavior. Older behavior, versions, and alternatives remain in the [historical feature archive](/docs/archive/overview).
+
+## v2.2.0 {#v2-2-0}
+
+- Add APFS app library disk images (`.sparsebundle`): create, open and remount an image inside a mounted SMB share or external drive to store migrated apps while preserving signatures and filesystem attributes, verified by backing storage identity and the image's APFS volume UUID.
+- Add background recovery and launch preparation for app library images: login, volume events and scheduled background checks reattach the selected image, and refreshed local entries (format 8) run a silent windowless step to reattach the image and its data volumes before launching an app.
+- Support explicit Unmount Image from the sidebar with persistent pause of automatic recovery across NAS reconnections and AppPorts restarts until manually remounted.
+- Redesign the resizable sidebar navigation and capacity overview: consolidate Apps, Tool Directories, App Data, Directory Migration, Task Center and Destination Storage, and remove the misleading internal “space saved” estimate.
+- Add a floating drag-and-drop icon guide for Full Disk Access, and verify that AppPorts runs from Applications before starting new migrations, image operations or permission guides.
+- Improve background mount-agent registration and attribution in System Settings, unify all managed offline entries (including split-migrated WeChat media paths) under read-only traversable protection, fix migration failures on macOS 27 caused by download quarantine markers, and optimize directory-size scanning and content-verification scheduling.
+
+[View v2.2.0](https://github.com/wzh4869/AppPorts/releases/tag/2.2.0) · Guides: [app library images](/docs/storage-guide#app-library-image) · [permissions and readiness](/docs/settings#permissions)
+
+## v2.1.0 {#v2-1-0}
+
+- Redesign the application migration view, adding All / Linked / Unlinked filtering, independent name and size sorting on local and external lists, and a unified refresh control.
+- Add in-app updates for AppPorts with China-mirror and GitHub download options, SHA-256 and signature/architecture verification, and Install and Restart.
+- Add Force Unlink inside Link Details so disconnected links can be removed locally and replaced with an empty directory while preserving external originals.
+- Persist automatic-remount pauses after manually clicking Unmount on an individual data volume until Mount or Resume automatic mounting is explicitly chosen; allow read-only traversal on offline placeholder directories while continuing to block writes.
+- Reuse complete App Data scan results within the current session, distinguish missing Full Disk Access from missing data, display Current data separately from Retained old copy in recovery panels, and support administrator-authorized cleanup for root-owned retained copies.
+
+[View v2.1.0](https://github.com/wzh4869/AppPorts/releases/tag/2.1.0) · Guides: [in-app updates](/docs/settings#updates) · [Force Unlink](/docs/restore#unlink) · [recovery](/docs/restore#recovery)
 
 ## v2.0.0 {#v2-0-0}
-
-These entries describe the code and interface of **2.0.0 build 50**. The version number does not establish availability through download channels.
 
 - Support whole-account or media-only split migration for WeChat, keeping databases and configuration local in split mode. Restore fully before changing modes.
 - Support encrypted APFS destinations with an independent password for new data volumes and optional local Keychain storage. Unlock manually without saved credentials.
@@ -18,7 +37,7 @@ These entries describe the code and interface of **2.0.0 build 50**. The version
 - Adjust concurrent reads for data scans and small-file copying while retaining content verification, pre-switch checks and safe cleanup. No fixed speedup is promised across storage devices.
 - Continue to separate migration from manual signing, store official originals externally and disable automatic login re-signing on all systems. Complete multilingual prompts for the new interface.
 
-Guides: [Task Center](/docs/datamigrae/operation#task-center), [recovery](/docs/restore#recovery), [disk ejection](/docs/storage-guide#eject) and [launch protection](/docs/datamigrae/operation#launch-protection).
+[View v2.0.0](https://github.com/wzh4869/AppPorts/releases/tag/2.0.0) · Guides: [Task Center](/docs/datamigrae/operation#task-center), [recovery](/docs/restore#recovery), [disk ejection](/docs/storage-guide#eject) and [launch protection](/docs/datamigrae/operation#launch-protection).
 
 ## v1.9.1 (development history) {#v1-9-1}
 

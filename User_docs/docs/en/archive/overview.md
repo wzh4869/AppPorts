@@ -12,6 +12,6 @@ This archive retains retired features, earlier migration methods, and experiment
 
 ## Reading version notes {#versions}
 
-Current guides describe 2.0.0. A feature appearing in an older release does not mean its switch still works. The old “re-sign after migration” and “automatically re-sign at login” workflows and limitations remain in the archive. For current behavior, see [settings and permissions](/docs/settings).
+Current guides describe the latest interface and behavior. A feature appearing in an older release does not mean its switch still works. The old “re-sign after migration” and “automatically re-sign at login” workflows and limitations remain in the archive. For current behavior, see [settings and permissions](/docs/settings).
 
 See the [changelog](/docs/changelog) for release-by-release changes. If an old migration has problems, preserve your data and backups and follow [macOS 27 upgrade and repair](/docs/macos-27). Do not downgrade or re-sign merely to recreate an old workflow.

@@ -30,7 +30,7 @@ If any step reports an error, stop and preserve the data and paths shown. Restor
 
 ## Handle old login tasks {#after}
 
-Older versions may have installed a task that re-signs apps at login. Open AppPorts once after updating so it can disable and remove that task. If settings reports unfinished cleanup, use Retry. The current 2.0.0 version disables background automatic re-signing on every macOS version. Build 31 removes the persistent switch, so normally no such settings card appears. [Background reconnection](/docs/settings#mount-agent) for container data remains available.
+Older versions may have installed a task that re-signs apps at login. Open AppPorts once after updating so it can disable and remove that task. If settings reports unfinished cleanup, use Retry. Current builds disable background automatic re-signing on every macOS version. Build 31 removes the persistent switch, so normally no such settings card appears. [Background agents](/docs/settings#mount-agent) for container data and images remain available.
 
 After restoring the app, some system permissions may need to be granted again. Connect the external drive before use; macOS still handles any applicable first-access prompts.
 

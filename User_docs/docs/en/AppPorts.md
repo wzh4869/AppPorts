@@ -14,7 +14,7 @@ These guides are for everyday AppPorts users. They cover preparation, migration,
 - **Interested in the design:** read “How it works”; for experiments and tradeoffs, explore the [blog](/docs/blog/overview).
 - **Unfamiliar term or warning:** consult the [glossary](/docs/glossary), [badges and states](/docs/badges), or [troubleshooting](/docs/faq).
 
-These docs describe the interface and behavior of the **AppPorts 2.0.0 (build 50)**. See the [changelog](/docs/changelog) for differences from released versions, and check version notes when using an older build.
+These docs describe the current interface and behavior, including development changes not yet included in a public release. See the [changelog](/docs/changelog) for released versions, and check version notes when using an older build.
 
 You can also consult [AppPorts on DeepWiki](https://deepwiki.com/wzh4869/AppPorts). The [author's blog post](https://www.shimoko.com/p/appports/) explains how AppPorts began.
 
@@ -26,7 +26,7 @@ The [blog](/docs/blog/overview) follows the experiments and failed approaches th
 | --- | --- |
 | Familiar experience | Preserve familiar ways of opening apps, with a local entry after moving the real app externally. |
 | Stable strategies | Prefer validated methods and explain uncertain data, permissions or conflicting destinations. |
-| Low system overhead | Avoid unnecessary background work; login and reconnection tasks run according to the state of mounted data. |
+| Low system overhead | Avoid unnecessary background work; disk maintenance and the application update guardian run from events and actual state, and can be disabled in settings. |
 | International access | Make AppPorts usable in more languages and keep improving translations. |
 | Accessibility | Support accessible controls, status information and assistive technologies. |
 
