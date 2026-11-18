@@ -89,9 +89,9 @@ final class AppStoreExternalInstallSettings: ObservableObject {
             title: "App Store 应用外部安装".localized,
             icon: "info.circle.fill",
             tint: .blue,
-            intro: String(format: "In App Store Settings, enable “Download and install large apps to a separate disk”, then select “%@”. This applies to newly downloaded apps larger than 1 GB.".localized(fallbackLanguage: "en"), name),
-            bullets: [WarningBullet("gearshape", "Settings: You can complete this later in AppPorts Settings, even after choosing “Don’t remind me again”.".localized(fallbackLanguage: "en"))],
-            cancelTitle: "Don’t remind me again".localized(fallbackLanguage: "en"),
+            intro: String(format: "In App Store Settings, enable “Download and install large apps to a separate disk”, then select “%@”. This applies to newly downloaded apps larger than 1 GB.".localized, name),
+            bullets: [WarningBullet("gearshape", "Settings: You can complete this later in AppPorts Settings, even after choosing “Don’t remind me again”.".localized)],
+            cancelTitle: "Don’t remind me again".localized,
             onCancel: { self.defaults.set(true, forKey: Self.dismissGuidanceKey) },
             actions: [
                 WarningAction("打开 App Store 设置".localized, handler: onOpenAppStore),
@@ -99,7 +99,7 @@ final class AppStoreExternalInstallSettings: ObservableObject {
             ]
         )
         if case .differentVolume(let selectedName) = state {
-            request.detail = String(format: "App Store currently uses “%@”. Select “%@” to match AppPorts.".localized(fallbackLanguage: "en"), selectedName, name)
+            request.detail = String(format: "App Store currently uses “%@”. Select “%@” to match AppPorts.".localized, selectedName, name)
         }
         return request
     }

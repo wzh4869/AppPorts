@@ -9,7 +9,7 @@ struct AppStoreExternalInstallSection: View {
         AppSettingsSection(title: "App Store 应用外部安装".localized, headerAccessory: {
             if settings.state == .ready {
                 Label {
-                    Text("Configured".localized(fallbackLanguage: "en"))
+                    Text("Configured".localized)
                 } icon: {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(AppSettingsStyle.success)
                 }
@@ -23,7 +23,7 @@ struct AppStoreExternalInstallSection: View {
                 .fixedSize(horizontal: false, vertical: true)
             if let destination = settings.destinationURL {
                 VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
-                    Text("AppPorts can migrate App Store apps of any size, including apps under 1 GB, to:".localized(fallbackLanguage: "en"))
+                    Text("AppPorts can migrate App Store apps of any size, including apps under 1 GB, to:".localized)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: destination.path)
                         .textSelection(.enabled)
@@ -44,17 +44,17 @@ struct AppStoreExternalInstallSection: View {
     private var detail: String {
         switch settings.state {
         case .ready:
-            return "App Store will also install newly downloaded apps larger than 1 GB on this drive and manage their updates.".localized(fallbackLanguage: "en")
+            return "App Store will also install newly downloaded apps larger than 1 GB on this drive and manage their updates.".localized
         case .notConfigured:
-            return "Not configured. In App Store Settings, enable external installation for apps larger than 1 GB and choose the same external drive as AppPorts.".localized(fallbackLanguage: "en")
+            return "Not configured. In App Store Settings, enable external installation for apps larger than 1 GB and choose the same external drive as AppPorts.".localized
         case .differentVolume(let name):
-            return String(format: "App Store currently uses “%@”. Choose the same external drive as AppPorts in App Store Settings.".localized(fallbackLanguage: "en"), name)
+            return String(format: "App Store currently uses “%@”. Choose the same external drive as AppPorts in App Store Settings.".localized, name)
         case .notSelected:
-            return "Choose external storage in AppPorts before configuring App Store external installation.".localized(fallbackLanguage: "en")
+            return "Choose external storage in AppPorts before configuring App Store external installation.".localized
         case .unavailable:
-            return "Reconnect the selected external drive to check the App Store installation setting.".localized(fallbackLanguage: "en")
+            return "Reconnect the selected external drive to check the App Store installation setting.".localized
         case .unknown, .unsupported:
-            return "Could not read the App Store installation setting. Open App Store Settings to check it.".localized(fallbackLanguage: "en")
+            return "Could not read the App Store installation setting. Open App Store Settings to check it.".localized
         }
     }
 }

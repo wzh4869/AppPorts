@@ -68,7 +68,7 @@ final class AppStoreExternalInstallSettingsTests: XCTestCase {
         settings.refresh(for: fixture.root)
         var opened = false
         let request = settings.makeGuidanceRequest(onOpenAppStore: { opened = true }, onCheck: {})
-        XCTAssertEqual(request.cancelTitle, "Don’t remind me again".localized(fallbackLanguage: "en"))
+        XCTAssertEqual(request.cancelTitle, "Don’t remind me again".localized)
         XCTAssertEqual(request.bullets.first?.icon, "gearshape")
         XCTAssertEqual(request.actions.count, 2)
         request.onCancel()

@@ -123,24 +123,24 @@ struct AppStoreSettingsView: View {
     }
 
     private var backgroundAgentsSection: some View {
-        AppSettingsSection(title: "Background agents".localized(fallbackLanguage: "en")) {
-            AppSettingsToggle(title: "Disk maintenance agent".localized(fallbackLanguage: "en"),
-                detail: "At login or when an external drive reconnects, restore migrated data volumes and the app library, and keep AppPorts-managed APFS data volumes hidden.".localized(fallbackLanguage: "en"),
+        AppSettingsSection(title: "Background agents".localized) {
+            AppSettingsToggle(title: "Disk maintenance agent".localized,
+                detail: "At login or when an external drive reconnects, restore migrated data volumes and the app library, and keep AppPorts-managed APFS data volumes hidden.".localized,
                 isOn: $diskMaintenanceEnabled)
             Divider()
-            AppSettingsToggle(title: "Application update guardian".localized(fallbackLanguage: "en"),
-                detail: "Keep watching migrated apps after AppPorts quits. Attempt recovery when a ShipIt update fails and report the result in the task center.".localized(fallbackLanguage: "en"),
+            AppSettingsToggle(title: "Application update guardian".localized,
+                detail: "Keep watching migrated apps after AppPorts quits. Attempt recovery when a ShipIt update fails and report the result in the task center.".localized,
                 isOn: $updateGuardianEnabled)
             if agentSync.isSynchronizing {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Applying background settings…".localized(fallbackLanguage: "en")).foregroundStyle(.secondary)
+                    Text("Applying background settings…".localized).foregroundStyle(.secondary)
                 }
                 .font(AppSettingsStyle.secondaryFont)
             }
             if let error = agentSync.errorMessage {
                 VStack(alignment: .leading, spacing: AppSettingsStyle.rowGap) {
-                    Text("Background agent settings could not be applied.".localized(fallbackLanguage: "en")).foregroundStyle(.red)
+                    Text("Background agent settings could not be applied.".localized).foregroundStyle(.red)
                     Text(verbatim: error).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     Button("重试".localized) { agentSync.selectionDidChange() }
                         .font(AppSettingsStyle.bodyFont)
@@ -157,7 +157,7 @@ struct AppStoreSettingsView: View {
             AppStoreExternalInstallSection(settings: appStoreInstall)
                 .onAppear { allowAppStoreMigration = true; allowIOSAppMigration = true }
         } else {
-            AppSettingsSection(title: "Migration behavior".localized(fallbackLanguage: "en")) {
+            AppSettingsSection(title: "Migration behavior".localized) {
                 AppSettingsToggle(title: "允许迁移 Mac App Store 应用".localized,
                     detail: "启用后可以迁移来自 Mac App Store 的原生 Mac 应用".localized, isOn: $allowAppStoreMigration)
                 if allowAppStoreMigration {

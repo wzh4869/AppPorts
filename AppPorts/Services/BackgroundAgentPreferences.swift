@@ -39,9 +39,9 @@ enum BackgroundAgents {
     static func applyConfiguration(diskMaintenance: () throws -> Void, updateGuardian: () throws -> Void) throws {
         var failures: [String] = []
         do { try diskMaintenance() }
-        catch { failures.append("Disk maintenance agent".localized(fallbackLanguage: "en") + ": " + error.localizedDescription) }
+        catch { failures.append("Disk maintenance agent".localized + ": " + error.localizedDescription) }
         do { try updateGuardian() }
-        catch { failures.append("Application update guardian".localized(fallbackLanguage: "en") + ": " + error.localizedDescription) }
+        catch { failures.append("Application update guardian".localized + ": " + error.localizedDescription) }
         guard failures.isEmpty else {
             throw NSError(domain: "AppPorts.BackgroundAgents", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: failures.joined(separator: "\n")])
