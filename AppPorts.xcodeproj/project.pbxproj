@@ -31,22 +31,9 @@
 		B20261020000000000000002 /* StubLauncherBinary */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = StubLauncherBinary; sourceTree = DERIVED_FILE_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B20261020000000000000003 /* Exceptions for "AppPorts" folder in "AppPorts" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				StubLauncherBinary,
-			);
-			target = 2A6892EE2ECB9A7D0074F02E /* AppPorts */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2A6892F12ECB9A7D0074F02E /* AppPorts */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				B20261020000000000000003 /* Exceptions for "AppPorts" folder in "AppPorts" target */,
-			);
 			path = AppPorts;
 			sourceTree = "<group>";
 		};

@@ -50,13 +50,10 @@ struct CustomDirsView: View {
     @State private var refreshRequestID: UUID?
     @State private var directoryRefreshTask: Task<Void, Never>?
     @State private var recordRefreshTask: Task<Void, Never>?
-    @State private var sizeCacheUpdatedAt: Date?
     @State private var isVisible = false
     @State private var showAddSheet = false
     @State private var showError = false
     @State private var errorMessage = ""
-    @State private var showCompletionWarning = false
-    @State private var completionWarning = ""
     @State private var retainedTransfers: [DataTransferRecord] = []
     @State private var managedLinks: [ManagedDataLinkRecord] = []
     private var transferGroups: [DataTransferGroup] { DataTransferGroup.groups(from: retainedTransfers) }
@@ -181,11 +178,6 @@ struct CustomDirsView: View {
             Button("好的".localized, role: .cancel) {}
         } message: {
             Text(errorMessage)
-        }
-        .alert("操作尚未完成".localized, isPresented: $showCompletionWarning) {
-            Button("好的".localized, role: .cancel) {}
-        } message: {
-            Text(completionWarning)
         }
         .warningSheet($ownershipAdvisoryRequest)
     }
@@ -397,12 +389,10 @@ struct CustomDirsView: View {
             let scanner = CustomDirScanner()
             let result = await scanner.scan(configs: requestedConfigs, calculateSizes: true,
                                             forceSizeRefresh: forceSizeRefresh)
-            let cacheTime = await scanner.sizeCacheUpdatedAt
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 guard isVisible, refreshRequestID == requestID, configs == requestedConfigs else { return }
                 pairs = result
-                sizeCacheUpdatedAt = cacheTime
                 selectedLocalIDs.formIntersection(Set(result.map(\.local.id)))
                 selectedExternalIDs.formIntersection(Set(result.map(\.external.id)))
                 isScanning = false

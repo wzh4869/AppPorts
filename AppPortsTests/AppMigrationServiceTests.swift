@@ -1053,20 +1053,6 @@ final class AppMigrationServiceTests: XCTestCase {
         XCTAssertTrue(result.retiredLocalPortalURLs.isEmpty)
     }
 
-    private final class CleanupFailingFileManager: FileManager {
-        let protectedURL: URL
-
-        init(protectedURL: URL) {
-            self.protectedURL = protectedURL
-            super.init()
-        }
-
-        override func removeItem(at URL: URL) throws {
-            if URL == protectedURL { throw CocoaError(.fileWriteNoPermission) }
-            try super.removeItem(at: URL)
-        }
-    }
-
     func testAppleScriptEscapingHandlesQuotesBackslashesSpacesAndUnicode() {
         let path = "/tmp/AppPorts it's \"quoted\"/中文/Slash\\Name.app"
         let literal = AppMigrationService.appleScriptStringLiteral(path)
@@ -1917,25 +1903,6 @@ final class AppMigrationServiceTests: XCTestCase {
         open "$REAL_APP"
         """
         try script.write(to: macOSURL.appendingPathComponent("launcher"), atomically: true, encoding: .utf8)
-    }
-
-    private func assertDeepPortal(_ localURL: URL, pointsTo externalURL: URL, file: StaticString = #filePath, line: UInt = #line) throws {
-        let localValues = try localURL.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
-        XCTAssertEqual(localValues.isDirectory, true, file: file, line: line)
-        XCTAssertNotEqual(localValues.isSymbolicLink, true, file: file, line: line)
-
-        let localContentsURL = localURL.appendingPathComponent("Contents")
-        let contentsValues = try localContentsURL.resourceValues(forKeys: [.isSymbolicLinkKey])
-        XCTAssertEqual(contentsValues.isSymbolicLink, true, file: file, line: line)
-
-        let destination = try fileManager.destinationOfSymbolicLink(atPath: localContentsURL.path)
-        let resolvedDestination = URL(fileURLWithPath: destination, relativeTo: localContentsURL.deletingLastPathComponent()).standardizedFileURL
-        XCTAssertEqual(
-            resolvedDestination,
-            externalURL.appendingPathComponent("Contents").standardizedFileURL,
-            file: file,
-            line: line
-        )
     }
 
     private func assertStubPortal(_ localURL: URL, pointsTo externalURL: URL, file: StaticString = #filePath, line: UInt = #line) throws {

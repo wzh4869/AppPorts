@@ -11,11 +11,8 @@ import AppKit
 /// 列表行视图
 struct AppRowView: View {
     let app: AppItem
-    let isSelected: Bool
     let showDeleteLinkButton: Bool
-    let showMoveBackButton: Bool
     let onDeleteLink: (AppItem) -> Void
-    let onMoveBack: (AppItem) -> Void
     let onResign: ((AppItem) -> Void)?
     let onRestoreSignature: ((AppItem) -> Void)?
     var onMoveOutWholeSymlink: ((AppItem) -> Void)? = nil
@@ -137,11 +134,6 @@ struct AppRowView: View {
                 Button("恢复原始签名".localized) {
                     onRestoreSignature(app)
                 }
-            }
-
-            if showMoveBackButton {
-                Divider()
-                Button("将应用迁移回本地".localized) { onMoveBack(app) }
             }
 
             if canDeleteLink {

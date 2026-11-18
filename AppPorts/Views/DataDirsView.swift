@@ -70,7 +70,6 @@ struct DataDirsView: View {
     @State private var weChatMigrationItem: DataDirItem?
     @State private var weChatMigrationMode: WeChatAccountMigrationService.Mode = .whole
     @State private var dotFolderItems: [DataDirItem] = []
-    @State private var toolSizeCacheUpdatedAt: Date?
     @State private var libraryItems:   [DataDirItem] = []
     @State private var appDataScanCache = AppDataScanCache()
     @State private var appDataPermissionIncomplete = false
@@ -101,9 +100,7 @@ struct DataDirsView: View {
     @State private var migrationRiskRequest: WarningSheetRequest?
 
     // 挂载迁移（沙盒应用容器数据）
-    @State private var selectedAppIsSandboxed = false
     @State private var mountMigrationRequest: WarningSheetRequest?
-    @State private var pendingMountMigrationItem: DataDirItem? = nil
     /// 挂载迁移前正在检查目标盘；检查期间忽略重复点击
     @State private var isCheckingMountDestination = false
     @State private var pendingCleanups: [ContainerCleanupRecord] = []
@@ -111,8 +108,6 @@ struct DataDirsView: View {
     @State private var preservedMaterials: [DataTransferMaterial] = []
     @State private var currentDataPaths: [UUID: String] = [:]
     @State private var showCleanupResolution = false
-    @State private var dataCompletionWarning = ""
-    @State private var showDataCompletionWarning = false
 
     // 错误弹窗
     @State private var showError = false
@@ -340,12 +335,6 @@ struct DataDirsView: View {
             Button("好的".localized, role: .cancel) {}
         } message: {
             Text(errorMessage)
-        }
-        .alert("操作尚未完成".localized, isPresented: $showDataCompletionWarning) {
-            Button("处理异常".localized) { refreshOperationRecords(); showCleanupResolution = true }
-            Button("稍后".localized, role: .cancel) {}
-        } message: {
-            Text(dataCompletionWarning)
         }
 
     }
@@ -1255,7 +1244,6 @@ struct DataDirsView: View {
         libraryIdentityIssue = nil
         displayedAppDataContext = nil
         selectedItemID = nil
-        selectedAppIsSandboxed = false
         selectedAppIsWeChat = false
         appDataPermissionIncomplete = false
         isScanning = false
@@ -1326,11 +1314,9 @@ struct DataDirsView: View {
             }
             let displayedItems = initialItems
             let pendingIndices = missingIndices
-            let previousCacheTime = snapshot.updatedAt
             await MainActor.run {
                 guard self.dotFolderScanToken == scanToken else { return }
                 self.dotFolderItems = displayedItems
-                self.toolSizeCacheUpdatedAt = previousCacheTime
             }
             AppLogger.shared.logContext(
                 "工具目录扫描完成",
@@ -1384,7 +1370,6 @@ struct DataDirsView: View {
             await MainActor.run {
                 guard self.dotFolderScanToken == scanToken else { return }
                 if !pendingIndices.isEmpty { ToolDirectorySizeCacheStore.shared.save(completedSnapshot) }
-                self.toolSizeCacheUpdatedAt = completedSnapshot.updatedAt
                 for (i, result) in sizedItems {
                     guard i < self.dotFolderItems.count else { continue }
                     self.dotFolderItems[i].applySize(result)
@@ -1400,7 +1385,6 @@ struct DataDirsView: View {
         libraryItems = snapshot.items
         libraryReadIssues = snapshot.readIssues
         libraryIdentityIssue = snapshot.identityIssue
-        selectedAppIsSandboxed = snapshot.isSandboxed
         selectedAppIsWeChat = snapshot.isWeChat
         weChatContainerIdentifier = snapshot.containerIdentifier
         appDataPermissionIncomplete = false
@@ -1999,7 +1983,6 @@ struct DataDirsView: View {
             sourcePath: item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"),
             destinationPath: destination?.path
         )
-        pendingMountMigrationItem = item
         mountMigrationRequest = WarningSheetRequest(
             title: guidance.title,
             icon: guidance.icon,
@@ -2008,10 +1991,8 @@ struct DataDirsView: View {
             bullets: guidance.bullets.map { WarningBullet($0.icon, $0.text) },
             detail: guidance.detail,
             cancelTitle: guidance.cancelTitle,
-            onCancel: { pendingMountMigrationItem = nil },
             actions: guidance.actions.map { action in
                 WarningAction(action.title, style: action.isPrimary ? .preferred : .normal) {
-                    pendingMountMigrationItem = nil
                     switch action.kind {
                     case .migrate:
                         if case .encrypted = outcome {
@@ -2154,7 +2135,7 @@ struct DataDirsView: View {
         }) { return }
         submitDataTask(item, title: String(format: "正在还原「%@」".localized, item.name),
                        mount: true, retrying: retrying, recovery: { error, retry in
-            presentAPFSFailure(error, item: item, record: record, retryToken: retry,
+            presentAPFSFailure(error, item: item, retryToken: retry,
                 retry: { performMountRestore(item, record: record, retrying: retry) })
         }) { progress in
             try await ContainerVolumeMigrator().restoreAndComplete(record: record,
@@ -2225,7 +2206,7 @@ struct DataDirsView: View {
         }
     }
 
-    private func presentAPFSFailure(_ error: Error, item: DataDirItem, record: ContainerMountRecord? = nil,
+    private func presentAPFSFailure(_ error: Error, item: DataDirItem,
                                     retryToken: MigrationJob.RetryToken? = nil,
                                     retry: @escaping () -> Void) {
         if let retryToken, !MigrationTaskCenter.shared.canRetry(retryToken) { return }
@@ -2241,14 +2222,13 @@ struct DataDirsView: View {
                 }])
             return
         }
-        let record = record ?? (try? ContainerMountStore.shared.recordForRestore(at: item.path))
         var actions: [WarningAction] = []
         if DataOperationIssue.needsAccessPermission(error) {
             actions.append(WarningAction("访问权限设置".localized) {
                 if let retryToken, !MigrationTaskCenter.shared.canRetry(retryToken) { return }
                 FullDiskAccessGuide.shared.openSettings()
                 // Keep the same operation available when the user returns.
-                presentAPFSFailure(error, item: item, record: record, retryToken: retryToken, retry: retry)
+                presentAPFSFailure(error, item: item, retryToken: retryToken, retry: retry)
             })
         }
         actions.append(WarningAction("重试".localized, style: .preferred, handler: retry))
@@ -2290,12 +2270,6 @@ struct DataDirsView: View {
                 }
             }
         return true
-    }
-
-
-    private func presentDataCompletionWarnings(_ warnings: [String?]) {
-        dataCompletionWarning = warnings.compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "\n\n")
-        showDataCompletionWarning = !dataCompletionWarning.isEmpty
     }
 
     private func retryPendingOperations(operationID: UUID? = nil) {

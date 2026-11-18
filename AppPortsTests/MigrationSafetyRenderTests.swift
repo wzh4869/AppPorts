@@ -407,7 +407,7 @@ final class MigrationSafetyRenderTests: XCTestCase {
     }
 
     @MainActor
-    private func render<V: View>(_ view: V, size: NSSize, to url: URL, requiresScrolling: Bool = false,
+    private func render<V: View>(_ view: V, size: NSSize, to url: URL,
                                  afterLayout: (() -> Void)? = nil, requiresNavigation: Bool = false,
                                  expectedTableRowCount: Int? = nil, defaults: UserDefaults? = nil,
                                  inspect: ((NSView) -> Void)? = nil, colorScheme: ColorScheme = .light) async throws {
@@ -471,15 +471,6 @@ final class MigrationSafetyRenderTests: XCTestCase {
                 XCTAssertTrue(NSLocationInRange(row, table.rows(in: table.visibleRect)),
                               "Both matching directories should be visible together")
             }
-        }
-        if requiresScrolling {
-            func scrollViews(in view: NSView) -> [NSScrollView] {
-                (view as? NSScrollView).map { [$0] } ?? view.subviews.flatMap { scrollViews(in: $0) }
-            }
-            let scroll = try XCTUnwrap(scrollViews(in: host).first)
-            let content = try XCTUnwrap(scroll.documentView)
-            XCTAssertGreaterThan(content.frame.height, scroll.contentView.bounds.height,
-                                 "Long recovery details must remain reachable by scrolling")
         }
         inspect?(host)
         let bitmap = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
@@ -601,21 +592,5 @@ final class MigrationSafetyRenderTests: XCTestCase {
                 item("Documents/Empty Account"), item("Documents/Offline Archive", status: DataDirStatus.volumeMissing),
                 item("Library", bytes: 131_072, locked: true), item("Library/Application Support", locked: true), legacy,
                 item("Library/Caches", bytes: 131_072, locked: true), unreadable, item("tmp", locked: true)]
-    }
-
-    private func fixtureTransfer(phase: DataTransferRecord.Phase, mode: DataTransferRecord.Mode = .symlink,
-                                 direction: DataTransferRecord.Direction = .migrate) -> DataTransferRecord {
-        let original = "/AppPortsSyntheticHome/Library/Containers/com.example.visual/Data/Documents/Account"
-        let destination = direction == .restore ? original : "/Volumes/Synthetic External Disk/AppPorts/Library/Containers/com.example.visual/Account"
-        let uuid = "11111111-2222-3333-4444-555555555555"
-        return DataTransferRecord(mode: mode, direction: direction, appName: "Synthetic Application", dataDirType: "containers",
-            originalPath: original, activePath: direction == .restore || phase == .needsRecovery ? original : destination, destinationPath: destination,
-            backupPath: "/AppPortsSyntheticHome/Library/Containers/com.example.visual/Data/Documents/.appports-migration-backup-Account-00000000",
-            stagingPath: "/AppPortsSyntheticHome/Library/Containers/com.example.visual/Data/Documents/.appports-restore-00000000/data",
-            sourceIdentity: DataPathIdentity(device: 1, inode: 100, volumeUUID: uuid),
-            destinationIdentity: DataPathIdentity(device: 2, inode: 200, volumeUUID: uuid),
-            backupIdentity: DataPathIdentity(device: 1, inode: 100, volumeUUID: uuid), phase: phase,
-            baseline: phase == .awaitingUserVerification ? Data([1]) : nil,
-            recoverableReason: phase == .needsRecovery ? "Synthetic interruption after copy verification; both recorded copies remain available." : nil)
     }
 }

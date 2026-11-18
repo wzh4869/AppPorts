@@ -371,11 +371,3 @@ struct SettingsStyleCard<Accessory: View>: View {
         }
     }
 }
-
-extension SettingsStyleCard where Accessory == EmptyView {
-    init(icon: String, iconColor: Color, title: String, detail: String) {
-        self.init(icon: icon, iconColor: iconColor, title: title, detail: detail) {
-            EmptyView()
-        }
-    }
-}

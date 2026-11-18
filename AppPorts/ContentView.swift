@@ -37,7 +37,6 @@ struct ContentView: View {
     @State private var externalApps: [AppItem] = []
     /// 应用体积缓存（key = AppItem.id），独立保存并在下次启动恢复。
     @State private var sizeCache: [String: CachedAppSize] = [:]
-    @State private var sizeCacheUpdatedAt: Date?
     @State private var hasRestoredSizeCache = false
     
     @State private var searchText: String = ""
@@ -104,17 +103,6 @@ struct ContentView: View {
     @ObservedObject private var appStoreInstall = AppStoreExternalInstallSettings.shared
 
     @State private var showSearchExclusion = false
-    
-    // 单应用复制进度
-    @State private var progressBytes: Int64 = 0
-    @State private var progressTotalBytes: Int64 = 0
-    @State private var progressFileName = ""
-    /// Stage-aware progress for an application transfer. Data directory
-    /// migration already reported prepare/copy/verify/cleanup separately; app
-    /// migration only ever published raw byte counts, so a long verification or
-    /// flush looked identical to a stalled copy. One object per operation, as
-    /// `DataTransferProgress` documents.
-    @State private var appTransferProgress: DataTransferProgress?
 
     private let fileManager = FileManager.default
 
@@ -197,7 +185,6 @@ struct ContentView: View {
             if !hasRestoredSizeCache {
                 let snapshot = AppSizeCacheStore.shared.load()
                 sizeCache = snapshot.entries
-                sizeCacheUpdatedAt = snapshot.updatedAt
                 hasRestoredSizeCache = true
             }
             // Restore persistence
@@ -321,7 +308,6 @@ struct ContentView: View {
                 operationTab = nil
                 operationDataTab = nil
             }
-            if !isBusy { remountContainerVolumes(trigger: "operation-finished") }
             // 补上操作期间延后的监控刷新，也初始化操作期间新打开的窗口。
             if !isBusy, needsAppRescan || localScanState.request == nil || externalScanState.request == nil {
                 scanBothAppsAtomic()
@@ -402,19 +388,15 @@ struct ContentView: View {
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundStyle(.secondary)
                         }
-                        if let appTransferProgress {
-                            DataDirProgressOverlay(title: progressTitle, progress: appTransferProgress)
-                        } else {
-                            ProgressOverlay(
-                                title: progressTitle,
-                                current: progressCurrent,
-                                total: progressTotal,
-                                appName: progressAppName,
-                                copiedBytes: progressBytes,
-                                totalBytes: progressTotalBytes,
-                                currentFile: progressFileName
-                            )
-                        }
+                        ProgressOverlay(
+                            title: progressTitle,
+                            current: progressCurrent,
+                            total: progressTotal,
+                            appName: progressAppName,
+                            copiedBytes: 0,
+                            totalBytes: 0,
+                            currentFile: ""
+                        )
                     }
                 }
             }
@@ -1015,11 +997,8 @@ struct ContentView: View {
                         let activeJob = activeJob(for: app)
                         AppRowView(
                             app: app,
-                            isSelected: selectedLocalApps.contains(entry.id),
                             showDeleteLinkButton: true,
-                            showMoveBackButton: false,
                             onDeleteLink: performDeleteLink,
-                            onMoveBack: performMoveBack,
                             onResign: { performSingleResign(app: $0) },
                             onRestoreSignature: performRestoreSignature,
                             onMoveOutWholeSymlink: performMoveOutWholeSymlink,
@@ -1051,10 +1030,8 @@ struct ContentView: View {
         }
         .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottomTrailing) {
-            let buttonStatus = getMoveButtonTitle()
-
             ActionFooter(
-                title: buttonStatus.text,
+                title: getMoveButtonTitle(),
                 icon: "arrow.right",
                 isEnabled: canMoveOut,
                 action: performMoveOut
@@ -1112,11 +1089,8 @@ struct ContentView: View {
                     let activeJob = activeJob(for: app)
                     AppRowView(
                         app: app,
-                        isSelected: selectedExternalApps.contains(entry.id),
                         showDeleteLinkButton: false,
-                        showMoveBackButton: false,
                         onDeleteLink: performDeleteLink,
-                        onMoveBack: performMoveBack,
                         onResign: { performSingleResign(app: $0) },
                         onRestoreSignature: performRestoreSignature,
                         onRepairSignature: { signatureRepairApp = $0 },
@@ -1264,31 +1238,31 @@ struct ContentView: View {
         migrationTasks.activeJob(overlappingAllPaths: [app.path, app.displayURL], includeObserved: true)
     }
 
-    func getMoveButtonTitle() -> (text: String, isError: Bool) {
+    func getMoveButtonTitle() -> String {
         // 获取所有选中且可迁移的应用
         let validApps = selectedLocalApps.compactMap { id in
             localApps.first { $0.id == id }
         }.filter { !$0.isSystemApp && !$0.isRunning && $0.status != AppStatus.linked && activeJob(for: $0) == nil }
         
         if selectedLocalApps.isEmpty {
-            return ("迁移到外部".localized, false)
+            return "迁移到外部".localized
         }
 
         if validApps.isEmpty {
             // 检查是否全是不可迁移的
             let selectedAppsData = selectedLocalApps.compactMap { id in localApps.first { $0.id == id } }
-            if selectedAppsData.contains(where: { activeJob(for: $0) != nil }) { return ("查看进度".localized, false) }
-            if selectedAppsData.contains(where: { $0.isSystemApp }) { return ("含系统应用".localized, true) }
-            if selectedAppsData.contains(where: { $0.isRunning }) { return ("含运行中应用".localized, true) }
-            if selectedAppsData.contains(where: { $0.status == AppStatus.linked }) { return ("已链接".localized, false) }
-            return ("迁移到外部".localized, false)
+            if selectedAppsData.contains(where: { activeJob(for: $0) != nil }) { return "查看进度".localized }
+            if selectedAppsData.contains(where: { $0.isSystemApp }) { return "含系统应用".localized }
+            if selectedAppsData.contains(where: { $0.isRunning }) { return "含运行中应用".localized }
+            if selectedAppsData.contains(where: { $0.status == AppStatus.linked }) { return "已链接".localized }
+            return "迁移到外部".localized
         }
 
         if validApps.count == 1 {
-            return ("迁移到外部".localized, false)
+            return "迁移到外部".localized
         }
         
-        return (String(format: "迁移 %lld 个应用".localized, Int64(validApps.count)), false)
+        return String(format: "迁移 %lld 个应用".localized, Int64(validApps.count))
     }
     
     var canMoveOut: Bool {
@@ -1618,7 +1592,6 @@ struct ContentView: View {
             guard !Task.isCancelled, self.isCurrentScan(request, isLocal: isLocal) else { return }
             if !misses.isEmpty || request.forceSizeRefresh {
                 let updatedAt = Date()
-                self.sizeCacheUpdatedAt = updatedAt
                 AppSizeCacheStore.shared.save(entries: self.sizeCache, updatedAt: updatedAt)
             }
             if isLocal {
@@ -1771,49 +1744,6 @@ struct ContentView: View {
             }
         )
     }
-    
-    /// 检测应用是否来自 App Store（包括 iOS 应用）
-    func isAppStoreApp(at url: URL) -> Bool {
-        // 检测 _MASReceipt（Mac App Store 收据）
-        let receiptPath = url.appendingPathComponent("Contents/_MASReceipt")
-        if fileManager.fileExists(atPath: receiptPath.path) {
-            return true
-        }
-        
-        // 检测 iOS 应用
-        let infoPlistURL = url.appendingPathComponent("Contents/Info.plist")
-        if let plistData = try? Data(contentsOf: infoPlistURL),
-           let plist = try? PropertyListSerialization.propertyList(from: plistData, options: [], format: nil) as? [String: Any] {
-            
-            // UIDeviceFamily: 1=iPhone, 2=iPad
-            if let deviceFamily = plist["UIDeviceFamily"] as? [Int] {
-                let hasIPhoneOrIPad = deviceFamily.contains(1) || deviceFamily.contains(2)
-                let isMacCatalyst = deviceFamily.contains(6)
-                if hasIPhoneOrIPad && !isMacCatalyst {
-                    return true
-                }
-            }
-            
-            // LSRequiresIPhoneOS 仅 iOS 应用有
-            if plist["LSRequiresIPhoneOS"] as? Bool == true {
-                return true
-            }
-            
-            // DTPlatformName 检测
-            if let platform = plist["DTPlatformName"] as? String,
-               platform == "iphoneos" || platform == "iphonesimulator" {
-                return true
-            }
-        }
-        
-        // WrappedBundle 也是 iOS 应用
-        let wrappedBundleURL = url.appendingPathComponent("WrappedBundle")
-        if fileManager.fileExists(atPath: wrappedBundleURL.path) {
-            return true
-        }
-        
-        return false
-    }
 
     /// Fresh discovery for the board must not depend on the main pane's scan finishing.
     /// AppScanner and entries(at:) only read; portal maintenance is intentionally absent.
@@ -1909,22 +1839,6 @@ struct ContentView: View {
         needsAppRescan = true
     }
 
-    @discardableResult
-    func moveAndLink(appToMove: AppItem, destinationURL: URL, lockExternal: Bool = false,
-                     replacementChoice: AppMigrationService.ReplacementChoice? = nil,
-                     progressHandler: FileCopier.ProgressHandler?) async throws -> AppTransferResult {
-        let service = AppMigrationService()
-        return try await service.moveAndLink(
-            appToMove: appToMove,
-            destinationURL: destinationURL,
-            isRunning: isAppRunning(url: appToMove.displayURL),
-            lockExternal: lockExternal,
-            replacementChoice: replacementChoice,
-            deleteSourceFallback: AppMigrationService.removeItemViaFinder(at:),
-            progressHandler: progressHandler
-        )
-    }
-
     private func enqueueAppTransfer(_ app: AppItem, destination: URL, restoring: Bool = false,
                                     wholeSymlink: Bool = false, lockExternal: Bool = false,
                                     replacementChoice: AppMigrationService.ReplacementChoice? = nil,
@@ -1985,10 +1899,6 @@ struct ContentView: View {
                            wholeSymlink: true, lockExternal: lockExternal, replacementChoice: replacementChoice)
     }
 
-    func linkApp(appToLink: AppItem, destinationURL: URL) async throws {
-        try await AppMigrationService().linkAppWhenReady(appToLink: appToLink, destinationURL: destinationURL)
-    }
-    
     func deleteLink(app: AppItem) throws {
         // Capture targets while the entry still exists. Search exclusion outlives deletion.
         do { try AppPortalMaintenance.rememberEntries(at: app.path) }
@@ -1997,16 +1907,7 @@ struct ContentView: View {
         do { try AppPortalMaintenance.recordDeletion(at: app.path) }
         catch { AppLogger.shared.logError("保存入口删除后的搜索状态失败", error: error) }
     }
-    
-    @discardableResult
-    func moveBack(app: AppItem, localDestinationURL: URL, progressHandler: FileCopier.ProgressHandler?) async throws -> AppMigrationService.RestoreResult {
-        try await AppMigrationService().moveBack(
-            app: app,
-            localDestinationURL: localDestinationURL,
-            progressHandler: progressHandler
-        )
-    }
-    
+
     func performMoveOut() {
         guard let dest = externalDriveURL else { return }
         
@@ -2433,15 +2334,11 @@ struct ContentView: View {
         progressAppName = app.displayName
         progressCurrent = 1
         progressTotal = 1
-        progressBytes = 0
-        progressTotalBytes = 0
-        progressFileName = ""
         showProgress = true
 
         operationState.startTask(for: activityToken) { @MainActor in
             defer {
                 showProgress = false
-                appTransferProgress = nil
                 operationState.finish(activityToken)
             }
             do {
@@ -2573,14 +2470,10 @@ struct ContentView: View {
         progressAppName = app.displayName
         progressCurrent = 1
         progressTotal = 1
-        progressBytes = 0
-        progressTotalBytes = 0
-        progressFileName = ""
         showProgress = true
         let task = Task { @MainActor in
             defer {
                 showProgress = false
-                appTransferProgress = nil
                 operationState.finish(activityToken)
             }
             do {
@@ -2642,14 +2535,10 @@ struct ContentView: View {
         progressAppName = app.displayName
         progressCurrent = 1
         progressTotal = 1
-        progressBytes = 0
-        progressTotalBytes = 0
-        progressFileName = ""
         showProgress = true
         let task = Task { @MainActor in
             defer {
                 showProgress = false
-                appTransferProgress = nil
                 operationState.finish(activityToken)
             }
             let signer = CodeSigner()
@@ -2725,12 +2614,6 @@ struct ContentView: View {
     /// 单应用文件夹从 displayURL 解析其内部 .app；找不到目标时终止签名。
     nonisolated func resolveRealAppURL(for app: AppItem) throws -> URL {
         try CodeSigner.resolveAppURL(at: app.displayURL)
-    }
-
-    /// 解析符号链接目标
-    private func resolveSymlinkDestination(of url: URL) -> URL? {
-        guard let rawPath = try? FileManager.default.destinationOfSymbolicLink(atPath: url.path) else { return nil }
-        return URL(fileURLWithPath: rawPath, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
     }
 
     /// Manual signing is independent of every migration action.

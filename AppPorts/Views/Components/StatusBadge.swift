@@ -98,10 +98,8 @@ struct StatusBadge: View {
                     color: locked ? .green : .orange,
                     isTappable: true
                 ))
-            } else if app.hasSelfUpdater {
-                // 原生自更新 app（Chrome、Edge 等）不加锁，显示"已链接"
-                result.append(BadgeConfig(text: AppStatus.linked, icon: "link", color: .green, isTappable: false))
             } else {
+                // 原生自更新 app（Chrome、Edge 等）不加锁，显示"已链接"
                 result.append(BadgeConfig(text: AppStatus.linked, icon: "link", color: .green, isTappable: false))
             }
         } else if app.status == AppStatus.partialLinked {

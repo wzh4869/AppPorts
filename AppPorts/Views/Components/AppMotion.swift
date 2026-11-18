@@ -2,7 +2,6 @@ import SwiftUI
 
 /// Shared motion for navigation and small control feedback; list layout stays unanimated.
 enum AppMotion {
-    static let page = Animation.spring(response: 0.32, dampingFraction: 1)
     static let interaction = Animation.spring(response: 0.28, dampingFraction: 0.82)
 }
 

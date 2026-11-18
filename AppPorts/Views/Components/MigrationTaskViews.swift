@@ -49,60 +49,6 @@ struct MigrationDirectorySteps: View {
     }
 }
 
-@MainActor
-struct MigrationTaskToolbarButton: View {
-    @ObservedObject private var center = MigrationTaskCenter.shared
-
-    var body: some View {
-        Button {
-            center.detailID = nil
-            center.showsList.toggle()
-        } label: {
-            HStack(spacing: 6) {
-                MigrationTaskToolbarIcon(active: center.hasUnfinishedJobs, attention: center.hasAttention)
-                Text("任务中心".localized)
-                    .font(.system(size: 13))
-                if center.unfinishedCount > 0 {
-                    Text("\(center.unfinishedCount)").font(.caption).monospacedDigit()
-                }
-            }
-            .font(.system(size: 16))
-            .frame(minWidth: 32, minHeight: 30)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.borderless)
-        .foregroundStyle(center.hasUnfinishedJobs ? Color.blue : (center.hasAttention ? Color.orange : Color.secondary))
-        .help("任务中心".localized)
-        .accessibilityLabel("任务中心".localized)
-        .popover(isPresented: $center.showsList, arrowEdge: .bottom) {
-            MigrationTaskList()
-        }
-    }
-}
-
-private struct MigrationTaskToolbarIcon: View {
-    let active: Bool
-    let attention: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        Image(systemName: attention ? "exclamationmark" : "list.bullet")
-            .font(.system(size: 12))
-            .frame(width: 26, height: 26)
-            .overlay {
-                if active {
-                    TimelineView(.animation(minimumInterval: 1.0 / 30, paused: reduceMotion)) { context in
-                        Circle()
-                            .stroke(style: StrokeStyle(lineWidth: 1.3, dash: [3, 3]))
-                            .rotationEffect(.degrees(reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 6) * 60))
-                    }
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-                }
-            }
-    }
-}
-
 private struct MigrationTaskListHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {

@@ -1,5 +1,4 @@
 import Foundation
-import Testing
 @testable import AppPorts
 
 /// Compatibility fixtures, deliberately available only in the test target.
