@@ -233,14 +233,18 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
             }
             Spacer(minLength: 4)
             Text("大小".localized + " · " + "状态".localized)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
                 .frame(width: DirectoryRowColumns.metadataWidth, alignment: .trailing)
             Text("操作".localized)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
                 .frame(width: DirectoryRowColumns.actionsWidth, alignment: .trailing)
         }
         .font(.system(size: 12, weight: .medium))
         .foregroundColor(.secondary)
         .padding(.leading, 20)
-        .padding(.trailing, 36)
+        .padding(.trailing, 20)
         .padding(.vertical, 4)
     }
 
@@ -438,7 +442,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
 }
 
 private enum DirectoryRowColumns {
-    static let metadataWidth: CGFloat = 90
+    static let metadataWidth: CGFloat = 136
     static let actionsWidth: CGFloat = 128
 }
 
@@ -530,10 +534,14 @@ private struct AppDataDirectoryRow<Actions: View>: View {
                 Text(row.item.sizeScopeLabel)
                     .font(.system(size: 10))
                     .foregroundColor(isEmphasized ? .white.opacity(0.85) : .secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.trailing)
                     .help(row.item.sizeScopeExplanation)
                 Text(row.item.size ?? "计算中...".localized)
                     .font(.system(size: 13, weight: .medium))
                     .monospacedDigit()
+                    .lineLimit(1)
                     .foregroundColor(isEmphasized ? .white : (row.item.size == nil ? .secondary : .primary))
                 DataDirStatusBadge(status: activeStatus ?? row.item.displayedStatus, isEmphasized: isEmphasized)
                 if activeStatus == nil, row.item.autoMountPaused {

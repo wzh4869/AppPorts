@@ -77,6 +77,53 @@ final class MigrationSafetyRenderTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testRenderWeChatSplitMetadataLayout() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render WeChat split metadata layout")
+        }
+        let output = URL(fileURLWithPath: path, isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let root = URL(fileURLWithPath: "/AppPortsSyntheticHome/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files")
+        let accountURL = root.appendingPathComponent("wxid_1zxh3e4ctfeh22_9c44")
+        let memberNames = ["msg/file", "msg/video"]
+        let members = memberNames.map { relative in
+            DataDirItem(name: relative, path: accountURL.appendingPathComponent(relative),
+                        type: .containers, priority: .optional, description: "", status: DataDirStatus.mounted)
+        }
+        var account = DataDirItem(name: accountURL.lastPathComponent, path: accountURL,
+                                  type: .containers, priority: .optional, description: "",
+                                  status: DataDirStatus.mounted)
+        account.size = "23.77 GB"
+        account.requiresMountMigration = true
+        account.weChatSplitMembers = members
+        account.weChatExpectedMemberCount = members.count
+
+        var wmpf = DataDirItem(name: "WMPF", path: root.appendingPathComponent("WMPF"),
+                               type: .containers, priority: .optional, description: "",
+                               status: DataDirStatus.local)
+        wmpf.size = "33 kB"
+        wmpf.requiresMountMigration = true
+
+        let items = [account, wmpf]
+        XCTAssertEqual(account.sizeScopeLabel, "msg/file + msg/video")
+        for scheme in [ColorScheme.light, .dark] {
+            let view = AppDataDirectoryBrowser(groups: [DataDirGroup(type: .containers, items: items)],
+                matchingItemIDs: Set(items.map(\.id)), isFiltering: false, showLockedStructure: false) { item in
+                    self.actions(for: item)
+                }
+            try await render(view, size: NSSize(width: 740, height: 320),
+                to: output.appendingPathComponent("wechat-split-layout-\(scheme).png"), colorScheme: scheme)
+        }
+        let selectedView = AppDataDirectoryBrowser(groups: [DataDirGroup(type: .containers, items: items)],
+            matchingItemIDs: Set(items.map(\.id)), isFiltering: false, showLockedStructure: false,
+            revealRequest: .init(itemIDs: [account.id])) { item in
+                self.actions(for: item)
+            }
+        try await render(selectedView, size: NSSize(width: 740, height: 320),
+            to: output.appendingPathComponent("wechat-split-layout-selected.png"), colorScheme: .light)
+    }
+
     /// Exercise production sheets with synthetic records only; no migration is submitted.
     @MainActor
     func testRenderLocalizationSheets() async throws {
