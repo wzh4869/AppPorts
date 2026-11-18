@@ -300,13 +300,21 @@ struct SignatureCopyCompatibilityTests {
         try writePayload(first, megabytes: 2)
         try await run("/usr/bin/hdiutil", ["create", "-size", "64m", "-fs", "APFS", "-volname", "AppPortsLegacyCopy", image.path])
         let attach = OneShot()
+        let attachedDeviceBox = NSLock()
+        var attachedDevice: String?
         do {
             let probe = StateProbe(rejected: Runtime.earlyMacOS12.rejected)
             #expect(throws: TreeCopyError.self) {
                 try SignatureSnapshot.copy(from: fixture.app, to: fixture.candidate, allowCloning: false, onDataCopied: { url, _ in
                     guard url.lastPathComponent == first.lastPathComponent else { return }
                     attach.perform {
-                        try runSynchronously("/usr/bin/hdiutil", ["attach", "-nobrowse", "-mountpoint", mount.path, image.path])
+                        let out = try runSynchronously("/usr/bin/hdiutil", ["attach", "-plist", "-nobrowse", "-mountpoint", mount.path, image.path])
+                        if let plist = try? PropertyListSerialization.propertyList(from: out, options: [], format: nil) as? [String: Any],
+                           let entities = plist["system-entities"] as? [[String: Any]],
+                           let dev = entities.compactMap({ $0["dev-entry"] as? String })
+                               .first(where: { $0.range(of: "^/dev/disk[0-9]+$", options: .regularExpression) != nil }) {
+                            attachedDeviceBox.withLock { attachedDevice = dev }
+                        }
                         try Data("separate volume remains untouched".utf8).write(to: mount.appendingPathComponent("sentinel"))
                     }
                 }, stateSetter: probe.setter)
@@ -315,12 +323,15 @@ struct SignatureCopyCompatibilityTests {
             #expect(DiskUtility.isMountPoint(mount))
             #expect(try String(contentsOf: mount.appendingPathComponent("sentinel"), encoding: .utf8) == "separate volume remains untouched")
             #expect(try !SignatureSnapshot.entryExists(fixture.candidate.appendingPathComponent("Contents/Resources/999-mounted/sentinel")))
-            try await run("/usr/bin/hdiutil", ["detach", mount.path])
+            let target = attachedDeviceBox.withLock { attachedDevice } ?? mount.path
+            try await run("/usr/bin/hdiutil", ["detach", target])
             fixture.remove()
         } catch {
             // Failure to detach preserves this exact private fixture, avoiding
             // recursive deletion through a mounted filesystem during cleanup.
-            if DiskUtility.isMountPoint(mount) { try await run("/usr/bin/hdiutil", ["detach", mount.path]) }
+            let recordedDevice = attachedDeviceBox.withLock { attachedDevice }
+            let target = recordedDevice ?? mount.path
+            if recordedDevice != nil || DiskUtility.isMountPoint(mount) { try await run("/usr/bin/hdiutil", ["detach", target]) }
             fixture.remove()
             throw error
         }
@@ -429,16 +440,20 @@ struct SignatureCopyCompatibilityTests {
         let result = try await ProcessCommandRunner().run(executable: executable, arguments: arguments, timeout: 60)
         try #require(result.status == 0 && !result.timedOut, "\(result.combinedText)")
     }
-    private func runSynchronously(_ executable: String, _ arguments: [String]) throws {
+    @discardableResult
+    private func runSynchronously(_ executable: String, _ arguments: [String]) throws -> Data {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
-        let output = Pipe()
-        process.standardOutput = output
-        process.standardError = output
+        let stdout = Pipe()
+        let stderr = Pipe()
+        process.standardOutput = stdout
+        process.standardError = stderr
         try process.run()
         process.waitUntilExit()
-        let bytes = output.fileHandleForReading.readDataToEndOfFile()
-        try #require(process.terminationStatus == 0, "\(String(decoding: bytes, as: UTF8.self))")
+        let outBytes = stdout.fileHandleForReading.readDataToEndOfFile()
+        let errBytes = stderr.fileHandleForReading.readDataToEndOfFile()
+        try #require(process.terminationStatus == 0, "\(String(decoding: outBytes + errBytes, as: UTF8.self))")
+        return outBytes
     }
 }

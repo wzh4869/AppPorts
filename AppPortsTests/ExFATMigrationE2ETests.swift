@@ -14,9 +14,13 @@ final class ExFATMigrationE2ETests: XCTestCase {
             throw XCTSkip("Set APPPORTS_EXFAT_ROOT to a mounted ExFAT volume")
         }
         let root = URL(fileURLWithPath: rootPath)
-        let external = root.appendingPathComponent("AppPorts.noindex")
-        try? FileManager.default.removeItem(at: external)
+        let external = root.appendingPathComponent("AppPortsExFATFixture-" + UUID().uuidString + ".noindex")
         try FileManager.default.createDirectory(at: external, withIntermediateDirectories: true)
+        defer {
+            if external.lastPathComponent.hasPrefix("AppPortsExFATFixture-") {
+                try? FileManager.default.removeItem(at: external)
+            }
+        }
 
         // Probe must report the missing capabilities the warning relies on.
         let capabilities = try XCTUnwrap(StorageCapabilityProbe.probe(destination: external))
@@ -36,6 +40,12 @@ final class ExFATMigrationE2ETests: XCTestCase {
 
         let source = local.appendingPathComponent("Example.app")
         try makeApp(at: source)
+        let sign = try await ProcessCommandRunner().run(
+            executable: "/usr/bin/codesign",
+            arguments: ["--force", "--deep", "--sign", "-", source.path],
+            timeout: 20
+        )
+        XCTAssertEqual(sign.status, 0, sign.combinedText)
 
         let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 }, transferStore: store,
                                           signatureFactStore: facts, runningApplications: { [] })
@@ -46,6 +56,12 @@ final class ExFATMigrationE2ETests: XCTestCase {
         XCTAssertTrue(result.isSwitchComplete, result.pendingMessage ?? "")
         XCTAssertTrue(FileManager.default.fileExists(atPath: destination.path))
         XCTAssertEqual(try String(contentsOf: destination.appendingPathComponent("Contents/Resources/payload")), "payload")
+        let verify = try await ProcessCommandRunner().run(
+            executable: "/usr/bin/codesign",
+            arguments: ["--verify", "--deep", "--strict", destination.path],
+            timeout: 20
+        )
+        XCTAssertEqual(verify.status, 0, verify.combinedText)
     }
 
     private func makeApp(at url: URL) throws {

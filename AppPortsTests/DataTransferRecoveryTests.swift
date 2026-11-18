@@ -358,6 +358,7 @@ private actor RecoveryTestImage {
     private let mountPoint: URL
     private let imageURL: URL
     private var attached = false
+    private var devicePath: String?
 
     init(mountPoint: URL, imageURL: URL) {
         self.mountPoint = mountPoint
@@ -365,23 +366,35 @@ private actor RecoveryTestImage {
     }
 
     func prepare() async throws {
-        try await run(["create", "-size", "64m", "-fs", "APFS", "-volname", "AppPortsRecoveryTest", imageURL.path])
+        _ = try await run(["create", "-size", "64m", "-fs", "APFS", "-volname", "AppPortsRecoveryTest", imageURL.path])
         try await attach()
     }
 
     func attach() async throws {
-        try await run(["attach", "-nobrowse", "-owners", "off", "-mountpoint", mountPoint.path, imageURL.path])
+        let result = try await run(["attach", "-plist", "-nobrowse", "-owners", "off", "-mountpoint", mountPoint.path, imageURL.path])
         attached = true
+        devicePath = Self.attachedDevicePath(in: result.standardOutput)
     }
 
     func detach() async throws {
         guard attached else { return }
-        try await run(["detach", mountPoint.path])
+        _ = try await run(["detach", devicePath ?? mountPoint.path])
         attached = false
+        devicePath = nil
     }
 
-    private func run(_ arguments: [String]) async throws {
+    private static func attachedDevicePath(in output: Data) -> String? {
+        guard let plist = try? PropertyListSerialization.propertyList(from: output, options: [], format: nil) as? [String: Any],
+              let entities = plist["system-entities"] as? [[String: Any]] else {
+            return nil
+        }
+        return entities.compactMap { $0["dev-entry"] as? String }
+            .first { $0.range(of: "^/dev/disk[0-9]+$", options: .regularExpression) != nil }
+    }
+
+    private func run(_ arguments: [String]) async throws -> ShellCommandResult {
         let result = try await ProcessCommandRunner().run(executable: "/usr/bin/hdiutil", arguments: arguments, timeout: 45)
         try #require(result.status == 0 && !result.timedOut, "\(arguments): \(result.combinedText)")
+        return result
     }
 }

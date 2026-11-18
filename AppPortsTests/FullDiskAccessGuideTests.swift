@@ -143,7 +143,12 @@ final class FullDiskAccessGuideTests: XCTestCase {
         let directory = URL(fileURLWithPath: output)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let originalLanguage = LanguageManager.shared.language
-        defer { LanguageManager.shared.language = originalLanguage }
+        let originalPreference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = originalLanguage
+            if let originalPreference { UserDefaults.standard.set(originalPreference, forKey: "selectedLanguage") }
+            else { UserDefaults.standard.removeObject(forKey: "selectedLanguage") }
+        }
         let levels: [LaunchReadinessChecker.Item.Level?] = [nil, .failed, .warning, .ok]
         let attentionItems = [LaunchReadinessChecker.appManagementItem(state: .denied),
                               LaunchReadinessChecker.appManagementItem(state: .unknown)]
@@ -192,7 +197,12 @@ final class FullDiskAccessGuideTests: XCTestCase {
         let directory = URL(fileURLWithPath: output)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let originalLanguage = LanguageManager.shared.language
-        defer { LanguageManager.shared.language = originalLanguage }
+        let originalPreference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = originalLanguage
+            if let originalPreference { UserDefaults.standard.set(originalPreference, forKey: "selectedLanguage") }
+            else { UserDefaults.standard.removeObject(forKey: "selectedLanguage") }
+        }
         for language in ["zh-Hans", "en", "de", "fr", "ja", "ar"] {
             LanguageManager.shared.language = language
             for permission in [LaunchReadinessChecker.Item.Action.fullDiskAccess, .appManagement] {

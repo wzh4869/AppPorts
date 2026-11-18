@@ -4,6 +4,25 @@ import XCTest
 @testable import AppPorts
 
 final class AppSettingsRenderTests: XCTestCase {
+    private var originalLanguage = "system"
+    private var originalLanguagePreference: Any?
+
+    override func setUp() {
+        super.setUp()
+        originalLanguage = LanguageManager.shared.language
+        originalLanguagePreference = UserDefaults.standard.object(forKey: "selectedLanguage")
+    }
+
+    override func tearDown() {
+        LanguageManager.shared.language = originalLanguage
+        if let originalLanguagePreference {
+            UserDefaults.standard.set(originalLanguagePreference, forKey: "selectedLanguage")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "selectedLanguage")
+        }
+        super.tearDown()
+    }
+
     @MainActor
     func testOrdinaryMigratedBadgesAndExistingLocks() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/Volumes/") else {

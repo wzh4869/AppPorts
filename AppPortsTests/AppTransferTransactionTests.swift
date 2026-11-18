@@ -2679,7 +2679,7 @@ final class AppTransferTransactionTests: XCTestCase {
             _ = try await w.service().moveBack(app: item(external), localDestinationURL: local, progressHandler: nil)
             XCTFail("A non-immutable flag must not be cleared or copied blindly")
         } catch {
-            XCTAssertTrue(true)
+            XCTAssertFalse(error.localizedDescription.isEmpty)
         }
         XCTAssertEqual(try SignatureSnapshot.fingerprint(of: external), before, "tree untouched")
     }

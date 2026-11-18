@@ -61,6 +61,7 @@ struct SignatureMountBoundaryTests {
         nonisolated let mountPoint: URL
         private let image: URL
         private var attached = false
+        private var devicePath: String?
 
         init() throws {
             root = FileManager.default.temporaryDirectory.appendingPathComponent("AppPortsSignatureMount-" + UUID().uuidString)
@@ -73,19 +74,21 @@ struct SignatureMountBoundaryTests {
         }
 
         func prepare() async throws {
-            try await run(["create", "-size", "64m", "-fs", "APFS", "-volname", "AppPortsSignatureMount", image.path])
+            _ = try await run(["create", "-size", "64m", "-fs", "APFS", "-volname", "AppPortsSignatureMount", image.path])
         }
 
         func attach() async throws {
-            try await run(["attach", "-nobrowse", "-mountpoint", mountPoint.path, image.path])
+            let result = try await run(["attach", "-plist", "-nobrowse", "-mountpoint", mountPoint.path, image.path])
             attached = true
+            devicePath = Self.attachedDevicePath(in: result.standardOutput)
             try #require(DiskUtility.isMountPoint(mountPoint))
         }
 
         func detach() async throws {
             if attached || DiskUtility.isMountPoint(mountPoint) {
-                try await run(["detach", mountPoint.path])
+                _ = try await run(["detach", devicePath ?? mountPoint.path])
                 attached = false
+                devicePath = nil
             }
         }
 
@@ -94,9 +97,19 @@ struct SignatureMountBoundaryTests {
             try FileManager.default.removeItem(at: root)
         }
 
-        private func run(_ arguments: [String]) async throws {
+        private static func attachedDevicePath(in output: Data) -> String? {
+            guard let plist = try? PropertyListSerialization.propertyList(from: output, options: [], format: nil) as? [String: Any],
+                  let entities = plist["system-entities"] as? [[String: Any]] else {
+                return nil
+            }
+            return entities.compactMap { $0["dev-entry"] as? String }
+                .first { $0.range(of: "^/dev/disk[0-9]+$", options: .regularExpression) != nil }
+        }
+
+        private func run(_ arguments: [String]) async throws -> ShellCommandResult {
             let result = try await ProcessCommandRunner().run(executable: "/usr/bin/hdiutil", arguments: arguments, timeout: 60)
             try #require(result.status == 0 && !result.timedOut, "\(result.combinedText)")
+            return result
         }
     }
 }

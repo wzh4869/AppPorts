@@ -15,10 +15,14 @@ struct DataProcessTerminationTests {
         let sourceSnapshot: TreeCopySnapshot
     }
 
-    @Test("Opt-in SIGKILL recovery probe uses only temporary data and synthetic volumes")
+    @Test(
+        "Opt-in SIGKILL recovery probe uses only temporary data and synthetic volumes",
+        .enabled(if: ProcessInfo.processInfo.environment["APPPORTS_DATA_PROBE_PHASE"] != nil,
+                 "Coordinator-driven two-process SIGKILL probe")
+    )
     func processTerminationProbe() async throws {
         let environment = ProcessInfo.processInfo.environment
-        guard let phase = environment["APPPORTS_DATA_PROBE_PHASE"] else { return }
+        let phase = try #require(environment["APPPORTS_DATA_PROBE_PHASE"])
         let scenario = try #require(environment["APPPORTS_DATA_PROBE_SCENARIO"])
         let action = environment["APPPORTS_DATA_PROBE_ACTION"] ?? "restart"
         let path = try #require(environment["APPPORTS_DATA_PROBE_ROOT"])

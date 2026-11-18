@@ -258,7 +258,12 @@ final class MigrationSafetyRenderTests: XCTestCase {
         let output = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         let originalLanguage = LanguageManager.shared.language
-        defer { LanguageManager.shared.language = originalLanguage }
+        let originalPreference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = originalLanguage
+            if let originalPreference { UserDefaults.standard.set(originalPreference, forKey: "selectedLanguage") }
+            else { UserDefaults.standard.removeObject(forKey: "selectedLanguage") }
+        }
         let cases: [(String, DataTransferStage, Int64, Int64, Int, TimeInterval)] = [
             ("preparing", .preparing, 0, 0, 0, 0),
             ("scanning", .scanning, 0, 0, 12_431, 0),

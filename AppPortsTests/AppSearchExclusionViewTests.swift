@@ -76,7 +76,12 @@ final class AppSearchExclusionViewTests: XCTestCase {
         let output = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         let oldLanguage = LanguageManager.shared.language
-        defer { LanguageManager.shared.language = oldLanguage }
+        let oldPreference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = oldLanguage
+            if let oldPreference { UserDefaults.standard.set(oldPreference, forKey: "selectedLanguage") }
+            else { UserDefaults.standard.removeObject(forKey: "selectedLanguage") }
+        }
         for language in ["zh-Hans", "en"] {
             LanguageManager.shared.language = language
             let success = ["Antigravity IDE", "Bitwarden", "Claude", "CrossOver Preview", "Cyberpunk2077", "Long Application Name — Professional Edition 2026"]

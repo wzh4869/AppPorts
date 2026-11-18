@@ -99,10 +99,11 @@ struct AutoResignInstallerTests {
         #expect(!FileManager.default.fileExists(atPath: fixture.script.path))
     }
 
-    @Test("Failed plist removal keeps the disabled script for the next login")
+    @Test(
+        "Failed plist removal keeps the disabled script for the next login",
+        .enabled(if: getuid() != 0, "Root ignores read-only directory permissions")
+    )
     func cleanupFailureRetainsGuard() async throws {
-        // Root ignores these fixture permissions; normal test hosts run as the logged-in user.
-        guard getuid() != 0 else { return }
         let fixture = try PolicyFixture()
         defer { fixture.cleanup() }
         let agentDirectory = fixture.agent.deletingLastPathComponent()

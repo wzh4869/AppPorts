@@ -15,8 +15,8 @@ struct SignatureOperationTests {
         let second = fixture.root.appendingPathComponent("SecondMount")
         try FileManager.default.createDirectory(at: first, withIntermediateDirectories: false)
         try FileManager.default.createDirectory(at: second, withIntermediateDirectories: false)
-        try await diskImage(["create", "-size", "256m", "-fs", "APFS", "-type", "SPARSE", "-volname", "AppPorts Signature Test", image.path])
-        try await diskImage(["attach", image.path, "-nobrowse", "-mountpoint", first.path])
+        _ = try await diskImage(["create", "-size", "256m", "-fs", "APFS", "-type", "SPARSE", "-volname", "AppPorts Signature Test", image.path])
+        var activeDevice = try await attachDiskImage(image, at: first)
         do {
             let location = try SignatureBackupStorage.prepareDirectory(first.appendingPathComponent("AppPorts Backups"))
             var app = fixture.app
@@ -38,8 +38,9 @@ struct SignatureOperationTests {
             #expect(signed.committed)
             #expect((signed.cleanupWarning != nil) == (mode != "copy"))
             if mode != "copy" {
-                try await diskImage(["detach", first.path])
-                try await diskImage(["attach", image.path, "-nobrowse", "-mountpoint", second.path])
+                _ = try await diskImage(["detach", activeDevice ?? first.path])
+                activeDevice = nil
+                activeDevice = try await attachDiskImage(image, at: second)
                 app = second.appendingPathComponent("Installed.app")
                 do {
                     _ = try SignatureFactStore(backupDirectoryURL: fixture.backups).captureRelocation(from: app)
@@ -65,20 +66,36 @@ struct SignatureOperationTests {
             #expect(restored.committed && restored.cleanupWarning == nil)
             #expect(try SignatureSnapshot.fingerprint(of: app) == original)
         } catch {
-            _ = try? await diskImage(["detach", first.path])
-            _ = try? await diskImage(["detach", second.path])
+            if let activeDevice {
+                _ = try? await diskImage(["detach", activeDevice])
+            } else {
+                _ = try? await diskImage(["detach", first.path])
+                _ = try? await diskImage(["detach", second.path])
+            }
             throw error
         }
         let mount = mode == "copy" ? first : second
-        try await diskImage(["detach", mount.path])
+        _ = try await diskImage(["detach", activeDevice ?? mount.path])
     }
 
-    private func diskImage(_ arguments: [String]) async throws {
+    private func attachDiskImage(_ image: URL, at mountPoint: URL) async throws -> String? {
+        let result = try await diskImage(["attach", "-plist", image.path, "-nobrowse", "-mountpoint", mountPoint.path])
+        guard let plist = try? PropertyListSerialization.propertyList(from: result.standardOutput, options: [], format: nil) as? [String: Any],
+              let entities = plist["system-entities"] as? [[String: Any]] else {
+            return nil
+        }
+        return entities.compactMap { $0["dev-entry"] as? String }
+            .first { $0.range(of: "^/dev/disk[0-9]+$", options: .regularExpression) != nil }
+    }
+
+    @discardableResult
+    private func diskImage(_ arguments: [String]) async throws -> ShellCommandResult {
         let result = try await ProcessCommandRunner().run(executable: "/usr/bin/hdiutil", arguments: arguments, timeout: 45)
         guard result.status == 0, !result.timedOut else {
             throw NSError(domain: "AppPortsSignatureDiskImageTests", code: Int(result.status),
                 userInfo: [NSLocalizedDescriptionKey: result.combinedText])
         }
+        return result
     }
 
     @Test("An original retained on the same volume keeps its inode without a second application copy")

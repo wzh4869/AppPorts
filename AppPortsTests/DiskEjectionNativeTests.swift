@@ -62,10 +62,17 @@ final class DiskEjectionNativeTests: XCTestCase {
 
     func testAuthorizedUSBReconnectResumesPause() async throws {
         let (root, fixture) = try fixture()
-        let store = ContainerMountStore(fileURL: root.appendingPathComponent("records/container-mounts.plist"))
+        let recordsFile = root.appendingPathComponent("records/container-mounts.plist")
+        guard FileManager.default.fileExists(atPath: recordsFile.path) else {
+            throw XCTSkip("Run testAuthorizedPhysicalUSBEjection and physically reconnect the USB before running reconnect verification")
+        }
+        let disk = DiskUtility(administratorRunner: nil)
+        guard (try? await disk.volumeInfo(for: fixture.dataUUID))?.mountPoint != nil else {
+            throw XCTSkip("Physical USB is still ejected; reconnect it to run the resume verification step")
+        }
+        let store = ContainerMountStore(fileURL: recordsFile)
         let pause = DiskEjectionPauseStore(store: store)
         XCTAssertEqual(try pause.snapshot().pauses.count, 1)
-        let disk = DiskUtility(administratorRunner: nil)
         let current = try await pause.refreshed(using: disk)
         XCTAssertTrue(current.pauses.isEmpty, "A real new physical connection must resume the same disk")
         let volume = try await disk.volumeInfo(for: fixture.dataUUID)
