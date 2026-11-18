@@ -163,6 +163,52 @@ struct AppRunningStateTests {
         ) == false)
     }
 
+    @Test("Batch running-state refresh updates both local stub portals and external AppPorts.noindex apps")
+    func batchRefreshUpdatesLocalStubAndExternalApps() throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let localPortal = workspace.root.appendingPathComponent("Applications/WorkBuddy.app")
+        let externalApp = workspace.root.appendingPathComponent("External/AppPorts.noindex/WorkBuddy.app")
+        let identifier = "com.tencent.workbuddy.mac"
+        try makeBundle(at: externalApp, identifier: identifier)
+        try FileManager.default.createDirectory(at: localPortal.appendingPathComponent("Contents/Resources"), withIntermediateDirectories: true)
+        try PropertyListSerialization.data(fromPropertyList: [
+            "CFBundlePackageType": "APPL",
+            "CFBundleVersion": "5.9.3",
+            "CFBundleIdentifier": identifier + ".appports.stub",
+            "AppPortsTargetBundleIdentifier": identifier
+        ], format: .xml, options: 0).write(to: localPortal.appendingPathComponent("Contents/Info.plist"))
+        try externalApp.path.write(
+            to: localPortal.appendingPathComponent("Contents/Resources/real_app_path.txt"),
+            atomically: true, encoding: .utf8
+        )
+
+        let items = [
+            AppItem(name: "WorkBuddy.app", path: localPortal, bundleURL: localPortal, status: AppStatus.linked, size: "1 MB", sizeBytes: 1024),
+            AppItem(name: "WorkBuddy.app", path: externalApp, bundleURL: externalApp, status: AppStatus.linked, size: "500 MB", sizeBytes: 500_000_000)
+        ]
+
+        let stopped = AppRunningState.applyingRunningState(to: items, applications: [])
+        #expect(stopped.map(\.isRunning) == [false, false])
+
+        let stubOnly = AppRunningState.applyingRunningState(to: items, applications: [
+            .init(bundleURL: localPortal, bundleIdentifier: identifier + ".appports.stub")
+        ])
+        #expect(stubOnly.map(\.isRunning) == [false, false])
+
+        let running = AppRunningState.applyingRunningState(to: items, applications: [
+            .init(bundleURL: externalApp, bundleIdentifier: identifier)
+        ])
+        #expect(running.map(\.isRunning) == [true, true])
+        #expect(running[0].size == "1 MB")
+        #expect(running[1].size == "500 MB")
+
+        let exited = AppRunningState.applyingRunningState(to: running, applications: [])
+        #expect(exited.map(\.isRunning) == [false, false])
+        #expect(exited[0].status == AppStatus.linked)
+        #expect(exited[1].status == AppStatus.linked)
+    }
+
     private struct Workspace {
         let root: URL
 

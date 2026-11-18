@@ -7,7 +7,67 @@ enum AppRunningState {
         let bundleIdentifier: String?
     }
 
+    struct Snapshot: Sendable {
+        let normalizedPaths: Set<String>
+        let identifiers: Set<String>
+        var isEmpty: Bool { normalizedPaths.isEmpty && identifiers.isEmpty }
+
+        init(applications: [RunningApplication]) {
+            var paths: Set<String> = []
+            var ids: Set<String> = []
+            paths.reserveCapacity(applications.count * 2)
+            ids.reserveCapacity(applications.count)
+            for application in applications {
+                if let rawID = AppRunningState.nonemptyIdentifier(application.bundleIdentifier) {
+                    if rawID.lowercased().hasSuffix(".appports.stub") { continue }
+                    ids.insert(rawID)
+                }
+                if let bundleURL = application.bundleURL {
+                    paths.insert(bundleURL.standardizedFileURL.path)
+                    paths.insert(AppRunningState.normalizedPath(bundleURL))
+                }
+            }
+            self.normalizedPaths = paths
+            self.identifiers = ids
+        }
+
+        func matches(appURL: URL, bundleIdentifier: String?) -> Bool {
+            if normalizedPaths.contains(appURL.standardizedFileURL.path)
+                || normalizedPaths.contains(AppRunningState.normalizedPath(appURL)) {
+                return true
+            }
+            guard let expectedID = AppRunningState.nonemptyIdentifier(bundleIdentifier) else {
+                return false
+            }
+            return identifiers.contains(expectedID)
+        }
+    }
+
     nonisolated static func isRunning(appURL: URL, applications: [RunningApplication]) -> Bool {
+        isRunning(appURL: appURL, snapshot: Snapshot(applications: applications))
+    }
+
+    nonisolated static func applyingRunningState(
+        to apps: [AppItem],
+        applications: [RunningApplication]
+    ) -> [AppItem] {
+        let snapshot = Snapshot(applications: applications)
+        return apps.map { app in
+            var updated = app
+            if app.isFolder {
+                updated.isRunning = folderAppBundles(at: app.path).contains { child in
+                    isRunning(appURL: child, snapshot: snapshot)
+                        || isRunning(appURL: app.path.appendingPathComponent(child.lastPathComponent), snapshot: snapshot)
+                }
+            } else {
+                updated.isRunning = isRunning(appURL: app.displayURL, snapshot: snapshot)
+                    || (app.displayURL != app.path && isRunning(appURL: app.path, snapshot: snapshot))
+            }
+            return updated
+        }
+    }
+
+    nonisolated static func isRunning(appURL: URL, snapshot: Snapshot) -> Bool {
         let resolvedIdentity: ResolvedAppIdentity?
         if case .success(let identity) = AppIdentityResolver.resolve(at: appURL) {
             resolvedIdentity = identity
@@ -38,29 +98,32 @@ enum AppRunningState {
             }
             ?? offlineTarget.targetBundleIdentifier
 
-        return applications.contains { application in
-            if application.bundleIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
-                .lowercased().hasSuffix(".appports.stub") == true {
-                return false
-            }
-            return candidateURLs.contains { candidate in
-                matches(appURL: candidate, bundleIdentifier: identifier, application: application)
-            } || (candidateURLs.isEmpty && matchesIdentifierOnly(bundleIdentifier: identifier, application: application))
+        if candidateURLs.isEmpty {
+            guard let expectedID = nonemptyIdentifier(identifier) else { return false }
+            return snapshot.identifiers.contains(expectedID)
+        }
+        return candidateURLs.contains { candidate in
+            snapshot.matches(appURL: candidate, bundleIdentifier: identifier)
         }
     }
 
-    nonisolated private static func matchesIdentifierOnly(
-        bundleIdentifier: String?,
-        application: RunningApplication
-    ) -> Bool {
-        guard let expectedID = nonemptyIdentifier(bundleIdentifier),
-              let runningID = nonemptyIdentifier(application.bundleIdentifier) else {
-            return false
+    nonisolated private static func folderAppBundles(at folderURL: URL) -> [URL] {
+        let fm = FileManager.default
+        let inspectURL: URL
+        if let linkDestination = try? fm.destinationOfSymbolicLink(atPath: folderURL.path) {
+            inspectURL = URL(fileURLWithPath: linkDestination, relativeTo: folderURL.deletingLastPathComponent()).standardizedFileURL
+        } else {
+            inspectURL = folderURL
         }
-        return expectedID == runningID
+        var isDirectory: ObjCBool = false
+        guard fm.fileExists(atPath: inspectURL.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            return []
+        }
+        let items = (try? fm.contentsOfDirectory(at: inspectURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+        return items.filter { $0.pathExtension == "app" }
     }
 
-    nonisolated private static func isStubPortalBundle(at appURL: URL) -> Bool {
+    nonisolated static func isStubPortalBundle(at appURL: URL) -> Bool {
         let plistURL = appURL.appendingPathComponent("Contents/Info.plist")
         if let id = CodeSigner.bundleIdentifier(at: appURL),
            id.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().hasSuffix(".appports.stub") {

@@ -32,6 +32,8 @@ struct ContentView: View {
     @State private var externalScanState = AppListScanState()
     @State private var isVisible = false
     @State private var needsAppRescan = false
+    @State private var runningStateGeneration: UInt64 = 0
+    @State private var runningStateRefreshTask: Task<Void, Never>?
 
     @State private var localApps: [AppItem] = []
     @State private var externalApps: [AppItem] = []
@@ -257,6 +259,8 @@ struct ContentView: View {
         .onDisappear {
             monitorRescanDebouncer.cancel()
             isVisible = false
+            runningStateRefreshTask?.cancel()
+            runningStateRefreshTask = nil
             localScanState.invalidate()
             externalScanState.invalidate()
             localMonitor?.stopMonitoring()
@@ -264,7 +268,23 @@ struct ContentView: View {
             stopMonitoringExternal()
             stopObservingVolumeMounts()
         }
-        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didTerminateApplicationNotification)) { _ in
+        .onReceive(
+            NSWorkspace.shared.publisher(for: \.runningApplications)
+                .receive(on: RunLoop.main)
+        ) { _ in
+            scheduleRunningAppsRefresh()
+        }
+        .onReceive(
+            NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didLaunchApplicationNotification)
+                .receive(on: RunLoop.main)
+        ) { _ in
+            scheduleRunningAppsRefresh()
+        }
+        .onReceive(
+            NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didTerminateApplicationNotification)
+                .receive(on: RunLoop.main)
+        ) { _ in
+            scheduleRunningAppsRefresh()
             remountContainerVolumes(trigger: "application-exited")
         }
         .task {
@@ -1288,7 +1308,7 @@ struct ContentView: View {
     var canMoveBack: Bool {
         !selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { activeJob(for: $0) == nil }.isEmpty
+        }.filter { !$0.isRunning && activeJob(for: $0) == nil }.isEmpty
     }
     
     func getLinkButtonTitle() -> String {
@@ -1311,6 +1331,12 @@ struct ContentView: View {
         let runningApps = NSWorkspace.shared.runningApplications
         let urls = runningApps.compactMap { $0.bundleURL }
         return Set(urls)
+    }
+
+    func getRunningApplications() -> [AppRunningState.RunningApplication] {
+        NSWorkspace.shared.runningApplications.map {
+            AppRunningState.RunningApplication(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
+        }
     }
 
     nonisolated func joinedAppNames(_ apps: [AppItem]) -> String {
@@ -1364,7 +1390,9 @@ struct ContentView: View {
         let maintenanceGeneration = AppMigrationService.maintenanceGeneration
         Task.detached(priority: .userInitiated) {
             // Gather data needed for scanning
-            let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
+            let (runningAppURLs, runningApplications) = await MainActor.run {
+                (self.getRunningAppURLs(), self.getRunningApplications())
+            }
             let externalAppsDir = request.externalDirectory
             let customPaths = request.customPaths
 
@@ -1373,7 +1401,8 @@ struct ContentView: View {
             var allApps = await scanner.scanLocalApps(
                 at: self.localAppsURL,
                 runningAppURLs: runningAppURLs,
-                externalAppsDir: externalAppsDir
+                externalAppsDir: externalAppsDir,
+                runningApplications: runningApplications
             )
 
             // 扫描自定义目录
@@ -1381,7 +1410,8 @@ struct ContentView: View {
                 let customApps = await scanner.scanLocalApps(
                     at: URL(fileURLWithPath: path),
                     runningAppURLs: runningAppURLs,
-                    externalAppsDir: externalAppsDir
+                    externalAppsDir: externalAppsDir,
+                    runningApplications: runningApplications
                 )
                 let existingPaths = Set(allApps.map { $0.path.path })
                 for app in customApps where !existingPaths.contains(app.path.path) {
@@ -1448,7 +1478,9 @@ struct ContentView: View {
             let customPaths = request.customPaths
             let localDirs = [URL(fileURLWithPath: "/Applications")]
                 + customPaths.map { URL(fileURLWithPath: $0) }
-            let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
+            let (runningAppURLs, runningApplications) = await MainActor.run {
+                (self.getRunningAppURLs(), self.getRunningApplications())
+            }
 
             let scanner = AppScanner()
             var newApps: [AppItem] = []
@@ -1456,7 +1488,8 @@ struct ContentView: View {
                 let scannedApps = await scanner.scanExternalApps(
                     at: scanDir,
                     localAppsDir: localDir,
-                    runningAppURLs: runningAppURLs
+                    runningAppURLs: runningAppURLs,
+                    runningApplications: runningApplications
                 )
                 newApps = self.mergeExternalApps(newApps, with: scannedApps)
             }
@@ -1630,6 +1663,7 @@ struct ContentView: View {
                 self.externalApps = filled
                 self.selectedExternalApps.formIntersection(Set(self.filteredExternalApps.map(\.id)))
             }
+            self.scheduleRunningAppsRefresh()
             return true
         }
         guard committed else { return }
@@ -1739,10 +1773,42 @@ struct ContentView: View {
     func isAppRunning(url: URL) -> Bool {
         AppRunningState.isRunning(
             appURL: url,
-            applications: NSWorkspace.shared.runningApplications.map {
-                AppRunningState.RunningApplication(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
-            }
+            applications: getRunningApplications()
         )
+    }
+
+    /// Recompute `isRunning` in place without resetting concurrent size calculations
+    /// and without being blocked by an active/paused migration operation.
+    @MainActor
+    private func scheduleRunningAppsRefresh() {
+        guard isVisible, !(localApps.isEmpty && externalApps.isEmpty) else { return }
+        runningStateGeneration &+= 1
+        let generation = runningStateGeneration
+        runningStateRefreshTask?.cancel()
+        let localSnapshot = localApps
+        let externalSnapshot = externalApps
+        let runningSnapshot = getRunningApplications()
+        runningStateRefreshTask = Task.detached(priority: .userInitiated) {
+            let updatedLocal = AppRunningState.applyingRunningState(to: localSnapshot, applications: runningSnapshot)
+            guard !Task.isCancelled else { return }
+            let updatedExternal = AppRunningState.applyingRunningState(to: externalSnapshot, applications: runningSnapshot)
+            guard !Task.isCancelled else { return }
+            let localMap = Dictionary(updatedLocal.map { ($0.id, $0.isRunning) }, uniquingKeysWith: { $0 || $1 })
+            let externalMap = Dictionary(updatedExternal.map { ($0.id, $0.isRunning) }, uniquingKeysWith: { $0 || $1 })
+            await MainActor.run {
+                guard self.isVisible, self.runningStateGeneration == generation else { return }
+                for index in self.localApps.indices {
+                    if let running = localMap[self.localApps[index].id], self.localApps[index].isRunning != running {
+                        self.localApps[index].isRunning = running
+                    }
+                }
+                for index in self.externalApps.indices {
+                    if let running = externalMap[self.externalApps[index].id], self.externalApps[index].isRunning != running {
+                        self.externalApps[index].isRunning = running
+                    }
+                }
+            }
+        }
     }
 
     /// Fresh discovery for the board must not depend on the main pane's scan finishing.
@@ -1837,6 +1903,7 @@ struct ContentView: View {
         selectedLocalApps.formIntersection(Set(localApps.map(\.id)))
         selectedExternalApps.formIntersection(Set(externalApps.map(\.id)))
         needsAppRescan = true
+        scheduleRunningAppsRefresh()
     }
 
     private func enqueueAppTransfer(_ app: AppItem, destination: URL, restoring: Bool = false,
@@ -2408,7 +2475,7 @@ struct ContentView: View {
         let selected = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
         }
-        let validApps = selected.filter { activeJob(for: $0) == nil }
+        let validApps = selected.filter { !$0.isRunning && activeJob(for: $0) == nil }
         if validApps.isEmpty {
             if let job = selected.compactMap({ activeJob(for: $0) }).first {
                 migrationTasks.openJobDetail(job)
@@ -2445,9 +2512,14 @@ struct ContentView: View {
     }
 
     func getMoveBackButtonTitle() -> String {
-        let validCount = selectedExternalApps.compactMap { id in
+        let selected = selectedExternalApps.compactMap { id in
             externalApps.first { $0.id == id }
-        }.filter { activeJob(for: $0) == nil }.count
+        }
+        let validCount = selected.filter { !$0.isRunning && activeJob(for: $0) == nil }.count
+        if !selected.isEmpty && validCount == 0 {
+            if selected.contains(where: { activeJob(for: $0) != nil }) { return "查看进度".localized }
+            if selected.contains(where: { $0.isRunning }) { return "含运行中应用".localized }
+        }
         if validCount <= 1 {
             return "迁移回本地".localized
         }
@@ -2705,7 +2777,9 @@ struct ContentView: View {
         let maintenanceGeneration = AppMigrationService.maintenanceGeneration
         Task.detached(priority: .userInitiated) {
             let scanner = AppScanner()
-            let runningAppURLs = await MainActor.run { self.getRunningAppURLs() }
+            let (runningAppURLs, runningApplications) = await MainActor.run {
+                (self.getRunningAppURLs(), self.getRunningApplications())
+            }
             let localDir = self.localAppsURL
             let customPaths = localRequest.customPaths
 
@@ -2713,7 +2787,8 @@ struct ContentView: View {
             var newLocalApps = await scanner.scanLocalApps(
                 at: localDir,
                 runningAppURLs: runningAppURLs,
-                externalAppsDir: externalDir
+                externalAppsDir: externalDir,
+                runningApplications: runningApplications
             )
 
             // 扫描自定义目录
@@ -2721,7 +2796,8 @@ struct ContentView: View {
                 let customApps = await scanner.scanLocalApps(
                     at: URL(fileURLWithPath: path),
                     runningAppURLs: runningAppURLs,
-                    externalAppsDir: externalDir
+                    externalAppsDir: externalDir,
+                    runningApplications: runningApplications
                 )
                 let existingPaths = Set(newLocalApps.map { $0.path.path })
                 for app in customApps where !existingPaths.contains(app.path.path) {
@@ -2736,7 +2812,8 @@ struct ContentView: View {
                     let scannedApps = await scanner.scanExternalApps(
                         at: externalDir,
                         localAppsDir: directory,
-                        runningAppURLs: runningAppURLs
+                        runningAppURLs: runningAppURLs,
+                        runningApplications: runningApplications
                     )
                     newExternalApps = self.mergeExternalApps(newExternalApps, with: scannedApps)
                 }
@@ -2779,6 +2856,9 @@ struct ContentView: View {
                     if missesExternal.isEmpty {
                         self.externalScanState.finish(externalRequest)
                     }
+                }
+                if localIsCurrent || externalIsCurrent {
+                    self.scheduleRunningAppsRefresh()
                 }
                 return localIsCurrent || externalIsCurrent
             }
