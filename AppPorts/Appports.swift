@@ -30,6 +30,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var aboutWindowController = AboutWindowController.shared
     fileprivate static weak var mainWindow: NSWindow?
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        MainWindowAppearance.applyStoredAppearanceIfNeeded()
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
     }
@@ -144,7 +148,7 @@ struct AppMoverApp: App {
         AppLogger.shared.logLaunchSession()
     }
     
-    @AppStorage("appAppearance") private var appAppearance = "system"
+    @AppStorage(MainWindowAppearance.defaultsKey) private var appAppearance = "system"
 
     var body: some Scene {
         let initialSize = MainWindowAppearance.initialContentSize(on: NSScreen.main)
@@ -157,12 +161,11 @@ struct AppMoverApp: App {
                 }
             }
 
-            .preferredColorScheme(appAppearance == "system" ? nil : (appAppearance == "dark" ? .dark : .light))
             .environment(\.locale, languageManager.locale)
 
             .id(languageManager.language)
             .frame(idealWidth: initialSize.width, idealHeight: initialSize.height)
-            .background(MainWindowAppearance())
+            .background(MainWindowAppearance(appearance: appAppearance))
             
 
         }
@@ -275,6 +278,11 @@ struct AppMoverApp: App {
 }
 
 struct MainWindowAppearance: NSViewRepresentable {
+    static let defaultsKey = "appAppearance"
+
+    var appearance = "system"
+    var appliesAppearanceInTests = false
+
     static func initialContentSize(on screen: NSScreen?) -> NSSize {
         let availableSize = screen?.visibleFrame.size
         return NSSize(
@@ -283,10 +291,70 @@ struct MainWindowAppearance: NSViewRepresentable {
         )
     }
 
-    func makeNSView(context: Context) -> WindowView { WindowView() }
-    func updateNSView(_ nsView: WindowView, context: Context) {}
+    static func nsAppearance(for rawValue: String?) -> NSAppearance? {
+        switch rawValue {
+        case "light": return NSAppearance(named: .aqua)
+        case "dark": return NSAppearance(named: .darkAqua)
+        default: return nil
+        }
+    }
+
+    private static var isRunningTests: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return environment["XCTestConfigurationFilePath"] != nil
+            || environment["XCTestBundlePath"] != nil
+            || NSClassFromString("XCTestCase") != nil
+            || NSClassFromString("XCTest.XCTestCase") != nil
+    }
+
+    @MainActor
+    static func apply(_ rawValue: String?, to application: NSApplication? = nil, window: NSWindow? = nil) {
+        let targetApplication = application ?? .shared
+        let target = nsAppearance(for: rawValue)
+        if targetApplication.appearance?.name != target?.name {
+            targetApplication.appearance = target
+        }
+        if let window, window.appearance != nil {
+            window.appearance = nil
+        }
+    }
+
+    @MainActor
+    static func applyStoredAppearanceIfNeeded(
+        defaults: UserDefaults = .standard,
+        to application: NSApplication? = nil
+    ) {
+        guard !isRunningTests else { return }
+        apply(defaults.string(forKey: defaultsKey), to: application)
+    }
+
+    func makeNSView(context: Context) -> WindowView {
+        WindowView(appearance: appearance, appliesAppearanceInTests: appliesAppearanceInTests)
+    }
+
+    func updateNSView(_ nsView: WindowView, context: Context) {
+        nsView.appearanceMode = appearance
+        nsView.appliesAppearanceInTests = appliesAppearanceInTests
+        nsView.syncAppearanceIfNeeded()
+    }
 
     final class WindowView: NSView {
+        var appearanceMode: String
+        var appliesAppearanceInTests: Bool
+
+        init(appearance: String = "system", appliesAppearanceInTests: Bool = false) {
+            self.appearanceMode = appearance
+            self.appliesAppearanceInTests = appliesAppearanceInTests
+            super.init(frame: .zero)
+        }
+
+        required init?(coder: NSCoder) { nil }
+
+        func syncAppearanceIfNeeded() {
+            guard appliesAppearanceInTests || !MainWindowAppearance.isRunningTests else { return }
+            MainWindowAppearance.apply(appearanceMode, to: .shared, window: window)
+        }
+
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             guard let window else { return }
@@ -300,6 +368,7 @@ struct MainWindowAppearance: NSViewRepresentable {
             if isInitialWindow, !window.styleMask.contains(.fullScreen) {
                 window.setContentSize(MainWindowAppearance.initialContentSize(on: window.screen ?? NSScreen.main))
             }
+            syncAppearanceIfNeeded()
             // Preserve the hosting view and its in-memory state when clicking ×.
             if let closeButton = window.standardWindowButton(.closeButton) {
                 closeButton.target = self

@@ -1,4 +1,6 @@
 import AppKit
+import Combine
+import SwiftUI
 import XCTest
 @testable import AppPorts
 
@@ -35,10 +37,147 @@ final class MainWindowAppearanceTests: XCTestCase {
         XCTAssertEqual(window.contentRect(forFrameRect: window.frame).size, userSize)
     }
 
+    func testAppearanceMappingCoversSystemLightDarkAndFallback() {
+        XCTAssertNil(MainWindowAppearance.nsAppearance(for: "system"))
+        XCTAssertNil(MainWindowAppearance.nsAppearance(for: nil))
+        XCTAssertNil(MainWindowAppearance.nsAppearance(for: "unexpected"))
+        XCTAssertEqual(MainWindowAppearance.nsAppearance(for: "light")?.name, .aqua)
+        XCTAssertEqual(MainWindowAppearance.nsAppearance(for: "dark")?.name, .darkAqua)
+    }
+
+    func testSwitchingFromDarkAndLightBackToSystemRestoresEffectiveAppearanceAndSwiftUIColorScheme() async throws {
+        let originalAppearance = NSApp.appearance
+        defer { NSApp.appearance = originalAppearance }
+
+        NSApp.appearance = nil
+        let systemAppearance = try XCTUnwrap(NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]))
+        let expectedSystemScheme: ColorScheme = systemAppearance == .darkAqua ? .dark : .light
+
+        let model = AppearanceTestModel()
+        let mainRecorder = ColorSchemeRecorder()
+        let secondaryRecorder = ColorSchemeRecorder()
+
+        let mainWindow = makeWindow()
+        let secondaryWindow = makeWindow()
+        defer {
+            mainWindow.close()
+            secondaryWindow.close()
+        }
+
+        // Simulate a stale window-level override left behind before MainWindowAppearance attaches.
+        mainWindow.appearance = NSAppearance(named: .darkAqua)
+
+        let mainHost = NSHostingView(
+            rootView: MainAppearanceProbeView(model: model, recorder: mainRecorder)
+        )
+        let secondaryHost = NSHostingView(
+            rootView: SecondaryAppearanceProbeView(recorder: secondaryRecorder)
+        )
+
+        mainWindow.contentView = mainHost
+        secondaryWindow.contentView = secondaryHost
+        mainWindow.orderFront(nil)
+        secondaryWindow.orderFront(nil)
+
+        try await settleAppearance(hosts: [mainHost, secondaryHost])
+        XCTAssertNil(NSApp.appearance)
+        XCTAssertNil(mainWindow.appearance)
+        XCTAssertEqual(mainWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), systemAppearance)
+        XCTAssertEqual(secondaryWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), systemAppearance)
+        XCTAssertEqual(mainRecorder.colorScheme, expectedSystemScheme)
+        XCTAssertEqual(secondaryRecorder.colorScheme, expectedSystemScheme)
+
+        model.mode = "light"
+        try await settleAppearance(hosts: [mainHost, secondaryHost])
+        XCTAssertEqual(NSApp.appearance?.name, .aqua)
+        XCTAssertNil(mainWindow.appearance)
+        XCTAssertEqual(mainWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), .aqua)
+        XCTAssertEqual(secondaryWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), .aqua)
+        XCTAssertEqual(mainRecorder.colorScheme, .light)
+        XCTAssertEqual(secondaryRecorder.colorScheme, .light)
+
+        model.mode = "dark"
+        try await settleAppearance(hosts: [mainHost, secondaryHost])
+        XCTAssertEqual(NSApp.appearance?.name, .darkAqua)
+        XCTAssertNil(mainWindow.appearance)
+        XCTAssertEqual(mainWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), .darkAqua)
+        XCTAssertEqual(secondaryWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), .darkAqua)
+        XCTAssertEqual(mainRecorder.colorScheme, .dark)
+        XCTAssertEqual(secondaryRecorder.colorScheme, .dark)
+
+        // Switching from dark back to auto must clear NSApp.appearance and update SwiftUI colorScheme.
+        model.mode = "system"
+        try await settleAppearance(hosts: [mainHost, secondaryHost])
+        XCTAssertNil(NSApp.appearance)
+        XCTAssertNil(mainWindow.appearance)
+        XCTAssertEqual(mainWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), systemAppearance)
+        XCTAssertEqual(secondaryWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), systemAppearance)
+        XCTAssertEqual(mainRecorder.colorScheme, expectedSystemScheme)
+        XCTAssertEqual(secondaryRecorder.colorScheme, expectedSystemScheme)
+
+        // Also confirm light -> system clears explicit light override cleanly.
+        model.mode = "light"
+        try await settleAppearance(hosts: [mainHost, secondaryHost])
+        XCTAssertEqual(NSApp.appearance?.name, .aqua)
+        XCTAssertEqual(mainRecorder.colorScheme, .light)
+        XCTAssertEqual(secondaryRecorder.colorScheme, .light)
+
+        model.mode = "system"
+        try await settleAppearance(hosts: [mainHost, secondaryHost])
+        XCTAssertNil(NSApp.appearance)
+        XCTAssertNil(mainWindow.appearance)
+        XCTAssertEqual(mainWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), systemAppearance)
+        XCTAssertEqual(secondaryWindow.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]), systemAppearance)
+        XCTAssertEqual(mainRecorder.colorScheme, expectedSystemScheme)
+        XCTAssertEqual(secondaryRecorder.colorScheme, expectedSystemScheme)
+    }
+
+    private func settleAppearance(hosts: [NSView]) async throws {
+        for host in hosts {
+            host.layoutSubtreeIfNeeded()
+        }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        for host in hosts {
+            host.layoutSubtreeIfNeeded()
+        }
+    }
+
     private func makeWindow() -> NSWindow {
         let window = NSWindow(contentRect: NSRect(x: -10_000, y: 0, width: 952, height: 624),
             styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         return window
+    }
+}
+
+private final class AppearanceTestModel: ObservableObject {
+    @Published var mode = "system"
+}
+
+private final class ColorSchemeRecorder {
+    var colorScheme: ColorScheme?
+}
+
+private struct MainAppearanceProbeView: View {
+    @ObservedObject var model: AppearanceTestModel
+    let recorder: ColorSchemeRecorder
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        let _ = { recorder.colorScheme = colorScheme }()
+        Text(verbatim: model.mode)
+            .frame(width: 240, height: 120)
+            .background(MainWindowAppearance(appearance: model.mode, appliesAppearanceInTests: true))
+    }
+}
+
+private struct SecondaryAppearanceProbeView: View {
+    let recorder: ColorSchemeRecorder
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        let _ = { recorder.colorScheme = colorScheme }()
+        Text(verbatim: "Secondary")
+            .frame(width: 240, height: 120)
     }
 }

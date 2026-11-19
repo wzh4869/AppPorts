@@ -24,7 +24,7 @@ import UniformTypeIdentifiers
 struct ContentView: View {
 
     @Environment(\.locale) private var locale
-    @AppStorage("appAppearance") private var appAppearance = "system"
+    @AppStorage(MainWindowAppearance.defaultsKey) private var appAppearance = "system"
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
     private typealias ScanRequest = AppListScanState.Request
