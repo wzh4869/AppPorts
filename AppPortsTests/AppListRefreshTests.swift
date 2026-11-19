@@ -13,6 +13,75 @@ struct AppListRefreshTests {
         #expect(result.misses.count == 1)
         #expect(result.filled.first?.size == nil)
     }
+
+    @Test func emptyListOmitsHeaderSizeSummary() {
+        let summary = AppListDisplaySizeSummary(apps: [])
+        #expect(summary.itemCount == 0)
+        #expect(summary.bytes == 0)
+        #expect(!summary.isCalculating)
+        #expect(summary.headerText == nil)
+    }
+
+    @Test func allPendingAppsShowCalculatingText() {
+        let apps = [
+            AppItem(name: "A.app", path: URL(fileURLWithPath: "/Volumes/Ext/A.app"), status: AppStatus.linked),
+            AppItem(name: "B.app", path: URL(fileURLWithPath: "/Volumes/Ext/B.app"), status: AppStatus.unlinked)
+        ]
+        let summary = AppListDisplaySizeSummary(apps: apps)
+        #expect(summary.itemCount == 2)
+        #expect(summary.bytes == 0)
+        #expect(summary.isCalculating)
+        #expect(summary.headerText == "计算中...".localized)
+    }
+
+    @Test func partialMeasurementShowsAccumulatedBytesWithCalculatingSuffix() {
+        let measured = AppItem(
+            name: "A.app",
+            path: URL(fileURLWithPath: "/Volumes/Ext/A.app"),
+            status: AppStatus.linked,
+            size: "10 MB",
+            sizeBytes: 10_000_000
+        )
+        let pending = AppItem(
+            name: "B.app",
+            path: URL(fileURLWithPath: "/Volumes/Ext/B.app"),
+            status: AppStatus.unlinked
+        )
+        let summary = AppListDisplaySizeSummary(apps: [measured, pending])
+        #expect(summary.itemCount == 2)
+        #expect(summary.bytes == 10_000_000)
+        #expect(summary.isCalculating)
+        #expect(summary.headerText == LocalizedByteCountFormatter.string(fromByteCount: 10_000_000) + "（统计中）".localized)
+    }
+
+    @Test func completedAppsSumUniqueIDsOnly() {
+        let first = AppItem(
+            name: "A.app",
+            path: URL(fileURLWithPath: "/Volumes/Ext/A.app"),
+            status: AppStatus.linked,
+            size: "10 MB",
+            sizeBytes: 10_000_000
+        )
+        let duplicate = AppItem(
+            name: "A.app",
+            path: URL(fileURLWithPath: "/Volumes/Ext/A.app"),
+            status: AppStatus.linked,
+            size: "10 MB",
+            sizeBytes: 10_000_000
+        )
+        let second = AppItem(
+            name: "B.app",
+            path: URL(fileURLWithPath: "/Volumes/Ext/B.app"),
+            status: AppStatus.unlinked,
+            size: "25 MB",
+            sizeBytes: 25_000_000
+        )
+        let summary = AppListDisplaySizeSummary(apps: [first, duplicate, second])
+        #expect(summary.itemCount == 2)
+        #expect(summary.bytes == 35_000_000)
+        #expect(!summary.isCalculating)
+        #expect(summary.headerText == LocalizedByteCountFormatter.string(fromByteCount: 35_000_000))
+    }
 }
 
 @MainActor

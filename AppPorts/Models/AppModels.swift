@@ -219,6 +219,43 @@ struct AppItem: Identifiable, Equatable, Sendable {
     }
 }
 
+/// 应用列表已测量项的展示体积汇总；仅用于界面展示，不代表本机已释放空间，也不参与迁移准入判断。
+struct AppListDisplaySizeSummary: Equatable {
+    let bytes: Int64
+    let isCalculating: Bool
+    let itemCount: Int
+
+    init(apps: [AppItem]) {
+        var seen = Set<String>()
+        var total: Int64 = 0
+        var calculating = false
+        var count = 0
+        for app in apps where seen.insert(app.id).inserted {
+            count += 1
+            if app.size == nil {
+                calculating = true
+            } else {
+                total += max(0, app.sizeBytes)
+            }
+        }
+        self.bytes = total
+        self.isCalculating = calculating
+        self.itemCount = count
+    }
+
+    var headerText: String? {
+        guard itemCount > 0 else { return nil }
+        if isCalculating && bytes == 0 {
+            return "计算中...".localized
+        }
+        var text = LocalizedByteCountFormatter.string(fromByteCount: bytes)
+        if isCalculating {
+            text += "（统计中）".localized
+        }
+        return text
+    }
+}
+
 // MARK: - 错误类型
 
 /// 应用迁移操作中可能发生的错误

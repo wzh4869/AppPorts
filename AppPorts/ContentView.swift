@@ -514,6 +514,7 @@ struct ContentView: View {
         let icon: String
         var iconColumnWidth: CGFloat = 32
         var appCount: Int? = nil
+        var sizeSummary: String? = nil
         var tint: Color = .accentColor
         var actionButtonText: String? = nil
         var onAction: (() -> Void)? = nil
@@ -590,6 +591,13 @@ struct ContentView: View {
                             if !subtitle.isEmpty { Text(verbatim: "·") }
                             Text(String(format: "%lld 个应用".localized, Int64(appCount)))
                                 .fixedSize()
+                        }
+                        if let sizeSummary, !sizeSummary.isEmpty {
+                            if !subtitle.isEmpty || appCount != nil { Text(verbatim: "·") }
+                            Text(sizeSummary)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .help(sizeSummary)
                         }
                     }
                     .font(.system(size: 11))
@@ -1062,7 +1070,9 @@ struct ContentView: View {
     }
 
     private var externalAppsPane: some View {
-        let entries = filteredExternalApps.enumerated().map { AppListEntry(app: $0.element, index: $0.offset) }
+        let filteredApps = filteredExternalApps
+        let entries = filteredApps.enumerated().map { AppListEntry(app: $0.element, index: $0.offset) }
+        let sizeSummary: String? = AppListDisplaySizeSummary(apps: filteredApps).headerText
         return VStack(spacing: 0) {
             HeaderView(
                 title: "外部应用库".localized,
@@ -1070,6 +1080,7 @@ struct ContentView: View {
                 icon: "externaldrive.fill",
                 iconColumnWidth: 40,
                 appCount: entries.count,
+                sizeSummary: sizeSummary,
                 tint: .teal,
                 onRefresh: { scanExternalApps(forceSizeRefresh: true) },
                 isRefreshing: externalScanState.isScanning
