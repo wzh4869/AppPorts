@@ -1863,12 +1863,17 @@ struct DataDirsView: View {
             return
         }
 
+        let canNormalize = DataDirMover.canNormalizeExistingLinkTarget(linkedDest)
+
         confirmRequest = WarningSheetRequest(
             title: "现有软链".localized,
             icon: "link",
             tint: .blue,
             intro: String(format: "检测到「%@」已经是一个现有软链。\n\n软链路径：%@\n目标路径：%@\n\n选择「规范化管理」后，AppPorts 会将这条软链接纳入受管状态，后续可直接还原。".localized,
                 item.name, item.path.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"), linkedDest.path),
+            bullets: canNormalize ? [] : [
+                WarningBullet("exclamationmark.circle", String(format: "外部存储目录不存在：%@".localized, linkedDest.path))
+            ],
             detail: "强制解绑只移除本地软链并创建空目录，保留外部目标数据，无需连接外置盘。".localized,
             acknowledgementTitle: "解绑后，此目录将从空目录重新开始，原有数据不会自动恢复。".localized,
             actions: [
@@ -1878,7 +1883,7 @@ struct DataDirsView: View {
                         return nil
                     }
                 },
-                WarningAction("规范化管理".localized, style: .preferred) {
+                WarningAction("规范化管理".localized, style: .preferred, isDisabled: !canNormalize) {
                     queueManagedLinkNormalization(item, currentTarget: linkedDest)
                 }
             ]

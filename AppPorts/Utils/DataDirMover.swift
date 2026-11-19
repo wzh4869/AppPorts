@@ -365,6 +365,13 @@ actor DataDirMover {
         catch { throw DataDirError.symlinkFailed(error) }
     }
 
+    /// 仅当软链目标本身是真实存在的目录（而非悬空路径、普通文件或二次软链）时，才允许进入「规范化管理」。
+    static func canNormalizeExistingLinkTarget(_ target: URL) -> Bool {
+        var info = stat()
+        guard lstat(target.standardizedFileURL.path, &info) == 0 else { return false }
+        return (info.st_mode & mode_t(S_IFMT)) == mode_t(S_IFDIR)
+    }
+
     /// Discard a local link without reading or changing its target. Explicit
     /// reset retires this entry's old symlink journals while preserving their copies.
     func resetExistingLink(item: DataDirItem, expectedDestination: URL) async throws {

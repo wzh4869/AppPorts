@@ -324,6 +324,13 @@ func measureDirectorySize(
 
 actor DataDirScanner {
 
+    private static let ignoredRuntimeMetadataSymlinkNames: Set<String> = [
+        "RunningChromeVersion",
+        "SingletonLock",
+        "SingletonCookie",
+        "SingletonSocket"
+    ]
+
     private let fileManager = FileManager.default
     private let homeDir: URL
     private let managedLinkMarkerFileName = ".appports-link-metadata.plist"
@@ -1249,6 +1256,7 @@ actor DataDirScanner {
             guard lstat(url.path, &metadata) == 0 else { return false }
             let kind = metadata.st_mode & mode_t(S_IFMT)
             guard kind == mode_t(S_IFDIR) || kind == mode_t(S_IFLNK) else { return false }
+            if kind == mode_t(S_IFLNK), isRuntimeMetadataSymlink(at: url) { return false }
             let standardized = url.standardizedFileURL
             if seen.insert(standardized.path).inserted {
                 let name = standardized.lastPathComponent
@@ -1903,6 +1911,7 @@ actor DataDirScanner {
                   decision.mayDiscoverChildren, depth < 5 else { return }
             let entries = directoryEntries(at: url)
             for child in entries {
+                if isSymbolicLinkPath(at: child), isRuntimeMetadataSymlink(at: child) { continue }
                 if PartialWeChatMigrationPolicy(homeDirectory: homeDir, containerIdentifier: weChatContainerIdentifier).isAccount(url),
                    !PartialWeChatMigrationPolicy.memberNames.contains(child.lastPathComponent) { continue }
                 // Container metadata is not a data candidate. The Data root is deliberately visible.
@@ -2402,6 +2411,7 @@ actor DataDirScanner {
             }
             let kind = metadata.st_mode & mode_t(S_IFMT)
             guard kind == mode_t(S_IFDIR) || kind == mode_t(S_IFLNK) else { return false }
+            if kind == mode_t(S_IFLNK), isRuntimeMetadataSymlink(at: url) { return false }
             if matchesDirectoryName(url.lastPathComponent, profile: matchProfile) {
                 matched.append(url)
             }
@@ -2417,6 +2427,28 @@ actor DataDirScanner {
             }
         }
         return deduplicate(urls: matched)
+    }
+
+    /// Chromium / Electron 系应用使用符号链接原子性存储运行版本号、实例锁与套接字路径，
+    /// 并非可迁移的用户数据目录（例如 `RunningChromeVersion -> 157.0.4341.60:1`）。
+    private func isRuntimeMetadataSymlink(at url: URL) -> Bool {
+        guard let rawTarget = try? fileManager.destinationOfSymbolicLink(atPath: url.path) else {
+            return false
+        }
+        let standardizedPath = url.standardizedFileURL.path
+        let hasRecordedLink = recoveryInspection?.managedLinks.contains {
+            URL(fileURLWithPath: $0.originalPath).standardizedFileURL.path == standardizedPath
+        } ?? false
+        if hasRecordedLink { return false }
+        if Self.ignoredRuntimeMetadataSymlinkNames.contains(url.lastPathComponent) {
+            return true
+        }
+        // 纯单段字符串且不包含路径分隔符的悬空软链（如进程锁 `hostname-pid` 或版本号标记）
+        // 并非指向外置盘或其它目录的数据迁移链接；指向 `/Volumes/...` 或 `../...` 的离线外置软链仍保留。
+        guard !rawTarget.contains("/") else { return false }
+        let resolved = URL(fileURLWithPath: rawTarget, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
+        var targetStat = stat()
+        return lstat(resolved.path, &targetStat) != 0
     }
 
     private func directoryEntries(at baseURL: URL, includeHidden: Bool = false) -> [URL] {

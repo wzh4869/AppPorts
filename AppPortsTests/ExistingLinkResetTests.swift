@@ -157,4 +157,25 @@ final class ExistingLinkResetTests: XCTestCase {
             XCTAssertTrue(try store.preservedMaterials().isEmpty)
         }
     }
+
+    func testCanNormalizeExistingLinkTargetRequiresRealDirectory() throws {
+        let root = fm.temporaryDirectory.appendingPathComponent("NormalizeTargetCheck-\(UUID())")
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let realDir = root.appendingPathComponent("RealDir")
+        try fm.createDirectory(at: realDir, withIntermediateDirectories: false)
+        XCTAssertTrue(DataDirMover.canNormalizeExistingLinkTarget(realDir))
+
+        let missingTarget = root.appendingPathComponent("157.0.4341.60:1")
+        XCTAssertFalse(DataDirMover.canNormalizeExistingLinkTarget(missingTarget))
+
+        let regularFile = root.appendingPathComponent("file.txt")
+        try Data("hello".utf8).write(to: regularFile)
+        XCTAssertFalse(DataDirMover.canNormalizeExistingLinkTarget(regularFile))
+
+        let symlinkToDir = root.appendingPathComponent("AliasDir")
+        try fm.createSymbolicLink(at: symlinkToDir, withDestinationURL: realDir)
+        XCTAssertFalse(DataDirMover.canNormalizeExistingLinkTarget(symlinkToDir))
+    }
 }

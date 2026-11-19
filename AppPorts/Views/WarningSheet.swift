@@ -41,6 +41,7 @@ struct WarningAction {
     var isDefault = false
     /// 是否要先勾选「我已了解」才可点
     var requiresAcknowledgement = false
+    var isDisabled = false
     let handler: () -> Void
 
     init(
@@ -48,12 +49,14 @@ struct WarningAction {
         style: Style = .normal,
         isDefault: Bool = false,
         requiresAcknowledgement: Bool = false,
+        isDisabled: Bool = false,
         handler: @escaping () -> Void
     ) {
         self.title = title
         self.style = style
         self.isDefault = isDefault
         self.requiresAcknowledgement = requiresAcknowledgement
+        self.isDisabled = isDisabled
         self.handler = handler
     }
 }
@@ -211,7 +214,7 @@ struct WarningSheet: View {
 
     @ViewBuilder
     private func button(for action: WarningAction) -> some View {
-        let disabled = action.requiresAcknowledgement && !acknowledged
+        let disabled = action.isDisabled || (action.requiresAcknowledgement && !acknowledged)
 
         switch action.style {
         case .destructive:

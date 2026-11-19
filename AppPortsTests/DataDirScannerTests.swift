@@ -2096,4 +2096,68 @@ final class DataDirScannerTests: XCTestCase {
         store.currentEpoch()
     }
 
+    func testRuntimeMetadataSymlinksAreIgnoredWhileOfflineExternalSymlinksRemainVisible() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let chromeURL = try createAppBundle(named: "Google Chrome.app", bundleID: "com.google.Chrome", in: workspace.appsURL)
+        let chrome = AppItem(name: "Google Chrome.app", path: chromeURL, status: AppStatus.local)
+        let singletonURL = try createAppBundle(named: "Singleton.app", bundleID: "com.example.singleton", in: workspace.appsURL)
+        let singletonApp = AppItem(name: "Singleton.app", path: singletonURL, status: AppStatus.local)
+
+        let edgeSupport = workspace.homeURL.appendingPathComponent("Library/Application Support/Microsoft Edge")
+        try fileManager.createDirectory(at: edgeSupport, withIntermediateDirectories: true)
+        try fileManager.createSymbolicLink(
+            atPath: edgeSupport.appendingPathComponent("RunningChromeVersion").path,
+            withDestinationPath: "157.0.4341.60:1"
+        )
+        try fileManager.createSymbolicLink(
+            atPath: edgeSupport.appendingPathComponent("SingletonLock").path,
+            withDestinationPath: "Mac.local-1234"
+        )
+
+        let googleSupport = workspace.homeURL.appendingPathComponent("Library/Application Support/Google")
+        try fileManager.createDirectory(at: googleSupport, withIntermediateDirectories: true)
+        try fileManager.createSymbolicLink(
+            atPath: googleSupport.appendingPathComponent("ChromeLock").path,
+            withDestinationPath: "host-999"
+        )
+        try fileManager.createSymbolicLink(
+            atPath: googleSupport.appendingPathComponent("Chrome").path,
+            withDestinationPath: "/Volumes/OfflineDisk/AppData/Chrome"
+        )
+        let realCache = googleSupport.appendingPathComponent("RealChromeCache")
+        try createDirectoryWithPayload(at: realCache)
+        try fileManager.createSymbolicLink(
+            atPath: googleSupport.appendingPathComponent("ChromeCache").path,
+            withDestinationPath: "RealChromeCache"
+        )
+
+        let scanner = DataDirScanner(
+            homeDir: workspace.homeURL,
+            mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        )
+
+        let chromeItems = await scanner.scanLibraryDirs(for: chrome, externalRootURL: workspace.externalRootURL)
+        let chromeNames = Set(chromeItems.map { $0.path.lastPathComponent })
+        XCTAssertFalse(chromeNames.contains("RunningChromeVersion"))
+        XCTAssertFalse(chromeNames.contains("SingletonLock"))
+        XCTAssertFalse(chromeNames.contains("ChromeLock"))
+        XCTAssertEqual(chromeItems.first(where: { $0.path.lastPathComponent == "Chrome" })?.status, DataDirStatus.existingSymlink)
+        XCTAssertEqual(chromeItems.first(where: { $0.path.lastPathComponent == "ChromeCache" })?.status, DataDirStatus.existingSymlink)
+
+        let singletonItems = await scanner.scanLibraryDirs(for: singletonApp, externalRootURL: workspace.externalRootURL)
+        XCTAssertFalse(singletonItems.contains(where: { $0.path.lastPathComponent == "SingletonLock" }))
+
+        let plan = await scanner.buildAppDataBatchPlan(for: [chrome, singletonApp], externalRootURL: workspace.externalRootURL)
+        let batchChromeNames = Set((plan.targetsByAppID[chrome.id] ?? []).map { $0.item.path.lastPathComponent })
+        XCTAssertFalse(batchChromeNames.contains("RunningChromeVersion"))
+        XCTAssertFalse(batchChromeNames.contains("SingletonLock"))
+        XCTAssertFalse(batchChromeNames.contains("ChromeLock"))
+        XCTAssertTrue(batchChromeNames.contains("Chrome"))
+        XCTAssertTrue(batchChromeNames.contains("ChromeCache"))
+        let batchSingletonNames = Set((plan.targetsByAppID[singletonApp.id] ?? []).map { $0.item.path.lastPathComponent })
+        XCTAssertFalse(batchSingletonNames.contains("SingletonLock"))
+    }
+
 }
