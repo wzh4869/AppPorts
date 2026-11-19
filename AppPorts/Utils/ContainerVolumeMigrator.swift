@@ -865,6 +865,10 @@ actor ContainerVolumeMigrator {
         try requirePreparationLedger(transfer)
         try store.endUnswitchedTransfer(transfer) { try requireUnswitchedMountEntry(transfer) }
         synchronizeAgent(store)
+        invalidateSizeCache(for: URL(fileURLWithPath: transfer.originalPath))
+        if let stagingPath = transfer.stagingPath {
+            invalidateSizeCache(for: URL(fileURLWithPath: stagingPath))
+        }
     }
 
     private func restorePreparationMountOptions(_ transfer: DataTransferRecord) async throws {
@@ -2302,6 +2306,10 @@ actor ContainerVolumeMigrator {
         if transfer.retainedCopyRemovedAt != nil {
             try store.finishTransfer(operationID: operationID, deletionConfirmed: true)
             synchronizeAgent(store)
+            invalidateSizeCache(for: URL(fileURLWithPath: transfer.originalPath))
+            if let backupPath = transfer.backupPath {
+                invalidateSizeCache(for: URL(fileURLWithPath: backupPath))
+            }
             return
         }
         guard transfer.mode == .mount, transfer.isDataSwitchComplete,
@@ -2471,6 +2479,8 @@ actor ContainerVolumeMigrator {
             }
             try store.finishTransfer(operationID: operationID, deletionConfirmed: true)
             synchronizeAgent(store)
+            invalidateSizeCache(for: backup)
+            invalidateSizeCache(for: URL(fileURLWithPath: transfer.originalPath))
         } catch {
             // Read/mount/delete failures are retryable housekeeping. The durable
             // checkpoint and baseline prevent treating foreign data as leftovers.
@@ -2538,6 +2548,10 @@ actor ContainerVolumeMigrator {
                 if let path = cleanup.restoreStagingPath, try verifiedResumeEntryExists(URL(fileURLWithPath: path)) {
                     throw MigrationError.cleanupRecordStagingExists(URL(fileURLWithPath: path))
                 }
+            }
+            invalidateSizeCache(for: local)
+            if let staging = cleanup.restoreStagingPath {
+                invalidateSizeCache(for: URL(fileURLWithPath: staging))
             }
             return nil
         } catch {

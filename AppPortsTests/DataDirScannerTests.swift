@@ -1730,4 +1730,370 @@ final class DataDirScannerTests: XCTestCase {
         }
     }
 
+    func testBatchAppDataSizingSplitsLocalAndMigratedUsesPersistentCacheAndRespectsOfflineMounts() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let alphaURL = try createAppBundle(named: "Alpha.app", bundleID: "com.example.alpha", in: workspace.appsURL)
+        let betaURL = try createAppBundle(named: "Beta.app", bundleID: "com.example.beta", in: workspace.appsURL)
+        let emptyURL = try createAppBundle(named: "Gamma.app", bundleID: "com.example.gamma", in: workspace.appsURL)
+
+        let alpha = AppItem(name: "Alpha.app", path: alphaURL, status: AppStatus.local)
+        let beta = AppItem(name: "Beta.app", path: betaURL, status: AppStatus.local)
+        let gamma = AppItem(name: "Gamma.app", path: emptyURL, status: AppStatus.local)
+
+        let alphaLocalContainer = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.alpha")
+        let alphaLocalFile = alphaLocalContainer.appendingPathComponent("Data/local.bin")
+        try fileManager.createDirectory(at: alphaLocalFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(repeating: 1, count: 120).write(to: alphaLocalFile)
+
+        let alphaSupport = workspace.homeURL.appendingPathComponent("Library/Application Support/Alpha")
+        let alphaExternalSupport = workspace.externalRootURL.appendingPathComponent("AppData/Alpha")
+        try fileManager.createDirectory(at: alphaSupport.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: alphaExternalSupport, withIntermediateDirectories: true)
+        try Data(repeating: 2, count: 340).write(to: alphaExternalSupport.appendingPathComponent("migrated.bin"))
+
+        let storeURL = workspace.rootURL.appendingPathComponent("records.plist")
+        let store = ContainerMountStore(fileURL: storeURL)
+        let metadata = ["schemaVersion": 1, "managedBy": "com.shimoko.AppPorts",
+                        "sourcePath": alphaSupport.standardizedFileURL.path,
+                        "destinationPath": alphaExternalSupport.standardizedFileURL.path,
+                        "dataDirType": DataDirType.applicationSupport.rawValue] as [String: Any]
+        let markerData = try PropertyListSerialization.data(fromPropertyList: metadata, format: .xml, options: 0)
+        try markerData.write(to: alphaExternalSupport.appendingPathComponent(".appports-link-metadata.plist"))
+        try fileManager.createSymbolicLink(at: alphaSupport, withDestinationURL: alphaExternalSupport)
+        try store.upsertManagedLink(ManagedDataLinkRecord(
+            operationID: UUID(),
+            originalPath: alphaSupport.standardizedFileURL.path,
+            destinationPath: alphaExternalSupport.standardizedFileURL.path,
+            destinationIdentity: try DataPathIdentity.capture(alphaExternalSupport),
+            appName: "Alpha",
+            bundleIdentifier: "com.example.alpha",
+            dataDirType: DataDirType.applicationSupport.rawValue
+        ))
+
+        let betaMountPoint = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.beta/Data/Media")
+        try fileManager.createDirectory(at: betaMountPoint, withIntermediateDirectories: true)
+        try store.upsert(ContainerMountRecord(
+            appName: "Beta",
+            bundleIdentifier: "com.example.beta",
+            dataDirType: DataDirType.containers.rawValue,
+            mountPointPath: betaMountPoint.path,
+            volumeUUID: "offline-fixture",
+            volumeName: "Offline",
+            externalRootPath: workspace.externalRootURL.path
+        ))
+        try fileManager.setAttributes([.posixPermissions: 0o000], ofItemAtPath: betaMountPoint.path)
+        defer { try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: betaMountPoint.path) }
+
+        let cacheFile = workspace.rootURL.appendingPathComponent("app-data-sizes.json")
+        let cacheStore = ToolDirectorySizeCacheStore(fileURL: cacheFile)
+        let scanner = DataDirScanner(
+            homeDir: workspace.homeURL,
+            mountStore: store,
+            isMountPoint: { _ in false },
+            isVolumeOnline: { _ in false }
+        )
+
+        actor BatchCollector {
+            var map: [String: AppDataRowSizeSummary] = [:]
+            var callCount = 0
+            func record(_ updates: [String: AppDataRowSizeSummary]) {
+                callCount += 1
+                for (k, v) in updates { map[k] = v }
+            }
+        }
+
+        let apps = [alpha, beta, gamma]
+        let plan = await scanner.buildAppDataBatchPlan(for: apps, externalRootURL: workspace.externalRootURL)
+        let firstCollector = BatchCollector()
+        await DataDirScanner.measureAppDataBatch(
+            plan: plan,
+            apps: apps,
+            priorityAppIDs: [alpha.id],
+            forceRefresh: false,
+            cacheStore: cacheStore,
+            isMountPoint: { _ in false }
+        ) { updates in
+            await firstCollector.record(updates)
+        }
+        let firstPass = await firstCollector.map
+
+        let expectedMigratedBytes = measureDirectorySize(at: alphaExternalSupport, useCache: false).bytes
+        let alphaFirst = try XCTUnwrap(firstPass[alpha.id])
+        XCTAssertTrue(alphaFirst.hasMigratedItems)
+        XCTAssertEqual(alphaFirst.localBytes, 120)
+        XCTAssertEqual(alphaFirst.migratedBytes, expectedMigratedBytes)
+        XCTAssertFalse(alphaFirst.isCalculating)
+        XCTAssertFalse(alphaFirst.isIncomplete)
+
+        let betaFirst = try XCTUnwrap(firstPass[beta.id])
+        XCTAssertTrue(betaFirst.hasMigratedItems)
+        XCTAssertTrue(betaFirst.isIncomplete)
+        XCTAssertFalse(betaFirst.isCalculating)
+
+        let gammaFirst = try XCTUnwrap(firstPass[gamma.id])
+        XCTAssertFalse(gammaFirst.hasMigratedItems)
+        XCTAssertEqual(gammaFirst.totalBytes, 0)
+        XCTAssertFalse(gammaFirst.isCalculating)
+
+        let savedSnapshot = cacheStore.load()
+        XCTAssertNil(savedSnapshot.entries[betaMountPoint.standardizedFileURL.path], "Offline mount must not be cached")
+        XCTAssertNotNil(savedSnapshot.entries[alphaLocalContainer.standardizedFileURL.path])
+
+        // Mutate nested file inside alpha's container without changing container root inode, then clear in-memory cache.
+        try Data(repeating: 9, count: 500).write(to: alphaLocalContainer.appendingPathComponent("Data/extra.bin"))
+        clearSizeCache()
+
+        let secondCollector = BatchCollector()
+        await DataDirScanner.measureAppDataBatch(
+            plan: plan,
+            apps: apps,
+            priorityAppIDs: [],
+            forceRefresh: false,
+            cacheStore: cacheStore,
+            isMountPoint: { _ in false }
+        ) { updates in
+            await secondCollector.record(updates)
+        }
+        let secondPass = await secondCollector.map
+        XCTAssertEqual(secondPass[alpha.id]?.localBytes, 120, "Normal visit should reuse persistent cache")
+
+        let refreshCollector = BatchCollector()
+        await DataDirScanner.measureAppDataBatch(
+            plan: plan,
+            apps: apps,
+            priorityAppIDs: [],
+            forceRefresh: true,
+            cacheStore: cacheStore,
+            isMountPoint: { _ in false }
+        ) { updates in
+            await refreshCollector.record(updates)
+        }
+        let refreshedPass = await refreshCollector.map
+        XCTAssertEqual(refreshedPass[alpha.id]?.localBytes, 620, "Manual refresh must remeasure nested file changes")
+    }
+
+    func testCancelledBatchAppDataSizingDoesNotPublishOrSaveCache() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let appURL = try createAppBundle(named: "Delta.app", bundleID: "com.example.delta", in: workspace.appsURL)
+        let app = AppItem(name: "Delta.app", path: appURL, status: AppStatus.local)
+        let container = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.delta")
+        try createDirectoryWithPayload(at: container)
+
+        let cacheFile = workspace.rootURL.appendingPathComponent("cancelled-sizes.json")
+        let cacheStore = ToolDirectorySizeCacheStore(fileURL: cacheFile)
+        let scanner = DataDirScanner(homeDir: workspace.homeURL, isMountPoint: { _ in false })
+        let plan = await scanner.buildAppDataBatchPlan(for: [app], externalRootURL: nil)
+
+        actor Counter {
+            var count = 0
+            func inc() { count += 1 }
+        }
+        let counter = Counter()
+        let task = Task {
+            await withTaskCancellationHandler {
+                await DataDirScanner.measureAppDataBatch(
+                    plan: plan,
+                    apps: [app],
+                    priorityAppIDs: [],
+                    forceRefresh: false,
+                    cacheStore: cacheStore,
+                    isMountPoint: { _ in false }
+                ) { _ in
+                    await counter.inc()
+                }
+            } onCancel: {}
+        }
+        task.cancel()
+        await task.value
+        let publishedUpdates = await counter.count
+        XCTAssertEqual(publishedUpdates, 0)
+        XCTAssertFalse(fileManager.fileExists(atPath: cacheFile.path))
+    }
+
+    func testBatchSizingExcludesActiveTransferBackupFromCacheAndRemeasuresCleanly() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let wechatURL = try createAppBundle(named: "WeChat.app", bundleID: "com.tencent.xinWeChat", in: workspace.appsURL)
+        let wechat = AppItem(name: "WeChat.app", path: wechatURL, status: AppStatus.local)
+
+        let container = workspace.homeURL.appendingPathComponent("Library/Containers/com.tencent.xinWeChat")
+        let dataLocalFile = container.appendingPathComponent("Data/local.bin")
+        try fileManager.createDirectory(at: dataLocalFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(repeating: 1, count: 120).write(to: dataLocalFile)
+
+        let xwechatFiles = container.appendingPathComponent("Data/Documents/xwechat_files")
+        let mountPoint = xwechatFiles.appendingPathComponent("wxid_fixture")
+        let backup = xwechatFiles.appendingPathComponent(".wxid_fixture.backup")
+        try fileManager.createDirectory(at: mountPoint, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: backup, withIntermediateDirectories: true)
+        try Data(repeating: 7, count: 1_000).write(to: backup.appendingPathComponent("retained.bin"))
+
+        let storeURL = workspace.rootURL.appendingPathComponent("records.plist")
+        let store = ContainerMountStore(fileURL: storeURL)
+        let mountRecord = ContainerMountRecord(
+            appName: "WeChat.app",
+            bundleIdentifier: "com.tencent.xinWeChat",
+            dataDirType: DataDirType.containers.rawValue,
+            mountPointPath: mountPoint.path,
+            volumeUUID: "MOUNTED-UUID",
+            volumeName: "MountedWeChat",
+            externalRootPath: workspace.externalRootURL.path
+        )
+        var transfer = DataTransferRecord(
+            mode: .mount,
+            direction: .migrate,
+            appName: "WeChat.app",
+            bundleIdentifier: "com.tencent.xinWeChat",
+            dataDirType: DataDirType.containers.rawValue,
+            originalPath: mountPoint.path,
+            activePath: mountPoint.path,
+            destinationPath: workspace.externalRootURL.appendingPathComponent("wxid_fixture").path,
+            backupPath: backup.path,
+            sourceIdentity: DataPathIdentity(device: 1, inode: 42),
+            destinationIdentity: DataPathIdentity(device: 2, inode: 500, volumeUUID: "MOUNTED-UUID")
+        )
+        transfer.createdVolumeUUID = "MOUNTED-UUID"
+        try store.beginTransfer(transfer)
+        transfer.phase = .copying
+        try store.updateTransfer(transfer)
+        transfer.phase = .verified
+        transfer.baseline = Data("baseline".utf8)
+        try store.updateTransfer(transfer)
+        transfer.phase = .switching
+        try store.updateTransfer(transfer)
+        try store.commitMigration(record: mountRecord, transfer: transfer)
+
+        let cacheFile = workspace.rootURL.appendingPathComponent("wechat-cache.json")
+        let cacheStore = ToolDirectorySizeCacheStore(fileURL: cacheFile)
+        let isMountPointClosure: @Sendable (URL) -> Bool = {
+            $0.standardizedFileURL == mountPoint.standardizedFileURL
+        }
+        let mountedScanner = DataDirScanner(
+            homeDir: workspace.homeURL,
+            mountStore: store,
+            isMountPoint: isMountPointClosure,
+            isVolumeOnline: { _ in true }
+        )
+
+        actor BatchCollector {
+            var map: [String: AppDataRowSizeSummary] = [:]
+            func record(_ updates: [String: AppDataRowSizeSummary]) {
+                for (k, v) in updates { map[k] = v }
+            }
+        }
+
+        let planWhileActive = await mountedScanner.buildAppDataBatchPlan(for: [wechat], externalRootURL: workspace.externalRootURL)
+        let containerTarget = try XCTUnwrap(planWhileActive.targetsByAppID[wechat.id]?.first {
+            $0.item.path.standardizedFileURL == container.standardizedFileURL
+        })
+        XCTAssertFalse(planWhileActive.sizeCachePolicy.isCacheable(item: containerTarget.item))
+        XCTAssertNil(planWhileActive.sizeCachePolicy.cacheIdentity(for: containerTarget.item))
+
+        let firstCollector = BatchCollector()
+        await DataDirScanner.measureAppDataBatch(
+            plan: planWhileActive,
+            apps: [wechat],
+            priorityAppIDs: [wechat.id],
+            forceRefresh: false,
+            cacheStore: cacheStore,
+            isMountPoint: isMountPointClosure
+        ) { updates in
+            await firstCollector.record(updates)
+        }
+        let firstMap = await firstCollector.map
+        let firstSummary = try XCTUnwrap(firstMap[wechat.id])
+        XCTAssertEqual(firstSummary.localBytes, 1_120)
+        XCTAssertNil(
+            cacheStore.load().entries[container.standardizedFileURL.path],
+            "Container with pending transfer backup must not be persisted to cache"
+        )
+
+        try fileManager.removeItem(at: backup)
+        try store.requestCleanup(operationID: transfer.operationID)
+        try store.finishTransfer(operationID: transfer.operationID, deletionConfirmed: true)
+        invalidateSizeCache(for: backup)
+        invalidateSizeCache(for: container)
+
+        let planAfterCleanup = await mountedScanner.buildAppDataBatchPlan(for: [wechat], externalRootURL: workspace.externalRootURL)
+        let cleanedTarget = try XCTUnwrap(planAfterCleanup.targetsByAppID[wechat.id]?.first {
+            $0.item.path.standardizedFileURL == container.standardizedFileURL
+        })
+        XCTAssertTrue(planAfterCleanup.sizeCachePolicy.isCacheable(item: cleanedTarget.item))
+
+        let secondCollector = BatchCollector()
+        await DataDirScanner.measureAppDataBatch(
+            plan: planAfterCleanup,
+            apps: [wechat],
+            priorityAppIDs: [wechat.id],
+            forceRefresh: false,
+            cacheStore: cacheStore,
+            isMountPoint: isMountPointClosure
+        ) { updates in
+            await secondCollector.record(updates)
+        }
+        let secondMap = await secondCollector.map
+        let secondSummary = try XCTUnwrap(secondMap[wechat.id])
+        XCTAssertEqual(secondSummary.localBytes, 120)
+
+        let cachedEntry = try XCTUnwrap(cacheStore.load().entries[container.standardizedFileURL.path])
+        XCTAssertEqual(cachedEntry.bytes, 120)
+        XCTAssertTrue(cachedEntry.identity.contains("topo=M:\(mountPoint.standardizedFileURL.path):MOUNTED-UUID:1"))
+
+        let unmountedScanner = DataDirScanner(
+            homeDir: workspace.homeURL,
+            mountStore: store,
+            isMountPoint: { _ in false },
+            isVolumeOnline: { _ in true }
+        )
+        let planUnmounted = await unmountedScanner.buildAppDataBatchPlan(for: [wechat], externalRootURL: workspace.externalRootURL)
+        let unmountedTarget = try XCTUnwrap(planUnmounted.targetsByAppID[wechat.id]?.first {
+            $0.item.path.standardizedFileURL == container.standardizedFileURL
+        })
+        XCTAssertNotEqual(planUnmounted.sizeCachePolicy.cacheIdentity(for: unmountedTarget.item), cachedEntry.identity)
+    }
+
+    func testToolDirectorySizeCacheMergeDropsEntriesInvalidatedDuringScan() throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let parentURL = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.parent")
+        let childURL = parentURL.appendingPathComponent("Data/Documents/backup")
+        let unrelatedURL = workspace.homeURL.appendingPathComponent("Library/Containers/com.example.other")
+        try fileManager.createDirectory(at: childURL, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: unrelatedURL, withIntermediateDirectories: true)
+
+        let cacheStore = ToolDirectorySizeCacheStore(fileURL: workspace.rootURL.appendingPathComponent("merge-epoch.json"))
+        let startedEpoch = storeEpochAfterInitialSetup(cacheStore)
+        cacheStore.invalidate(for: childURL)
+
+        let parentEntry = ToolDirectorySizeCacheStore.Entry(
+            identity: "parent-id",
+            sourcePath: parentURL.standardizedFileURL.path,
+            targetPath: parentURL.resolvingSymlinksInPath().standardizedFileURL.path,
+            bytes: 999,
+            measuredAt: Date()
+        )
+        let unrelatedEntry = ToolDirectorySizeCacheStore.Entry(
+            identity: "unrelated-id",
+            sourcePath: unrelatedURL.standardizedFileURL.path,
+            targetPath: unrelatedURL.resolvingSymlinksInPath().standardizedFileURL.path,
+            bytes: 777,
+            measuredAt: Date()
+        )
+        cacheStore.merge([parentEntry, unrelatedEntry], startedAtEpoch: startedEpoch)
+
+        let loaded = cacheStore.load()
+        XCTAssertNil(loaded.entries[parentURL.standardizedFileURL.path], "Parent invalidated via child must be dropped")
+        XCTAssertEqual(loaded.entries[unrelatedURL.standardizedFileURL.path]?.bytes, 777)
+    }
+
+    private func storeEpochAfterInitialSetup(_ store: ToolDirectorySizeCacheStore) -> UInt64 {
+        store.currentEpoch()
+    }
+
 }

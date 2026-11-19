@@ -68,12 +68,69 @@ private struct AppDataSearchConfig {
 
 // MARK: - 快速目录大小计算（非 actor 隔离，支持并发）
 
-/// 目录大小缓存，减少重复遍历
-private let directorySizeCache: NSCache<NSString, NSNumber> = {
-    let c = NSCache<NSString, NSNumber>()
-    c.countLimit = 200
-    return c
-}()
+/// 内存目录大小缓存及并发失效 epoch 守卫，防止后台测量把已失效的旧目录体积回写到缓存。
+private final class MemoryDirectorySizeCache: @unchecked Sendable {
+    static let shared = MemoryDirectorySizeCache()
+
+    private let lock = NSLock()
+    private let cache: NSCache<NSString, NSNumber> = {
+        let c = NSCache<NSString, NSNumber>()
+        c.countLimit = 1000
+        return c
+    }()
+    private var epoch: UInt64 = 0
+    private var clearedEpoch: UInt64 = 0
+    private var invalidatedEpochByPath: [String: UInt64] = [:]
+
+    func object(forKey key: NSString) -> NSNumber? {
+        lock.withLock { cache.object(forKey: key) }
+    }
+
+    func removeObject(forKey key: NSString) {
+        lock.withLock { cache.removeObject(forKey: key) }
+    }
+
+    func currentEpoch() -> UInt64 {
+        lock.withLock { epoch }
+    }
+
+    func store(_ bytes: Int64, forKey key: NSString, path: String, canonicalPath: String, startedAtEpoch: UInt64) {
+        lock.withLock {
+            guard clearedEpoch <= startedAtEpoch else { return }
+            let invalidated = invalidatedEpochByPath.contains { invPath, invEpoch in
+                invEpoch > startedAtEpoch
+                    && (AppDataSizeCachePolicy.pathsOverlap(path, invPath)
+                        || AppDataSizeCachePolicy.pathsOverlap(canonicalPath, invPath))
+            }
+            guard !invalidated else { return }
+            cache.setObject(NSNumber(value: bytes), forKey: key)
+        }
+    }
+
+    func invalidate(for url: URL) {
+        let standardizedPath = url.standardizedFileURL.path
+        lock.withLock {
+            epoch &+= 1
+            invalidatedEpochByPath[standardizedPath] = epoch
+            var cursor = standardizedPath
+            while !cursor.isEmpty {
+                cache.removeObject(forKey: sizeCacheKey(for: cursor, isMountPoint: true))
+                cache.removeObject(forKey: sizeCacheKey(for: cursor, isMountPoint: false))
+                guard cursor != "/" else { break }
+                cursor = (cursor as NSString).deletingLastPathComponent
+            }
+        }
+    }
+
+    func removeAll() {
+        lock.withLock {
+            epoch &+= 1
+            clearedEpoch = epoch
+            invalidatedEpochByPath.removeAll()
+            cache.removeAllObjects()
+        }
+    }
+}
 
 /// 缓存键带上当前挂载状态。挂载点被挂上或卸下时目录内容会整体替换，
 /// 状态一变就等于缓存失效，不会把卸载前那份旧大小继续报给界面。
@@ -84,18 +141,13 @@ private func sizeCacheKey(for path: String, isMountPoint: Bool) -> NSString {
 /// 子目录内容变更也会改变所有父目录的总大小，两种挂载状态的缓存都要失效。
 func invalidateSizeCache(for url: URL) {
     ToolDirectorySizeCacheStore.shared.invalidate(for: url)
-    var path = url.standardizedFileURL.path
-    while !path.isEmpty {
-        directorySizeCache.removeObject(forKey: sizeCacheKey(for: path, isMountPoint: true))
-        directorySizeCache.removeObject(forKey: sizeCacheKey(for: path, isMountPoint: false))
-        guard path != "/" else { break }
-        path = (path as NSString).deletingLastPathComponent
-    }
+    ToolDirectorySizeCacheStore.appDataDirectories.invalidate(for: url)
+    MemoryDirectorySizeCache.shared.invalidate(for: url)
 }
 
 /// 清除全部大小缓存
 func clearSizeCache() {
-    directorySizeCache.removeAllObjects()
+    MemoryDirectorySizeCache.shared.removeAll()
 }
 
 /// 非隔离的快速目录大小计算，支持 TaskGroup 并发调用。
@@ -112,16 +164,82 @@ func fastDirectorySize(
 
 /// A split account row represents only its migrated media, not the local database.
 func measureDataDirectorySize(for item: DataDirItem, useCache: Bool = false,
-                              pausedMountDirectories: Set<URL> = []) -> DirectorySizeResult {
+                              pausedMountDirectories: Set<URL> = [],
+                              allowWriteToCache: Bool = true) -> DirectorySizeResult {
     let sources = item.weChatSplitMembers.isEmpty ? [item] : item.weChatSplitMembers
     var result = DirectorySizeResult()
     for source in sources {
         guard let url = source.sizeMeasurementURL else { continue }
-        let measured = measureDirectorySize(at: url, useCache: useCache, pausedMountDirectories: pausedMountDirectories)
+        let measured = measureDirectorySize(
+            at: url,
+            useCache: useCache,
+            pausedMountDirectories: pausedMountDirectories,
+            allowWriteToCache: allowWriteToCache
+        )
         result.bytes += measured.bytes
         result.readIssues += measured.readIssues
     }
     return result
+}
+
+func directoryIncludesPausedMount(at url: URL, pausedMountDirectories: Set<URL>) -> Bool {
+    let path = url.standardizedFileURL.path
+    return pausedMountDirectories.contains {
+        $0.path == path || $0.path.hasPrefix(path + "/")
+    }
+}
+
+func measureDataDirectorySizeWithPersistentCache(
+    for item: DataDirItem,
+    useCache: Bool,
+    pausedMountDirectories: Set<URL>,
+    cacheStore: ToolDirectorySizeCacheStore = .appDataDirectories,
+    snapshot: inout ToolDirectorySizeCacheStore.Snapshot
+) -> (result: DirectorySizeResult, cacheUpdated: Bool) {
+    if !item.weChatSplitMembers.isEmpty {
+        var combined = DirectorySizeResult()
+        var updated = false
+        for member in item.weChatSplitMembers {
+            let memberMeasured = measureDataDirectorySizeWithPersistentCache(
+                for: member,
+                useCache: useCache,
+                pausedMountDirectories: pausedMountDirectories,
+                cacheStore: cacheStore,
+                snapshot: &snapshot
+            )
+            combined.bytes += memberMeasured.result.bytes
+            combined.readIssues += memberMeasured.result.readIssues
+            if memberMeasured.cacheUpdated { updated = true }
+        }
+        return (combined, updated)
+    }
+
+    guard let measurementURL = item.sizeMeasurementURL else {
+        return (DirectorySizeResult(), false)
+    }
+    let includesPausedMount = directoryIncludesPausedMount(at: measurementURL, pausedMountDirectories: pausedMountDirectories)
+    let key = item.path.standardizedFileURL.path
+    let identity = includesPausedMount ? nil : ToolDirectorySizeCacheStore.identity(for: item)
+    if useCache, !includesPausedMount, let identity,
+       let cached = snapshot.entries[key], cached.identity == identity {
+        return (DirectorySizeResult(bytes: cached.bytes), false)
+    }
+
+    let removed = snapshot.entries.removeValue(forKey: key) != nil
+    let measured = measureDataDirectorySize(for: item, useCache: useCache, pausedMountDirectories: pausedMountDirectories)
+    var cacheUpdated = removed
+    if measured.isComplete, !includesPausedMount, let identity,
+       identity == ToolDirectorySizeCacheStore.identity(for: item) {
+        snapshot.entries[key] = .init(
+            identity: identity,
+            sourcePath: key,
+            targetPath: measurementURL.resolvingSymlinksInPath().standardizedFileURL.path,
+            bytes: measured.bytes,
+            measuredAt: Date()
+        )
+        cacheUpdated = true
+    }
+    return (measured, cacheUpdated)
 }
 
 /// 界面需要同时知道大小和读取是否完整，不能把读取失败当成 0 字节。
@@ -130,27 +248,31 @@ func measureDirectorySize(
     fileManager: FileManager = .default,
     useCache: Bool = true,
     pausedMountDirectories: Set<URL> = [],
-    isMountPoint: @escaping (URL) -> Bool = { DiskUtility.isMountPoint($0) }
+    isMountPoint: @escaping (URL) -> Bool = { DiskUtility.isMountPoint($0) },
+    allowWriteToCache: Bool = true
 ) -> DirectorySizeResult {
     func readIssue(at failedURL: URL, error: Error) -> DataDirReadIssue {
         DataDirReadIssue(url: failedURL, error: error, pausedMountDirectories: pausedMountDirectories,
                          isMountPoint: isMountPoint)
     }
-    let cacheKey = sizeCacheKey(for: url.standardizedFileURL.path, isMountPoint: isMountPoint(url))
+    let standardized = url.standardizedFileURL
+    let canonicalPath = standardized.resolvingSymlinksInPath().standardizedFileURL.path
+    let cacheKey = sizeCacheKey(for: standardized.path, isMountPoint: isMountPoint(url))
     let relevantPausedMounts = pausedMountDirectories.filter {
-        let path = url.standardizedFileURL.path
+        let path = standardized.path
         return $0.path == path || $0.path.hasPrefix(path + "/")
     }
     let includesPausedMount = !relevantPausedMounts.isEmpty
-    if useCache, !includesPausedMount, let cached = directorySizeCache.object(forKey: cacheKey) {
+    if useCache, !includesPausedMount, let cached = MemoryDirectorySizeCache.shared.object(forKey: cacheKey) {
         return DirectorySizeResult(bytes: cached.int64Value)
     }
-    directorySizeCache.removeObject(forKey: cacheKey)
+    MemoryDirectorySizeCache.shared.removeObject(forKey: cacheKey)
+    let startEpoch = MemoryDirectorySizeCache.shared.currentEpoch()
     let pausedIssues = relevantPausedMounts.compactMap {
         DataDirReadIssue.pausedMountIssue(at: $0, pausedMountDirectories: pausedMountDirectories,
                                          isMountPoint: isMountPoint)
     }
-    if pausedIssues.contains(where: { $0.url == url.standardizedFileURL }) {
+    if pausedIssues.contains(where: { $0.url == standardized }) {
         return DirectorySizeResult(readIssues: pausedIssues)
     }
 
@@ -165,7 +287,15 @@ func measureDirectorySize(
     // 单文件：直接返回大小
     if values.isRegularFile == true {
         let size = Int64(values.fileSize ?? 0)
-        directorySizeCache.setObject(NSNumber(value: size), forKey: cacheKey)
+        if allowWriteToCache && !includesPausedMount {
+            MemoryDirectorySizeCache.shared.store(
+                size,
+                forKey: cacheKey,
+                path: standardized.path,
+                canonicalPath: canonicalPath,
+                startedAtEpoch: startEpoch
+            )
+        }
         return DirectorySizeResult(bytes: size)
     }
 
@@ -178,8 +308,14 @@ func measureDirectorySize(
     result.readIssues += pausedIssues
     // 0 不写缓存：未挂载的挂载点就是一个空目录，算出来同样是 0；缓存下来会让卷挂好之后
     // 一直显示「0 字节」。空目录重新遍历的代价可以忽略，所以每次重算更安全。
-    if result.isComplete && result.bytes > 0 {
-        directorySizeCache.setObject(NSNumber(value: result.bytes), forKey: cacheKey)
+    if allowWriteToCache && !includesPausedMount && result.isComplete && result.bytes > 0 {
+        MemoryDirectorySizeCache.shared.store(
+            result.bytes,
+            forKey: cacheKey,
+            path: standardized.path,
+            canonicalPath: canonicalPath,
+            startedAtEpoch: startEpoch
+        )
     }
     return result
 }
@@ -542,6 +678,646 @@ actor DataDirScanner {
         return sortedResults
     }
 
+    struct AppDataMeasurementTarget: Sendable {
+        let item: DataDirItem
+        let isMigrated: Bool
+        let measurementKey: String
+    }
+
+    struct AppDataBatchPlan: Sendable {
+        let targetsByAppID: [String: [AppDataMeasurementTarget]]
+        let uniqueTargets: [String: DataDirItem]
+        let readIssueAppIDs: Set<String>
+        let pausedMountDirectories: Set<URL>
+        let sizeCachePolicy: AppDataSizeCachePolicy
+    }
+
+    private struct IndexedDirectoryEntry {
+        let url: URL
+        let name: String
+        let compactName: String
+        let lowercasedName: String
+        let lowercasedCompactName: String
+    }
+
+    private struct IndexedExternalRoot {
+        let baseURL: URL
+        let entries: [IndexedDirectoryEntry]
+    }
+
+    /// 单遍索引 `~/Library` 候选目录与外置镜像，为左侧应用列表批量汇总展示大小。
+    func buildAppDataBatchPlan(for apps: [AppItem], externalRootURL: URL?) -> AppDataBatchPlan {
+        guard !Task.isCancelled else {
+            return AppDataBatchPlan(
+                targetsByAppID: [:],
+                uniqueTargets: [:],
+                readIssueAppIDs: [],
+                pausedMountDirectories: [],
+                sizeCachePolicy: .empty
+            )
+        }
+        readIssues = []
+        mountRecordsByPath = [:]
+        pausedMountDirectories = []
+        recoveryInspection = nil
+        volumeStateCache.removeAll(keepingCapacity: true)
+
+        var hasGlobalStoreError = false
+        var inspection: ContainerMountStore.Inspection?
+        do {
+            let loaded = try mountStore.recordsForInspection()
+            inspection = loaded
+            recoveryInspection = loaded
+            if loaded.validationError != nil {
+                hasGlobalStoreError = true
+            }
+        } catch {
+            hasGlobalStoreError = true
+        }
+
+        let containerBases = ["Library/Containers", "Library/Group Containers"].map {
+            homeDir.appendingPathComponent($0).standardizedFileURL
+        }
+        var mountsByBundleID: [String: [ContainerMountRecord]] = [:]
+        var legacyMounts: [ContainerMountRecord] = []
+        if let inspection {
+            for record in inspection.mounts {
+                let url = record.mountPointURL.standardizedFileURL
+                let canonical = url.resolvingSymlinksInPath().path
+                let insideContainerBase = containerBases.contains { base in
+                    let baseCanonical = base.resolvingSymlinksInPath().path
+                    return url.path.hasPrefix(base.path + "/") || canonical.hasPrefix(baseCanonical + "/")
+                }
+                guard insideContainerBase else { continue }
+                mountRecordsByPath[url.path] = record
+                mountRecordsByPath[canonical] = record
+                if inspection.validationError == nil,
+                   !isMountPoint(url) || (try? mountStore.isManuallyUnmounted(record)) == true {
+                    pausedMountDirectories.insert(url)
+                    pausedMountDirectories.insert(
+                        url.deletingLastPathComponent().resolvingSymlinksInPath()
+                            .appendingPathComponent(url.lastPathComponent).standardizedFileURL
+                    )
+                }
+                if let bundleID = record.bundleIdentifier, !bundleID.isEmpty {
+                    mountsByBundleID[bundleID, default: []].append(record)
+                } else {
+                    legacyMounts.append(record)
+                }
+            }
+        }
+
+        var linksByBundleID: [String: [ManagedDataLinkRecord]] = [:]
+        var legacyLinks: [ManagedDataLinkRecord] = []
+        if let inspection {
+            for link in inspection.managedLinks {
+                if let bundleID = link.bundleIdentifier, !bundleID.isEmpty {
+                    linksByBundleID[bundleID, default: []].append(link)
+                } else {
+                    legacyLinks.append(link)
+                }
+            }
+        }
+
+        let configs = appDataSearchConfigs()
+        var containerExactMap: [String: URL] = [:]
+        var containerLowerMap: [String: URL] = [:]
+        var indexedLocalByType: [DataDirType: [IndexedDirectoryEntry]] = [:]
+        var indexedExternalByType: [DataDirType: [IndexedExternalRoot]] = [:]
+        var hasRootReadIssue = false
+
+        for config in configs {
+            guard !Task.isCancelled else {
+                return AppDataBatchPlan(
+                    targetsByAppID: [:],
+                    uniqueTargets: [:],
+                    readIssueAppIDs: [],
+                    pausedMountDirectories: pausedMountDirectories,
+                    sizeCachePolicy: .empty
+                )
+            }
+            if config.type == .containers {
+                let levelOne = indexOneLevelContainers(in: config.localBaseURL, trackRootFailure: &hasRootReadIssue)
+                containerExactMap = levelOne.exact
+                containerLowerMap = levelOne.lower
+                continue
+            }
+            var configRootFailed = false
+            indexedLocalByType[config.type] = indexTwoLevels(in: config.localBaseURL, trackRootFailure: &configRootFailed)
+            if configRootFailed { hasRootReadIssue = true }
+            if config.type != .groupContainers {
+                let externalRoots = externalBaseURLs(for: config.localBaseURL, externalRootURL: externalRootURL)
+                var externalIndexed: [IndexedExternalRoot] = []
+                for extBase in externalRoots {
+                    guard !Task.isCancelled else { break }
+                    var ignoredFailure = false
+                    let entries = indexTwoLevels(in: extBase, trackRootFailure: &ignoredFailure)
+                    if !entries.isEmpty {
+                        externalIndexed.append(IndexedExternalRoot(baseURL: extBase, entries: entries))
+                    }
+                }
+                indexedExternalByType[config.type] = externalIndexed
+            }
+        }
+
+        var inspectionCache: [String: (status: String, linkedDestination: URL?)] = [:]
+        func cachedInspectItem(at url: URL, type: DataDirType) -> (status: String, linkedDestination: URL?) {
+            let key = "\(type.rawValue)|\(url.standardizedFileURL.path)"
+            if let cached = inspectionCache[key] { return cached }
+            let result = inspectItem(at: url, type: type)
+            inspectionCache[key] = result
+            return result
+        }
+
+        var targetsByAppID: [String: [AppDataMeasurementTarget]] = [:]
+        var uniqueTargets: [String: DataDirItem] = [:]
+        var readIssueAppIDs: Set<String> = []
+        let homePath = homeDir.path
+        let canonicalHomePath = homeDir.resolvingSymlinksInPath().path
+
+        func belongsToHome(_ source: URL, bundleID: String?, recordedBundle: String?) -> Bool {
+            let lexical = source.standardizedFileURL.path
+            let canonical = source.resolvingSymlinksInPath().path
+            guard lexical.hasPrefix(homePath + "/") || canonical.hasPrefix(canonicalHomePath + "/") else { return false }
+            if let bundleID, recordedBundle == bundleID { return true }
+            guard recordedBundle == nil, let bundleID else { return false }
+            let root = homeDir.appendingPathComponent("Library/Containers/" + bundleID).standardizedFileURL.path
+            let canonicalRoot = URL(fileURLWithPath: root).resolvingSymlinksInPath().path
+            return lexical == root || lexical.hasPrefix(root + "/")
+                || canonical == canonicalRoot || canonical.hasPrefix(canonicalRoot + "/")
+        }
+
+        for app in apps where !app.isFolder {
+            guard !Task.isCancelled else { break }
+            let bundleID: String?
+            var appHasReadIssue = hasGlobalStoreError || hasRootReadIssue
+            switch AppIdentityResolver.resolve(at: app.displayURL) {
+            case .success(let resolved):
+                bundleID = resolved.bundleIdentifier
+            case .failure:
+                bundleID = nil
+                appHasReadIssue = true
+            }
+
+            let appName = app.displayName.replacingOccurrences(of: ".app", with: "")
+            let matchProfile = buildMatchProfile(bundleID: bundleID, appName: appName)
+            var resultsByPath: [String: DataDirItem] = [:]
+
+            for config in configs {
+                guard !Task.isCancelled else { break }
+                if config.type == .containers {
+                    if let bundleID,
+                       let containerURL = containerExactMap[bundleID] ?? containerLowerMap[bundleID.lowercased()] {
+                        let itemInspection = cachedInspectItem(at: containerURL, type: .containers)
+                        var item = makeAppDataItem(
+                            name: containerURL.lastPathComponent,
+                            path: containerURL,
+                            type: .containers,
+                            priority: config.priority,
+                            description: config.description,
+                            appName: appName
+                        )
+                        applyInspectionResult(to: &item, inspection: itemInspection, externalRootURL: externalRootURL)
+                        resultsByPath[item.id] = item
+                    }
+                    continue
+                }
+
+                if let entries = indexedLocalByType[config.type] {
+                    for entry in entries where matchesIndexedDirectory(entry, profile: matchProfile) {
+                        let itemInspection = cachedInspectItem(at: entry.url, type: config.type)
+                        var item = makeAppDataItem(
+                            name: entry.name,
+                            path: entry.url,
+                            type: config.type,
+                            priority: config.priority,
+                            description: config.description,
+                            appName: appName
+                        )
+                        applyInspectionResult(to: &item, inspection: itemInspection, externalRootURL: externalRootURL)
+                        resultsByPath[item.id] = item
+                    }
+                }
+
+                if config.type != .groupContainers, let externalRoots = indexedExternalByType[config.type] {
+                    for extRoot in externalRoots {
+                        for entry in extRoot.entries where matchesIndexedDirectory(entry, profile: matchProfile) {
+                            guard let localURL = mapExternalCandidate(entry.url, from: extRoot.baseURL, to: config.localBaseURL) else {
+                                continue
+                            }
+                            let localKey = localURL.standardizedFileURL.path
+                            if resultsByPath[localKey] != nil { continue }
+                            if fileManager.fileExists(atPath: localURL.path) { continue }
+                            var item = makeAppDataItem(
+                                name: localURL.lastPathComponent,
+                                path: localURL,
+                                type: config.type,
+                                priority: config.priority,
+                                description: config.description,
+                                appName: appName
+                            )
+                            item.status = DataDirStatus.pendingRelink
+                            item.linkedDestination = entry.url.standardizedFileURL
+                            resultsByPath[localKey] = item
+                        }
+                    }
+                }
+            }
+
+            for specialItem in scanSpecialAssociatedDirs(for: app, bundleID: bundleID, appName: appName, externalRootURL: externalRootURL) {
+                resultsByPath[specialItem.id] = specialItem
+            }
+
+            if let bundleID {
+                let candidateMounts = (mountsByBundleID[bundleID] ?? []) + legacyMounts
+                for record in candidateMounts {
+                    let url = record.mountPointURL.standardizedFileURL
+                    guard belongsToHome(url, bundleID: bundleID, recordedBundle: record.bundleIdentifier),
+                          let type = DataDirType(rawValue: record.dataDirType) else { continue }
+                    let itemInspection = cachedInspectItem(at: url, type: type)
+                    var item = resultsByPath[url.path] ?? makeAppDataItem(
+                        name: url.lastPathComponent,
+                        path: url,
+                        type: type,
+                        priority: .critical,
+                        description: "容器内部数据目录",
+                        appName: appName
+                    )
+                    applyInspectionResult(to: &item, inspection: itemInspection, externalRootURL: externalRootURL)
+                    resultsByPath[item.id] = item
+                }
+
+                let candidateLinks = (linksByBundleID[bundleID] ?? []) + legacyLinks
+                for link in candidateLinks {
+                    let source = URL(fileURLWithPath: link.originalPath).standardizedFileURL
+                    guard belongsToHome(source, bundleID: bundleID, recordedBundle: link.bundleIdentifier),
+                          let type = DataDirType(rawValue: link.dataDirType) else { continue }
+                    let destination = URL(fileURLWithPath: link.destinationPath).standardizedFileURL
+                    let itemInspection = cachedInspectItem(at: source, type: type)
+                    var item = resultsByPath[source.path] ?? makeAppDataItem(
+                        name: source.lastPathComponent,
+                        path: source,
+                        type: type,
+                        priority: .critical,
+                        description: "容器内部数据目录",
+                        appName: appName
+                    )
+                    item.hasManagedLinkRecord = true
+                    item.linkedDestination = destination
+                    if itemInspection.linkedDestination?.standardizedFileURL == destination {
+                        applyInspectionResult(to: &item, inspection: (DataDirStatus.linked, destination), externalRootURL: externalRootURL)
+                    } else {
+                        item.status = itemInspection.status
+                    }
+                    resultsByPath[item.id] = item
+                }
+            }
+
+            let roots = deduplicateMeasurementRoots(Array(resultsByPath.values))
+            var appTargets: [AppDataMeasurementTarget] = []
+            appTargets.reserveCapacity(roots.count)
+            for root in roots {
+                guard let measurementURL = root.sizeMeasurementURL else { continue }
+                let key = "\(measurementURL.standardizedFileURL.path)|\(isMountPoint(measurementURL) ? "mount" : "plain")"
+                let isMigrated = DataDirDisplaySizeSummary.isMigratedItem(root)
+                appTargets.append(AppDataMeasurementTarget(item: root, isMigrated: isMigrated, measurementKey: key))
+                if uniqueTargets[key] == nil {
+                    uniqueTargets[key] = root
+                } else if DataDirStatus.mountStatuses.contains(root.status), root.status != DataDirStatus.mounted {
+                    // 优先保留离线/待解锁挂载状态，避免同键被本地占位覆写。
+                    uniqueTargets[key] = root
+                }
+            }
+            targetsByAppID[app.id] = appTargets
+            if appHasReadIssue {
+                readIssueAppIDs.insert(app.id)
+            }
+        }
+
+        let sizeCachePolicy = AppDataSizeCachePolicy(
+            inspection: inspection,
+            pausedMountDirectories: pausedMountDirectories,
+            isMountPoint: isMountPoint
+        )
+
+        return AppDataBatchPlan(
+            targetsByAppID: targetsByAppID,
+            uniqueTargets: uniqueTargets,
+            readIssueAppIDs: readIssueAppIDs,
+            pausedMountDirectories: pausedMountDirectories,
+            sizeCachePolicy: sizeCachePolicy
+        )
+    }
+
+    /// 测量 `AppDataBatchPlan` 中的全部去重目标，并发限 2 路，每 250ms 批量向上层发布渐进结果。
+    static func measureAppDataBatch(
+        plan: AppDataBatchPlan,
+        apps: [AppItem],
+        priorityAppIDs: Set<String>,
+        forceRefresh: Bool,
+        cacheStore: ToolDirectorySizeCacheStore = .appDataDirectories,
+        isMountPoint: @escaping @Sendable (URL) -> Bool = { DiskUtility.isMountPoint($0) },
+        onBatchUpdate: @Sendable ([String: AppDataRowSizeSummary]) async -> Void
+    ) async {
+        guard !Task.isCancelled else { return }
+        let cacheEpoch = cacheStore.currentEpoch()
+        let snapshot = cacheStore.load()
+        var stateByKey: [String: (bytes: Int64, isIncomplete: Bool)] = [:]
+        var pendingKeys: [String] = []
+        var appIDsByKey: [String: [String]] = [:]
+        for (appID, targets) in plan.targetsByAppID {
+            for target in targets {
+                appIDsByKey[target.measurementKey, default: []].append(appID)
+            }
+        }
+
+        let priorityKeys = Set(priorityAppIDs.flatMap { plan.targetsByAppID[$0]?.map(\.measurementKey) ?? [] })
+
+        for (key, item) in plan.uniqueTargets {
+            guard !Task.isCancelled else { return }
+            if DataDirStatus.mountStatuses.contains(item.status), item.status != DataDirStatus.mounted {
+                stateByKey[key] = (0, true)
+                continue
+            }
+            guard let measurementURL = item.sizeMeasurementURL else {
+                stateByKey[key] = (0, false)
+                continue
+            }
+            let includesPausedMount = directoryIncludesPausedMount(at: measurementURL, pausedMountDirectories: plan.pausedMountDirectories)
+            let cacheIdentity = plan.sizeCachePolicy.cacheIdentity(for: item)
+            if !forceRefresh, !includesPausedMount, let cacheIdentity {
+                let sourceKey = item.path.standardizedFileURL.path
+                if let cached = snapshot.entries[sourceKey],
+                   cached.identity == cacheIdentity {
+                    stateByKey[key] = (cached.bytes, false)
+                    continue
+                }
+                let memKey = sizeCacheKey(for: measurementURL.standardizedFileURL.path, isMountPoint: isMountPoint(measurementURL))
+                if let memCached = MemoryDirectorySizeCache.shared.object(forKey: memKey) {
+                    stateByKey[key] = (memCached.int64Value, false)
+                    continue
+                }
+            }
+            pendingKeys.append(key)
+        }
+
+        pendingKeys.sort { lhs, rhs in
+            let lhsPriority = priorityKeys.contains(lhs)
+            let rhsPriority = priorityKeys.contains(rhs)
+            if lhsPriority != rhsPriority { return lhsPriority }
+            return lhs < rhs
+        }
+
+        func buildSummary(for appID: String) -> AppDataRowSizeSummary {
+            let targets = plan.targetsByAppID[appID] ?? []
+            var localBytes: Int64 = 0
+            var migratedBytes: Int64 = 0
+            var hasMigrated = false
+            var isIncomplete = plan.readIssueAppIDs.contains(appID)
+            var isCalculating = false
+            for target in targets {
+                if target.isMigrated { hasMigrated = true }
+                if let measured = stateByKey[target.measurementKey] {
+                    if target.isMigrated {
+                        migratedBytes += max(0, measured.bytes)
+                    } else {
+                        localBytes += max(0, measured.bytes)
+                    }
+                    if measured.isIncomplete { isIncomplete = true }
+                } else {
+                    isCalculating = true
+                }
+            }
+            return AppDataRowSizeSummary(
+                localBytes: localBytes,
+                migratedBytes: migratedBytes,
+                hasMigratedItems: hasMigrated,
+                isIncomplete: isIncomplete,
+                isCalculating: isCalculating
+            )
+        }
+
+        let allAppIDs = apps.filter { !$0.isFolder }.map(\.id)
+        var initialUpdates: [String: AppDataRowSizeSummary] = [:]
+        initialUpdates.reserveCapacity(allAppIDs.count)
+        for appID in allAppIDs {
+            initialUpdates[appID] = buildSummary(for: appID)
+        }
+        await onBatchUpdate(initialUpdates)
+        guard !Task.isCancelled, !pendingKeys.isEmpty else { return }
+
+        var newCacheEntries: [ToolDirectorySizeCacheStore.Entry] = []
+        var dirtyAppIDs: Set<String> = []
+        var lastFlushNanos = DispatchTime.now().uptimeNanoseconds
+        let flushIntervalNanos: UInt64 = 250_000_000
+
+        await withTaskGroup(of: (String, DirectorySizeResult, ToolDirectorySizeCacheStore.Entry?).self) { group in
+            var nextIndex = 0
+            let maxConcurrency = 2
+
+            func enqueueNext() {
+                guard !Task.isCancelled, nextIndex < pendingKeys.count else { return }
+                let key = pendingKeys[nextIndex]
+                nextIndex += 1
+                guard let item = plan.uniqueTargets[key],
+                      let measurementURL = item.sizeMeasurementURL else { return }
+                let paused = plan.pausedMountDirectories
+                let sizeCachePolicy = plan.sizeCachePolicy
+                let preIdentity = sizeCachePolicy.cacheIdentity(for: item)
+                let cacheable = preIdentity != nil
+                let includesPaused = directoryIncludesPausedMount(at: measurementURL, pausedMountDirectories: paused)
+                group.addTask(priority: .utility) {
+                    guard !Task.isCancelled else {
+                        return (key, DirectorySizeResult(), nil)
+                    }
+                    let measured = measureDataDirectorySize(
+                        for: item,
+                        useCache: !forceRefresh && cacheable,
+                        pausedMountDirectories: paused,
+                        allowWriteToCache: cacheable
+                    )
+                    let entry: ToolDirectorySizeCacheStore.Entry?
+                    if !includesPaused,
+                       let preIdentity,
+                       measured.isComplete,
+                       let postIdentity = sizeCachePolicy.cacheIdentity(for: item),
+                       postIdentity == preIdentity {
+                        let sourceKey = item.path.standardizedFileURL.path
+                        entry = .init(
+                            identity: postIdentity,
+                            sourcePath: sourceKey,
+                            targetPath: measurementURL.resolvingSymlinksInPath().standardizedFileURL.path,
+                            bytes: measured.bytes,
+                            measuredAt: Date()
+                        )
+                    } else {
+                        entry = nil
+                    }
+                    return (key, measured, entry)
+                }
+            }
+
+            for _ in 0..<min(maxConcurrency, pendingKeys.count) {
+                enqueueNext()
+            }
+
+            for await (key, measured, entry) in group {
+                if Task.isCancelled {
+                    group.cancelAll()
+                    break
+                }
+                stateByKey[key] = (measured.bytes, !measured.isComplete)
+                if let entry {
+                    newCacheEntries.append(entry)
+                }
+                for appID in appIDsByKey[key] ?? [] {
+                    dirtyAppIDs.insert(appID)
+                }
+                let now = DispatchTime.now().uptimeNanoseconds
+                if !dirtyAppIDs.isEmpty && now - lastFlushNanos >= flushIntervalNanos {
+                    var payload: [String: AppDataRowSizeSummary] = [:]
+                    payload.reserveCapacity(dirtyAppIDs.count)
+                    for appID in dirtyAppIDs {
+                        payload[appID] = buildSummary(for: appID)
+                    }
+                    dirtyAppIDs.removeAll(keepingCapacity: true)
+                    lastFlushNanos = now
+                    await onBatchUpdate(payload)
+                }
+                enqueueNext()
+            }
+        }
+
+        if !newCacheEntries.isEmpty {
+            cacheStore.merge(newCacheEntries, startedAtEpoch: cacheEpoch)
+        }
+        guard !Task.isCancelled else { return }
+        if !dirtyAppIDs.isEmpty {
+            var payload: [String: AppDataRowSizeSummary] = [:]
+            payload.reserveCapacity(dirtyAppIDs.count)
+            for appID in dirtyAppIDs {
+                payload[appID] = buildSummary(for: appID)
+            }
+            await onBatchUpdate(payload)
+        }
+    }
+
+    private func indexOneLevelContainers(
+        in baseURL: URL,
+        trackRootFailure: inout Bool
+    ) -> (exact: [String: URL], lower: [String: URL]) {
+        guard !Task.isCancelled, fileManager.fileExists(atPath: baseURL.path) else { return ([:], [:]) }
+        let items: [URL]
+        do {
+            items = try fileManager.contentsOfDirectory(at: baseURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+        } catch {
+            trackRootFailure = true
+            return ([:], [:])
+        }
+        var exact: [String: URL] = [:]
+        var lower: [String: URL] = [:]
+        for itemURL in items {
+            guard !Task.isCancelled else { break }
+            var metadata = stat()
+            guard lstat(itemURL.path, &metadata) == 0 else { continue }
+            let kind = metadata.st_mode & mode_t(S_IFMT)
+            guard kind == mode_t(S_IFDIR) || kind == mode_t(S_IFLNK) else { continue }
+            let standardized = itemURL.standardizedFileURL
+            let folderName = standardized.lastPathComponent
+            exact[folderName] = standardized
+            let lowerKey = folderName.lowercased()
+            if lower[lowerKey] == nil { lower[lowerKey] = standardized }
+        }
+        return (exact, lower)
+    }
+
+    private func indexTwoLevels(in baseURL: URL, trackRootFailure: inout Bool) -> [IndexedDirectoryEntry] {
+        guard !Task.isCancelled, fileManager.fileExists(atPath: baseURL.path) else { return [] }
+        let firstLevel: [URL]
+        do {
+            firstLevel = try fileManager.contentsOfDirectory(at: baseURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+        } catch {
+            trackRootFailure = true
+            return []
+        }
+
+        var entries: [IndexedDirectoryEntry] = []
+        var seen = Set<String>()
+
+        func record(_ url: URL) -> Bool {
+            var metadata = stat()
+            guard lstat(url.path, &metadata) == 0 else { return false }
+            let kind = metadata.st_mode & mode_t(S_IFMT)
+            guard kind == mode_t(S_IFDIR) || kind == mode_t(S_IFLNK) else { return false }
+            let standardized = url.standardizedFileURL
+            if seen.insert(standardized.path).inserted {
+                let name = standardized.lastPathComponent
+                let compact = compactName(name)
+                entries.append(IndexedDirectoryEntry(
+                    url: standardized,
+                    name: name,
+                    compactName: compact,
+                    lowercasedName: name.lowercased(),
+                    lowercasedCompactName: compact.lowercased()
+                ))
+            }
+            return kind == mode_t(S_IFDIR)
+        }
+
+        for firstURL in firstLevel {
+            guard !Task.isCancelled else { break }
+            guard record(firstURL) else { continue }
+            guard let secondLevel = try? fileManager.contentsOfDirectory(
+                at: firstURL,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ) else { continue }
+            for secondURL in secondLevel {
+                guard !Task.isCancelled else { break }
+                _ = record(secondURL)
+            }
+        }
+        return entries
+    }
+
+    private func matchesIndexedDirectory(_ entry: IndexedDirectoryEntry, profile: AppMatchProfile) -> Bool {
+        for exact in profile.exactMatches {
+            if entry.name.localizedCaseInsensitiveCompare(exact) == .orderedSame {
+                return true
+            }
+            if !entry.compactName.isEmpty && entry.compactName.localizedCaseInsensitiveCompare(exact) == .orderedSame {
+                return true
+            }
+        }
+        for needle in profile.containsMatches
+            where entry.name.localizedCaseInsensitiveContains(needle)
+                || entry.compactName.localizedCaseInsensitiveContains(needle) {
+            return true
+        }
+        for prefix in profile.shortPrefixMatches {
+            let lowered = prefix.lowercased()
+            if entry.lowercasedName.hasPrefix(lowered) || entry.lowercasedCompactName.hasPrefix(lowered) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private func deduplicateMeasurementRoots(_ items: [DataDirItem]) -> [DataDirItem] {
+        let candidates = items.filter { !$0.isUserDirectoryLink }
+        var seen = Set<String>()
+        let unique = candidates.filter { seen.insert($0.id).inserted }
+        return unique.filter { item in
+            !unique.contains { parent in
+                guard parent.id != item.id,
+                      item.id.hasPrefix(parent.id == "/" ? "/" : parent.id + "/") else { return false }
+                return item.linkedDestination == nil && !DataDirDisplaySizeSummary.isMigratedItem(item)
+                    && parent.linkedDestination == nil && !DataDirStatus.mountStatuses.contains(parent.status)
+                    && parent.weChatSplitMembers.isEmpty
+            }
+        }
+    }
+
     /// 扫描指定应用的关联数据目录
     ///
     /// 默认会在 `~/Library/` 标准子目录中查找，同时为少数特殊安装方式补充额外目录。
@@ -840,8 +1616,14 @@ actor DataDirScanner {
             ],
             level: "TRACE"
         )
+        let sizeCachePolicy = AppDataSizeCachePolicy(
+            inspection: recoveryInspection,
+            pausedMountDirectories: pausedMountDirectories,
+            isMountPoint: isMountPoint
+        )
         return DataDirScanResult(items: sortedResults, readIssues: readIssues, identityIssue: identityIssue,
-                                 pausedMountDirectories: pausedMountDirectories)
+                                 pausedMountDirectories: pausedMountDirectories,
+                                 sizeCachePolicy: sizeCachePolicy)
     }
 
     /// 异步计算单个目录大小

@@ -750,6 +750,11 @@ actor DataDirMover {
         try store.endUnswitchedTransfer(transfer) {
             _ = try preparationSource(transfer, verifyContents: true, checkLedger: false)
         }
+        invalidateSizeCache(for: root)
+        invalidateSizeCache(for: URL(fileURLWithPath: transfer.originalPath))
+        if let stagingPath = transfer.stagingPath {
+            invalidateSizeCache(for: URL(fileURLWithPath: stagingPath))
+        }
     }
 
     private func publishVerifiedPreparation(_ transfer: DataTransferRecord, baseline: TreeCopySnapshot) throws {
@@ -1434,6 +1439,10 @@ actor DataDirMover {
         guard transfer.needsAutomaticCompletion else { return }
         if transfer.retainedCopyRemovedAt != nil {
             try store.finishTransfer(operationID: operationID, deletionConfirmed: true)
+            invalidateSizeCache(for: URL(fileURLWithPath: transfer.originalPath))
+            if let backupPath = transfer.backupPath {
+                invalidateSizeCache(for: URL(fileURLWithPath: backupPath))
+            }
             return
         }
         guard transfer.mode == .symlink, transfer.isDataSwitchComplete,
@@ -1520,6 +1529,7 @@ actor DataDirMover {
             stage = "finish_cleanup_record"
             try store.finishTransfer(operationID: operationID, deletionConfirmed: true)
             invalidateSizeCache(for: retained)
+            invalidateSizeCache(for: URL(fileURLWithPath: transfer.originalPath))
         } catch {
             // The switch is still complete. The immutable manifest and cleanup
             // checkpoint make another attempt safe without blocking local data.

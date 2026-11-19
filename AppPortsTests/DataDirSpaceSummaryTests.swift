@@ -121,6 +121,93 @@ final class DataDirSpaceSummaryTests: XCTestCase {
         XCTAssertEqual(DataDirTree.rows(in: tree).map(\.id), [parent.id, child.id])
     }
 
+    func testDisplaySummarySplitsLocalAndMigratedBytesWithParentChildDeduplication() {
+        let containerRoot = item("/Library/Containers/com.example.App", bytes: 400, status: DataDirStatus.local)
+        let localChild = item("/Library/Containers/com.example.App/Data", bytes: 250, status: DataDirStatus.local)
+        let mountedChild = item("/Library/Containers/com.example.App/Data/Media", bytes: 1_600, status: DataDirStatus.mounted)
+        let linkedSupport = item("/Library/Application Support/Example", bytes: 900, status: DataDirStatus.linked)
+        let pendingRelink = item("/Library/Caches/Example", bytes: 300, status: DataDirStatus.pendingRelink)
+        let restoredLocal = item("/Library/Application Support/Restored", bytes: 150, status: DataDirStatus.local)
+
+        let summary = DataDirDisplaySizeSummary(items: [
+            containerRoot, localChild, mountedChild, linkedSupport, pendingRelink, restoredLocal
+        ])
+
+        XCTAssertTrue(summary.hasMigratedItems)
+        XCTAssertEqual(summary.localBytes, 550)
+        XCTAssertEqual(summary.migratedBytes, 2_800)
+        XCTAssertEqual(summary.bytes, 3_350)
+        XCTAssertFalse(summary.isCalculating)
+        XCTAssertFalse(summary.isIncomplete)
+    }
+
+    func testAppDataAppListSorterPinsMigratedAppsAndSortsEachGroupBySize() {
+        func makeApp(_ name: String) -> AppItem {
+            AppItem(name: name, path: URL(fileURLWithPath: "/Applications/\(name)"), status: AppStatus.local)
+        }
+
+        let migratedSmall = makeApp("MigratedSmall.app")
+        let migratedLarge = makeApp("MigratedLarge.app")
+        let migratedZero = makeApp("MigratedZero.app")
+        let localLarge = makeApp("LocalLarge.app")
+        let localPending = makeApp("LocalPending.app")
+        let localZero = makeApp("LocalZero.app")
+
+        let apps = [localZero, migratedSmall, localPending, migratedZero, localLarge, migratedLarge]
+        let migratedIDs: Set<String> = [migratedSmall.id, migratedLarge.id, migratedZero.id]
+        let summaries: [String: AppDataRowSizeSummary] = [
+            migratedSmall.id: AppDataRowSizeSummary(localBytes: 100, migratedBytes: 400, hasMigratedItems: true, isIncomplete: false, isCalculating: false),
+            migratedLarge.id: AppDataRowSizeSummary(localBytes: 200, migratedBytes: 2_000, hasMigratedItems: true, isIncomplete: false, isCalculating: false),
+            migratedZero.id: AppDataRowSizeSummary(localBytes: 0, migratedBytes: 0, hasMigratedItems: true, isIncomplete: false, isCalculating: false),
+            localLarge.id: AppDataRowSizeSummary(localBytes: 900, migratedBytes: 0, hasMigratedItems: false, isIncomplete: false, isCalculating: false),
+            localZero.id: AppDataRowSizeSummary(localBytes: 0, migratedBytes: 0, hasMigratedItems: false, isIncomplete: false, isCalculating: false)
+        ]
+
+        let bySize = AppDataAppListSorter.ordered(apps, mode: .size, migratedAppDataIDs: migratedIDs, summaries: summaries)
+        XCTAssertEqual(bySize.map(\.name), [
+            "MigratedLarge.app", "MigratedSmall.app", "MigratedZero.app",
+            "LocalLarge.app", "LocalPending.app", "LocalZero.app"
+        ])
+
+        let byDefault = AppDataAppListSorter.ordered(apps, mode: .defaultOrder, migratedAppDataIDs: migratedIDs, summaries: summaries)
+        XCTAssertEqual(byDefault.map(\.name), [
+            "MigratedSmall.app", "MigratedZero.app", "MigratedLarge.app",
+            "LocalZero.app", "LocalPending.app", "LocalLarge.app"
+        ])
+
+        let byAlpha = AppDataAppListSorter.ordered(apps, mode: .alphabetical, migratedAppDataIDs: migratedIDs, summaries: summaries)
+        XCTAssertEqual(byAlpha.map(\.name), [
+            "MigratedLarge.app", "MigratedSmall.app", "MigratedZero.app",
+            "LocalLarge.app", "LocalPending.app", "LocalZero.app"
+        ])
+    }
+
+    func testDisplaySummaryDoesNotDoubleCountLocalMembersOfPartialWeChatSplit() {
+        let containerRoot = item("/Library/Containers/com.tencent.xinWeChat", bytes: 900, status: DataDirStatus.local)
+        let mountedMember = item(
+            "/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_1/msg",
+            bytes: 1_000,
+            status: DataDirStatus.mounted
+        )
+        let localMember = item(
+            "/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_1/business",
+            bytes: 400,
+            status: DataDirStatus.local
+        )
+        var splitRow = item(
+            "/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_1",
+            bytes: 1_400,
+            status: DataDirStatus.pendingCompletion
+        )
+        splitRow.weChatSplitMembers = [mountedMember, localMember]
+
+        let summary = DataDirDisplaySizeSummary(items: [containerRoot, splitRow])
+        XCTAssertTrue(summary.hasMigratedItems)
+        XCTAssertEqual(summary.localBytes, 900)
+        XCTAssertEqual(summary.migratedBytes, 1_000)
+        XCTAssertEqual(summary.bytes, 1_900)
+    }
+
     private func item(_ path: String, bytes: Int64, status: String = DataDirStatus.local, migratable: Bool = true) -> DataDirItem {
         var item = DataDirItem(
             name: URL(fileURLWithPath: path).lastPathComponent,

@@ -60,6 +60,7 @@ struct DataDirScanResult: Sendable {
     let readIssues: [DataDirReadIssue]
     var identityIssue: AppIdentityIssue? = nil
     var pausedMountDirectories: Set<URL> = []
+    var sizeCachePolicy: AppDataSizeCachePolicy = .empty
 }
 
 struct DirectorySizeResult: Sendable {

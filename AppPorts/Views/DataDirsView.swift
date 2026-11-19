@@ -91,6 +91,10 @@ struct DataDirsView: View {
     @State private var selectedStatusFilters: Set<String> = []
     @State private var selectedTypeFilters: Set<DataDirType> = []
     @State private var selectedAppDataSortMode: AppDataSortMode = .defaultOrder
+    @AppStorage("appDataAppListSortMode") private var appListSortModeRaw = AppDataAppListSortMode.size.rawValue
+    private var appListSortMode: AppDataAppListSortMode {
+        AppDataAppListSortMode(rawValue: appListSortModeRaw) ?? .size
+    }
 
     // 确认弹窗
     @State private var confirmRequest: WarningSheetRequest?
@@ -122,6 +126,13 @@ struct DataDirsView: View {
     @State private var displayedAppDataContext: AppDataScanCache.Context?
     @State private var recordRefreshTask: Task<Void, Never>?
     @State private var recordRefreshToken = UUID()
+    @State private var appDataSizeSummaries: [String: AppDataRowSizeSummary] = [:]
+    @State private var isBatchSizingApps = false
+    @State private var appListSizeTask: Task<Void, Never>?
+    @State private var appListSizeScanToken = UUID()
+    @State private var lastBatchSizedAppIDs: Set<String> = []
+    @State private var appListSizeNeedsResume = false
+    @State private var deferredTabReloadAfterBusy = false
 
     // 搜索
     @State private var appSearchText = ""
@@ -244,18 +255,50 @@ struct DataDirsView: View {
             appDataScanCache.removeAll()
             reloadCurrentTab()
         }
-        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { _ in
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { notification in
+            if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
+                invalidateSizeCache(for: volumeURL)
+            }
             appDataScanCache.removeAll()
-            if isActive { reloadCurrentTab() }
+            if operationState.isBusy {
+                deferredTabReloadAfterBusy = true
+            } else if isActive {
+                reloadCurrentTab()
+            }
         }
-        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { _ in
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { notification in
+            if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
+                invalidateSizeCache(for: volumeURL)
+            }
             appDataScanCache.removeAll()
-            if isActive { reloadCurrentTab() }
+            if operationState.isBusy {
+                deferredTabReloadAfterBusy = true
+            } else if isActive {
+                reloadCurrentTab()
+            }
         }
         .onChange(of: refreshTrigger) { _ in
             appDataScanCache.removeAll()
             clearSizeCache()
+            ToolDirectorySizeCacheStore.appDataDirectories.removeAll()
             reloadCurrentTab(forceToolSizeRefresh: true)
+        }
+        .onChange(of: operationState.isBusy) { busy in
+            if busy {
+                if isBatchSizingApps {
+                    appListSizeNeedsResume = true
+                }
+                cancelAppListSizeScan()
+            } else if deferredTabReloadAfterBusy {
+                deferredTabReloadAfterBusy = false
+                appListSizeNeedsResume = false
+                if isActive {
+                    reloadCurrentTab()
+                }
+            } else if appListSizeNeedsResume, isActive, selectedTab == .appDirs {
+                appListSizeNeedsResume = false
+                scanAppListSizes(forceSizeRefresh: false)
+            }
         }
         .sheet(item: $weChatMigrationItem) { item in
             WeChatAccountMigrationSheet(item: item, containerIdentifier: weChatContainerIdentifier) { mode, sizing in
@@ -318,6 +361,9 @@ struct DataDirsView: View {
         .warningSheet($mountMigrationRequest)
         .sheet(isPresented: $showReadinessCheck, onDismiss: {
             if appDataPermissionIncomplete, let app = selectedApp { scanLibraryDirs(for: app) }
+            if isActive, selectedTab == .appDirs, (appDataPermissionIncomplete || appDataSizeSummaries.isEmpty) {
+                scanAppListSizes(forceSizeRefresh: false)
+            }
         }) {
             ReadinessCheckSheet()
         }
@@ -403,18 +449,30 @@ struct DataDirsView: View {
                     let filteredApps = localApps.filter { app in
                         !app.isFolder && (appSearchText.isEmpty || app.displayName.localizedCaseInsensitiveContains(appSearchText) || app.name.localizedCaseInsensitiveContains(appSearchText))
                     }
-                    let orderedApps = filteredApps.filter { migratedAppDataIDs.contains($0.id) }
-                        + filteredApps.filter { !migratedAppDataIDs.contains($0.id) }
+                    let orderedApps = AppDataAppListSorter.ordered(
+                        filteredApps,
+                        mode: appListSortMode,
+                        migratedAppDataIDs: migratedAppDataIDs,
+                        summaries: appDataSizeSummaries
+                    )
                     ScrollView {
                         LazyVStack(spacing: 4) {
                             ForEach(orderedApps, id: \.id) { app in
+                                let rowSummary = appDataSizeSummaries[app.id]
                                 Button {
                                     selectedApp = app
                                 } label: {
-                                    AppListRow(app: app, isSelected: selectedApp?.id == app.id, hasMigratedData: migratedAppDataIDs.contains(app.id))
+                                    AppListRow(
+                                        app: app,
+                                        isSelected: selectedApp?.id == app.id,
+                                        hasMigratedData: migratedAppDataIDs.contains(app.id),
+                                        sizeSummary: rowSummary,
+                                        isSizing: isBatchSizingApps
+                                    )
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(app.displayName)
+                                .accessibilityValue(AppListRow.accessibilitySizeDescription(for: rowSummary, hasMigratedData: migratedAppDataIDs.contains(app.id)))
                                 .accessibilityAddTraits(selectedApp?.id == app.id ? .isSelected : [])
                             }
                         }
@@ -441,6 +499,10 @@ struct DataDirsView: View {
                 if let selected = selectedApp,
                    let refreshed = newApps.first(where: { $0.path == selected.path }) {
                     selectedApp = refreshed
+                }
+                let currentIDs = Set(newApps.filter { !$0.isFolder }.map(\.id))
+                if currentIDs != lastBatchSizedAppIDs, isActive, selectedTab == .appDirs {
+                    scanAppListSizes(forceSizeRefresh: false)
                 }
             }
 
@@ -554,12 +616,12 @@ struct DataDirsView: View {
     // MARK: - 辅助子视图
 
     private var appSelectionHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 10) {
+        HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 12))
                     .foregroundColor(.primary.opacity(0.6))
-                    .frame(width: 32)
+                    .frame(width: 20)
                 TextField(
                     "搜索应用...".localized,
                     text: $appSearchText,
@@ -582,6 +644,42 @@ struct DataDirsView: View {
             .frame(height: 30)
             .background(Color.primary.opacity(0.045))
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            Menu {
+                ForEach(AppDataAppListSortMode.allCases, id: \.self) { mode in
+                    Button(action: { appListSortModeRaw = mode.rawValue }) {
+                        HStack {
+                            Text(mode.localizedTitle)
+                            Spacer()
+                            if appListSortMode == mode {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    if isBatchSizingApps {
+                        ProgressView()
+                            .controlSize(.mini)
+                    } else {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    Text(appListSortMode.localizedTitle)
+                        .font(.system(size: 11, weight: .medium))
+                        .lineLimit(1)
+                }
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 8)
+                .frame(height: 30)
+                .background(Color.primary.opacity(0.045))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help(String(format: "排序：%@".localized, appListSortMode.localizedTitle))
+            .accessibilityLabel(String(format: "排序：%@".localized, appListSortMode.localizedTitle))
         }
         .padding(.horizontal, 12)
         .padding(.top, 12)
@@ -1226,6 +1324,12 @@ struct DataDirsView: View {
         }
     }
 
+    private func cancelAppListSizeScan() {
+        appListSizeTask?.cancel()
+        appListSizeScanToken = UUID()
+        isBatchSizingApps = false
+    }
+
     private func suspendDirectoryScans() {
         recordRefreshTask?.cancel()
         recordRefreshToken = UUID()
@@ -1234,6 +1338,8 @@ struct DataDirsView: View {
         dotFolderScanToken = UUID()
         libraryScanToken = UUID()
         isScanning = false
+        appListSizeNeedsResume = false
+        cancelAppListSizeScan()
     }
 
     private func clearAppDataSelection() {
@@ -1266,6 +1372,7 @@ struct DataDirsView: View {
             level: "TRACE"
         )
         if selectedTab == .toolDirs {
+            cancelAppListSizeScan()
             libraryScanToken = UUID()
             scanDotFolders(forceSizeRefresh: forceToolSizeRefresh)
         } else {
@@ -1274,6 +1381,65 @@ struct DataDirsView: View {
                 scanLibraryDirs(for: app, useCachedResult: useCachedAppData, forceSizeRefresh: forceToolSizeRefresh)
             } else {
                 clearAppDataSelection()
+            }
+            scanAppListSizes(forceSizeRefresh: forceToolSizeRefresh)
+        }
+    }
+
+    private func scanAppListSizes(forceSizeRefresh: Bool = false) {
+        guard isActive, selectedTab == .appDirs else { return }
+        if operationState.isBusy {
+            appListSizeNeedsResume = true
+            cancelAppListSizeScan()
+            return
+        }
+        appListSizeNeedsResume = false
+        appListSizeTask?.cancel()
+        let token = UUID()
+        appListSizeScanToken = token
+        let apps = localApps.filter { !$0.isFolder }
+        lastBatchSizedAppIDs = Set(apps.map(\.id))
+        guard !apps.isEmpty else {
+            appDataSizeSummaries = [:]
+            isBatchSizingApps = false
+            return
+        }
+        isBatchSizingApps = true
+        let selectedExternalRoot = externalDriveURL
+        let priorityIDs = Set([selectedApp?.id].compactMap { $0 }).union(migratedAppDataIDs)
+        appListSizeTask = Task.detached(priority: .utility) {
+            let permission = LaunchReadinessChecker.fullDiskAccessState()
+            guard !Task.isCancelled else { return }
+            guard permission == .granted else {
+                await MainActor.run {
+                    guard self.appListSizeScanToken == token else { return }
+                    self.appDataSizeSummaries = [:]
+                    self.isBatchSizingApps = false
+                }
+                return
+            }
+            let scanner = DataDirScanner()
+            let plan = await scanner.buildAppDataBatchPlan(for: apps, externalRootURL: selectedExternalRoot)
+            guard !Task.isCancelled else { return }
+            await DataDirScanner.measureAppDataBatch(
+                plan: plan,
+                apps: apps,
+                priorityAppIDs: priorityIDs,
+                forceRefresh: forceSizeRefresh
+            ) { updates in
+                await MainActor.run {
+                    guard self.appListSizeScanToken == token else { return }
+                    for (appID, summary) in updates {
+                        self.appDataSizeSummaries[appID] = summary
+                    }
+                }
+            }
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard self.appListSizeScanToken == token else { return }
+                let validIDs = Set(apps.map(\.id))
+                self.appDataSizeSummaries = self.appDataSizeSummaries.filter { validIDs.contains($0.key) }
+                self.isBatchSizingApps = false
             }
         }
     }
@@ -1390,6 +1556,14 @@ struct DataDirsView: View {
         appDataPermissionIncomplete = false
     }
 
+    private func syncAppListSummary(from snapshot: AppDataScanCache.Snapshot) {
+        let displaySummary = DataDirDisplaySizeSummary(
+            items: snapshot.items,
+            hasReadIssues: !snapshot.readIssues.isEmpty || snapshot.identityIssue != nil
+        )
+        appDataSizeSummaries[snapshot.context.app.id] = AppDataRowSizeSummary(displaySummary: displaySummary)
+    }
+
     private func scanLibraryDirs(for app: AppItem, useCachedResult: Bool = true,
                                  forceSizeRefresh: Bool = false,
                                  completion: (([DataDirItem]) -> Void)? = nil) {
@@ -1418,6 +1592,8 @@ struct DataDirsView: View {
                 await MainActor.run {
                     guard self.libraryScanToken == scanToken else { return }
                     self.appDataScanCache.removeAll()
+                    self.appDataSizeSummaries = [:]
+                    self.cancelAppListSizeScan()
                     self.displayedAppDataContext = nil
                     self.libraryItems = []
                     self.libraryReadIssues = []
@@ -1436,6 +1612,7 @@ struct DataDirsView: View {
                 await MainActor.run {
                     guard self.libraryScanToken == scanToken else { return }
                     self.applyAppDataSnapshot(cached)
+                    self.syncAppListSummary(from: cached)
                     self.isScanning = false
                     AppLogger.shared.logContext("应用数据扫描使用缓存", details: [("app_name", app.displayName)])
                     completion?(cached.items)
@@ -1464,40 +1641,120 @@ struct DataDirsView: View {
             var snapshot = AppDataScanCache.Snapshot(context: context, items: items,
                 readIssues: result.readIssues, identityIssue: result.identityIssue,
                 isSandboxed: isSandboxed, isWeChat: isWeChat, containerIdentifier: containerIdentifier)
+            let pausedMountDirectories = result.pausedMountDirectories
+            let sizeCachePolicy = result.sizeCachePolicy
+            let cacheEpoch = ToolDirectorySizeCacheStore.appDataDirectories.currentEpoch()
+            let persistentSnapshot = ToolDirectorySizeCacheStore.appDataDirectories.load()
+            var pendingIndices: [Int] = []
+            for i in items.indices {
+                if !forceSizeRefresh, items[i].weChatSplitMembers.isEmpty,
+                   let measurementURL = items[i].sizeMeasurementURL,
+                   !directoryIncludesPausedMount(at: measurementURL, pausedMountDirectories: pausedMountDirectories),
+                   let cacheIdentity = sizeCachePolicy.cacheIdentity(for: items[i]),
+                   let cachedEntry = persistentSnapshot.entries[items[i].path.standardizedFileURL.path],
+                   cachedEntry.identity == cacheIdentity {
+                    snapshot.items[i].applySize(DirectorySizeResult(bytes: cachedEntry.bytes))
+                } else {
+                    pendingIndices.append(i)
+                }
+            }
             let discoveredSnapshot = snapshot
             await MainActor.run {
                 guard self.libraryScanToken == scanToken else { return }
                 self.applyAppDataSnapshot(discoveredSnapshot)
             }
-            let pausedMountDirectories = result.pausedMountDirectories
             // Ordinary visits can reuse measured sizes; explicit refresh/migration cannot.
-            let sizedItems = await withTaskGroup(of: (Int, DirectorySizeResult).self) { group in
-                var results: [(Int, DirectorySizeResult)] = []
-                var iterator = items.indices.makeIterator()
-                for _ in 0..<min(4, items.count) {
+            let sizedItems = await withTaskGroup(of: (Int, DirectorySizeResult, [DirectorySizeResult], ToolDirectorySizeCacheStore.Entry?).self) { group in
+                var results: [(Int, DirectorySizeResult, [DirectorySizeResult], ToolDirectorySizeCacheStore.Entry?)] = []
+                var iterator = pendingIndices.makeIterator()
+
+                func enqueue(_ i: Int) {
+                    let targetItem = items[i]
+                    group.addTask {
+                        if !targetItem.weChatSplitMembers.isEmpty {
+                            var combined = DirectorySizeResult()
+                            var memberResults: [DirectorySizeResult] = []
+                            memberResults.reserveCapacity(targetItem.weChatSplitMembers.count)
+                            for member in targetItem.weChatSplitMembers {
+                                let cacheable = sizeCachePolicy.isCacheable(item: member)
+                                let measuredMember = measureDataDirectorySize(
+                                    for: member,
+                                    useCache: !forceSizeRefresh && cacheable,
+                                    pausedMountDirectories: pausedMountDirectories,
+                                    allowWriteToCache: cacheable
+                                )
+                                combined.bytes += measuredMember.bytes
+                                combined.readIssues += measuredMember.readIssues
+                                memberResults.append(measuredMember)
+                            }
+                            return (i, combined, memberResults, nil)
+                        }
+
+                        let preIdentity = sizeCachePolicy.cacheIdentity(for: targetItem)
+                        let cacheable = preIdentity != nil
+                        let measured = measureDataDirectorySize(
+                            for: targetItem,
+                            useCache: !forceSizeRefresh && cacheable,
+                            pausedMountDirectories: pausedMountDirectories,
+                            allowWriteToCache: cacheable
+                        )
+                        let entry: ToolDirectorySizeCacheStore.Entry?
+                        if let preIdentity,
+                           let measurementURL = targetItem.sizeMeasurementURL,
+                           !directoryIncludesPausedMount(at: measurementURL, pausedMountDirectories: pausedMountDirectories),
+                           measured.isComplete,
+                           let postIdentity = sizeCachePolicy.cacheIdentity(for: targetItem),
+                           postIdentity == preIdentity {
+                            let sourceKey = targetItem.path.standardizedFileURL.path
+                            entry = .init(
+                                identity: postIdentity,
+                                sourcePath: sourceKey,
+                                targetPath: measurementURL.resolvingSymlinksInPath().standardizedFileURL.path,
+                                bytes: measured.bytes,
+                                measuredAt: Date()
+                            )
+                        } else {
+                            entry = nil
+                        }
+                        return (i, measured, [], entry)
+                    }
+                }
+
+                for _ in 0..<min(4, pendingIndices.count) {
                     guard !Task.isCancelled, let i = iterator.next() else { break }
-                    group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh,
-                            pausedMountDirectories: pausedMountDirectories)) }
+                    enqueue(i)
                 }
                 for await result in group {
                     results.append(result)
                     if !Task.isCancelled, let i = iterator.next() {
-                        group.addTask { (i, measureDataDirectorySize(for: items[i], useCache: !forceSizeRefresh,
-                            pausedMountDirectories: pausedMountDirectories)) }
+                        enqueue(i)
                     }
                 }
                 return results
             }
             guard !Task.isCancelled else { return }
-            for (i, measured) in sizedItems {
+            var newCacheEntries: [ToolDirectorySizeCacheStore.Entry] = []
+            for (i, measured, memberResults, entry) in sizedItems {
                 snapshot.items[i].applySize(measured)
+                if !memberResults.isEmpty && snapshot.items[i].weChatSplitMembers.count == memberResults.count {
+                    for memberIndex in memberResults.indices {
+                        snapshot.items[i].weChatSplitMembers[memberIndex].applySize(memberResults[memberIndex])
+                    }
+                }
                 snapshot.readIssues.append(contentsOf: measured.readIssues)
+                if let entry {
+                    newCacheEntries.append(entry)
+                }
+            }
+            if !newCacheEntries.isEmpty {
+                ToolDirectorySizeCacheStore.appDataDirectories.merge(newCacheEntries, startedAtEpoch: cacheEpoch)
             }
             let completedSnapshot = snapshot
             await MainActor.run {
                 guard self.libraryScanToken == scanToken,
                       self.operationState.recordsRevision == context.recordsRevision else { return }
                 self.applyAppDataSnapshot(completedSnapshot)
+                self.syncAppListSummary(from: completedSnapshot)
                 self.appDataScanCache.store(completedSnapshot)
                 self.isScanning = false
                 AppLogger.shared.logContext("应用数据目录扫描及大小统计完成",
@@ -2380,44 +2637,116 @@ struct DataDirsView: View {
 
 // MARK: - 应用选择列表行
 
-/// 左侧应用列表行视图（带 Hover 和选中态）
+/// 左侧应用列表行视图（带 Hover、选中态及应用数据汇总大小）
 private struct AppListRow: View {
     let app: AppItem
     let isSelected: Bool
     let hasMigratedData: Bool
+    let sizeSummary: AppDataRowSizeSummary?
+    let isSizing: Bool
 
     @State private var isHovered = false
 
+    private var showsMigratedBreakdown: Bool {
+        hasMigratedData || (sizeSummary?.hasMigratedItems == true)
+    }
+
+    private var totalSizeText: String? {
+        guard let sizeSummary else {
+            return isSizing ? "计算中...".localized : nil
+        }
+        if sizeSummary.isCalculating && sizeSummary.totalBytes == 0 {
+            return "计算中...".localized
+        }
+        return LocalizedByteCountFormatter.string(fromByteCount: sizeSummary.totalBytes)
+    }
+
+    private var migratedBreakdown: (migrated: String, local: String)? {
+        guard showsMigratedBreakdown, sizeSummary != nil || isSizing else { return nil }
+        return Self.breakdownLabels(for: sizeSummary)
+    }
+
+    private static func breakdownLabels(for summary: AppDataRowSizeSummary?) -> (migrated: String, local: String) {
+        func sizeText(_ bytes: Int64?) -> String {
+            guard let bytes, bytes > 0 || summary?.isCalculating == false else {
+                return "计算中...".localized
+            }
+            return LocalizedByteCountFormatter.string(fromByteCount: bytes)
+        }
+        return (
+            "已迁移".localized + " " + sizeText(summary?.migratedBytes),
+            "本地".localized + " " + sizeText(summary?.localBytes)
+        )
+    }
+
+    static func accessibilitySizeDescription(for sizeSummary: AppDataRowSizeSummary?, hasMigratedData: Bool) -> String {
+        guard let sizeSummary else { return "" }
+        var text: String
+        if hasMigratedData || sizeSummary.hasMigratedItems {
+            let labels = breakdownLabels(for: sizeSummary)
+            text = labels.migrated + " · " + labels.local
+        } else if sizeSummary.isCalculating && sizeSummary.totalBytes == 0 {
+            text = "计算中...".localized
+        } else {
+            text = LocalizedByteCountFormatter.string(fromByteCount: sizeSummary.totalBytes)
+        }
+        if sizeSummary.isIncomplete {
+            text += "（统计不完整）".localized
+        } else if sizeSummary.isCalculating && sizeSummary.totalBytes > 0 {
+            text += "（统计中）".localized
+        }
+        return text
+    }
+
     var body: some View {
-        HStack(spacing: 10) {
+        let sizeDescription = Self.accessibilitySizeDescription(for: sizeSummary, hasMigratedData: hasMigratedData)
+
+        HStack(spacing: 8) {
             AppIconView(url: app.displayURL, size: 32)
 
-            Text(app.displayName)
-                .font(.system(size: 13, weight: isSelected ? .medium : .regular))
-                .foregroundColor(.primary)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(app.displayName)
+                        .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
 
-            // 已重签名标记
-            if app.isResigned {
-                Image(systemName: "seal.fill")
-                    .font(.system(size: 9))
-                    .foregroundColor(.teal)
-                    .help("此应用已被 Ad-hoc 重签名".localized)
-            }
+                    // 已重签名标记
+                    if app.isResigned {
+                        Image(systemName: "seal.fill")
+                            .font(.system(size: 9))
+                            .foregroundColor(.teal)
+                            .help("此应用已被 Ad-hoc 重签名".localized)
+                    }
 
-            Spacer(minLength: 4)
-            if hasMigratedData {
-                Text("已迁移".localized)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.purple)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 3)
-                    .background(Color.purple.opacity(0.10), in: RoundedRectangle(cornerRadius: 4))
-                    .fixedSize()
-                    .help("此应用已有数据目录迁移到外置盘".localized)
+                    Spacer(minLength: 4)
+
+                    if let totalSizeText {
+                        HStack(spacing: 3) {
+                            if sizeSummary?.isIncomplete == true {
+                                Image(systemName: "exclamationmark.circle")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.orange)
+                            }
+                            Text(totalSizeText)
+                                .font(.system(size: 11, weight: .medium))
+                                .monospacedDigit()
+                                .foregroundColor(sizeSummary?.isIncomplete == true ? .orange : .secondary)
+                                .lineLimit(1)
+                        }
+                        .fixedSize()
+                    }
+                }
+
+                if let migratedBreakdown {
+                    breakdownView(migrated: migratedBreakdown.migrated, local: migratedBreakdown.local)
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                        .monospacedDigit()
+                }
             }
         }
-        .frame(height: 32)
         .padding(.vertical, 7)
         .padding(.horizontal, 10)
         .background(
@@ -2427,6 +2756,25 @@ private struct AppListRow: View {
                       : (isHovered ? Color.primary.opacity(0.04) : .clear))
         )
         .contentShape(Rectangle())
+        .help(sizeDescription.isEmpty ? app.displayName : sizeDescription)
         .onHover { isHovered = $0 }
+    }
+
+    @ViewBuilder
+    private func breakdownView(migrated: String, local: String) -> some View {
+        let inlineText = Text(verbatim: migrated + " · " + local)
+        if #available(macOS 13.0, *) {
+            ViewThatFits(in: .horizontal) {
+                inlineText.fixedSize()
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(verbatim: migrated)
+                    Text(verbatim: local)
+                }
+                .lineLimit(1)
+            }
+        } else {
+            inlineText.lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
