@@ -16,8 +16,8 @@ env:
   DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
 
 jobs:
-  post-merge-validation:
-    name: Post-merge Validation
+  tests:
+    name: Post-merge Tests
     runs-on: macos-latest
     timeout-minutes: 45
 
@@ -60,9 +60,58 @@ jobs:
         continue-on-error: true
         run: bash .github/scripts/run-xcode-check.sh localization
 
+      - name: Publish Validation Summary
+        if: ${{ always() && !cancelled() }}
+        run: |
+          if [[ ! -f .github/scripts/summarize-checks.sh ]]; then
+            printf 'Check summary unavailable: checkout did not provide the summary script (checkout: %s).\n' \
+              '${{ steps.checkout.outcome }}' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          bash .github/scripts/summarize-checks.sh \
+            'Repository checkout' '${{ steps.checkout.outcome }}' \
+            'Build environment' '${{ steps.environment.outcome }}' \
+            'Prepare test bundle' '${{ steps.prepare_tests.outcome }}' \
+            'Regression tests' '${{ steps.regression_tests.outcome }}' \
+            'Process timing tests' '${{ steps.process_tests.outcome }}' \
+            'Localization audit (advisory)' '${{ steps.localization_audit.outcome }}'
+
+      - name: Upload Validation Diagnostics
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Post-Merge-Diagnostics
+          path: ${{ runner.temp }}/appports-ci-results/
+          if-no-files-found: ignore
+          retention-days: 5
+
+  release:
+    name: Post-merge Release Build
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Repository
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare CI Environment
+        id: environment
+        run: |
+          mkdir -p "$RUNNER_TEMP/appports-ci-results"
+          printf 'CI_DERIVED_DATA_PATH=%s\nCI_RESULTS_DIR=%s\n' \
+            "$RUNNER_TEMP/appports-derived-data" \
+            "$RUNNER_TEMP/appports-ci-results" >> "$GITHUB_ENV"
+          {
+            sw_vers
+            xcodebuild -version
+            uname -m
+          } 2>&1 | tee "$RUNNER_TEMP/appports-ci-results/environment.log"
+
       - name: Build App
         id: release_build
-        if: ${{ !cancelled() && steps.prepare_tests.outcome == 'success' && steps.regression_tests.outcome == 'success' && steps.process_tests.outcome == 'success' }}
         run: bash .github/scripts/run-xcode-check.sh release
 
       - name: Validate and Zip Application
@@ -86,15 +135,15 @@ jobs:
             /usr/bin/shasum -a 256 "$archive_path"
           } 2>&1 | tee "$CI_RESULTS_DIR/package.log"
 
-      - name: Upload Application
-        id: upload_app
+      - name: Upload Candidate ZIP
+        id: upload_candidate
         uses: actions/upload-artifact@v4
         with:
-          name: AppPorts-Unsigned
+          name: AppPorts-Unsigned-Candidate
           path: ${{ runner.temp }}/AppPorts.zip
           if-no-files-found: error
           compression-level: 0
-          retention-days: 5
+          retention-days: 1
 
       - name: Publish Validation Summary
         if: ${{ always() && !cancelled() }}
@@ -107,19 +156,44 @@ jobs:
           bash .github/scripts/summarize-checks.sh \
             'Repository checkout' '${{ steps.checkout.outcome }}' \
             'Build environment' '${{ steps.environment.outcome }}' \
-            'Prepare test bundle' '${{ steps.prepare_tests.outcome }}' \
-            'Regression tests' '${{ steps.regression_tests.outcome }}' \
-            'Process timing tests' '${{ steps.process_tests.outcome }}' \
-            'Localization audit (advisory)' '${{ steps.localization_audit.outcome }}' \
             'Release build' '${{ steps.release_build.outcome }}' \
             'Application validation and ZIP' '${{ steps.package_app.outcome }}' \
-            'Application artifact upload' '${{ steps.upload_app.outcome }}'
+            'Candidate artifact upload' '${{ steps.upload_candidate.outcome }}'
 
       - name: Upload Validation Diagnostics
         if: ${{ always() && !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Post-Merge-Diagnostics
+          name: Post-Merge-Release-Diagnostics
           path: ${{ runner.temp }}/appports-ci-results/
           if-no-files-found: ignore
+          retention-days: 5
+
+  post-merge-validation:
+    name: Post-merge Validation
+    needs: [tests, release]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Require Tests and Release Build
+        if: ${{ needs.tests.result != 'success' || needs.release.result != 'success' }}
+        run: |
+          echo '::error::The required tests and Release build must both pass before uploading AppPorts-Unsigned.'
+          exit 1
+
+      - name: Download Candidate ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: AppPorts-Unsigned-Candidate
+          path: ${{ runner.temp }}/appports-candidate
+
+      - name: Upload Application
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppPorts-Unsigned
+          path: ${{ runner.temp }}/appports-candidate/AppPorts.zip
+          if-no-files-found: error
+          compression-level: 0
           retention-days: 5
