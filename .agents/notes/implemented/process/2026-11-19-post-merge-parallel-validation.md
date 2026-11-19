@@ -23,4 +23,6 @@ Status: implemented
 
 ## Verification
 
-在临时分支使用同一应用源码比较串行和并行验证的耗时、Xcode 环境、用例数、跳过数以及产物。另在临时分支注入回归命令失败，核对构建完成时最终上传仍被阻止。
+- 相同应用源码和 `arm64` Xcode 26.6（17F113）下，[串行 main](https://github.com/wzh4869/AppPorts/actions/runs/44537461355) 用时 16 分 17 秒，[并行验证](https://github.com/wzh4869/AppPorts/actions/runs/44539536423) 用时 10 分 55 秒，缩短 5 分 22 秒。两次回归均报告 859 项 XCTest（32 项跳过）和 784 项 Swift Testing，另有 14 项进程计时测试、19 项本地化审计。三路测试和 Release 洁净构建均通过。候选与最终 ZIP 逐字节一致，最终 ZIP 通过解压校验。
+- [故意让回归步骤失败](https://github.com/wzh4869/AppPorts/actions/runs/44538168338)时，Release 和候选 ZIP 上传仍成功，最终检查失败且产物列表没有 `AppPorts-Unsigned`。
+- [首轮验证](https://github.com/wzh4869/AppPorts/actions/runs/44538168841) 编译、ZIP 校验和测试通过，GitHub `CreateArtifact` 连续五次超时导致候选上传失败。同一提交重跑成功。
