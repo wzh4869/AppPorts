@@ -150332,16 +150332,136 @@
     "该符号链接是 macOS 沙盒系统目录入口，不是应用迁移数据，不能还原或解绑：%@" : {
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا الرابط الرمزي هو مدخل إلى مجلد نظام في بيئة العزل في macOS. لا يشير إلى بيانات تطبيق نُقلت، لذا لا يمكن استعادته أو فك الارتباط به: %@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠊⠎ ⠎⠽⠍⠇⠊⠝⠅ ⠊⠎ ⠁ ⠍⠁⠉⠠⠕⠠⠎ ⠎⠁⠝⠙⠃⠕⠭ ⠎⠽⠎⠞⠑⠍ ⠑⠝⠞⠗⠽⠂ ⠝⠕⠞ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠁⠏⠏ ⠙⠁⠞⠁⠂ ⠁⠝⠙ ⠉⠁⠝⠝⠕⠞ ⠃⠑ ⠗⠑⠎⠞⠕⠗⠑⠙ ⠕⠗ ⠥⠝⠃⠕⠥⠝⠙⠒ %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser symbolische Link verweist auf einen Systemordner der macOS-Sandbox. Er gehört nicht zu migrierten App-Daten und kann weder wiederhergestellt noch getrennt werden: %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "This symlink is a macOS sandbox system entry, not migrated app data, and cannot be restored or unbound: %@"
           }
         },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĉi tiu simbola ligilo kondukas al sistema dosierujo de la provejo de macOS. Ĝi ne estas parto de migritaj aplikaĵdatumoj kaj ne povas esti restaŭrita aŭ malligita: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este enlace simbólico apunta a una carpeta del sistema del entorno aislado de macOS. No forma parte de los datos migrados de la aplicación, por lo que no se puede restaurar ni desvincular: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce lien symbolique pointe vers un dossier système du bac à sable de macOS. Il ne fait pas partie des données migrées de l’application et ne peut être ni restauré ni dissocié : %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह प्रतीकात्मक लिंक macOS के सैंडबॉक्स में एक सिस्टम फ़ोल्डर का रास्ता है। यह स्थानांतरित ऐप डेटा का हिस्सा नहीं है, इसलिए इसे न तो बहाल किया जा सकता है, न ही इसका लिंक हटाया जा सकता है: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tautan simbolis ini mengarah ke folder sistem di sandbox macOS. Tautan ini bukan bagian dari data aplikasi yang dimigrasikan sehingga tidak dapat dipulihkan atau diputus: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo link simbolico punta a una cartella di sistema della sandbox di macOS. Non fa parte dei dati migrati dell’app, quindi non può essere ripristinato né scollegato: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このシンボリックリンクは macOS のサンドボックス内にあるシステムフォルダへのリンクです。移行したアプリデータではないため、復元やリンクの解除はできません：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 심볼릭 링크는 macOS 샌드박스의 시스템 폴더를 가리킵니다. 마이그레이션된 앱 데이터가 아니므로 복원하거나 연결을 해제할 수 없습니다: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze symbolische koppeling verwijst naar een systeemmap in de macOS-sandbox. De koppeling behoort niet tot gemigreerde appgegevens en kan daarom niet worden hersteld of ontkoppeld: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To dowiązanie symboliczne prowadzi do katalogu systemowego w piaskownicy macOS. Nie jest częścią przeniesionych danych aplikacji, więc nie można go przywrócić ani odłączyć: %@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este link simbólico aponta para uma pasta do sistema na sandbox do macOS. Ele não faz parte dos dados migrados do app e não pode ser restaurado nem desvinculado: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта символическая ссылка ведёт к системной папке в песочнице macOS. Она не относится к перенесённым данным приложения, поэтому её нельзя восстановить или отвязать: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลิงก์สัญลักษณ์นี้ชี้ไปยังโฟลเดอร์ระบบในแซนด์บ็อกซ์ของ macOS ไม่ใช่ข้อมูลแอปที่ย้ายมา จึงไม่สามารถกู้คืนหรือยกเลิกการเชื่อมโยงได้: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu sembolik bağlantı, macOS korumalı alanındaki bir sistem klasörünü gösterir. Taşınmış uygulama verilerinin parçası olmadığı için geri yüklenemez veya bağlantısı kaldırılamaz: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liên kết tượng trưng này trỏ đến một thư mục hệ thống trong môi trường cách ly của macOS. Đây không phải là dữ liệu ứng dụng đã di chuyển, nên không thể khôi phục hoặc hủy liên kết: %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "该符号链接是 macOS 沙盒系统目录入口，不是应用迁移数据，不能还原或解绑：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此符號連結指向 macOS 沙盒的系統目錄，並非已遷移的應用程式資料，因此無法還原或解除連結：%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "該符號鏈啑是 macOS 沙盒繫統目錄入口，⑧是應詠遷迻數據，⑧螚還厵或解綁：%@"
           }
         }
       }
