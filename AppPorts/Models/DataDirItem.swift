@@ -294,19 +294,86 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
         !isMigratable && !canRestore && !hasMountTransferRecord && recoveryOperationID == nil
     }
 
-    /// Standard container shortcuts are user-folder entry points, not app-owned data.
+    /// Protected structural paths inside `Data/` that macOS owns as real directories,
+    /// never as sandbox home-mirroring convenience symlinks.
+    private static let sandboxContainerStructuralPaths: Set<String> = [
+        "Documents",
+        "Library",
+        "Library/Application Scripts",
+        "Library/Application Support",
+        "Library/Caches",
+        "Library/Images",
+        "Library/Logs",
+        "Library/Preferences",
+        "Library/Saved Application State",
+        "SystemData",
+        "tmp"
+    ]
+
+    /// Standard personal folder shortcuts placed directly under `Data/`.
+    private static let sandboxPersonalFolderNames: Set<String> = [
+        "Desktop", "Downloads", "Movies", "Music", "Pictures"
+    ]
+
+    /// Identifies macOS App Sandbox container convenience links under
+    /// `<home>/Library/Containers/<containerID>/Data/...` that mirror the matching path
+    /// in the same user's home directory (`Data/<PersonalFolder>` -> `<home>/<PersonalFolder>`
+    /// or `Data/Library/<subpath>` -> `<home>/Library/<subpath>`).
+    static func isSandboxHomeEntryLink(source: URL, target: URL) -> Bool {
+        guard let parsed = parseSandboxDataRelativePath(source) else { return false }
+        let (home, dataRelative) = parsed
+        let relativeJoined = dataRelative.joined(separator: "/")
+        guard !sandboxContainerStructuralPaths.contains(relativeJoined) else { return false }
+
+        if dataRelative.count == 1 {
+            guard sandboxPersonalFolderNames.contains(dataRelative[0]) else { return false }
+        } else {
+            guard dataRelative[0] == "Library" else { return false }
+        }
+
+        let expectedLexical = dataRelative.reduce(home) { $0.appendingPathComponent($1) }.standardizedFileURL.path
+        let expectedResolved = dataRelative.reduce(home.resolvingSymlinksInPath()) { $0.appendingPathComponent($1) }.standardizedFileURL.path
+        let targetLexical = target.standardizedFileURL.path
+        let targetResolved = target.resolvingSymlinksInPath().path
+        return targetLexical == expectedLexical || targetLexical == expectedResolved
+            || targetResolved == expectedLexical || targetResolved == expectedResolved
+    }
+
+    /// Identifies only the five top-level personal folder shortcuts (`Data/Desktop`, etc.).
+    static func isSandboxPersonalFolderLink(source: URL, target: URL) -> Bool {
+        guard let parsed = parseSandboxDataRelativePath(source),
+              parsed.dataRelative.count == 1,
+              sandboxPersonalFolderNames.contains(parsed.dataRelative[0]) else { return false }
+        return isSandboxHomeEntryLink(source: source, target: target)
+    }
+
+    private static func parseSandboxDataRelativePath(_ source: URL) -> (home: URL, dataRelative: [String])? {
+        let components = source.standardizedFileURL.pathComponents
+        guard let containersIndex = components.lastIndex(of: "Containers"),
+              containersIndex >= 3,
+              components[containersIndex - 1] == "Library",
+              containersIndex + 3 < components.count,
+              components[containersIndex + 2] == "Data" else { return nil }
+        let dataRelative = Array(components[(containersIndex + 3)...])
+        guard !dataRelative.isEmpty else { return nil }
+        let homePath = NSString.path(withComponents: Array(components[..<(containersIndex - 1)]))
+        return (URL(fileURLWithPath: homePath).standardizedFileURL, dataRelative)
+    }
+
+    /// Standard container shortcuts are user-folder / system Library entry points, not app-owned data.
     var isUserDirectoryLink: Bool {
         guard type == .containers, status == DataDirStatus.existingSymlink,
               !hasManagedLinkRecord, recoveryOperationID == nil,
               let target = linkedDestination else { return false }
-        let source = path.standardizedFileURL
-        guard ["Desktop", "Downloads", "Movies", "Music", "Pictures"].contains(source.lastPathComponent) else { return false }
-        let data = source.deletingLastPathComponent()
-        let containers = data.deletingLastPathComponent().deletingLastPathComponent()
-        guard data.lastPathComponent == "Data", containers.lastPathComponent == "Containers",
-              containers.deletingLastPathComponent().lastPathComponent == "Library" else { return false }
-        let home = containers.deletingLastPathComponent().deletingLastPathComponent()
-        return target.standardizedFileURL.path == home.appendingPathComponent(source.lastPathComponent).path
+        return Self.isSandboxHomeEntryLink(source: path, target: target)
+    }
+
+    /// Top-level personal folder shortcuts (`Data/Desktop`, etc.) kept as hidden non-actionable rows.
+    var isPersonalFolderShortcut: Bool {
+        guard type == .containers, status == DataDirStatus.existingSymlink,
+              !hasManagedLinkRecord, recoveryOperationID == nil,
+              let target = linkedDestination else { return false }
+        return Self.isSandboxPersonalFolderLink(source: path, target: target)
     }
 
     var sizeMeasurementURL: URL? {

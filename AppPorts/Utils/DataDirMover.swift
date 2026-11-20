@@ -248,11 +248,21 @@ actor DataDirMover {
         let external: URL
         if isSymbolicLink(at: local) {
             linkIdentity = try DataPathIdentity.capture(local)
+            if indexed == nil,
+               let rawTarget = try? fileManager.destinationOfSymbolicLink(atPath: local.path) {
+                let lexicalTarget = URL(fileURLWithPath: rawTarget, relativeTo: local.deletingLastPathComponent()).standardizedFileURL
+                if DataDirItem.isSandboxHomeEntryLink(source: local, target: lexicalTarget) {
+                    throw DataDirError.sandboxSystemLink(local)
+                }
+            }
             external = local.resolvingSymlinksInPath()
         } else if let indexed, try !entryExists(local) {
             linkIdentity = nil
             external = URL(fileURLWithPath: indexed.destinationPath)
         } else { throw DataDirError.notASymlink(local) }
+        if indexed == nil, DataDirItem.isSandboxHomeEntryLink(source: local, target: external) {
+            throw DataDirError.sandboxSystemLink(local)
+        }
         guard fileManager.fileExists(atPath: external.path), !isSymbolicLink(at: external) else { throw DataDirError.externalNotFound(external) }
         let sourceIdentity = try DataPathIdentity.capture(external)
         if let indexed {
@@ -322,6 +332,9 @@ actor DataDirMover {
     func createLink(localPath: URL, externalPath: URL, bundleIdentifier: String? = nil, appName: String? = nil) async throws {
         let local = localPath.standardizedFileURL
         let external = externalPath.standardizedFileURL
+        if DataDirItem.isSandboxHomeEntryLink(source: local, target: external) {
+            throw DataDirError.sandboxSystemLink(local)
+        }
         try requirePolicy(local)
         guard existingDirectory(at: external), !isSymbolicLink(at: external) else { throw DataDirError.externalNotFound(external) }
         let old = try store.managedLink(forOriginalPath: local.path)
@@ -384,6 +397,10 @@ actor DataDirMover {
         let local = item.path.standardizedFileURL
         guard completingPaths.insert(local.path).inserted else { throw DataOperationSafety.Failure.occupied(local.path) }
         defer { completingPaths.remove(local.path) }
+        let indexed = try store.managedLink(forOriginalPath: local.path)
+        if indexed == nil, DataDirItem.isSandboxHomeEntryLink(source: local, target: expectedDestination) {
+            throw DataDirError.sandboxSystemLink(local)
+        }
         try requirePolicy(local)
         try safety.requireLocalRestoreParent(at: local)
         try safety.requireApplicationStopped(at: local, bundleIdentifier: identifier)
@@ -391,11 +408,13 @@ actor DataDirMover {
         let identity = try DataPathIdentity.capture(local)
         let rawTarget = try fileManager.destinationOfSymbolicLink(atPath: local.path)
         let target = URL(fileURLWithPath: rawTarget, relativeTo: local.deletingLastPathComponent()).standardizedFileURL
+        if indexed == nil, DataDirItem.isSandboxHomeEntryLink(source: local, target: target) {
+            throw DataDirError.sandboxSystemLink(local)
+        }
         guard target.path == expectedDestination.standardizedFileURL.path else {
             throw DataOperationSafety.Failure.conflict(local.path)
         }
         let related = try store.transfers().filter { $0.originalPath == local.path }
-        let indexed = try store.managedLink(forOriginalPath: local.path)
         guard related.allSatisfy({ $0.mode == .symlink }),
               indexed == nil || indexed?.originalPath == local.path else {
             throw DataOperationSafety.Failure.conflict(local.path)
@@ -1975,6 +1994,7 @@ enum DataDirError: LocalizedError {
     case notASymlink(URL)
     case invalidSymlink(URL)
     case externalNotFound(URL)
+    case sandboxSystemLink(URL)
     case protectedPath(URL, DataPathPolicy.Reason? = nil)
 
     var errorDescription: String? {
@@ -1997,6 +2017,11 @@ enum DataDirError: LocalizedError {
             return String(format: "无法读取符号链接目标：%@".localized, url.lastPathComponent)
         case .externalNotFound(let url):
             return String(format: "外部存储目录不存在：%@".localized, url.path)
+        case .sandboxSystemLink(let url):
+            return String(
+                format: "该符号链接是 macOS 沙盒系统目录入口，不是应用迁移数据，不能还原或解绑：%@".localized,
+                url.lastPathComponent
+            )
         case .protectedPath(let url, let reason):
             if reason == .weChatCompatibility {
                 return String(

@@ -161,4 +161,54 @@ struct DataDirPresentationTests {
         #expect(link.sizeBytes == 8_192)
         #expect(link.sizeMeasurementURL == link.linkedDestination)
     }
+
+    @Test("macOS sandbox Library convenience links mirror ~/Library and never masquerade as app data",
+          arguments: [
+            "Library/Mail",
+            "Library/Keychains",
+            "Library/Dictionaries",
+            "Library/Sounds",
+            "Library/Application Support/iCloud",
+            "Library/Application Support/SyncServices",
+            "Library/Application Scripts/com.tencent.xinWeChat",
+            "Library/Images/People",
+            "Library/Preferences/com.apple.security.plist"
+          ])
+    func sandboxLibraryConvenienceLinks(_ relativePath: String) {
+        let item = DataDirItem(
+            name: relativePath,
+            path: home.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/\(relativePath)"),
+            type: .containers, priority: .optional, description: "",
+            status: DataDirStatus.existingSymlink, isMigratable: false,
+            linkedDestination: home.appendingPathComponent(relativePath)
+        )
+        #expect(item.isUserDirectoryLink)
+        #expect(!item.isPersonalFolderShortcut)
+        #expect(item.sizeMeasurementURL == nil)
+        #expect(!item.canRestore)
+        #expect(!item.needsRecoveryOrAttention)
+        #expect(!item.matchesVisibility(showZeroByteDirectories: true, showNonMigratableDirectories: true))
+    }
+
+    @Test("Protected structural container directories and mismatched Library targets stay inspectable",
+          arguments: [
+            ("Library", "Library"),
+            ("Library/Application Support", "Library/Application Support"),
+            ("Library/Preferences", "Library/Preferences"),
+            ("Documents", "Documents"),
+            ("Library/Mail", "Library/Keychains"),
+            ("Library/Mail", "Desktop")
+          ])
+    func nonSandboxLibraryLinksStayInspectable(_ sourceRelative: String, _ targetRelative: String) {
+        let item = DataDirItem(
+            name: sourceRelative,
+            path: home.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/\(sourceRelative)"),
+            type: .containers, priority: .optional, description: "",
+            status: DataDirStatus.existingSymlink, isMigratable: false,
+            linkedDestination: home.appendingPathComponent(targetRelative)
+        )
+        #expect(!item.isUserDirectoryLink)
+        #expect(item.needsRecoveryOrAttention)
+        #expect(item.matchesVisibility(showZeroByteDirectories: false, showNonMigratableDirectories: false))
+    }
 }

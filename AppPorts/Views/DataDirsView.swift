@@ -1837,6 +1837,7 @@ struct DataDirsView: View {
     }
 
     private func askManageExistingLink(_ item: DataDirItem) {
+        guard !item.isUserDirectoryLink else { return }
         if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         guard let linkedDest = item.linkedDestination else {
             AppLogger.shared.logError(

@@ -2160,4 +2160,100 @@ final class DataDirScannerTests: XCTestCase {
         XCTAssertFalse(batchSingletonNames.contains("SingletonLock"))
     }
 
+    func testWeChatSandboxLibraryConvenienceSymlinksAreFilteredWhileRealExternalLinksRemainVisible() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let appURL = try createAppBundle(named: "WeChat.app", bundleID: "com.tencent.xinWeChat", in: workspace.appsURL)
+        let dataURL = workspace.homeURL.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data")
+        let libraryURL = dataURL.appendingPathComponent("Library")
+        let appSupportURL = libraryURL.appendingPathComponent("Application Support")
+        let appScriptsURL = libraryURL.appendingPathComponent("Application Scripts")
+        let imagesURL = libraryURL.appendingPathComponent("Images")
+        let preferencesURL = libraryURL.appendingPathComponent("Preferences")
+        for dir in [appSupportURL, appScriptsURL, imagesURL, preferencesURL] {
+            try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+
+        // Top-level personal folder shortcut (kept as hidden non-actionable user directory link)
+        let desktopTarget = workspace.homeURL.appendingPathComponent("Desktop")
+        try createDirectoryWithPayload(at: desktopTarget)
+        try fileManager.createSymbolicLink(
+            atPath: dataURL.appendingPathComponent("Desktop").path,
+            withDestinationPath: "../../../../Desktop"
+        )
+
+        // Existing macOS sandbox Library convenience links (relative symlinks matching real macOS layout)
+        for name in ["Mail", "Keychains", "Dictionaries", "Sounds"] {
+            let target = workspace.homeURL.appendingPathComponent("Library/\(name)")
+            try createDirectoryWithPayload(at: target)
+            try fileManager.createSymbolicLink(
+                atPath: libraryURL.appendingPathComponent(name).path,
+                withDestinationPath: "../../../../\(name)"
+            )
+        }
+        // Dangling sandbox link (SyncServices does not exist on disk) and existing iCloud link
+        let iCloudTarget = workspace.homeURL.appendingPathComponent("Library/Application Support/iCloud")
+        try createDirectoryWithPayload(at: iCloudTarget)
+        try fileManager.createSymbolicLink(
+            atPath: appSupportURL.appendingPathComponent("iCloud").path,
+            withDestinationPath: "../../../../../Application Support/iCloud"
+        )
+        try fileManager.createSymbolicLink(
+            atPath: appSupportURL.appendingPathComponent("SyncServices").path,
+            withDestinationPath: "../../../../../Application Support/SyncServices"
+        )
+        try fileManager.createSymbolicLink(
+            atPath: appScriptsURL.appendingPathComponent("com.tencent.xinWeChat").path,
+            withDestinationPath: "../../../../../Application Scripts/com.tencent.xinWeChat"
+        )
+        try fileManager.createSymbolicLink(
+            atPath: imagesURL.appendingPathComponent("People").path,
+            withDestinationPath: "../../../../../Images/People"
+        )
+        try fileManager.createSymbolicLink(
+            atPath: preferencesURL.appendingPathComponent("com.apple.security.plist").path,
+            withDestinationPath: "../../../../../Preferences/com.apple.security.plist"
+        )
+
+        // Genuine external migration symlink inside WeChat (even under a locked compatibility path) must stay visible
+        let externalLegacy = workspace.externalRootURL.appendingPathComponent("WeChatLegacyAudio")
+        try createDirectoryWithPayload(at: externalLegacy)
+        let legacyLink = libraryURL.appendingPathComponent("LegacyMigrated")
+        try fileManager.createSymbolicLink(at: legacyLink, withDestinationURL: externalLegacy)
+
+        let scanner = DataDirScanner(
+            homeDir: workspace.homeURL,
+            mountStore: ContainerMountStore(fileURL: workspace.rootURL.appendingPathComponent("records.plist"))
+        )
+        let items = await scanner.scanLibraryDirs(
+            for: AppItem(name: "WeChat.app", path: appURL, status: "本地"),
+            externalRootURL: workspace.externalRootURL
+        )
+        let discoveredPaths = Set(items.map { $0.path.standardizedFileURL.path })
+
+        for omitted in [
+            libraryURL.appendingPathComponent("Mail"),
+            libraryURL.appendingPathComponent("Keychains"),
+            libraryURL.appendingPathComponent("Dictionaries"),
+            libraryURL.appendingPathComponent("Sounds"),
+            appSupportURL.appendingPathComponent("iCloud"),
+            appSupportURL.appendingPathComponent("SyncServices"),
+            appScriptsURL.appendingPathComponent("com.tencent.xinWeChat"),
+            imagesURL.appendingPathComponent("People"),
+            preferencesURL.appendingPathComponent("com.apple.security.plist")
+        ] {
+            XCTAssertFalse(discoveredPaths.contains(omitted.standardizedFileURL.path), "Sandbox link must be filtered: \(omitted.path)")
+        }
+
+        let desktopRow = try XCTUnwrap(items.first { $0.path.standardizedFileURL == dataURL.appendingPathComponent("Desktop").standardizedFileURL })
+        XCTAssertTrue(desktopRow.isUserDirectoryLink)
+        XCTAssertFalse(desktopRow.matchesVisibility(showZeroByteDirectories: true, showNonMigratableDirectories: true))
+
+        let legacyRow = try XCTUnwrap(items.first { $0.path.standardizedFileURL == legacyLink.standardizedFileURL })
+        XCTAssertEqual(legacyRow.status, DataDirStatus.existingSymlink)
+        XCTAssertFalse(legacyRow.isUserDirectoryLink)
+        XCTAssertTrue(legacyRow.matchesVisibility(showZeroByteDirectories: false, showNonMigratableDirectories: false))
+    }
+
 }

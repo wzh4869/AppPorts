@@ -33,6 +33,7 @@ Status: implemented
 
 - 容器发现依赖真实应用身份，见[应用数据扫描使用真实应用身份](../bug-fix/2026-09-29-app-data-identity.md)。
 - 目录开关与归属呈现不绕过执行层，见[目录显示、执行权限与严格数据复制分开约束](../architecture/2026-10-01-data-path-copy-safety.md)。
+- 微信容器内 `Data/Library/*` 沙盒系统软链的扫描过滤与执行层拦截见[过滤微信容器内沙盒系统软链并禁止还原](../bug-fix/2026-11-20-过滤微信容器内沙盒系统软链并禁止还原.md)。
 - 统一向导若采用本呈现规则仍须保留归属限制，见[统一应用级迁移与修复引导](../../proposed/feature/2026-09-26-unified-migration-guidance.md)。
 
 ## Alternatives considered

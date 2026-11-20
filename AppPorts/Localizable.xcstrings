@@ -150877,6 +150877,23 @@
         }
       }
     },
+    "该符号链接是 macOS 沙盒系统目录入口，不是应用迁移数据，不能还原或解绑：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This symlink is a macOS sandbox system entry, not migrated app data, and cannot be restored or unbound: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该符号链接是 macOS 沙盒系统目录入口，不是应用迁移数据，不能还原或解绑：%@"
+          }
+        }
+      }
+    },
     "该路径不是真实目录，无法挂载迁移：%@" : {
       "extractionState" : "manual",
       "localizations" : {

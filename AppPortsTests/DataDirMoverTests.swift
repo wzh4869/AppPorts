@@ -1657,4 +1657,64 @@ final class DataDirMoverTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: externalData.appendingPathComponent("payload.txt")), "keep")
     }
 
+    func testRestoreCreateLinkAndResetRejectMacOSSandboxSystemSymlinks() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+
+        let libraryURL = workspace.homeURL.appendingPathComponent("Library/Containers/com.tencent.xinWeChat/Data/Library")
+        let appSupportURL = libraryURL.appendingPathComponent("Application Support")
+        try fileManager.createDirectory(at: appSupportURL, withIntermediateDirectories: true)
+
+        // Existing target: ~/Library/Mail (must never be copied/deleted by restore or replaced by reset)
+        let realMail = workspace.homeURL.appendingPathComponent("Library/Mail")
+        try createDirectoryWithPayload(at: realMail, payload: "user-mail")
+        let mailLink = libraryURL.appendingPathComponent("Mail")
+        try fileManager.createSymbolicLink(atPath: mailLink.path, withDestinationPath: "../../../../Mail")
+
+        // Dangling target: ~/Library/Application Support/SyncServices
+        let syncLink = appSupportURL.appendingPathComponent("SyncServices")
+        try fileManager.createSymbolicLink(atPath: syncLink.path, withDestinationPath: "../../../../../Application Support/SyncServices")
+
+        let mover = makeMover(homeDir: workspace.homeURL)
+        let mailItem = DataDirItem(name: "Mail", path: mailLink, type: .containers, priority: .optional,
+                                   description: "", status: DataDirStatus.existingSymlink, linkedDestination: realMail)
+        let syncItem = DataDirItem(name: "SyncServices", path: syncLink, type: .containers, priority: .optional,
+                                   description: "", status: DataDirStatus.existingSymlink,
+                                   linkedDestination: workspace.homeURL.appendingPathComponent("Library/Application Support/SyncServices"))
+
+        for candidate in [mailItem, syncItem] {
+            do {
+                _ = try await mover.restoreAndComplete(item: candidate, progressHandler: nil)
+                XCTFail("Restoring sandbox system link must fail: \(candidate.name)")
+            } catch let error as DataDirError {
+                guard case .sandboxSystemLink = error else {
+                    return XCTFail("Expected sandboxSystemLink for \(candidate.name), got \(error)")
+                }
+            }
+        }
+
+        do {
+            try await mover.createLink(localPath: mailLink, externalPath: realMail)
+            XCTFail("Normalizing sandbox system link must fail")
+        } catch let error as DataDirError {
+            guard case .sandboxSystemLink = error else {
+                return XCTFail("Expected sandboxSystemLink on createLink, got \(error)")
+            }
+        }
+
+        do {
+            try await mover.resetExistingLink(item: mailItem, expectedDestination: realMail)
+            XCTFail("Force-unbinding sandbox system link must fail")
+        } catch let error as DataDirError {
+            guard case .sandboxSystemLink = error else {
+                return XCTFail("Expected sandboxSystemLink on resetExistingLink, got \(error)")
+            }
+        }
+
+        // Verify both symlinks and the user's real ~/Library/Mail are completely untouched
+        XCTAssertEqual(try fileManager.destinationOfSymbolicLink(atPath: mailLink.path), "../../../../Mail")
+        XCTAssertEqual(try fileManager.destinationOfSymbolicLink(atPath: syncLink.path), "../../../../../Application Support/SyncServices")
+        XCTAssertEqual(try String(contentsOf: realMail.appendingPathComponent("payload.txt")), "user-mail")
+    }
+
 }

@@ -1899,10 +1899,13 @@ actor DataDirScanner {
             applyInspectionResult(to: &item, inspection: inspection, externalRootURL: externalRootURL)
             item.applyPathPolicy(decision)
             // Ordinary sandbox convenience links point at user folders and are not app data.
-            // Protected/managed links are still shown for diagnosis and recovery.
-            if inspection.status == DataDirStatus.existingSymlink, decision.canMigrate, !item.isUserDirectoryLink,
+            // Top-level personal folder shortcuts stay as hidden non-actionable rows, while
+            // Data/Library/* sandbox links are omitted at scan time even under WeChat's locked
+            // compatibility policy. Protected/managed links remain visible for diagnosis and recovery.
+            if inspection.status == DataDirStatus.existingSymlink, !item.isPersonalFolderShortcut,
                let target = inspection.linkedDestination,
-               !shouldSurfaceNestedContainerLink(from: url, to: target, externalRootURL: externalRootURL) {
+               item.isUserDirectoryLink
+                   || (decision.canMigrate && !shouldSurfaceNestedContainerLink(from: url, to: target, externalRootURL: externalRootURL)) {
                 return
             }
             results.append(item)
