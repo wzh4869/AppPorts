@@ -117,9 +117,9 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 ## 第十条  Cookie 与同类技术
 
-我们的官方网站（appports.shimoko.com）与用户文档站（docs-appports.shimoko.com）均为静态站点，不使用 Cookie 进行统计分析，不包含第三方广告或社交插件，也不设置跨站跟踪像素；开源用户文档站代码本身亦未内嵌第三方统计脚本。
+我们的官方网站（appports.shimoko.com）与用户文档站（docs-appports.shimoko.com）均为静态站点，不使用 Cookie 进行统计分析，不包含第三方广告或社交插件，也不设置跨站跟踪像素。
 
-如官方网站使用开源、无 Cookie 的页面汇总统计工具（如 Umami）来了解页面访问概况并改进内容，其处理规则如下：
+用户文档站使用 Umami Cloud 统计页面访问，以了解使用情况并改进内容。文档页面地址中的查询参数和章节锚点不计入统计。用户文档站与使用同类统计工具时的官方网站遵循以下规则：
 
 - 不使用 Cookie，不采集可识别您个人身份的信息，不进行跨站追踪；
 - 不存储您的原始 IP 地址，该地址仅在请求发生时用于判断粗略地区并对访问去重；
@@ -299,9 +299,9 @@ App Sandbox is disabled because cross-volume reading and writing of applications
 
 ## 10. Cookies and Similar Technologies
 
-Our official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They use no cookies for analytics, contain no third-party advertising or social plugins, and set no cross-site tracking pixels; the open-source documentation site repository likewise embeds no third-party analytics or tracking scripts.
+Our official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They use no cookies for analytics, contain no third-party advertising or social plugins, and set no cross-site tracking pixels.
 
-Where the official website uses cookie-free aggregate page-view statistics (such as Umami) to understand usage and improve content, it applies these rules:
+The documentation site uses Umami Cloud to count page views and improve its content. It excludes query parameters and section anchors from the page URLs reported for analytics. These rules apply to the documentation site and to the official website when it uses similar analytics:
 
 - no cookies, no personally identifiable information, and no cross-site tracking;
 - your raw IP address is not stored — it is used only at request time to infer an approximate region and deduplicate visits;

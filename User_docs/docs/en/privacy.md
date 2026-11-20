@@ -112,9 +112,9 @@ App Sandbox is disabled because the Software must read and write apps and data a
 
 ## Article 10. Cookies and similar technologies {#section-10}
 
-The official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They do not use cookies for analytics, third-party advertising or social plugins, or cross-site tracking pixels; the open-source documentation site repository and exported site bundle contain no third-party analytics or tracking scripts.
+The official website (appports.shimoko.com) and documentation site (docs-appports.shimoko.com) are static sites. They use no cookies for analytics, contain no third-party advertising or social plugins, and set no cross-site tracking pixels.
 
-Where the official website uses cookie-free aggregate page-view counting (such as Umami) to understand usage and improve content, it applies these rules:
+The documentation site uses Umami Cloud to count page views and improve its content. It excludes query parameters and section anchors from the page URLs reported for analytics. These rules apply to the documentation site and to the official website when it uses similar analytics:
 
 - No cookies, personally identifying collection, or cross-site tracking.
 - Raw IP addresses are not stored. They are used at request time only to infer an approximate region and deduplicate visits.
