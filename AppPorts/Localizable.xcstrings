@@ -181986,6 +181986,2061 @@
           }
         }
       }
+    },
+    "需要重新授予系统权限" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يلزم منح أذونات النظام مجددًا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠽⠎⠞⠑⠍ ⠠⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠠⠝⠑⠑⠙ ⠞⠕ ⠠⠃⠑ ⠠⠛⠗⠁⠝⠞⠑⠙ ⠠⠁⠛⠁⠊⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemberechtigungen müssen erneut erteilt werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System Permissions Need to Be Granted Again"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistemajn permesojn necesas denove doni"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es necesario volver a conceder los permisos del sistema"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les autorisations système doivent être accordées à nouveau"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम अनुमतियाँ फिर से देनी होंगी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izin Sistem Perlu Diberikan Kembali"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È necessario concedere di nuovo le autorizzazioni di sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム権限の再許可が必要です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 권한을 다시 허용해야 합니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeemmachtigingen moeten opnieuw worden verleend"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymagane jest ponowne nadanie uprawnień systemowych"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "É necessário conceder novamente as permissões do sistema"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требуется повторно выдать системные разрешения"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จำเป็นต้องอนุญาตสิทธิ์ของระบบอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem İzinlerinin Yeniden Verilmesi Gerekiyor"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cần cấp lại quyền hệ thống"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要重新授予系统权限"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要重新授予系統權限"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要重新授予系統權限"
+          }
+        }
+      }
+    },
+    "检测到 AppPorts 的签名证书已更新，旧版本留下的系统权限记录已不再适用。AppPorts 已尝试自动清理失效的旧记录，请前往系统设置重新授予以下权限：" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم تحديث شهادة توقيع AppPorts، لذا لم تعد سجلات أذونات النظام من الإصدار السابق صالحة. حاول AppPorts مسح السجلات القديمة تلقائيًا. يُرجى فتح إعدادات النظام لمنح الأذونات التالية مجددًا:"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠄⠎ ⠎⠊⠛⠝⠊⠝⠛ ⠉⠑⠗⠞⠊⠋⠊⠉⠁⠞⠑ ⠓⠁⠎ ⠃⠑⠑⠝ ⠥⠏⠙⠁⠞⠑⠙⠂ ⠎⠕ ⠎⠽⠎⠞⠑⠍ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠗⠑⠉⠕⠗⠙⠎ ⠋⠗⠕⠍ ⠞⠓⠑ ⠏⠗⠑⠧⠊⠕⠥⠎ ⠧⠑⠗⠎⠊⠕⠝ ⠝⠕ ⠇⠕⠝⠛⠑⠗ ⠁⠏⠏⠇⠽⠲ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠓⠁⠎ ⠁⠞⠞⠑⠍⠏⠞⠑⠙ ⠞⠕ ⠉⠇⠑⠁⠗ ⠞⠓⠑ ⠎⠞⠁⠇⠑ ⠗⠑⠉⠕⠗⠙⠎ ⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽⠲ ⠠⠏⠇⠑⠁⠎⠑ ⠕⠏⠑⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎ ⠞⠕ ⠛⠗⠁⠝⠞ ⠞⠓⠑ ⠋⠕⠇⠇⠕⠺⠊⠝⠛ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝⠎ ⠁⠛⠁⠊⠝⠒"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Signaturzertifikat von AppPorts wurde aktualisiert, sodass Systemberechtigungen der vorherigen Version nicht mehr gelten. AppPorts hat versucht, die veralteten Einträge automatisch zu entfernen. Öffne die Systemeinstellungen und erteile folgende Berechtigungen erneut:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts’s signing certificate has been updated, so system permission records from the previous version no longer apply. AppPorts has attempted to clear the stale records automatically. Please open System Settings to grant the following permissions again:"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La subskriba atestilo de AppPorts estis ĝisdatigita, do sistemaj permesregistroj de la antaŭa versio ne plu validas. AppPorts provis aŭtomate forigi la malnovajn registrojn. Bonvolu malfermi Sistemajn Agordojn por denove doni la jenajn permesojn:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El certificado de firma de AppPorts se ha actualizado, por lo que los registros de permisos del sistema de la versión anterior ya no son válidos. AppPorts ha intentado limpiar los registros obsoletos automáticamente. Abre Configuración del Sistema para volver a conceder los siguientes permisos:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le certificat de signature d’AppPorts a été mis à jour ; les autorisations système enregistrées pour l’ancienne version ne sont plus valables. AppPorts a tenté de supprimer automatiquement ces anciens enregistrements. Ouvrez Réglages Système pour accorder de nouveau les autorisations suivantes :"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts का साइनिंग प्रमाणपत्र अपडेट हो गया है, इसलिए पिछले संस्करण के सिस्टम अनुमति रिकॉर्ड अब मान्य नहीं हैं। AppPorts ने पुराने अमान्य रिकॉर्ड अपने-आप हटाने का प्रयास किया है। कृपया सिस्टम सेटिंग्स खोलकर निम्न अनुमतियाँ फिर से दें:"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sertifikat penandatanganan AppPorts telah diperbarui, sehingga catatan izin sistem dari versi sebelumnya tidak lagi berlaku. AppPorts telah mencoba membersihkan catatan lama secara otomatis. Buka Pengaturan Sistem untuk memberikan izin berikut kembali:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il certificato di firma di AppPorts è stato aggiornato, quindi le autorizzazioni di sistema della versione precedente non sono più valide. AppPorts ha provato a rimuovere automaticamente le voci obsolete. Apri Impostazioni di Sistema per concedere di nuovo queste autorizzazioni:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts の署名証明書が更新されたため、旧バージョンのシステム権限レコードは無効になりました。AppPorts は古いレコードの自動削除を試みました。システム設定を開いて、次の権限を再度許可してください："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts의 서명 인증서가 업데이트되어 이전 버전의 시스템 권한 기록이 더 이상 유효하지 않습니다. AppPorts가 만료된 이전 기록을 자동으로 정리하려고 시도했습니다. 시스템 설정에서 다음 권한을 다시 허용해 주세요:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het ondertekeningscertificaat van AppPorts is bijgewerkt, waardoor systeemmachtigingen van de vorige versie niet meer gelden. AppPorts heeft geprobeerd de verouderde vermeldingen automatisch te wissen. Open Systeeminstellingen om de volgende machtigingen opnieuw te verlenen:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certyfikat podpisywania AppPorts został zaktualizowany, dlatego wpisy uprawnień systemowych z poprzedniej wersji nie są już ważne. AppPorts podjął próbę automatycznego wyczyszczenia nieaktualnych wpisów. Otwórz Ustawienia systemowe, aby ponownie nadać następujące uprawnienia:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O certificado de assinatura do AppPorts foi atualizado, portanto os registros de permissão do sistema da versão anterior não são mais válidos. O AppPorts tentou limpar os registros antigos automaticamente. Abra os Ajustes do Sistema para conceder novamente as permissões abaixo:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сертификат подписи AppPorts обновился, поэтому записи системных разрешений от предыдущей версии больше не действуют. AppPorts попытался автоматически очистить устаревшие записи. Откройте «Системные настройки» и снова выдайте следующие разрешения:"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใบรับรองการลงนามของ AppPorts ได้รับการอัปเดตแล้ว ทำให้รายการสิทธิ์ระบบจากเวอร์ชันก่อนหน้าใช้งานไม่ได้ AppPorts ได้พยายามล้างรายการเก่าโดยอัตโนมัติแล้ว โปรดเปิดการตั้งค่าระบบเพื่ออนุญาตสิทธิ์ต่อไปนี้อีกครั้ง:"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts imza sertifikası güncellendiği için önceki sürüme ait sistem izni kayıtları artık geçerli değil. AppPorts eski kayıtları otomatik olarak temizlemeyi denedi. Aşağıdaki izinleri yeniden vermek için Sistem Ayarları’nı açın:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chứng chỉ ký của AppPorts đã được cập nhật nên bản ghi quyền hệ thống từ phiên bản trước không còn hiệu lực. AppPorts đã thử tự động xóa các bản ghi cũ. Vui lòng mở Cài đặt hệ thống để cấp lại các quyền sau:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检测到 AppPorts 的签名证书已更新，旧版本留下的系统权限记录已不再适用。AppPorts 已尝试自动清理失效的旧记录，请前往系统设置重新授予以下权限："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偵測到 AppPorts 的簽章憑證已更新，舊版本留下的系統權限記錄已不再適用。AppPorts 已嘗試自動清理失效的舊記錄，請前往系統設定重新授予以下權限："
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偵測到 AppPorts の簽名證書已更新，舊版本留下の系統權限記錄已不再適用。AppPorts 已嘗試自動清理失效の舊記錄，請前往系統設置重新授予以下權限："
+          }
+        }
+      }
+    },
+    "App 管理权限：用于迁移、替换或还原“应用程序”文件夹中的应用。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إدارة التطبيقات: مطلوبة لترحيل التطبيقات أو استبدالها أو استعادتها في مجلد التطبيقات."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞⠒ ⠠⠗⠑⠟⠥⠊⠗⠑⠙ ⠞⠕ ⠍⠊⠛⠗⠁⠞⠑⠂ ⠗⠑⠏⠇⠁⠉⠑⠂ ⠕⠗ ⠗⠑⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠊⠝ ⠞⠓⠑ ⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝⠎ ⠋⠕⠇⠙⠑⠗⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Verwaltung: Erforderlich zum Migrieren, Ersetzen oder Wiederherstellen von Apps im Ordner „Programme“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Management: Required to migrate, replace, or restore apps in the Applications folder."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikaĵa administrado: Bezonata por migri, anstataŭigi aŭ restarigi aplikaĵojn en la dosierujo Aplikaĵoj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestión de apps: Necesario para migrar, reemplazar o restaurar apps en la carpeta Aplicaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestion des apps : requis pour migrer, remplacer ou restaurer des apps dans le dossier Applications."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप प्रबंधन: Applications फ़ोल्डर में ऐप्स को माइग्रेट, प्रतिस्थापित या रीस्टोर करने के लिए आवश्यक।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manajemen App: Diperlukan untuk memindahkan, mengganti, atau memulihkan app di folder Aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestione app: necessaria per migrare, sostituire o ripristinare le app nella cartella Applicazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ管理：アプリケーションフォルダ内のアプリを移行・置換・復元するために必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 관리: 응용 프로그램 폴더의 앱을 마이그레이션, 교체 또는 복원하는 데 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-beheer: vereist om apps in de map Apps te migreren, vervangen of terug te zetten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zarządzanie aplikacjami: wymagane do przenoszenia, zastępowania lub przywracania aplikacji w folderze Aplikacje."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerenciamento de Apps: necessário para migrar, substituir ou restaurar apps na pasta Aplicativos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управление приложениями: требуется для переноса, замены или восстановления приложений в папке «Программы»."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การจัดการแอป: จำเป็นสำหรับการย้าย แทนที่ หรือกู้คืนแอปในโฟลเดอร์แอปพลิเคชัน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama Yönetimi: Uygulamalar klasöründeki uygulamaları taşımak, değiştirmek veya geri yüklemek için gereklidir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản lý ứng dụng: Cần thiết để di chuyển, thay thế hoặc khôi phục ứng dụng trong thư mục Ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 管理权限：用于迁移、替换或还原“应用程序”文件夹中的应用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 管理權限：用於遷移、取代或還原「應用程式」資料夾中的應用程式。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 管理權限：用于遷移、替換或還原“應用程式”文件夾中の應用。"
+          }
+        }
+      }
+    },
+    "完全磁盘访问权限：用于读取和迁移受系统保护的应用数据目录。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الوصول الكامل إلى القرص: مطلوب لقراءة مجلدات بيانات التطبيقات المحمية بالنظام وترحيلها."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠋⠥⠇⠇ ⠠⠙⠊⠎⠅ ⠠⠁⠉⠉⠑⠎⠎⠒ ⠠⠗⠑⠟⠥⠊⠗⠑⠙ ⠞⠕ ⠗⠑⠁⠙ ⠁⠝⠙ ⠍⠊⠛⠗⠁⠞⠑ ⠎⠽⠎⠞⠑⠍⠤⠏⠗⠕⠞⠑⠉⠞⠑⠙ ⠁⠏⠏ ⠙⠁⠞⠁ ⠙⠊⠗⠑⠉⠞⠕⠗⠊⠑⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Festplattenvollzugriff: Erforderlich zum Lesen und Migrieren systemgeschützter App-Datenverzeichnisse."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Disk Access: Required to read and migrate system-protected app data directories."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plena diska aliro: Bezonata por legi kaj migri sistemprotektitajn datumdosierujojn de aplikaĵoj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso total al disco: Necesario para leer y migrar directorios de datos de apps protegidos por el sistema."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès complet au disque : requis pour lire et migrer les dossiers de données d’apps protégés par le système."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पूर्ण डिस्क पहुँच: सिस्टम-संरक्षित ऐप डेटा निर्देशिकाओं को पढ़ने और माइग्रेट करने के लिए आवश्यक।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akses Disk Penuh: Diperlukan untuk membaca dan memindahkan direktori data app yang dilindungi sistem."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesso completo al disco: necessario per leggere e migrare le directory dei dati delle app protette dal sistema."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルディスクアクセス：システムで保護されたアプリデータディレクトリを読み取り・移行するために必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 디스크 접근 권한: 시스템이 보호하는 앱 데이터 디렉터리를 읽고 마이그레이션하는 데 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volledige schijftoegang: vereist om door het systeem beschermde app-datamappen te lezen en te migreren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pełny dostęp do dysku: wymagany do odczytu i przenoszenia chronionych przez system katalogów danych aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acesso Total ao Disco: necessário para ler e migrar diretórios de dados de apps protegidos pelo sistema."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Полный доступ к диску: требуется для чтения и переноса защищённых системой каталогов данных приложений."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สิทธิ์เข้าถึงดิสก์เต็มรูปแบบ: จำเป็นสำหรับการอ่านและย้ายโฟลเดอร์ข้อมูลแอปที่ระบบปกป้องไว้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tam Disk Erişimi: Sistem tarafından korunan uygulama veri dizinlerini okumak ve taşımak için gereklidir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quyền truy cập toàn ổ đĩa: Cần thiết để đọc và di chuyển các thư mục dữ liệu ứng dụng được hệ thống bảo vệ."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全磁盘访问权限：用于读取和迁移受系统保护的应用数据目录。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全磁碟取用權限：用於讀取和遷移受系統保護的應用程式資料目錄。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全磁盤訪問權限：用于讀取和遷移受系統保護の應用數據目錄。"
+          }
+        }
+      }
+    },
+    "若系统设置中仍看到已开启的旧版 AppPorts，请在“准备情况”中点击“清理旧版授权记录”，或选中旧条目点左下角“-”移除后再重新拖入。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إذا كانت إعدادات النظام لا تزال تعرض إدخال AppPorts قديمًا قيد التشغيل، فانقر على «مسح سجلات الأذونات القديمة» في الجاهزية، أو حدد الإدخال القديم واضغط على «-» أسفل اليسار لإزالته ثم اسحب AppPorts إليه مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠊⠋ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎ ⠎⠞⠊⠇⠇ ⠎⠓⠕⠺⠎ ⠁⠝ ⠕⠇⠙⠑⠗ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠑⠝⠞⠗⠽ ⠞⠥⠗⠝⠑⠙ ⠕⠝⠂ ⠉⠇⠊⠉⠅ “⠠⠉⠇⠑⠁⠗ ⠠⠇⠑⠛⠁⠉⠽ ⠠⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠠⠗⠑⠉⠕⠗⠙⠎” ⠊⠝ ⠠⠗⠑⠁⠙⠊⠝⠑⠎⠎⠂ ⠕⠗ ⠎⠑⠇⠑⠉⠞ ⠞⠓⠑ ⠕⠇⠙ ⠑⠝⠞⠗⠽⠂ ⠉⠇⠊⠉⠅ “⠤” ⠁⠞ ⠞⠓⠑ ⠃⠕⠞⠞⠕⠍ ⠇⠑⠋⠞ ⠞⠕ ⠗⠑⠍⠕⠧⠑ ⠊⠞⠂ ⠁⠝⠙ ⠙⠗⠁⠛ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠝ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falls in den Systemeinstellungen noch ein aktivierter alter AppPorts-Eintrag erscheint, klicke unter „Bereitschaft“ auf „Alte Berechtigungen zurücksetzen“ oder wähle den alten Eintrag aus, entferne ihn links unten mit „-“ und ziehe AppPorts erneut hinein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If System Settings still shows an older AppPorts entry turned on, click “Clear Legacy Permission Records” in Readiness, or select the old entry, click “-” at the bottom left to remove it, and drag AppPorts in again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se Sistemaj Agordoj ankoraŭ montras malnovan ŝaltitan eron de AppPorts, alklaku «Forigi malnovajn permesregistrojn» en Preteco, aŭ elektu la malnovan eron, alklaku «-» sube maldekstre por forigi ĝin, kaj denove trenu AppPorts tien."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si Configuración del Sistema sigue mostrando una entrada antigua de AppPorts activada, haz clic en «Limpiar registros de permisos antiguos» en Preparación, o selecciona la entrada antigua, haz clic en «-» abajo a la izquierda para eliminarla y vuelve a arrastrar AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si Réglages Système affiche encore une ancienne entrée AppPorts activée, cliquez sur « Effacer les anciens enregistrements » dans Préparation, ou sélectionnez l’ancienne entrée, cliquez sur « - » en bas à gauche pour la supprimer, puis faites de nouveau glisser AppPorts."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यदि सिस्टम सेटिंग्स में अभी भी पुराना AppPorts चालू दिखता है, तो तैयारी में “पुराने अनुमति रिकॉर्ड साफ़ करें” पर क्लिक करें, या पुरानी प्रविष्टि चुनकर नीचे बाईं ओर “-” से हटाएँ और AppPorts को फिर से ड्रैग करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika Pengaturan Sistem masih menampilkan entri AppPorts lama yang aktif, klik “Bersihkan Catatan Izin Lama” di Kesiapan, atau pilih entri lama, klik “-” di kiri bawah untuk menghapusnya, lalu seret AppPorts lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se in Impostazioni di Sistema compare ancora una vecchia voce AppPorts attiva, fai clic su «Rimuovi vecchi record di autorizzazione» in Preparazione, oppure seleziona la vecchia voce, fai clic su «-» in basso a sinistra per eliminarla e trascina nuovamente AppPorts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定にオンのままの古い AppPorts が残っている場合は、「準備状況」で「古い権限レコードを消去」をクリックするか、古い項目を選んで左下の「-」で削除してから再度ドラッグしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정에 켜진 상태의 이전 AppPorts 항목이 여전히 보이면 ‘준비 상태’에서 ‘이전 권한 기록 지우기’를 클릭하거나 이전 항목을 선택해 왼쪽 아래 ‘-’로 제거한 뒤 AppPorts를 다시 끌어다 놓으세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Systeeminstellingen nog een ingeschakelde oude AppPorts-vermelding toont, klik dan op ‘Oude machtigingsrecords wissen’ in Gereedheid, of selecteer de oude vermelding, klik linksonder op ‘-’ om deze te verwijderen en sleep AppPorts opnieuw in de lijst."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli Ustawienia systemowe nadal pokazują włączony stary wpis AppPorts, kliknij „Wyczyść stare wpisy uprawnień” w sekcji Gotowość albo zaznacz stary wpis, usuń go przyciskiem „-” w lewym dolnym rogu i przeciągnij AppPorts ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se os Ajustes do Sistema ainda mostrarem uma entrada antiga do AppPorts ativada, clique em “Limpar registros de permissão antigos” em Preparação, ou selecione a entrada antiga, clique em “-” no canto inferior esquerdo para removê-la e arraste o AppPorts novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если в «Системных настройках» всё ещё отображается включённая старая запись AppPorts, нажмите «Очистить старые записи разрешений» в разделе «Готовность» либо выберите старую запись, удалите её кнопкой «-» внизу слева и перетащите AppPorts снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หากในการตั้งค่าระบบยังเห็นรายการ AppPorts เวอร์ชันเก่าที่เปิดอยู่ ให้คลิก “ล้างรายการสิทธิ์เวอร์ชันเก่า” ในหน้าความพร้อม หรือเลือกรายการเก่าแล้วกด “-” ด้านล่างซ้ายเพื่อลบออก จากนั้นลาก AppPorts เข้าไปใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları hâlâ açık durumda eski bir AppPorts kaydı gösteriyorsa Hazırlık bölümünde “Eski İzin Kayıtlarını Temizle”ye tıklayın veya eski kaydı seçip sol alttaki “-” ile kaldırdıktan sonra AppPorts’u yeniden sürükleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu Cài đặt hệ thống vẫn hiển thị mục AppPorts cũ đang bật, hãy nhấn “Xóa bản ghi quyền cũ” trong phần Sẵn sàng, hoặc chọn mục cũ, nhấn “-” ở góc dưới bên trái để xóa rồi kéo AppPorts vào lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若系统设置中仍看到已开启的旧版 AppPorts，请在“准备情况”中点击“清理旧版授权记录”，或选中旧条目点左下角“-”移除后再重新拖入。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若系統設定中仍看到已開啟的舊版 AppPorts，請在「準備情況」中點擊「清理舊版授權記錄」，或選取舊項目按左下角「-」移除後再重新拖入。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若系統設置中仍看到已開啟の舊版 AppPorts，請在“準備情況”中點擊“清理舊版授權記錄”，或選中舊條目點左下角“-”移除后再重新拖入。"
+          }
+        }
+      }
+    },
+    "前往设置后，将悬浮提示中的 AppPorts 图标拖入列表并打开开关即可；若仍见已开启的旧条目，请先点“-”移除再重新添加。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "في إعدادات النظام، اسحب أيقونة AppPorts من الدليل العائم إلى القائمة وفعّل المفتاح. إذا كان لا يزال هناك إدخال قديم قيد التشغيل، فانقر على «-» لإزالته أولًا ثم أضف AppPorts مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠊⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠂ ⠙⠗⠁⠛ ⠞⠓⠑ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠉⠕⠝ ⠋⠗⠕⠍ ⠞⠓⠑ ⠋⠇⠕⠁⠞⠊⠝⠛ ⠛⠥⠊⠙⠑ ⠊⠝⠞⠕ ⠞⠓⠑ ⠇⠊⠎⠞ ⠁⠝⠙ ⠞⠥⠗⠝ ⠞⠓⠑ ⠎⠺⠊⠞⠉⠓ ⠕⠝⠲ ⠠⠊⠋ ⠁⠝ ⠕⠇⠙⠑⠗ ⠑⠝⠁⠃⠇⠑⠙ ⠑⠝⠞⠗⠽ ⠊⠎ ⠎⠞⠊⠇⠇ ⠇⠊⠎⠞⠑⠙⠂ ⠉⠇⠊⠉⠅ “⠤” ⠞⠕ ⠗⠑⠍⠕⠧⠑ ⠊⠞ ⠋⠊⠗⠎⠞ ⠁⠝⠙ ⠞⠓⠑⠝ ⠁⠙⠙ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziehe in den Systemeinstellungen das AppPorts-Symbol aus dem schwebenden Hinweis in die Liste und aktiviere den Schalter. Falls noch ein aktivierter alter Eintrag sichtbar ist, entferne ihn zuerst mit „-“ und füge AppPorts erneut hinzu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In System Settings, drag the AppPorts icon from the floating guide into the list and turn the switch on. If an older enabled entry is still listed, click “-” to remove it first and then add AppPorts again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Sistemaj Agordoj, trenu la bildsimbolon de AppPorts el la flosanta gvidilo en la liston kaj ŝaltu la ŝaltilon. Se malnova ŝaltita ero ankoraŭ aperas, unue alklaku «-» por forigi ĝin kaj poste aldonu AppPorts denove."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Configuración del Sistema, arrastra el icono de AppPorts desde la guía flotante a la lista y activa el interruptor. Si aún ves una entrada antigua activada, haz clic en «-» para eliminarla primero y vuelve a añadir AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans Réglages Système, faites glisser l’icône d’AppPorts depuis le guide flottant vers la liste et activez l’interrupteur. Si une ancienne entrée activée apparaît encore, cliquez d’abord sur « - » pour la supprimer, puis ajoutez AppPorts à nouveau."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम सेटिंग्स में, फ़्लोटिंग गाइड से AppPorts आइकन को सूची में ड्रैग करें और स्विच चालू करें। यदि कोई पुरानी चालू प्रविष्टि अभी भी दिख रही है, तो पहले “-” पर क्लिक करके उसे हटाएँ और फिर AppPorts को दोबारा जोड़ें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di Pengaturan Sistem, seret ikon AppPorts dari panduan mengambang ke daftar lalu nyalakan sakelarnya. Jika entri lama yang aktif masih terlihat, klik “-” untuk menghapusnya terlebih dahulu lalu tambahkan AppPorts lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Impostazioni di Sistema, trascina l’icona di AppPorts dalla guida mobile nell’elenco e attiva l’interruttore. Se vedi ancora una vecchia voce attiva, fai clic su «-» per rimuoverla prima e aggiungi di nuovo AppPorts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定で、フローティングガイドから AppPorts アイコンをリストへドラッグしてスイッチをオンにしてください。オンのままの古い項目が残っている場合は、先に「-」で削除してから追加し直してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정에서 플로팅 안내 창의 AppPorts 아이콘을 목록으로 끌어다 놓고 스위치를 켜세요. 켜진 상태의 이전 항목이 남아 있다면 먼저 ‘-’를 눌러 제거한 뒤 다시 추가하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep in Systeeminstellingen het AppPorts-symbool vanuit de zwevende gids naar de lijst en zet de schakelaar aan. Als er nog een ingeschakelde oude vermelding staat, verwijder die eerst met ‘-’ en voeg AppPorts opnieuw toe."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "W Ustawieniach systemowych przeciągnij ikonę AppPorts z pływającej podpowiedzi na listę i włącz przełącznik. Jeśli nadal widać włączony stary wpis, najpierw usuń go przyciskiem „-”, a potem dodaj AppPorts ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nos Ajustes do Sistema, arraste o ícone do AppPorts do guia flutuante para a lista e ative a chave. Se ainda houver uma entrada antiga ativada, clique em “-” para removê-la primeiro e adicione o AppPorts novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В «Системных настройках» перетащите значок AppPorts из плавающей подсказки в список и включите переключатель. Если в списке осталась включённая старая запись, сначала удалите её кнопкой «-», а затем добавьте AppPorts снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ในการตั้งค่าระบบ ให้ลากไอคอน AppPorts จากหน้าต่างแนะนำแบบลอยเข้าไปในรายการแล้วเปิดสวิตช์ หากยังเห็นรายการเก่าที่เปิดอยู่ ให้คลิก “-” เพื่อลบออกก่อนแล้วจึงเพิ่มใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları’nda yüzen kılavuzdaki AppPorts simgesini listeye sürükleyip anahtarı açın. Hâlâ açık durumda eski bir kayıt görünüyorsa önce “-” ile kaldırın ve ardından AppPorts’u yeniden ekleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trong Cài đặt hệ thống, hãy kéo biểu tượng AppPorts từ bảng hướng dẫn nổi vào danh sách và bật công tắc. Nếu vẫn thấy mục cũ đang bật, hãy nhấn “-” để xóa trước rồi thêm lại AppPorts."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往设置后，将悬浮提示中的 AppPorts 图标拖入列表并打开开关即可；若仍见已开启的旧条目，请先点“-”移除再重新添加。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往設定後，將懸浮提示中的 AppPorts 圖示拖入列表並開啟開關即可；若仍見已開啟的舊項目，請先按「-」移除再重新加入。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往設置后，將懸浮提示中の AppPorts 圖標拖入列錶并打開開關即可；若仍見已開啟の舊條目，請先點“-”移除再重新添加。"
+          }
+        }
+      }
+    },
+    "前往「App 管理」设置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فتح إعدادات إدارة التطبيقات"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠕⠏⠑⠝ ⠠⠁⠏⠏ ⠠⠍⠁⠝⠁⠛⠑⠍⠑⠝⠞ ⠠⠎⠑⠞⠞⠊⠝⠛⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„App-Verwaltung“ öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open App Management Settings"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfermi agordojn de Aplikaĵa administrado"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Gestión de apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Gestion des apps"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप प्रबंधन सेटिंग्स खोलें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Pengaturan Manajemen App"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri impostazioni Gestione app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「アプリ管理」設定を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘앱 관리’ 설정 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open instellingen voor App-beheer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz ustawienia Zarządzania aplikacjami"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Gerenciamento de Apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть настройки «Управления приложениями»"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดการตั้งค่าการจัดการแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama Yönetimi Ayarlarını Aç"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở cài đặt Quản lý ứng dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往「App 管理」设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往「App 管理」設定"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往「App 管理」設置"
+          }
+        }
+      }
+    },
+    "前往「完全磁盘访问权限」设置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فتح إعدادات الوصول الكامل إلى القرص"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠕⠏⠑⠝ ⠠⠋⠥⠇⠇ ⠠⠙⠊⠎⠅ ⠠⠁⠉⠉⠑⠎⠎ ⠠⠎⠑⠞⠞⠊⠝⠛⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„Festplattenvollzugriff“ öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Full Disk Access Settings"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfermi agordojn de Plena diska aliro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Acceso total al disco"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Accès complet au disque"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पूर्ण डिस्क पहुँच सेटिंग्स खोलें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Pengaturan Akses Disk Penuh"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri impostazioni Accesso completo al disco"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「フルディスクアクセス」設定を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘전체 디스크 접근 권한’ 설정 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open instellingen voor Volledige schijftoegang"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz ustawienia Pełnego dostępu do dysku"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ajustes de Acesso Total ao Disco"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть настройки «Полного доступа к диску»"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดการตั้งค่าสิทธิ์เข้าถึงดิสก์เต็มรูปแบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tam Disk Erişimi Ayarlarını Aç"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở cài đặt Quyền truy cập toàn ổ đĩa"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往「完全磁盘访问权限」设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往「完全磁碟取用權限」設定"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往「完全磁盤訪問權限」設置"
+          }
+        }
+      }
+    },
+    "打开准备情况检查" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فتح فحص الجاهزية"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠕⠏⠑⠝ ⠠⠗⠑⠁⠙⠊⠝⠑⠎⠎ ⠠⠉⠓⠑⠉⠅"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereitschaftsprüfung öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Readiness Check"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malfermi kontrolon de preteco"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir comprobación de preparación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir la vérification de préparation"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "तैयारी जाँच खोलें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka Pemeriksaan Kesiapan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri controllo di preparazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "準備状況チェックを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비 상태 확인 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gereedheidscontrole openen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz sprawdzanie gotowości"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir verificação de preparação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть проверку готовности"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดการตรวจสอบความพร้อม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hazırlık Denetimini Aç"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở kiểm tra sẵn sàng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开准备情况检查"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟準備情況檢查"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開準備情況檢查"
+          }
+        }
+      }
+    },
+    "稍后再说" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لاحقًا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠁⠞⠑⠗"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Später"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más tarde"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बाद में"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nanti"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più tardi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "後で"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나중에"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet nu"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Później"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais tarde"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позже"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไว้ทีหลัง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daha Sonra"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Để sau"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍后再说"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍後再說"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍后再說"
+          }
+        }
+      }
+    },
+    "若系统设置中 AppPorts 开关已开但仍未生效，可能是旧版本证书残留，可先清理旧记录再重新授权。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إذا كان مفتاح AppPorts قيد التشغيل بالفعل في إعدادات النظام ولكنه لا يعمل بعد، فقد يكون هناك سجل قديم من شهادة سابقة. امسح السجلات القديمة أولًا ثم امنح الإذن مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠊⠋ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠊⠎ ⠁⠇⠗⠑⠁⠙⠽ ⠎⠺⠊⠞⠉⠓⠑⠙ ⠕⠝ ⠊⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎ ⠃⠥⠞ ⠎⠞⠊⠇⠇ ⠓⠁⠎ ⠝⠕ ⠑⠋⠋⠑⠉⠞⠂ ⠁ ⠎⠞⠁⠇⠑ ⠗⠑⠉⠕⠗⠙ ⠋⠗⠕⠍ ⠁⠝ ⠕⠇⠙⠑⠗ ⠉⠑⠗⠞⠊⠋⠊⠉⠁⠞⠑ ⠍⠁⠽ ⠗⠑⠍⠁⠊⠝⠲ ⠠⠉⠇⠑⠁⠗ ⠞⠓⠑ ⠕⠇⠙ ⠗⠑⠉⠕⠗⠙⠎ ⠋⠊⠗⠎⠞⠂ ⠞⠓⠑⠝ ⠛⠗⠁⠝⠞ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn AppPorts in den Systemeinstellungen bereits aktiviert ist, aber weiterhin nicht greift, könnte ein veralteter Eintrag eines früheren Zertifikats vorliegen. Lösche zuerst die alten Einträge und erteile die Berechtigung neu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If AppPorts is already switched on in System Settings but still has no effect, a stale record from an older certificate may remain. Clear the old records first, then grant permission again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se AppPorts jam estas ŝaltita en Sistemaj Agordoj sed ankoraŭ ne efikas, povas resti malnova registro de antaŭa atestilo. Unue forigu la malnovajn registrojn, poste donu la permeson denove."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si AppPorts ya está activado en Configuración del Sistema pero sigue sin funcionar, puede quedar un registro antiguo de un certificado anterior. Limpia primero los registros antiguos y vuelve a conceder el permiso."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si AppPorts est déjà activé dans Réglages Système mais reste sans effet, un ancien enregistrement lié à un certificat précédent peut subsister. Effacez d’abord les anciens enregistrements, puis accordez l’autorisation à nouveau."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यदि सिस्टम सेटिंग्स में AppPorts पहले से चालू है लेकिन फिर भी काम नहीं कर रहा है, तो पुराने प्रमाणपत्र का रिकॉर्ड बचा हो सकता है। पहले पुराने रिकॉर्ड साफ़ करें, फिर अनुमति दोबारा दें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika AppPorts sudah aktif di Pengaturan Sistem tetapi belum berfungsi, mungkin masih ada catatan lama dari sertifikat sebelumnya. Bersihkan catatan lama terlebih dahulu, lalu berikan izin kembali."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se AppPorts è già attivo in Impostazioni di Sistema ma non ha ancora effetto, potrebbe esserci un vecchio record di un certificato precedente. Rimuovi prima i vecchi record e concedi di nuovo l’autorizzazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定で AppPorts がオンになっているのに有効にならない場合、古い証明書のレコードが残っている可能性があります。先に古いレコードを消去してから再許可してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 설정에서 AppPorts가 이미 켜져 있는데도 적용되지 않으면 이전 인증서의 기록이 남아 있을 수 있습니다. 먼저 이전 기록을 지운 뒤 권한을 다시 허용하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als AppPorts in Systeeminstellingen al aanstaat maar nog steeds niet werkt, kan er een verouderde vermelding van een vorig certificaat zijn achtergebleven. Wis eerst de oude records en verleen de machtiging opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli AppPorts jest już włączony w Ustawieniach systemowych, ale nadal nie działa, w systemie może zalegać wpis ze starszego certyfikatu. Najpierw wyczyść stare wpisy, a następnie ponownie nadaj uprawnienia."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se o AppPorts já estiver ativado nos Ajustes do Sistema mas ainda não surtir efeito, pode haver um registro antigo de um certificado anterior. Limpe os registros antigos primeiro e conceda a permissão novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если AppPorts уже включён в «Системных настройках», но права всё равно не действуют, могла остаться запись от старого сертификата. Сначала очистите старые записи, затем выдайте разрешение снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หากเปิดสวิตช์ AppPorts ในการตั้งค่าระบบแล้วแต่ยังใช้งานไม่ได้ อาจมีรายการเก่าจากใบรับรองเดิมค้างอยู่ ให้ล้างรายการเก่าก่อนแล้วค่อยอนุญาตใหม่อีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts, Sistem Ayarları’nda açık görünmesine rağmen hâlâ etkili olmuyorsa eski bir sertifikadan kalan kayıt bulunuyor olabilir. Önce eski kayıtları temizleyip izni yeniden verin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu AppPorts đã bật trong Cài đặt hệ thống nhưng vẫn chưa có hiệu lực, có thể vẫn còn bản ghi cũ từ chứng chỉ trước. Hãy xóa bản ghi cũ trước rồi cấp lại quyền."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若系统设置中 AppPorts 开关已开但仍未生效，可能是旧版本证书残留，可先清理旧记录再重新授权。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若系統設定中 AppPorts 開關已開但仍未生效，可能是舊版本憑證殘留，可先清理舊記錄再重新授權。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若系統設置中 AppPorts 開關已開但仍未生效，可能是舊版本證書殘留，可先清理舊記錄再重新授權。"
+          }
+        }
+      }
+    },
+    "清理旧版授权记录" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مسح سجلات الأذونات القديمة"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠇⠑⠁⠗ ⠠⠇⠑⠛⠁⠉⠽ ⠠⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠠⠗⠑⠉⠕⠗⠙⠎"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alte Berechtigungen zurücksetzen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Legacy Permission Records"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forigi malnovajn permesregistrojn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar registros de permisos antiguos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les anciens enregistrements"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पुराने अनुमति रिकॉर्ड साफ़ करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bersihkan Catatan Izin Lama"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi vecchi record di autorizzazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "古い権限レコードを消去"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 권한 기록 지우기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oude machtigingsrecords wissen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyść stare wpisy uprawnień"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar registros de permissão antigos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить старые записи разрешений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ล้างรายการสิทธิ์เวอร์ชันเก่า"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eski İzin Kayıtlarını Temizle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa bản ghi quyền cũ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理旧版授权记录"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理舊版授權記錄"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理舊版授權記錄"
+          }
+        }
+      }
+    },
+    "清理旧证书留下的系统权限记录；清理完全磁盘访问权限时可能会请求管理员授权。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يمسح سجلات أذونات النظام القديمة التي تركتها شهادة سابقة. قد يُطلب تصريح المسؤول عند مسح الوصول الكامل إلى القرص."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠇⠑⠁⠗⠎ ⠎⠞⠁⠇⠑ ⠎⠽⠎⠞⠑⠍ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠗⠑⠉⠕⠗⠙⠎ ⠇⠑⠋⠞ ⠃⠽ ⠁⠝ ⠕⠇⠙⠑⠗ ⠉⠑⠗⠞⠊⠋⠊⠉⠁⠞⠑⠲ ⠠⠁⠙⠍⠊⠝⠊⠎⠞⠗⠁⠞⠕⠗ ⠁⠥⠞⠓⠕⠗⠊⠵⠁⠞⠊⠕⠝ ⠍⠁⠽ ⠃⠑ ⠗⠑⠟⠥⠑⠎⠞⠑⠙ ⠺⠓⠑⠝ ⠉⠇⠑⠁⠗⠊⠝⠛ ⠠⠋⠥⠇⠇ ⠠⠙⠊⠎⠅ ⠠⠁⠉⠉⠑⠎⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löscht veraltete Systemberechtigungen eines früheren Zertifikats. Beim Zurücksetzen des Festplattenvollzugriffs wird möglicherweise eine Administrator-Authentifizierung angefordert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clears stale system permission records left by an older certificate. Administrator authorization may be requested when clearing Full Disk Access."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forigas malnovajn sistemajn permesregistrojn lasitajn de antaŭa atestilo. Administranta rajtigo povas esti petata dum forigo de Plena diska aliro."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpia los registros de permisos del sistema dejados por un certificado anterior. Es posible que se solicite autorización de administrador al limpiar el Acceso total al disco."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efface les anciens enregistrements d’autorisations système laissés par un certificat précédent. Une autorisation administrateur peut être demandée pour effacer l’Accès complet au disque."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पुराने प्रमाणपत्र द्वारा छोड़े गए सिस्टम अनुमति रिकॉर्ड साफ़ करता है। पूर्ण डिस्क पहुँच साफ़ करते समय व्यवस्थापक अनुमति माँगी जा सकती है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Membersihkan catatan izin sistem lama dari sertifikat sebelumnya. Otorisasi administrator mungkin diminta saat membersihkan Akses Disk Penuh."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove i vecchi record di autorizzazione di sistema lasciati da un certificato precedente. Per rimuovere l’Accesso completo al disco potrebbe essere richiesta l’autorizzazione di amministratore."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "古い証明書によって残されたシステム権限レコードを消去します。フルディスクアクセスの消去時には管理者認証が求められる場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 인증서로 인해 남은 시스템 권한 기록을 지웁니다. 전체 디스크 접근 권한을 정리할 때 관리자 인증을 요청할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wist verouderde systeemmachtigingsrecords van een vorig certificaat. Voor het wissen van Volledige schijftoegang kan om beheerdersautorisatie worden gevraagd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czyści nieaktualne wpisy uprawnień systemowych po starszym certyfikacie. Czyszczenie Pełnego dostępu do dysku może wymagać autoryzacji administratora."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpa registros antigos de permissão do sistema deixados por um certificado anterior. A autorização de administrador pode ser solicitada ao limpar o Acesso Total ao Disco."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очищает устаревшие записи системных разрешений от старого сертификата. При очистке «Полного доступа к диску» может потребоваться авторизация администратора."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ล้างรายการสิทธิ์ระบบเก่าที่เหลือจากใบรับรองเดิม อาจมีการขอสิทธิ์ผู้ดูแลระบบเมื่อล้างสิทธิ์เข้าถึงดิสก์เต็มรูปแบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eski bir sertifikadan kalan sistem izni kayıtlarını temizler. Tam Disk Erişimi temizlenirken yönetici yetkilendirmesi istenebilir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa các bản ghi quyền hệ thống cũ còn sót từ chứng chỉ trước. Có thể yêu cầu xác thực quản trị viên khi xóa Quyền truy cập toàn ổ đĩa."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理旧证书留下的系统权限记录；清理完全磁盘访问权限时可能会请求管理员授权。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理舊憑證留下的系統權限記錄；清理完全磁碟取用權限時可能會請求管理員授權。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理舊證書留下の系統權限記錄；清理完全磁盤訪問權限時可能會請求管理員授權。"
+          }
+        }
+      }
+    },
+    "已清理旧版授权记录，请点击上方“打开系统设置”重新添加并开启开关。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم مسح سجلات الأذونات القديمة. انقر على «فتح إعدادات النظام» أعلاه لإضافة AppPorts مجددًا وتفعيل المفتاح."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠑⠛⠁⠉⠽ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠗⠑⠉⠕⠗⠙⠎ ⠓⠁⠧⠑ ⠃⠑⠑⠝ ⠉⠇⠑⠁⠗⠑⠙⠲ ⠠⠉⠇⠊⠉⠅ “⠠⠕⠏⠑⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎” ⠁⠃⠕⠧⠑ ⠞⠕ ⠁⠙⠙ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠁⠛⠁⠊⠝ ⠁⠝⠙ ⠞⠥⠗⠝ ⠞⠓⠑ ⠎⠺⠊⠞⠉⠓ ⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alte Berechtigungsrecords wurden gelöscht. Klicke oben auf „Systemeinstellungen öffnen“, füge AppPorts erneut hinzu und aktiviere den Schalter."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legacy permission records have been cleared. Click “Open System Settings” above to add AppPorts again and turn the switch on."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malnovaj permesregistroj estas forigitaj. Alklaku «Malfermi Sistemajn Agordojn» supre por denove aldoni AppPorts kaj ŝalti la ŝaltilon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se han limpiado los registros de permisos antiguos. Haz clic arriba en «Abrir Configuración del Sistema» para volver a añadir AppPorts y activar el interruptor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les anciens enregistrements d’autorisations ont été effacés. Cliquez sur « Ouvrir Réglages Système » ci-dessus pour ajouter AppPorts à nouveau et activer l’interrupteur."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पुराने अनुमति रिकॉर्ड साफ़ कर दिए गए हैं। AppPorts को फिर से जोड़ने और स्विच चालू करने के लिए ऊपर “सिस्टम सेटिंग्स खोलें” पर क्लिक करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catatan izin lama telah dibersihkan. Klik “Buka Pengaturan Sistem” di atas untuk menambahkan AppPorts kembali dan menyalakan sakelarnya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I vecchi record di autorizzazione sono stati rimossi. Fai clic su «Apri Impostazioni di Sistema» in alto per aggiungere di nuovo AppPorts e attivare l’interruttore."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "古い権限レコードを消去しました。上の「システム設定を開く」をクリックして AppPorts を追加し直し、スイッチをオンにしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이전 권한 기록을 지웠습니다. 위의 ‘시스템 설정 열기’를 클릭해 AppPorts를 다시 추가하고 스위치를 켜세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oude machtigingsrecords zijn gewist. Klik hierboven op ‘Open Systeeminstellingen’ om AppPorts opnieuw toe te voegen en de schakelaar aan te zetten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stare wpisy uprawnień zostały wyczyszczone. Kliknij powyżej „Otwórz Ustawienia systemowe”, aby ponownie dodać AppPorts i włączyć przełącznik."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os registros de permissão antigos foram limpos. Clique em “Abrir Ajustes do Sistema” acima para adicionar o AppPorts novamente e ativar a chave."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Старые записи разрешений очищены. Нажмите «Открыть Системные настройки» выше, чтобы снова добавить AppPorts и включить переключатель."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ล้างรายการสิทธิ์เวอร์ชันเก่าเรียบร้อยแล้ว คลิก “เปิดการตั้งค่าระบบ” ด้านบนเพื่อเพิ่ม AppPorts ใหม่และเปิดสวิตช์"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eski izin kayıtları temizlendi. AppPorts’u yeniden ekleyip anahtarı açmak için yukarıdaki “Sistem Ayarları’nı Aç” düğmesine tıklayın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xóa các bản ghi quyền cũ. Hãy nhấn “Mở Cài đặt hệ thống” ở trên để thêm lại AppPorts và bật công tắc."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已清理旧版授权记录，请点击上方“打开系统设置”重新添加并开启开关。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已清理舊版授權記錄，請點擊上方「開啟系統設定」重新加入並開啟開關。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已清理舊版授權記錄，請點擊上方“打開系統設置”重新添加并開啟開關。"
+          }
+        }
+      }
+    },
+    "未能自动清理部分旧版授权记录，请在系统设置中选中旧的 AppPorts 后点“-”移除再重新添加。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر مسح بعض سجلات الأذونات القديمة تلقائيًا. في إعدادات النظام، حدد إدخال AppPorts القديم وانقر على «-» لإزالته ثم أضف AppPorts مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠎⠕⠍⠑ ⠇⠑⠛⠁⠉⠽ ⠏⠑⠗⠍⠊⠎⠎⠊⠕⠝ ⠗⠑⠉⠕⠗⠙⠎ ⠉⠕⠥⠇⠙ ⠝⠕⠞ ⠃⠑ ⠉⠇⠑⠁⠗⠑⠙ ⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽⠲ ⠠⠊⠝ ⠠⠎⠽⠎⠞⠑⠍ ⠠⠎⠑⠞⠞⠊⠝⠛⠎⠂ ⠎⠑⠇⠑⠉⠞ ⠞⠓⠑ ⠕⠇⠙⠑⠗ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠑⠝⠞⠗⠽⠂ ⠉⠇⠊⠉⠅ “⠤” ⠞⠕ ⠗⠑⠍⠕⠧⠑ ⠊⠞⠂ ⠁⠝⠙ ⠁⠙⠙ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠁⠛⠁⠊⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige alte Berechtigungseinträge konnten nicht automatisch gelöscht werden. Wähle in den Systemeinstellungen den alten AppPorts-Eintrag aus, entferne ihn mit „-“ und füge AppPorts erneut hinzu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some legacy permission records could not be cleared automatically. In System Settings, select the older AppPorts entry, click “-” to remove it, and add AppPorts again."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kelkaj malnovaj permesregistroj ne povis esti aŭtomate forigitaj. En Sistemaj Agordoj, elektu la malnovan eron AppPorts, alklaku «-» por forigi ĝin, kaj aldonu AppPorts denove."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron limpiar automáticamente algunos registros de permisos antiguos. En Configuración del Sistema, selecciona la entrada antigua de AppPorts, haz clic en «-» para eliminarla y vuelve a añadir AppPorts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certains anciens enregistrements d’autorisations n’ont pas pu être effacés automatiquement. Dans Réglages Système, sélectionnez l’ancienne entrée AppPorts, cliquez sur « - » pour la supprimer, puis ajoutez AppPorts à nouveau."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कुछ पुराने अनुमति रिकॉर्ड अपने-आप साफ़ नहीं हो सके। सिस्टम सेटिंग्स में पुरानी AppPorts प्रविष्टि चुनें, “-” पर क्लिक करके हटाएँ और AppPorts को दोबारा जोड़ें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sebagian catatan izin lama tidak dapat dibersihkan secara otomatis. Di Pengaturan Sistem, pilih entri AppPorts lama, klik “-” untuk menghapusnya, lalu tambahkan AppPorts kembali."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile rimuovere automaticamente alcuni vecchi record di autorizzazione. In Impostazioni di Sistema, seleziona la vecchia voce AppPorts, fai clic su «-» per eliminarla e aggiungi di nuovo AppPorts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一部の古い権限レコードを自動消去できませんでした。システム設定で古い AppPorts を選び、「-」で削除してから追加し直してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일부 이전 권한 기록을 자동으로 지우지 못했습니다. 시스템 설정에서 이전 AppPorts 항목을 선택한 뒤 ‘-’로 제거하고 다시 추가하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sommige oude machtigingsrecords konden niet automatisch worden gewist. Selecteer in Systeeminstellingen de oude AppPorts-vermelding, verwijder deze met ‘-’ en voeg AppPorts opnieuw toe."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niektórych starych wpisów uprawnień nie udało się wyczyścić automatycznie. W Ustawieniach systemowych zaznacz stary wpis AppPorts, usuń go przyciskiem „-” i dodaj AppPorts ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível limpar automaticamente alguns registros de permissão antigos. Nos Ajustes do Sistema, selecione a entrada antiga do AppPorts, clique em “-” para removê-la e adicione o AppPorts novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Некоторые старые записи разрешений не удалось очистить автоматически. В «Системных настройках» выберите старую запись AppPorts, удалите её кнопкой «-» и добавьте AppPorts снова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่สามารถล้างรายการสิทธิ์เวอร์ชันเก่าบางรายการได้โดยอัตโนมัติ ในการตั้งค่าระบบ ให้เลือกรายการ AppPorts เก่า กด “-” เพื่อลบออก แล้วเพิ่มเข้าไปใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bazı eski izin kayıtları otomatik olarak temizlenemedi. Sistem Ayarları’nda eski AppPorts kaydını seçip “-” ile kaldırın ve AppPorts’u yeniden ekleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tự động xóa một số bản ghi quyền cũ. Trong Cài đặt hệ thống, hãy chọn mục AppPorts cũ, nhấn “-” để xóa rồi thêm lại AppPorts."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能自动清理部分旧版授权记录，请在系统设置中选中旧的 AppPorts 后点“-”移除再重新添加。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能自動清理部分舊版授權記錄，請在系統設定中選取舊的 AppPorts 後按「-」移除再重新加入。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能自動清理部分舊版授權記錄，請在系統設置中選中舊の AppPorts 后點“-”移除再重新添加。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

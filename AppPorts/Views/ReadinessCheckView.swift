@@ -33,6 +33,9 @@ struct ReadinessCheckView: View {
     var onOpenSettings: (() -> Void)?
     var isEmbedded: Bool
     @StateObject private var model: ReadinessCheckModel
+    @State private var isResettingLegacyPermissions = false
+    @State private var legacyResetFeedback: String?
+    @State private var legacyResetFeedbackIsError = false
 
     init(refreshPlacement: RefreshPlacement = .top, footnote: String? = nil,
          onOpenSettings: (() -> Void)? = nil, isEmbedded: Bool = false,
@@ -42,6 +45,19 @@ struct ReadinessCheckView: View {
         self.onOpenSettings = onOpenSettings
         self.isEmbedded = isEmbedded
         _model = StateObject(wrappedValue: model ?? ReadinessCheckModel())
+    }
+
+    private var resettablePermissions: [LegacyPermissionResetter.PermissionKind] {
+        var result: [LegacyPermissionResetter.PermissionKind] = []
+        if let item = model.items.first(where: { $0.id == LaunchReadinessChecker.ItemID.appManagement }),
+           item.level != .ok {
+            result.append(.appManagement)
+        }
+        if let item = model.items.first(where: { $0.id == LaunchReadinessChecker.ItemID.fullDiskAccess }),
+           item.level == .failed {
+            result.append(.fullDiskAccess)
+        }
+        return result
     }
 
     var body: some View {
@@ -59,6 +75,11 @@ struct ReadinessCheckView: View {
                     }
                     if isEmbedded, item.id != model.items.last?.id { Divider() }
                 }
+
+                if !resettablePermissions.isEmpty {
+                    if isEmbedded { Divider() }
+                    legacyResetCard
+                }
             }
 
             if refreshPlacement == .bottom {
@@ -69,6 +90,12 @@ struct ReadinessCheckView: View {
         // 去系统设置改完权限切回来，自动重新检查一次。
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             model.refresh()
+        }
+        .onChange(of: resettablePermissions) { current in
+            if current.isEmpty {
+                legacyResetFeedback = nil
+                legacyResetFeedbackIsError = false
+            }
         }
     }
 
@@ -118,6 +145,78 @@ struct ReadinessCheckView: View {
             Text("正在检查…".localized)
                 .font(AppDialogTypography.body)
                 .foregroundColor(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var legacyResetCard: some View {
+        if isEmbedded { legacyResetContent }
+        else { legacyResetContent.settingsCardBackground() }
+    }
+
+    private var legacyResetContent: some View {
+        VStack(alignment: .leading, spacing: isEmbedded ? AppSettingsStyle.relatedGap : 8) {
+            HStack(alignment: .center, spacing: 12) {
+                Text("若系统设置中 AppPorts 开关已开但仍未生效，可能是旧版本证书残留，可先清理旧记录再重新授权。".localized)
+                    .font(isEmbedded ? AppSettingsStyle.secondaryFont : AppDialogTypography.body)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Button(action: resetLegacyPermissions) {
+                    HStack(spacing: 5) {
+                        if isResettingLegacyPermissions {
+                            ProgressView()
+                                .controlSize(.small)
+                                .scaleEffect(0.7)
+                        }
+                        Text("清理旧版授权记录".localized)
+                    }
+                    .font(isEmbedded ? AppSettingsStyle.bodyFont : AppDialogTypography.body.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(isEmbedded ? AppSettingsStyle.controlSize : .small)
+                .disabled(isResettingLegacyPermissions)
+                .fixedSize(horizontal: true, vertical: false)
+                .help("清理旧证书留下的系统权限记录；清理完全磁盘访问权限时可能会请求管理员授权。".localized)
+            }
+
+            if let legacyResetFeedback {
+                Text(legacyResetFeedback)
+                    .font(isEmbedded ? AppSettingsStyle.secondaryFont : AppDialogTypography.body)
+                    .foregroundStyle(legacyResetFeedbackIsError ? AppSettingsStyle.error : AppSettingsStyle.success)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func resetLegacyPermissions() {
+        let targets = resettablePermissions
+        guard !targets.isEmpty, !isResettingLegacyPermissions else { return }
+        guard AppInstallationLocation.confirmIfNeeded() else { return }
+
+        isResettingLegacyPermissions = true
+        legacyResetFeedback = nil
+        legacyResetFeedbackIsError = false
+
+        Task {
+            defer { isResettingLegacyPermissions = false }
+            do {
+                let outcome = try await LegacyPermissionResetter.shared.resetManually(permissions: targets)
+                model.refresh()
+                if outcome.allSucceeded {
+                    legacyResetFeedback = "已清理旧版授权记录，请点击上方“打开系统设置”重新添加并开启开关。".localized
+                    legacyResetFeedbackIsError = false
+                } else {
+                    legacyResetFeedback = "未能自动清理部分旧版授权记录，请在系统设置中选中旧的 AppPorts 后点“-”移除再重新添加。".localized
+                    legacyResetFeedbackIsError = true
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                legacyResetFeedback = error.localizedDescription
+                legacyResetFeedbackIsError = true
+            }
         }
     }
 

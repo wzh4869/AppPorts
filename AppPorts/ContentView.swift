@@ -164,6 +164,9 @@ struct ContentView: View {
     @State private var signatureRestoreSourceRequest: WarningSheetRequest?
     @State private var signatureRepairReminderApps: [SignatureReplacedApp] = []
     @State private var hasShownSignatureRepairReminder = false
+    @State private var legacyPermissionResetRequest: WarningSheetRequest?
+    @State private var showLegacyReadinessSheet = false
+    @State private var hasEvaluatedLegacyPermissionReset = false
     @ObservedObject private var permissionReadiness = PermissionReadiness.shared
     @State private var localAppFilter: LocalAppFilter = .all
 
@@ -182,6 +185,17 @@ struct ContentView: View {
             // A unit-test host must not scan apps, refresh agents, or observe real volumes.
             guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
             permissionReadiness.refresh()
+            if !hasEvaluatedLegacyPermissionReset {
+                hasEvaluatedLegacyPermissionReset = true
+                Task {
+                    if let prompt = await LegacyPermissionResetter.shared.evaluateAndResetOnLaunchIfNeeded() {
+                        await MainActor.run {
+                            permissionReadiness.refresh()
+                            legacyPermissionResetRequest = makeLegacyPermissionResetRequest(for: prompt)
+                        }
+                    }
+                }
+            }
             refreshMASGuidance()
             isVisible = true
             if !hasRestoredSizeCache {
@@ -379,6 +393,11 @@ struct ContentView: View {
         .warningSheet($appReplacementRequest)
         // App Store 外部安装引导弹窗
         .warningSheet($masGuidanceRequest)
+        // 证书更新后旧权限记录清理与重新授权引导弹窗
+        .warningSheet($legacyPermissionResetRequest)
+        .sheet(isPresented: $showLegacyReadinessSheet) {
+            ReadinessCheckSheet()
+        }
         // App Store 设置页面
         .sheet(isPresented: $showSearchExclusion) {
             AppSearchExclusionView(load: loadExternalAppSearchStatus, process: excludeExternalAppsFromSearch)
@@ -2130,8 +2149,65 @@ struct ContentView: View {
             masGuidanceRequest = nil
             return
         }
-        guard mainTab != .settings, !operationState.blocksInteraction, masGuidanceRequest == nil else { return }
+        guard mainTab != .settings, !operationState.blocksInteraction,
+              masGuidanceRequest == nil, legacyPermissionResetRequest == nil else { return }
         masGuidanceRequest = makeMASGuidanceRequest()
+    }
+
+    /// 组装「证书更新后重新授予系统权限」引导弹窗的内容快照。
+    private func makeLegacyPermissionResetRequest(for prompt: LegacyPermissionResetter.ResetPrompt) -> WarningSheetRequest {
+        var bullets: [WarningBullet] = []
+        if prompt.permissions.contains(.appManagement) {
+            bullets.append(WarningBullet(
+                "app.badge.checkmark",
+                "App 管理权限：用于迁移、替换或还原“应用程序”文件夹中的应用。".localized
+            ))
+        }
+        if prompt.permissions.contains(.fullDiskAccess) {
+            bullets.append(WarningBullet(
+                "lock.shield",
+                "完全磁盘访问权限：用于读取和迁移受系统保护的应用数据目录。".localized
+            ))
+        }
+
+        let detail: String
+        if prompt.permissions.contains(.fullDiskAccess) {
+            detail = "若系统设置中仍看到已开启的旧版 AppPorts，请在“准备情况”中点击“清理旧版授权记录”，或选中旧条目点左下角“-”移除后再重新拖入。".localized
+        } else {
+            detail = "前往设置后，将悬浮提示中的 AppPorts 图标拖入列表并打开开关即可；若仍见已开启的旧条目，请先点“-”移除再重新添加。".localized
+        }
+
+        let primaryAction: WarningAction
+        if prompt.permissions == [.appManagement] {
+            primaryAction = WarningAction("前往「App 管理」设置".localized, style: .preferred, isDefault: true) {
+                FullDiskAccessGuide.shared.openSettings(for: .appManagement, dismiss: {
+                    legacyPermissionResetRequest = nil
+                })
+            }
+        } else if prompt.permissions == [.fullDiskAccess] {
+            primaryAction = WarningAction("前往「完全磁盘访问权限」设置".localized, style: .preferred, isDefault: true) {
+                FullDiskAccessGuide.shared.openSettings(for: .fullDiskAccess, dismiss: {
+                    legacyPermissionResetRequest = nil
+                })
+            }
+        } else {
+            primaryAction = WarningAction("打开准备情况检查".localized, style: .preferred, isDefault: true) {
+                DispatchQueue.main.async {
+                    showLegacyReadinessSheet = true
+                }
+            }
+        }
+
+        return WarningSheetRequest(
+            title: "需要重新授予系统权限".localized,
+            icon: "checkmark.shield.fill",
+            tint: .orange,
+            intro: "检测到 AppPorts 的签名证书已更新，旧版本留下的系统权限记录已不再适用。AppPorts 已尝试自动清理失效的旧记录，请前往系统设置重新授予以下权限：".localized,
+            bullets: bullets,
+            detail: detail,
+            cancelTitle: "稍后再说".localized,
+            actions: [primaryAction]
+        )
     }
 
     /// 组装「受保护应用」迁移预警的内容快照。
