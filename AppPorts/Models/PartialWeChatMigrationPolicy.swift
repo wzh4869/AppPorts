@@ -1,14 +1,13 @@
 import Darwin
 import Foundation
 
-/// Split layout proposed by du-yuxuan in AppPorts issue #79 and extended for
-/// finer-grained cold media (`msg/file` + `msg/video`) in issue #110.
+/// Account-level split layout from issue #79 and legacy member recognition for issue #110.
 /// Exact account boundaries; database/configuration trees never enter the split whitelist.
 struct PartialWeChatMigrationPolicy: Sendable {
     enum SplitGroup: String, CaseIterable, Sendable {
         /// 全部媒体目录（`msg` + `business`）
         case media
-        /// 仅低频大文件与视频（`msg/file` + `msg/video`）
+        /// Legacy `msg/file` + `msg/video` records for mounting and restoring.
         case filesAndVideos
     }
 

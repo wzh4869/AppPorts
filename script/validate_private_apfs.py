@@ -25,6 +25,7 @@ import uuid
 
 
 SELECTOR = "AppPortsTests/AppPortsRealMountValidationTests/testPrivateAPFSMountMigrationAndRestore"
+WECHAT_RESTORE_SELECTOR = "AppPortsTests/AppPortsRealMountValidationTests/testPrivateAPFSRetiredWeChatSplitRestore"
 
 
 def identity(path):
@@ -162,7 +163,7 @@ class Coordinator:
         write_json(root / "coordinator-owner.json", self.fixture)
         write_json(self.output / "fixture.json", self.fixture)
 
-    def execute(self, derived_data, timeout):
+    def execute(self, derived_data, timeout, selector):
         self.prepare()
         environment = os.environ.copy()
         environment["APPPORTS_REAL_MOUNT_ROOT"] = self.fixture["rootPath"]
@@ -172,13 +173,15 @@ class Coordinator:
             raise RuntimeError("Run script/isolate_test_host.py before real-volume validation")
         arguments = ["/usr/bin/xcodebuild", "test-without-building", "-xctestrun", str(run_file),
             "-destination", "platform=macOS,arch=arm64", "-jobs", "2", "-parallel-testing-enabled", "NO",
-            "-resultBundlePath", str(self.output / "test.xcresult"), "-only-testing:" + SELECTOR]
+            "-resultBundlePath", str(self.output / "test.xcresult"), "-only-testing:" + selector]
         self.command("xcodebuild", arguments, timeout=timeout, environment=environment)
         result = read_json(Path(self.fixture["rootPath"]) / "real-mount-result.json")
         required = ["realKernelMountVerified", "activeWritesRestored", "dedicatedVolumeDeleted",
                     "recordsAndMaterialsCleaned", "immutableAbsent", "baseVolumeRemainsNoowners",
                     "reconnectedCurrentData", "permissionDenialPreservesUsableMountAndCanRetry",
                     "permissionLossAfterCopyPreservesLatestData"]
+        if selector == WECHAT_RESTORE_SELECTOR:
+            required = ["retiredWeChatSplitRestoreVerified"]
         if result.get("status") != "passed" or result.get("nonce") != self.fixture["nonce"] \
                 or any(result.get(key) is not True for key in required):
             raise RuntimeError("The native test did not produce a complete passing result")
@@ -198,13 +201,15 @@ def main():
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--derived-data", type=Path, default=Path("build/APFSRestorePermissions"))
     parser.add_argument("--timeout", type=float, default=900)
+    parser.add_argument("--wechat-restore", action="store_true", help="Run the retired WeChat split restore on a private APFS image")
     args = parser.parse_args()
     repository = Path(__file__).resolve().parents[1]
     if not (repository / "AppPorts.xcodeproj").is_dir() or args.timeout <= 0:
         parser.error("Keep this coordinator in script and use a positive timeout")
     derived_data = args.derived_data.expanduser().resolve()
+    selector = WECHAT_RESTORE_SELECTOR if args.wechat_restore else SELECTOR
     if not args.run:
-        print(json.dumps({"mode": "plan only", "selector": SELECTOR, "derivedData": str(derived_data),
+        print(json.dumps({"mode": "plan only", "selector": selector, "derivedData": str(derived_data),
             "fixture": "Fresh AppPortsRealMount-UUID under DARWIN_USER_TEMP_DIR; 1 GiB sparse APFS image; owners off",
             "prerequisite": "Root-coordinated build must include AppPortsRealMountValidationTests",
             "success": "Verify full native result and exact image/container, then detach only that image",
@@ -214,7 +219,7 @@ def main():
         parser.error("A prebuilt macOS AppPorts test host is required")
     coordinator = Coordinator(repository)
     try:
-        result = coordinator.execute(derived_data, args.timeout)
+        result = coordinator.execute(derived_data, args.timeout, selector)
         status = 0
     except Exception as error:
         result = {"status": "failed", "error": str(error), "fixture": coordinator.fixture,

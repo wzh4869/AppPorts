@@ -22,7 +22,6 @@ struct WeChatAccountMigrationSheet: View {
         switch mode {
         case .whole: return sizing.total.isComplete
         case .split: return sizing.isComplete
-        case .filesAndVideos: return sizing.isFilesAndVideosComplete
         }
     }
 
@@ -36,7 +35,6 @@ struct WeChatAccountMigrationSheet: View {
             Picker("迁移方式".localized, selection: $mode) {
                 Text("全部迁移".localized).tag(WeChatAccountMigrationService.Mode.whole)
                 Text("拆分迁移（msg + business）".localized).tag(WeChatAccountMigrationService.Mode.split)
-                Text("仅大文件与视频（msg/file + msg/video）".localized).tag(WeChatAccountMigrationService.Mode.filesAndVideos)
             }
             .pickerStyle(.radioGroup)
             if let sizing {
@@ -58,21 +56,6 @@ struct WeChatAccountMigrationSheet: View {
                     if !sizing.isComplete {
                         Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
                             .foregroundStyle(.orange)
-                    }
-                case .filesAndVideos:
-                    if sizing.filesAndVideosCount == 0 {
-                        Text("未在账号下找到可迁移的 msg/file 或 msg/video 目录。".localized)
-                            .foregroundStyle(.orange)
-                    } else {
-                        sizeRow("迁移 msg/file + msg/video".localized, value: sizing.filesAndVideos.formattedSize)
-                        sizeRow("本地保留数据库与聊天图片等".localized,
-                                       value: LocalizedByteCountFormatter.string(fromByteCount: sizing.filesAndVideosRetainedBytes))
-                        Text("仅迁移接收的大文件与视频，数据库和聊天图片留在本地，兼顾空间释放与离线聊天体验。".localized)
-                            .font(AppDialogTypography.body).foregroundStyle(.secondary)
-                        if !sizing.total.isComplete || !sizing.filesAndVideos.isComplete {
-                            Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
-                                .foregroundStyle(.orange)
-                        }
                     }
                 }
             } else if let errorMessage {

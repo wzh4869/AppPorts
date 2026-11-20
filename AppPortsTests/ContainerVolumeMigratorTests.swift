@@ -2533,6 +2533,55 @@ struct ContainerVolumeMigratorTests {
         #expect(runner.commands(prefix: ["apfs", "deleteVolume"]).count == 2)
     }
 
+    @Test("An existing WeChat files-and-videos split can remount and restore after retirement")
+    func retiredWeChatSplitRemountsAndRestores() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let home = workspace.rootURL.appendingPathComponent("Home")
+        let identifier = "org.appports.synthetic.wechat"
+        let account = PartialWeChatMigrationPolicy(homeDirectory: home, containerIdentifier: identifier)
+            .accountsRoot.appendingPathComponent("wxid_test")
+        let source = account.appendingPathComponent("msg/file")
+        let localVideo = account.appendingPathComponent("msg/video")
+        for directory in [source, localVideo] {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+        let payload = source.appendingPathComponent("payload")
+        let videoPayload = localVideo.appendingPathComponent("local-video")
+        try Data("old attachment".utf8).write(to: payload)
+        try Data("local video".utf8).write(to: videoPayload)
+        let uuid = try #require(try DataPathIdentity.capture(source).volumeUUID)
+        let runner = FakeDiskCommandRunner(createdVolumeUUID: uuid)
+        runner.hideContentsOnUnmount()
+        // Seed the historical volume using the production transaction in a synthetic home
+        // where this fixture path is not subject to the current WeChat admission rules.
+        let seeder = workspace.makeMigrator(runner: runner, homeDirectory: workspace.rootURL.appendingPathComponent("SeedHome"))
+        let legacy = try await seeder.migrateAndComplete(item: workspace.item(for: source),
+            externalRootURL: workspace.externalRootURL, appName: "Synthetic WeChat", bundleIdentifier: identifier, progressHandler: nil)
+        #expect(legacy.cleanupWarning == nil)
+        try Data("latest attachment".utf8).write(to: payload)
+
+        let migrator = workspace.makeMigrator(runner: runner)
+        try await migrator.unmount(record: legacy.record)
+        #expect(!runner.isMounted(source))
+        try await migrator.mount(record: legacy.record, resumingManualPause: true)
+        #expect(runner.isMounted(source))
+        #expect(try Data(contentsOf: payload) == Data("latest attachment".utf8))
+
+        let service = WeChatAccountMigrationService(homeDirectory: home, store: workspace.store, migrator: migrator,
+                                                    enabled: false, containerIdentifier: identifier)
+        #expect(try service.state(of: account) == .filesAndVideos)
+        #expect(try await service.restoreSplit(account: account).isEmpty)
+        #expect(try service.state(of: account) == .local)
+        #expect(!runner.isMounted(source))
+        #expect(try Data(contentsOf: payload) == Data("latest attachment".utf8))
+        #expect(try Data(contentsOf: videoPayload) == Data("local video".utf8))
+        #expect(try workspace.store.recordsStrict().isEmpty)
+        #expect(try workspace.store.transfers().isEmpty)
+        #expect(runner.commands(prefix: ["apfs", "addVolume"]).count == 1)
+        #expect(runner.commands(prefix: ["apfs", "deleteVolume"]).count == 1)
+    }
+
     @Test("A new mount migration completes historical copies after restored local data is edited")
     func newMountMigrationCompletesHistoricalRestore() async throws {
         let workspace = try Workspace()
@@ -3292,6 +3341,7 @@ struct ContainerVolumeMigratorTests {
             mountFlags: @escaping @Sendable (URL) -> UInt32? = { _ in UInt32(MNT_DONTBROWSE) },
             safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
             makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
+            homeDirectory: URL? = nil,
             synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
         ) -> ContainerVolumeMigrator {
             let counter = agentSyncCounter
@@ -3308,7 +3358,7 @@ struct ContainerVolumeMigratorTests {
                 synchronizeAgent: { _ in counter.increment() },
                 availableCapacity: availableCapacity,
                 mountFlags: mountFlags,
-                homeDirectory: rootURL.appendingPathComponent("Home"),
+                homeDirectory: homeDirectory ?? rootURL.appendingPathComponent("Home"),
                 safetyRunner: safetyRunner,
                 makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
                 synchronizeCleanupParent: synchronizeCleanupParent

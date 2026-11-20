@@ -58,9 +58,10 @@ Choose migration for a recognized WeChat account directory, then select a mode i
 
 - **Whole migration** moves the selected account's entire directory.
 - **Split migration (`msg + business`)** moves media directories while keeping databases (`db_storage`) and configuration local. The confirmation displays moved media size and locally retained size separately.
-- **Large files & videos only (`msg/file + msg/video`)** moves only received files and videos while leaving databases and `msg/attach` chat image thumbnails on internal storage, freeing large cold-storage space while keeping everyday messages and thumbnails local.
 
-Wait for a complete size calculation before starting. All three modes are mutually exclusive: fully restore the active group before changing modes. Other WeChat accounts remain unaffected. When the drive is offline after split migration, moved `msg`, `msg/file` or `msg/video` entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether existing messages remain readable depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
+Wait for a complete size calculation before starting. Fully restore the account’s migrated data before switching modes. When the drive is offline after split migration, moved `msg`, `msg/file` or `msg/video` entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether existing messages remain readable depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
+
+The older **Large files & videos only** mode (`msg/file + msg/video`) no longer accepts new migrations. To bring back directories migrated with this mode, connect the external drive, select WeChat in **App Data**, and click **Restore** on the account.
 
 ## Read migration progress {#progress}
 

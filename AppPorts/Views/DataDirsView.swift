@@ -1769,8 +1769,12 @@ struct DataDirsView: View {
     private func askMigrate(_ item: DataDirItem) {
         if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if selectedTab == .appDirs, !AppInstallationLocation.confirmIfNeeded() { return }
+        if item.isWeChatFilesAndVideosSplit {
+            askMountRestore(item)
+            return
+        }
         if !item.weChatSplitMembers.isEmpty, item.hasMountTransferRecord {
-            weChatMigrationMode = item.isWeChatFilesAndVideosSplit ? .filesAndVideos : .split
+            weChatMigrationMode = .split
             checkMountMigrationDestination(for: item, destination: externalDriveURL)
             return
         }
@@ -2034,15 +2038,13 @@ struct DataDirsView: View {
     private func appDataPreparation(
         for app: AppItem?,
         destination: URL?,
-        splitMode: Bool? = nil,
-        preferredSplitGroup: PartialWeChatMigrationPolicy.SplitGroup? = nil
+        splitMode: Bool? = nil
     ) -> AppDataMigrationPreparation? {
         app.map {
             AppDataMigrationPreparation(
                 app: $0,
                 externalRoot: destination,
                 splitMode: splitMode ?? partialWeChatMigrationEnabled,
-                preferredSplitGroup: preferredSplitGroup,
                 containerIdentifier: weChatContainerIdentifier
             )
         }
@@ -2075,22 +2077,6 @@ struct DataDirsView: View {
             configured.weChatSplitMembers = members
             configured.weChatExpectedMemberCount = PartialWeChatMigrationPolicy.memberNames.count
             if let sizing { configured.applySize(sizing.media) }
-        case .filesAndVideos:
-            let members = selectedWeChatPolicy.existingDirectoryMembers(of: item.path, group: .filesAndVideos).map { url in
-                var member = DataDirItem(
-                    name: PartialWeChatMigrationPolicy.displayMemberLabel(for: url),
-                    path: url,
-                    type: .containers,
-                    priority: .critical,
-                    description: "容器内部数据目录"
-                )
-                member.isMigratable = true
-                member.requiresMountMigration = true
-                return member
-            }
-            configured.weChatSplitMembers = members
-            configured.weChatExpectedMemberCount = max(1, members.count)
-            if let sizing { configured.applySize(sizing.filesAndVideos) }
         }
         return configured
     }
@@ -2288,7 +2274,7 @@ struct DataDirsView: View {
         if let retrying, !MigrationTaskCenter.shared.canRetry(retrying) { return }
         if retrying == nil, !AppInstallationLocation.confirmIfNeeded() { return }
         if retrying == nil, weChatMigrationMode.isSplit, selectedWeChatPolicy.isAccount(item.path) {
-            performWeChatSplitOperation(item, mode: weChatMigrationMode, restoring: false, encryption: encryption, retrying: retrying)
+            performWeChatSplitOperation(item, restoring: false, encryption: encryption, retrying: retrying)
             return
         }
         guard let dest = externalDriveURL else { return }
@@ -2360,13 +2346,12 @@ struct DataDirsView: View {
         if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if !item.weChatSplitMembers.isEmpty {
             if requestAssociatedAppExit(for: item, continuing: { askMountRestore(item) }) { return }
-            let restoreMode: WeChatAccountMigrationService.Mode = item.isWeChatFilesAndVideosSplit ? .filesAndVideos : .split
             let restoreMessage = item.isWeChatFilesAndVideosSplit
                 ? "将这个账号的 msg/file 与 msg/video 一起还原到本地。校验并切换成功后，自动清理外置旧副本。".localized
                 : "将这个账号的 msg 和 business 一起还原到本地。校验并切换成功后，自动清理外置旧副本。".localized
             confirmRequest = makeConfirmRequest(title: "还原微信账号数据".localized, actionTitle: "还原".localized,
                 message: restoreMessage) {
-                    performWeChatSplitOperation(item, mode: restoreMode, restoring: true)
+                    performWeChatSplitOperation(item, restoring: true)
                 }
             return
         }
@@ -2407,34 +2392,30 @@ struct DataDirsView: View {
     }
 
     private func performWeChatSplitOperation(_ item: DataDirItem,
-                                               mode: WeChatAccountMigrationService.Mode = .split,
                                                restoring: Bool,
                                                encryption: APFSVolumeEncryption.Credentials? = nil,
                                                retrying: MigrationJob.RetryToken? = nil) {
         if let retrying, !MigrationTaskCenter.shared.canRetry(retrying) { return }
         if requestAssociatedAppExit(for: item, retrying: retrying, continuing: {
-            performWeChatSplitOperation(item, mode: mode, restoring: restoring, encryption: encryption, retrying: retrying)
+            performWeChatSplitOperation(item, restoring: restoring, encryption: encryption, retrying: retrying)
         }) { return }
         let destination = externalDriveURL
         let appName = selectedApp?.displayName ?? item.name
         let splitEnabled = partialWeChatMigrationEnabled
         let containerIdentifier = weChatContainerIdentifier
         let preparation = !restoring && retrying == nil && !item.hasMountTransferRecord
-            ? appDataPreparation(for: selectedApp, destination: destination, splitMode: true, preferredSplitGroup: mode.splitGroup)
+            ? appDataPreparation(for: selectedApp, destination: destination, splitMode: true)
             : nil
-        let fallbackGroup = mode.splitGroup ?? .media
         let members: [URL] = {
             if restoring, !item.weChatSplitMembers.isEmpty {
                 return item.weChatSplitMembers.map(\.path)
             }
-            let previewService = WeChatAccountMigrationService(enabled: splitEnabled, containerIdentifier: containerIdentifier)
-            let planned = (try? previewService.plannedMembers(of: item.path, for: mode)) ?? []
-            return planned.isEmpty ? selectedWeChatPolicy.members(of: item.path, group: fallbackGroup) : planned
+            return selectedWeChatPolicy.members(of: item.path)
         }()
         submitDataTask(item, title: restoring ? "正在还原微信账号数据".localized : "正在拆分迁移微信账号数据".localized,
                        destinations: members, mount: true, retrying: retrying, recovery: { error, retry in
             presentAPFSFailure(error, item: item, retryToken: retry, retry: {
-                performWeChatSplitOperation(item, mode: mode, restoring: restoring, encryption: encryption, retrying: retry)
+                performWeChatSplitOperation(item, restoring: restoring, encryption: encryption, retrying: retry)
             })
         }) { progress in
             let fresh: DataDirItem
@@ -2449,20 +2430,13 @@ struct DataDirsView: View {
             }
             let service = WeChatAccountMigrationService(enabled: splitEnabled,
                 containerIdentifier: containerIdentifier, encryption: encryption)
-            let activeUnits: [URL]
-            if restoring {
-                activeUnits = members
-            } else {
-                let planned = try service.plannedMembers(of: fresh.path, for: mode)
-                activeUnits = planned.isEmpty ? members : planned
-            }
-            progress.configureUnits(activeUnits)
+            progress.configureUnits(members)
             let warnings: [String]
             if restoring {
                 warnings = try await service.restoreSplit(account: item.path, progress: { progress.update($0) })
             } else {
                 guard let destination else { throw DataOperationSafety.Failure.inspection("请先选择外部存储路径".localized) }
-                warnings = try await service.migrate(account: fresh.path, mode: mode, externalRoot: destination,
+                warnings = try await service.migrate(account: fresh.path, mode: .split, externalRoot: destination,
                     appName: appName, preverifiedSources: preverifiedSources, progress: { progress.update($0) })
             }
             return warnings.isEmpty ? nil : warnings.joined(separator: "\n")

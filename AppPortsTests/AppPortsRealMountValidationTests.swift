@@ -233,6 +233,52 @@ final class AppPortsRealMountValidationTests: XCTestCase {
         }
     }
 
+    func testPrivateAPFSRetiredWeChatSplitRestore() async throws {
+        let fixture = try RealMountFixture()
+        let runner = PrivateImageDiskRunner(fixture: fixture)
+        let disk = DiskUtility(runner: runner, commandTimeout: 90, administratorRunner: nil)
+        let store = ContainerMountStore(fileURL: fixture.root.appendingPathComponent("data-records.plist"))
+        let migrator = ContainerVolumeMigrator(disk: disk, store: store, stagingMountRootURL: fixture.privateMounts,
+            synchronizeAgent: { _ in }, homeDirectory: fixture.home)
+        let identifier = "org.appports.synthetic.wechat"
+        let account = PartialWeChatMigrationPolicy(homeDirectory: fixture.home, containerIdentifier: identifier)
+            .accountsRoot.appendingPathComponent("wxid_legacy")
+        let source = account.appendingPathComponent("msg/file")
+        let sibling = account.appendingPathComponent("msg/video")
+        for directory in [source, sibling] {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+        let payload = source.appendingPathComponent("attachment")
+        let video = sibling.appendingPathComponent("local-video")
+        try Data("original".utf8).write(to: payload)
+        try Data("local video".utf8).write(to: video)
+        // Use a synthetic home outside the actual fixture account to create the
+        // same mount record the retired mode wrote, without enabling new cold migrations.
+        let seeder = ContainerVolumeMigrator(disk: disk, store: store, stagingMountRootURL: fixture.privateMounts,
+            synchronizeAgent: { _ in }, homeDirectory: fixture.root.appendingPathComponent("SeedHome"))
+        let item = DataDirItem(name: "file", path: source, type: .containers, priority: .critical, description: "Fixture")
+        let moved = try await seeder.migrateAndComplete(item: item, externalRootURL: fixture.external,
+            appName: "Synthetic WeChat", bundleIdentifier: identifier, progressHandler: nil)
+        try requireRealMount(moved.cleanupWarning == nil && DiskUtility.isMountPoint(source), "The retired member fixture did not mount")
+        try Data("latest attachment".utf8).write(to: payload)
+        try await disk.unmount(mountPoint: source)
+        try await migrator.mount(record: moved.record)
+        try requireRealMount(DiskUtility.isMountPoint(source), "The existing WeChat volume could not remount")
+
+        let service = WeChatAccountMigrationService(homeDirectory: fixture.home, store: store, migrator: migrator,
+                                                    enabled: false, containerIdentifier: identifier)
+        try requireRealMount(try service.state(of: account) == .filesAndVideos, "The old split record was not recognized")
+        let warnings = try await service.restoreSplit(account: account)
+        try requireRealMount(warnings.isEmpty && !DiskUtility.isMountPoint(source), "The old split did not finish restoring")
+        try requireRealMount(try Data(contentsOf: payload) == Data("latest attachment".utf8)
+            && Data(contentsOf: video) == Data("local video".utf8), "Restore changed the active data or the already-local sibling")
+        try requireRealMount(try service.state(of: account) == .local && store.recordsStrict().isEmpty
+            && store.transfers().isEmpty, "The old split still has active recovery records")
+        let result: [String: Any] = ["status": "passed", "nonce": fixture.record.nonce, "retiredWeChatSplitRestoreVerified": true]
+        try DurableFileIO.write(try JSONSerialization.data(withJSONObject: result),
+                                to: fixture.root.appendingPathComponent("real-mount-result.json"))
+    }
+
     private func validateLegacyRestore(_ scenario: String, fixture: RealMountFixture, runner: PrivateImageDiskRunner,
                                        disk: DiskUtility, migrator: ContainerVolumeMigrator,
                                        store: ContainerMountStore, item: DataDirItem) async throws {
@@ -563,8 +609,9 @@ actor PrivateImageDiskRunner: ShellCommandRunning {
         if !readOnly {
             let current = try await inventory()
             if executable == "/usr/sbin/diskutil", arguments.count == 6, Array(arguments.prefix(2)) == ["apfs", "addVolume"] {
+                let allowedNames = ["AppPorts-org.appports.synthetic.mount-Business-", "AppPorts-org.appports.synthetic.wechat-file-"]
                 try requireRealMount(arguments[2] == fixture.record.containerReference && arguments[3] == "APFS"
-                    && arguments[4].hasPrefix("AppPorts-org.appports.synthetic.mount-Business-") && arguments[5] == "-nomount"
+                    && allowedNames.contains(where: { arguments[4].hasPrefix($0) }) && arguments[5] == "-nomount"
                     && current.volumes.count == 1, "Refusing legacy volume creation outside the private image")
             } else if executable == "/usr/sbin/diskutil", arguments.count == 5, Array(arguments.prefix(3)) == ["mount", "nobrowse", "-mountPoint"] {
                 try requirePrivateVolume(arguments[4], in: current)

@@ -5,7 +5,6 @@ struct AppDataMigrationPreparation: Sendable {
     let app: AppItem
     let externalRoot: URL?
     let splitMode: Bool
-    var preferredSplitGroup: PartialWeChatMigrationPolicy.SplitGroup? = nil
     let containerIdentifier: String
 
     enum Failure: LocalizedError {
@@ -24,13 +23,11 @@ struct AppDataMigrationPreparation: Sendable {
                 throw DataOperationSafety.Failure.accessDenied(item.path.path)
             }
             let scanner = DataDirScanner(partialWeChatMigrationEnabled: splitMode,
-                                         preferredWeChatSplitGroup: preferredSplitGroup,
                                          weChatContainerIdentifier: containerIdentifier)
             let result = await scanner.scanLibraryDirsWithDiagnostics(for: app, externalRootURL: externalRoot)
             try await control?.checkpointAsync()
             try Task.checkCancellation()
             let grouped = WeChatAccountMigrationService.groupedItems(result.items, splitMode: splitMode,
-                                                                      preferredSplitGroup: preferredSplitGroup,
                                                                       containerIdentifier: containerIdentifier)
             let fresh = try Self.refreshedItem(item, result: .init(items: grouped,
                 readIssues: result.readIssues, identityIssue: result.identityIssue)) {
