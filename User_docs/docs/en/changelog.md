@@ -2,9 +2,18 @@
 
 These entries describe changes at the time of each release. **Historical features may have been retired and should not be treated as current instructions.** Current guides describe the latest interface and behavior. Older behavior, versions, and alternatives remain in the [historical feature archive](/docs/archive/overview).
 
+## v2.3.1 {#v2-3-1}
+
+- If macOS still shows permissions enabled after a signing certificate change but AppPorts reports that they are missing, follow the prompt to grant them again. **Readiness** also offers **Clear Legacy Permission Records**. After manually replacing AppPorts, open the new version once to retire the old update guardian.
+- Retire new WeChat migrations in **Large files & videos only** mode. Existing migrations still support mounting, unlocking, and restoring. AppPorts filters out macOS system symlinks in the WeChat container and runtime pseudo-symlinks from Chromium and Electron apps. **Normalize Management** requires an existing symlink that points directly to a real directory.
+- **App Data** displays per-app totals, migrated and local sizes, and three sort options. The **External Drive** header shows the combined size of the app bundles in the current list.
+- Fix switching appearance back to **System** and keep the appearance consistent across the main and secondary windows.
+
+[View v2.3.1](https://github.com/wzh4869/AppPorts/releases/tag/2.3.1) · [Grant permissions again](/docs/settings#permissions) · [Manual updates](/docs/settings#updates) · [WeChat account migration](/docs/datamigrae/operation#wechat) · [Manage existing symlinks](/docs/restore#reconnect)
+
 ## v2.3.0 {#v2-3-0}
 
-- Add the Large files & videos only (`msg/file + msg/video`) mode for WeChat accounts: mutually exclusive with Whole migration and Split migration (`msg + business`), allowing databases and `msg/attach` chat thumbnails to stay local while cold files and videos move externally, measured in a single filesystem pass.
+- Add the Large files & videos only (`msg/file + msg/video`) mode for WeChat accounts: mutually exclusive with Whole migration and Split migration (`msg + business`), allowing databases and `msg/attach` chat thumbnails to stay local while cold files and videos move externally, measured in a single filesystem pass. **Version note**: v2.3.1 disables new migrations in this mode. Previously migrated accounts can still be mounted, unlocked, and restored. See [WeChat account migration](/docs/datamigrae/operation#wechat).
 - Make Unlocked Migration the default for self-updating apps and add the optional Application update guardian background agent to handle failed ShipIt updates, sync status into Task Center, and offer verified Roll Back Update recovery.
 - Verify macOS 15.1+ Mac App Store external-install settings read-only instead of checking for an empty folder marker, add persistent Don’t remind me again guidance, and clarify in Settings how the App Store's >1 GB auto-download rule differs from AppPorts migrating App Store apps of any size.
 - Harden runtime status, task locking and disk operations: lock active-task row and batch actions in place, fix whole-disk ejection volume resolution across multi-partition disks, detect running migrated external apps accurately, prune hidden filter selections, cache writable storage capability probes, deduplicate per-scan volume status queries, and eliminate redundant snapshot cleanup hashing.

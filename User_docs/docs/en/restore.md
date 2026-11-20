@@ -39,6 +39,8 @@ For an Unlinked app or an external copy without an entry, use Link Back to Local
 
 These actions do not move data back internally. If new content has appeared at the original local location, establish what each copy contains before proceeding; do not force reconnection by overwriting it.
 
+For an existing symlink, **Normalize Management** requires that its target be a real directory. The action is unavailable if the target is missing, a regular file, or another symlink. If the original drive is offline and you want to recover the data, reconnect it and check the target first. AppPorts filters out macOS system shortcuts that point into `~/Library` from inside the WeChat container and blocks restoring or unlinking them.
+
 ## Unlink an application or force-unlink data {#unlink}
 
 In the local app list, open the linked app row's `…` (More Actions) menu or context menu and choose Delete Local Entry; an orphaned link also offers Delete Orphaned Link. This removes the local entry managed by AppPorts while retaining the real external app. **It does not restore a data directory.** You can use Link Back to Local again later.

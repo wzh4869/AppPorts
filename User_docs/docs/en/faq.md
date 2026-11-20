@@ -2,6 +2,10 @@
 
 Save your work and note the state and error AppPorts displays. For missing data or interrupted migration, preserve the original drive and existing copies before following the relevant checks.
 
+## Why are permissions still missing after an upgrade when the switches are on? {#permissions-after-upgrade}
+
+If **App Management** or **Full Disk Access** is already on after an upgrade but AppPorts still reports it missing, follow the reauthorization steps in [Readiness and system permissions](/docs/settings#permissions). If the old entry still does not work, clear its legacy record in **Readiness**.
+
 ## App will not open or quits immediately {#launch}
 
 Check that the original external drive (or app library image) is online and the local entry is not an Orphaned Link. For Signature replaced, or a problem that began after upgrading to macOS 27, follow [upgrades and repair](/docs/macos-27). Otherwise check whether the original app supports the OS and retain error details. Not every launch failure is caused by signing.

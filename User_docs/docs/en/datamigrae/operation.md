@@ -12,6 +12,8 @@ Data migration moves application data, tool directories or your own folders. It 
 
 App Data reuses complete scan results within the current page session so revisiting an app does not rescan every time. Changes to permissions, the destination drive, migration records or mount state trigger fresh checks automatically, and Refresh Cache at the bottom of the sidebar forces remeasurement. When Full Disk Access is not ready, the page displays the permission state and a check entry rather than treating restricted reads as missing data.
 
+The app list on the left shows the total size of the data detected for each app. Apps with migrated data appear first and show separate **Migrated** and **Local** sizes. Use the menu beside search to sort each group by **By Size** (the initial setting), **Default**, or **Alphabetical**. Sizes may be incomplete while the external drive is offline, a data volume is locked, or automatic mounting is paused. Reconnect the original drive, restore the mount, and choose **Refresh Cache** to measure again.
+
 App Data shows eligible items and those needing attention by default. Show locked directory structure adds locked ancestors of actionable items to explain the hierarchy; locked directories with no actionable descendants remain hidden. Enable Show unsupported migration directories to see all ineligible directories. A third switch controls zero-byte directories. **An available migration action does not guarantee execution checks will pass.** Space, permissions, processes using data and parent/child relationships with existing migrations still need checking.
 
 Click status totals such as Linked, Mount Migration or Existing Symlink to show matching items. Necessary parent paths remain visible. Selecting a total does not shrink the other status totals, but other search and filter conditions still affect them. Click again or clear the filter to return; changing app or tab also resets this selection.
@@ -61,7 +63,7 @@ Choose migration for a recognized WeChat account directory, then select a mode i
 
 Wait for a complete size calculation before starting. Fully restore the account’s migrated data before switching modes. When the drive is offline after split migration, moved `msg`, `msg/file` or `msg/video` entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether existing messages remain readable depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
 
-The older **Large files & videos only** mode (`msg/file + msg/video`) no longer accepts new migrations. To bring back directories migrated with this mode, connect the external drive, select WeChat in **App Data**, and click **Restore** on the account.
+The current split mode moves `msg` as a whole so hard links to the same file in `msg/file` and `msg/attach` stay on one volume. The older **Large files & videos only** mode (`msg/file + msg/video`) no longer accepts new migrations. To keep using an account already migrated in that mode, connect the original external drive, select WeChat and the account in **App Data**, and unlock or mount it as prompted. To bring its data back to your Mac or change migration modes, click **Restore** and wait for all migrated directories for that account to return before choosing **Migrate everything** or **Split migration** if needed.
 
 ## Read migration progress {#progress}
 

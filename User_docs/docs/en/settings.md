@@ -13,6 +13,8 @@ When Check for Updates finds a new release, you can choose:
 
 Progress is shown during download and can be cancelled. After verifying file size, SHA-256, code-signing identity, version, architecture and system requirements, click Install and Restart to replace and relaunch AppPorts. If migrations or other operations are still running, AppPorts asks you to finish them first; Application update guardian is safely suspended while AppPorts updates itself and resumed once the update completes or is cancelled. In-app installation requires AppPorts to reside in a writable local folder such as Applications; if an error occurs, a fallback download link opens in your browser.
 
+After manually replacing AppPorts from a DMG or ZIP, open the new version once so it can synchronize the background agents and retire any old update guardian that is still running. If an agent still reports a problem, check **Background Agents** and retry there.
+
 ## Readiness and system permissions {#permissions}
 
 Readiness is embedded directly in the top-right card. Click Check beside its heading to refresh permissions, external storage and App Store external-installation status. Ready items appear as compact status rows (hover for details) without redundant buttons; items needing attention keep their explanation and Open System Settings button.
@@ -25,6 +27,8 @@ Readiness is embedded directly in the top-right card. Click Check beside its hea
 | External storage | Check connection, format and encryption. | Choose a suitable destination using the [storage guide](/docs/storage-guide). |
 
 Before starting new migrations, creating/opening/remounting an app library image, or opening permission guides, AppPorts checks that it is located in Applications; browsing lists, scanning apps and restoring existing data back to the Mac are not blocked by this check. Granting access to AppPorts does not authorize other apps; for missing data, first check [mount state and the original app's permissions](/docs/faq#missing-data).
+
+If **App Management** or **Full Disk Access** is already enabled in System Settings after an upgrade but AppPorts still reports it missing, macOS may be using a permission record tied to the previous signing certificate. If you see **System Permissions Need to Be Granted Again**, follow the prompt to open the relevant settings, add the new AppPorts, and turn on its switch. If the old entry still does not work, click **Clear Legacy Permission Records** in **Readiness**, then return to System Settings to add AppPorts and switch it on again. Clearing **Full Disk Access** may require administrator confirmation. If clearing fails, select the old entry in System Settings, remove it with `-`, and add AppPorts again. Reopen AppPorts as prompted and check its status in **Readiness**.
 
 ## App Store and non-native apps {#app-store}
 
