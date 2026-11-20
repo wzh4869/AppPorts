@@ -3,6 +3,7 @@
 //  AppPorts
 //
 
+import Darwin
 import Foundation
 import Security
 
@@ -42,7 +43,7 @@ enum ContainerMountAgentInstaller {
               ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
               (try? requiresAgent(store: store)) == true else { return }
         // 定义有变化时要先 bootout 正在运行的代理；拿锁，免得在它挂到一半时把它停掉。
-        let lock = OperationLock()
+        let lock = OperationLock(writerAdmissionCheck: {})
         guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else {
             AppLogger.shared.log("启动时校准自动挂载代理：代理正在挂载，本次跳过", level: "TRACE")
             return
@@ -295,7 +296,10 @@ enum ContainerMountAgentInstaller {
         writeDefinition: () throws -> Void,
         run: ([String]) -> Int32,
         serviceLabel: String? = nil,
-        definitionURL: URL? = nil
+        definitionURL: URL? = nil,
+        forceReload: Bool = false,
+        previousPID: Int32? = nil,
+        waitForExit: ((Int32) -> Void)? = nil
     ) throws -> Bool {
         let domain = "gui/\(getuid())"
         let service = "\(domain)/\(serviceLabel ?? label)"
@@ -303,8 +307,9 @@ enum ContainerMountAgentInstaller {
         // Disabled overrides survive plist replacement and bootstrap. Enable
         // before the fast path; on failure leave the existing definition alone.
         guard run(["enable", service]) == 0 else { throw InstallError.launchAgentLoadFailed }
-        if definitionMatches, run(["print", service]) == 0 { return false }
+        if definitionMatches, !forceReload, run(["print", service]) == 0 { return false }
         _ = run(["bootout", service])
+        if let previousPID { (waitForExit ?? { waitForProcessExit(pid: $0) })(previousPID) }
         try writeDefinition()
         guard run(["bootstrap", domain, definition.path]) == 0
                 || run(["load", definition.path]) == 0 else {
@@ -312,6 +317,40 @@ enum ContainerMountAgentInstaller {
         }
         guard run(["print", service]) == 0 else { throw InstallError.launchAgentLoadFailed }
         return true
+    }
+
+    static func parseServicePID(from launchctlPrintOutput: String) -> Int32? {
+        for rawLine in launchctlPrintOutput.components(separatedBy: .newlines) {
+            let trimmed = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard trimmed.hasPrefix("pid = ") else { continue }
+            let value = trimmed.dropFirst("pid = ".count).trimmingCharacters(in: .whitespaces)
+            if let pid = Int32(value), pid > 0 { return pid }
+        }
+        return nil
+    }
+
+    static func runningServicePID(label: String) -> Int32? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["print", "gui/\(getuid())/\(label)"]
+        let output = Pipe()
+        process.standardOutput = output
+        process.standardError = FileHandle.nullDevice
+        do { try process.run() } catch { return nil }
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0,
+              let text = String(data: data, encoding: .utf8) else { return nil }
+        return parseServicePID(from: text)
+    }
+
+    static func waitForProcessExit(pid: Int32, timeout: TimeInterval = 3) {
+        guard pid > 0 else { return }
+        let deadline = ProcessInfo.processInfo.systemUptime + max(0, timeout)
+        while ProcessInfo.processInfo.systemUptime < deadline {
+            if kill(pid, 0) != 0, errno == ESRCH { return }
+            Thread.sleep(forTimeInterval: 0.025)
+        }
     }
 
     static func removeAgent(label: String, definitionURL: URL,

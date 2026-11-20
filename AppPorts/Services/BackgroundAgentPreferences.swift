@@ -17,14 +17,31 @@ enum BackgroundAgents {
     static func synchronize() async throws {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil,
               NSClassFromString("XCTestCase") == nil else { return }
-        let lock = OperationLock()
+        try await synchronizeAgents(
+            makeLock: { OperationLock(writerAdmissionCheck: {}) },
+            isInstalling: { await AppUpdateController.shared.isInstalling },
+            diskMaintenance: { try ContainerMountAgentInstaller.synchronizeConfiguration() },
+            updateGuardian: { try UpdateRecoveryAgentInstaller.synchronizeConfiguration() }
+        )
+    }
+
+    /// LaunchAgent reconciliation only mutates launchd registrations, never user data stores.
+    /// Acquiring the exclusive file lock without WriterAdmission prevents a stale agent from a
+    /// replaced app bundle from deadlocking the very bootout/bootstrap that replaces it, while
+    /// still waiting if an agent actively holds `operation.lock`.
+    static func synchronizeAgents(
+        makeLock: () -> OperationLock,
+        isInstalling: @escaping @Sendable () async -> Bool = { false },
+        diskMaintenance: () throws -> Void,
+        updateGuardian: () throws -> Void
+    ) async throws {
+        let lock = makeLock()
         while !Task.isCancelled {
             if await lock.acquire(timeout: OperationLock.appWaitTimeout) {
                 defer { lock.release() }
                 try Task.checkCancellation()
-                guard await !AppUpdateController.shared.isInstalling else { return }
-                try applyConfiguration(diskMaintenance: { try ContainerMountAgentInstaller.synchronizeConfiguration() },
-                                       updateGuardian: { try UpdateRecoveryAgentInstaller.synchronizeConfiguration() })
+                guard await !isInstalling() else { return }
+                try applyConfiguration(diskMaintenance: diskMaintenance, updateGuardian: updateGuardian)
                 return
             }
             guard lock.diagnosticFailure(scope: .global).reason == .globalLockBusy else {

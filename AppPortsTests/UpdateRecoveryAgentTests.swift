@@ -60,6 +60,32 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         XCTAssertEqual(try store.entries().first?.offersRollback, true)
     }
 
+    func testChildExitsCleanlyWhenItsAppBundleIsMovedOrRemoved() async throws {
+        for mode in ["move", "remove"] {
+            let fixture = try Fixture()
+            defer { fixture.clean() }
+            let installedApp = fixture.root.appendingPathComponent("Installed/AppPorts.app")
+            try FileManager.default.createDirectory(at: installedApp.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: Bundle.main.bundleURL, to: installedApp)
+            let executable = installedApp.appendingPathComponent("Contents/MacOS/AppPorts")
+
+            let process = try fixture.launch(executableURL: executable)
+            defer { if process.isRunning { process.terminate() }; process.waitUntilExit() }
+            try await wait { try fixture.observation() != nil }
+
+            if mode == "move" {
+                let backupApp = fixture.root.appendingPathComponent("backups/AppPorts-before-replace.app")
+                try FileManager.default.createDirectory(at: backupApp.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileManager.default.moveItem(at: installedApp, to: backupApp)
+            } else {
+                try FileManager.default.removeItem(at: installedApp)
+            }
+
+            try await wait(timeout: 5) { !process.isRunning }
+            XCTAssertEqual(process.terminationStatus, 0, "Stale update agent must exit cleanly on \(mode)")
+        }
+    }
+
     private func wait(timeout: TimeInterval = 5, until condition: () throws -> Bool) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while try !condition() {
@@ -81,9 +107,9 @@ final class UpdateRecoveryAgentTests: XCTestCase {
             try Data("[]".utf8).write(to: root.appendingPathComponent("app-search-records.json"))
         }
 
-        func launch() throws -> Process {
+        func launch(executableURL: URL? = nil) throws -> Process {
             let process = Process()
-            process.executableURL = Bundle.main.executableURL
+            process.executableURL = executableURL ?? Bundle.main.executableURL
             process.arguments = [UpdateRecoveryAgentInstaller.launchArgument]
             // A distinct dataset and preferences domain; the sentinel isolates logging too.
             process.environment = ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin",

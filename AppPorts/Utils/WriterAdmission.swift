@@ -302,6 +302,24 @@ final class WriterAdmission {
         (try? identity(processID: process.processID)) == process
     }
 
+    /// Checks whether a running background agent PID still executes `expectedExecutablePath`
+    /// and holds a valid, up-to-date writer presence for `dataDirectory`.
+    static func isProcessCompliantWriter(
+        pid: Int32,
+        expectedExecutablePath: String,
+        dataDirectory: URL = defaultDataDirectory
+    ) -> Bool {
+        guard let live = try? identity(processID: pid) else { return false }
+        let liveCanonical = canonical(URL(fileURLWithPath: live.executablePath)).path
+        let expectedCanonical = canonical(URL(fileURLWithPath: expectedExecutablePath)).path
+        guard liveCanonical == expectedCanonical else { return false }
+        let admission = WriterAdmission(dataDirectory: dataDirectory)
+        guard let presence = try? admission.readPresence(processID: pid) else { return false }
+        return presence.process == live
+            && presence.dataDirectoryPath == admission.dataDirectory.path
+            && presence.capabilities.contains(Self.requiredCapability)
+    }
+
     /// libproc also sees an executable launched directly as --mount-agent; a
     /// list of GUI applications alone would miss that writer. Bundle identity
     /// is used only to recognize candidates, never to infer their capability.
@@ -386,7 +404,7 @@ final class WriterAdmission {
                               executablePath: path)
     }
 
-    private static func executablePath(processID: Int32) -> String? {
+    static func executablePath(processID: Int32) -> String? {
         // PROC_PIDPATHINFO_MAXSIZE is a C expression macro not imported by Swift.
         var buffer = [CChar](repeating: 0, count: 4 * Int(MAXPATHLEN))
         let length = buffer.withUnsafeMutableBytes { proc_pidpath(processID, $0.baseAddress, UInt32($0.count)) }

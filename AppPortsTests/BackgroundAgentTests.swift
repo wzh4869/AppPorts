@@ -140,6 +140,88 @@ final class BackgroundAgentTests: XCTestCase {
         XCTAssertEqual("Background agents".localized(fallbackLanguage: "en", language: "zh-Hans", bundle: bundle), "后台代理")
     }
 
+    func testGuardianSynchronizationForcesReloadAndWaitsForStaleRunningPIDEvenWhenDefinitionMatches() throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let definition = root.appendingPathComponent("guardian.plist")
+        let executable = "/Applications/AppPorts.app/Contents/MacOS/AppPorts"
+        let payload = UpdateRecoveryAgentInstaller.launchAgentPayload(executablePath: executable, signatureIdentity: nil)
+        try PropertyListSerialization.data(fromPropertyList: payload, format: .xml, options: 0).write(to: definition)
+
+        var events: [String] = []
+        try UpdateRecoveryAgentInstaller.synchronizeConfiguration(
+            enabled: true,
+            definitionURL: definition,
+            running: URL(fileURLWithPath: executable),
+            selectExecutable: { _, recorded in recorded },
+            signatureIdentity: { _ in nil },
+            runningServicePID: { 61264 },
+            runningProcessIsCurrent: { _, _ in false },
+            waitForExit: { events.append("wait:\($0)") },
+            run: { events.append($0[0]); return 0 }
+        )
+        XCTAssertEqual(events, ["enable", "bootout", "wait:61264", "bootstrap", "print"])
+
+        events.removeAll()
+        try UpdateRecoveryAgentInstaller.synchronizeConfiguration(
+            enabled: true,
+            definitionURL: definition,
+            running: URL(fileURLWithPath: executable),
+            selectExecutable: { _, recorded in recorded },
+            signatureIdentity: { _ in nil },
+            runningServicePID: { 61264 },
+            runningProcessIsCurrent: { pid, path in pid == 61264 && path == executable },
+            waitForExit: { events.append("wait:\($0)") },
+            run: { events.append($0[0]); return 0 }
+        )
+        XCTAssertEqual(events, ["enable", "print"])
+    }
+
+    func testParseServicePIDExtractsRunningPIDFromLaunchctlPrint() {
+        let sample = """
+        gui/501/com.shimoko.AppPorts.update-guardian = {
+            state = running
+            runs = 1
+            pid = 37427
+            forks = 0
+        }
+        """
+        XCTAssertEqual(ContainerMountAgentInstaller.parseServicePID(from: sample), 37427)
+        XCTAssertNil(ContainerMountAgentInstaller.parseServicePID(from: "state = not running\n"))
+        XCTAssertNil(ContainerMountAgentInstaller.parseServicePID(from: "pid = 0\n"))
+    }
+
+    func testSynchronizeAgentsUsesFileLockWithoutWriterAdmissionAndWaitsForActiveHolder() async throws {
+        let root = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lockURL = root.appendingPathComponent("operation.lock")
+        let holder = OperationLock(fileURL: lockURL, writerAdmissionCheck: {})
+        XCTAssertTrue(holder.tryAcquire())
+
+        let state = AttemptCounter()
+        let syncTask = Task {
+            try await BackgroundAgents.synchronizeAgents(
+                makeLock: { OperationLock(fileURL: lockURL, writerAdmissionCheck: {}) },
+                diskMaintenance: { },
+                updateGuardian: {
+                    Task { _ = await state.next() }
+                }
+            )
+        }
+        try await Task.sleep(nanoseconds: 150_000_000)
+        let beforeRelease = await state.value
+        XCTAssertEqual(beforeRelease, 0, "Active operation.lock holder must delay LaunchAgent reload")
+
+        holder.release()
+        try await syncTask.value
+        let deadline = Date().addingTimeInterval(2)
+        while await state.value == 0, Date() < deadline {
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        let afterRelease = await state.value
+        XCTAssertEqual(afterRelease, 1)
+    }
+
     private func temporaryDirectory() throws -> URL {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("BackgroundAgents-" + UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false)
