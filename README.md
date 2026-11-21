@@ -128,9 +128,15 @@ Classic data migration mode is off by default. It retains older container symlin
 
 ### Download and Installation
 
-Download the latest `AppPorts.dmg` from the [official website](https://appports.shimoko.com/) or [Releases](https://github.com/wzh4869/AppPorts/releases).
+Download the latest `AppPorts.dmg` from the [official website](https://appports.shimoko.com/) or [Releases](https://github.com/wzh4869/AppPorts/releases) and move AppPorts into **Applications**. You can also install it with Homebrew.
 
-Move AppPorts into **Applications**, open it, and follow the setup checks. Connect your drive, choose an external app library, and quit the app you intend to move before starting migration. Mount migration requires a stable application path; do not run it directly from a DMG or temporary location.
+```sh
+brew install --cask wzh4869/tap/appports
+```
+
+For Homebrew upgrade and uninstall commands, see the [AppPorts tap](https://github.com/wzh4869/homebrew-tap#readme).
+
+Open AppPorts and follow the setup checks. Connect your drive, choose an external app library, and quit the app you intend to move before starting migration. Mount migration requires a stable application path; do not run it directly from a DMG or temporary location.
 
 Keep the drive connected while using migrated apps and data. Allow removable-volume access when macOS requests it. Quit related apps before unmounting or ejecting the drive, and back up important data beforehand. See the [quick start guide](https://docs-appports.shimoko.com/en/docs/faststart).
 
