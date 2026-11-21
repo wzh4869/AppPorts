@@ -60,6 +60,52 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         XCTAssertEqual(try store.entries().first?.offersRollback, true)
     }
 
+    @MainActor
+    func testDisablingGuardianWhileWaitingPersistsPauseAndReenablingResumesSameRow() async throws {
+        let fixture = try Fixture()
+        defer { fixture.clean() }
+        let target = try fixture.writePendingUpdate()
+        let lock = OperationLock(fileURL: fixture.root.appendingPathComponent("operation.lock"), writerAdmissionCheck: {})
+        XCTAssertTrue(lock.tryAcquire())
+        defer { lock.release() }
+        let store = ShipItObservedTaskStore(directory: fixture.root.appendingPathComponent("shipit-recovery"))
+        let history = MigrationTaskHistoryStore(fileURL: fixture.root.appendingPathComponent("history.json"))
+        let center = MigrationTaskCenter(historyStore: history, operationState: AppOperationState())
+        let observer = ShipItTaskObserver(store: store, taskCenter: center, defaults: fixture.defaults)
+        let first = try fixture.launch()
+        defer { if first.isRunning { first.terminate(); first.waitUntilExit() } }
+        try await wait { try store.entries().first?.status == .queued }
+        observer.refresh()
+        let id = try XCTUnwrap(center.jobs.first?.id)
+        fixture.defaults.set(false, forKey: BackgroundAgentPreferences.updateGuardianKey)
+        XCTAssertTrue(fixture.defaults.synchronize())
+        first.terminate()
+        try await wait { !first.isRunning }
+        observer.refresh()
+        let paused = try XCTUnwrap(center.jobs.first)
+        XCTAssertEqual(paused.id, id)
+        XCTAssertTrue(paused.guardianPaused)
+        XCTAssertEqual(paused.stateTitle, "已暂停自动处理".localized)
+        XCTAssertTrue(paused.message.contains("Fixture"))
+        XCTAssertFalse(center.hasAttention)
+        XCTAssertNil(paused.recoveryAction)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: target.path))
+
+        let reopened = MigrationTaskCenter(historyStore: history, operationState: AppOperationState())
+        let coldObserver = ShipItTaskObserver(store: store, taskCenter: reopened, defaults: fixture.defaults)
+        coldObserver.refresh()
+        XCTAssertTrue(try XCTUnwrap(reopened.jobs.first).guardianPaused)
+        fixture.defaults.set(true, forKey: BackgroundAgentPreferences.updateGuardianKey)
+        XCTAssertTrue(fixture.defaults.synchronize())
+        let second = try fixture.launch()
+        defer { if second.isRunning { second.terminate(); second.waitUntilExit() } }
+        try await wait { try store.entries().first?.status == .queued }
+        coldObserver.refresh()
+        XCTAssertEqual(reopened.jobs.map(\.id), [id])
+        XCTAssertEqual(reopened.jobs.first?.status, .queued)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: target.path))
+    }
+
     func testReadinessMatchesOnlyLiveLaunchedBuildAndRegistration() async throws {
         let fixture = try Fixture()
         defer { fixture.clean() }

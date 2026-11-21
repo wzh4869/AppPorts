@@ -293,7 +293,7 @@ struct MigrationTaskDetail: View {
             if job.status.isFinished {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(verbatim: job.displayTitle).font(AppDialogTypography.title)
-                    Label(job.stateTitle, systemImage: job.status == .attention ? "exclamationmark.circle.fill" : (job.status == .incomplete ? "archivebox" : (job.status == .cancelled ? "xmark.circle" : "checkmark.circle")))
+                    Label(job.stateTitle, systemImage: resultIcon)
                         .foregroundStyle(job.status == .attention ? Color.orange : Color.primary)
                     if job.observedKey == nil { MigrationOverallProgress(fraction: job.fraction) }
                     ScrollView {
@@ -356,6 +356,15 @@ struct MigrationTaskDetail: View {
         }
         .sheet(isPresented: $showsDataRecovery) {
             DataMigrationTaskRecoveryView(job: job)
+        }
+    }
+
+    private var resultIcon: String {
+        switch job.status {
+        case .attention: return "exclamationmark.circle.fill"
+        case .incomplete: return "archivebox"
+        case .cancelled: return job.guardianPaused ? "pause.circle" : "xmark.circle"
+        default: return "checkmark.circle"
         }
     }
 

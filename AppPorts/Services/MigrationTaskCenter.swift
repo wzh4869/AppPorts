@@ -182,7 +182,11 @@ final class MigrationJob: ObservableObject, Identifiable {
     }
 
     var elapsed: TimeInterval { elapsed() }
+    // The worker cancelled its execution. The application still needs recovery.
+    var guardianPaused: Bool { observedKey != nil && status == .cancelled }
+
     var stateTitle: String {
+        if guardianPaused { return "已暂停自动处理".localized }
         if status == .completed, let observedResult {
             return observedResult == .recovered ? "已接手成功".localized : "已回退更新".localized
         }
@@ -315,7 +319,7 @@ final class MigrationTaskCenter: ObservableObject {
         job.status = status
         job.message = message
         job.observedResult = result
-        if status == .completed { job.recoveryAction = nil }
+        if status == .completed || job.guardianPaused { job.recoveryAction = nil }
         else if let recovery { job.recoveryAction = recovery }
         job.restoredPaused = false
         job.restoredElapsed = nil

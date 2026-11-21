@@ -67,29 +67,31 @@ enum UpdateRecoveryAgent {
                 didStartListening: { try readiness.publish(in: dataDirectory) })
             var shuttingDown = false
             var executableMonitor: ExecutableReplacementMonitor?
-            let shutdown: @MainActor (String) -> Void = { message in
+            let shutdown: @MainActor (String, Bool) -> Void = { message, disabledByUser in
                 guard !shuttingDown else { return }
                 shuttingDown = true
                 executableMonitor?.stop()
                 Task { @MainActor in
-                    await monitor.stop()
+                    await monitor.stop(disabledByUser: disabledByUser)
                     AppLogger.shared.log(message)
                     exit(0)
                 }
             }
             executableMonitor = ExecutableReplacementMonitor(executablePath: initialExecutablePath, queue: .main) {
                 Task { @MainActor in
-                    shutdown("检测到 AppPorts 应用包已移动或替换，旧版后台更新守护退出")
+                    shutdown("检测到 AppPorts 应用包已移动或替换，旧版后台更新守护退出", false)
                 }
             }
             termination.setEventHandler {
                 Task { @MainActor in
-                    shutdown("后台更新守护退出")
+                    // launchd uses SIGTERM both for disabling the setting and for replacing a worker.
+                    defaults.synchronize()
+                    shutdown("后台更新守护退出", !BackgroundAgentPreferences.updateGuardianEnabled(defaults: defaults))
                 }
             }
             termination.resume()
             if let executableMonitor, !executableMonitor.isExecutableStillCurrent() {
-                shutdown("检测到 AppPorts 应用包已移动或替换，旧版后台更新守护退出")
+                shutdown("检测到 AppPorts 应用包已移动或替换，旧版后台更新守护退出", false)
                 return
             }
             monitor.start()

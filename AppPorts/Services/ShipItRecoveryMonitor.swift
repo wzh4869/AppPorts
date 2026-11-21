@@ -204,9 +204,10 @@ final class ShipItRecoveryMonitor {
         } catch ShipItUpdateRecovery.RollbackError.oldApplicationMissing {
             display(candidate, status: .attention, message: ShipItUpdateRecovery.RollbackError.oldApplicationMissing.localizedDescription, offerRollback: true)
             return true
+        } catch is CancellationError {
+            return false
         } catch {
             if automaticRollback {
-                if error is CancellationError { return false }
                 if case ShipItUpdateRecovery.RollbackError.busy = error {
                     display(candidate, status: .queued, message: ShipItUpdateRecovery.Step.waiting.message)
                     return false
@@ -216,12 +217,9 @@ final class ShipItRecoveryMonitor {
                 return false
             }
             AppLogger.shared.logError("自动接手 ShipIt 更新失败，更新副本已保留", error: error)
-            if !(error is CancellationError) {
-                failures[candidate.key] = String(format: "接手失败：%@\n将自动重试，也可以回退更新。".localized, error.localizedDescription)
-                display(candidate, status: .attention,
-                        message: failures[candidate.key] ?? error.localizedDescription,
-                        offerRollback: true)
-            }
+            let failure = String(format: "接手失败：%@\n将自动重试，也可以回退更新。".localized, error.localizedDescription)
+            failures[candidate.key] = failure
+            display(candidate, status: .attention, message: failure, offerRollback: true)
             return false
         }
     }
@@ -294,7 +292,7 @@ final class ShipItRecoveryMonitor {
         }
     }
 
-    func stop() async {
+    func stop(disabledByUser: Bool = false) async {
         started = false
         observers.removeAll()
         events?.stop(); events = nil
@@ -304,8 +302,13 @@ final class ShipItRecoveryMonitor {
         task = nil
         needsCheck = false
         for candidate in Array(unfinished.values) {
-            display(candidate, status: .attention,
-                    message: "上次运行时更新接手未结束，等待检查更新现场。".localized, offerRollback: true)
+            if disabledByUser, failures[candidate.key] == nil {
+                let message = String(format: "更新守护已关闭。「%@」仍待恢复，重新开启守护后将继续检查。".localized, candidate.record.name)
+                display(candidate, status: .cancelled, message: message)
+            } else {
+                let message = failures[candidate.key] ?? "上次运行时更新接手未结束，等待检查更新现场。".localized
+                display(candidate, status: .attention, message: message, offerRollback: true)
+            }
         }
     }
 }

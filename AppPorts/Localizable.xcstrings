@@ -2330,6 +2330,143 @@
         }
       }
     },
+    "更新守护已关闭。「%@」仍待恢复，重新开启守护后将继续检查。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حماية التحديثات متوقفة. لا يزال %@ بانتظار الاستعادة. سيُستأنف الفحص عند تفعيل الحماية مجددًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠠⠛⠥⠁⠗⠙⠊⠁⠝ ⠊⠎ ⠕⠋⠋⠲ ⠠⠗⠑⠉⠕⠧⠑⠗⠽ ⠋⠕⠗ %@ ⠊⠎ ⠎⠞⠊⠇⠇ ⠏⠑⠝⠙⠊⠝⠛⠲ ⠠⠉⠓⠑⠉⠅⠎ ⠺⠊⠇⠇ ⠗⠑⠎⠥⠍⠑ ⠺⠓⠑⠝ ⠽⠕⠥ ⠞⠥⠗⠝ ⠞⠓⠑ ⠛⠥⠁⠗⠙⠊⠁⠝ ⠃⠁⠉⠅ ⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Update-Wächter ist ausgeschaltet. Die Wiederherstellung von %@ steht noch aus. Die Prüfung wird fortgesetzt, sobald der Wächter wieder eingeschaltet ist."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Guardian is off. Recovery for %@ is still pending. Checks will resume when you turn the guardian back on."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatiga gardilo estas malŝaltita. Restarigo de %@ ankoraŭ estas pritraktota. La kontrolado rekomenciĝos post reŝalto de la gardilo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La protección de actualizaciones está desactivada. La recuperación de %@ sigue pendiente. Las comprobaciones se reanudarán cuando vuelvas a activar la protección."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La protection des mises à jour est désactivée. La récupération de %@ reste en attente. Les vérifications reprendront lorsque vous réactiverez la protection."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट सुरक्षा बंद है। %@ की रिकवरी अभी बाकी है। सुरक्षा दोबारा चालू करने पर जाँच फिर शुरू होगी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penjaga pembaruan dinonaktifkan. Pemulihan %@ masih tertunda. Pemeriksaan akan dilanjutkan saat penjaga diaktifkan kembali."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La protezione degli aggiornamenti è disattivata. Il ripristino di %@ è ancora in sospeso. I controlli riprenderanno quando riattiverai la protezione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデート保護はオフです。%@ の復旧は保留中です。保護を再度オンにすると確認を再開します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 보호가 꺼져 있습니다. %@ 복구는 대기 중입니다. 보호를 다시 켜면 확인을 재개합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De updatebewaking is uitgeschakeld. Het herstel van %@ staat nog open. De controles worden hervat zodra je de bewaking weer inschakelt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ochrona aktualizacji jest wyłączona. Odzyskiwanie aplikacji %@ nadal oczekuje na wykonanie. Sprawdzanie zostanie wznowione po ponownym włączeniu ochrony."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A proteção de atualizações está desativada. A recuperação de %@ continua pendente. As verificações serão retomadas quando você reativar a proteção."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Защита обновлений выключена. Приложение %@ всё ещё ожидает восстановления. Проверка возобновится, когда вы снова включите защиту."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปิดการดูแลการอัปเดตอยู่ การกู้คืน %@ ยังรอดำเนินการ ระบบจะตรวจสอบอีกครั้งเมื่อเปิดการดูแลอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme koruması kapalı. %@ için kurtarma işlemi hâlâ bekliyor. Koruma yeniden açıldığında denetimler devam edecek."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tính năng bảo vệ cập nhật đang tắt. %@ vẫn đang chờ khôi phục. Quá trình kiểm tra sẽ tiếp tục khi bạn bật lại tính năng này."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新守护已关闭。「%@」仍待恢复，重新开启守护后将继续检查。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新守護已關閉。「%@」仍待復原，重新開啟守護後會繼續檢查。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新垨護巳關閉。「%@」仍待恢復，重新開啟垨護後將繼續檢査。"
+          }
+        }
+      }
+    },
     "更新守护已关闭，仍可尝试应用内更新。" : {
       "extractionState" : "manual",
       "localizations" : {
