@@ -18,6 +18,12 @@ extension ShipItUpdateRecovery {
         var installedIdentity: DataPathIdentity?
         var cleanup: [OwnedPath]?
         var cleanupComplete: Bool?
+        var rejectedUpdate: DataPathIdentity?
+    }
+
+    struct PendingRollback {
+        let candidate: Candidate
+        let automatic: Bool
     }
 
     func rollbackURL(_ candidate: Candidate) -> URL {
@@ -41,34 +47,46 @@ extension ShipItUpdateRecovery {
         try DurableFileIO.write(try JSONEncoder().encode(candidate), to: rollbackIntentURL(candidate))
     }
 
-    /// Interrupted rollback is a manual action, not permission to reinstall the update.
-    func pendingRollbacks() throws -> [Candidate] {
+    func pendingRollbacks() throws -> [PendingRollback] {
         guard FileManager.default.fileExists(atPath: directory.path) else { return [] }
         let current = try records.records()
-        var candidates: [String: Candidate] = [:]
+        var candidates: [String: PendingRollback] = [:]
         for url in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
             do {
                 let candidate: Candidate
                 let expected: URL
+                var automatic = false
                 if url.lastPathComponent.hasSuffix(".rollback-intent.json") {
                     candidate = try JSONDecoder().decode(Candidate.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576))
                     expected = rollbackIntentURL(candidate)
                 } else if url.lastPathComponent.hasSuffix(".rollback.json") {
-                    candidate = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576)).candidate
+                    let saved = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576))
+                    candidate = saved.candidate
+                    automatic = saved.rejectedUpdate != nil
                     expected = rollbackURL(candidate)
                 } else { continue }
                 guard url.standardizedFileURL.path == expected.standardizedFileURL.path,
                       current.contains(candidate.record) else { continue }
-                candidates[candidate.key] = candidate
+                if candidates[candidate.key]?.automatic != true {
+                    candidates[candidate.key] = PendingRollback(candidate: candidate, automatic: automatic)
+                }
             } catch {
                 AppLogger.shared.logError("读取 ShipIt 回退记录失败", error: error)
             }
         }
-        return candidates.values.sorted { $0.key < $1.key }
+        return candidates.values.sorted { $0.candidate.key < $1.candidate.key }
     }
 
-    func rollback(_ candidate: Candidate, report: @escaping Reporter = { _ in }) async throws -> String {
-        try requestRollback(candidate)
+    /// Called under the installation lock after the same download failed two independent checks.
+    func prepareAutomaticRollback(_ candidate: Candidate, rejected: DataPathIdentity) throws {
+        try requireRollbackLocation(candidate)
+        guard !hasRollbackRequest(candidate),
+              rejected.matchesFilesystemObject(try DataPathIdentity.capture(candidate.request.updateBundleURL)) else { throw RollbackError.changed }
+        _ = try loadOrPrepareRollback(candidate, rejected: rejected)
+    }
+
+    func rollback(_ candidate: Candidate, automatic: Bool = false, report: @escaping Reporter = { _ in }) async throws -> String {
+        if !automatic { try requestRollback(candidate) }
         var lock: OperationLock? = operationLock.freshInstance()
         guard lock?.tryAcquire() == true else { throw RollbackError.busy }
         defer { lock?.release() }
@@ -76,21 +94,32 @@ extension ShipItUpdateRecovery {
         let lease = try ApplicationLaunchGate.acquire(bundleIdentifier: candidate.request.bundleIdentifier,
                                                       migrating: true, directory: launchLocks)
         defer { withExtendedLifetime(lease) {} }
+        if automatic && !FileManager.default.fileExists(atPath: rollbackURL(candidate).path) { throw RollbackError.changed }
         try requireRollbackLocation(candidate)
         var saved = try loadOrPrepareRollback(candidate)
+        if automatic && saved.rejectedUpdate == nil { throw RollbackError.changed }
         if saved.cleanupComplete == true {
             try requireRestoredApplication(saved)
             try finishRollbackRecords(candidate)
             return saved.version.shortVersion ?? saved.version.buildVersion ?? ""
         }
         await report(.waiting)
-        guard try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL) != .updaterRunning else {
+        let activity = try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL)
+        guard activity != .updaterRunning else {
             throw RollbackError.busy
         }
+        if saved.rejectedUpdate != nil {
+            guard activity == .idle else { throw RollbackError.busy }
+            if saved.source.url != candidate.request.targetBundleURL,
+               try await busy(candidate.request.bundleIdentifier, saved.source.url) != .idle { throw RollbackError.busy }
+            try checkRejectedDownload(saved)
+        }
         try await stopInstaller(candidate.request.bundleIdentifier)
-        await quit(candidate.request.bundleIdentifier, candidate.request.targetBundleURL)
-        if saved.source.url != candidate.request.targetBundleURL {
-            await quit(candidate.request.bundleIdentifier, saved.source.url)
+        if saved.rejectedUpdate == nil {
+            await quit(candidate.request.bundleIdentifier, candidate.request.targetBundleURL)
+            if saved.source.url != candidate.request.targetBundleURL {
+                await quit(candidate.request.bundleIdentifier, saved.source.url)
+            }
         }
         guard try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL) == .idle else {
             throw RollbackError.applicationRunning
@@ -107,13 +136,17 @@ extension ShipItUpdateRecovery {
         lock = reacquired
         try requireRollbackLocation(candidate)
         try requireRestoredApplication(saved)
+        if saved.rejectedUpdate != nil {
+            guard try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL) == .idle else { throw RollbackError.busy }
+            try checkRejectedDownload(saved)
+        }
         await report(.cleaning)
         try clearRollbackInstallerState(candidate)
         try cleanRollback(&saved)
         return saved.version.shortVersion ?? saved.version.buildVersion ?? ""
     }
 
-    private func loadOrPrepareRollback(_ candidate: Candidate) throws -> Rollback {
+    private func loadOrPrepareRollback(_ candidate: Candidate, rejected: DataPathIdentity? = nil) throws -> Rollback {
         let url = rollbackURL(candidate)
         if FileManager.default.fileExists(atPath: url.path) {
             let saved = try JSONDecoder().decode(Rollback.self, from: SignatureRecordFile.data(at: url, maxBytes: 1_048_576))
@@ -127,16 +160,38 @@ extension ShipItUpdateRecovery {
         guard try self.candidate(for: candidate.record) == candidate else { throw RollbackError.changed }
         let old = try previousApplication(candidate)
         try validate(old, candidate.request.bundleIdentifier)
+        let version = try SignatureAppVersion.read(at: old)
+        if rejected != nil {
+            let update = try SignatureAppVersion.read(at: candidate.request.updateBundleURL)
+            guard version.bundleIdentifier == update.bundleIdentifier, Self.isNewer(update: update, than: version) else { throw RollbackError.oldApplicationMissing }
+        }
         let parent = candidate.request.targetBundleURL.deletingLastPathComponent()
         let targetBefore = try SignatureSnapshot.entryExists(candidate.request.targetBundleURL)
             ? DataPathIdentity.capture(candidate.request.targetBundleURL) : nil
         let saved = Rollback(candidate: candidate, parentIdentity: try DataPathIdentity.capture(parent),
             source: OwnedPath(url: old, identity: try DataPathIdentity.capture(old)),
-            version: try SignatureAppVersion.read(at: old),
+            version: version,
             stage: parent.appendingPathComponent(".appports-shipit-rollback-\(UUID().uuidString).app"),
-            targetBefore: targetBefore)
+            targetBefore: targetBefore, rejectedUpdate: rejected)
         try saveRollback(saved)
         return saved
+    }
+
+    private func checkRejectedDownload(_ saved: Rollback) throws {
+        guard let rejected = saved.rejectedUpdate else { return }
+        let app = saved.candidate.request.updateBundleURL
+        if try !SignatureSnapshot.entryExists(app), saved.cleanup != nil { return }
+        if try SignatureSnapshot.entryExists(app), rejected.matchesFilesystemObject(try DataPathIdentity.capture(app)) {
+            do { try verifyIncoming(saved.candidate, replacing: saved.installedIdentity == nil ? saved.source.url : saved.candidate.request.targetBundleURL) }
+            catch let failure as RejectedUpdate where failure.identity == rejected { return }
+        }
+        // A replacement download may reuse the same request. Release an untouched automatic intent.
+        if saved.stageIdentity == nil && saved.cleanup == nil {
+            try operationLock.recheckWriterAdmission()
+            try SignatureSnapshot.remove(rollbackURL(saved.candidate))
+            throw RollbackError.newDownload
+        }
+        throw RollbackError.changed
     }
 
     private func previousApplication(_ candidate: Candidate) throws -> URL {
@@ -239,8 +294,20 @@ extension ShipItUpdateRecovery {
             try requireRestoredApplication(saved)
             if try !SignatureSnapshot.entryExists(owned.url) { continue }
             guard allowed.contains(owned.url) else { throw RollbackError.changed }
+            if let rejected = saved.rejectedUpdate {
+                try requireRollbackLocation(saved.candidate)
+                if owned.url == saved.candidate.request.updateBundleURL, !owned.identity.matchesFilesystemObject(rejected) { throw RollbackError.changed }
+            }
             guard owned.identity.matchesFilesystemObject(try DataPathIdentity.capture(owned.url)) else { throw RollbackError.changed }
             try SignatureSnapshot.remove(owned.url)
+        }
+        if saved.rejectedUpdate != nil {
+            // rmdir removes only empty, per-attempt containers. Keep shared logs and other downloads.
+            let download = saved.candidate.request.updateBundleURL.deletingLastPathComponent()
+            if download.deletingLastPathComponent() == saved.candidate.stateURL.deletingLastPathComponent(),
+               download.lastPathComponent.hasPrefix("update.") { _ = rmdir(download.path) }
+            let native = saved.source.url.deletingLastPathComponent()
+            if isNativeTemporaryRoot(native, identifier: saved.candidate.request.bundleIdentifier) { _ = rmdir(native.path) }
         }
         saved.cleanupComplete = true
         try saveRollback(saved)
@@ -256,6 +323,23 @@ extension ShipItUpdateRecovery {
     }
 
     private func rollbackCleanupPaths(_ candidate: Candidate, saved: Rollback) throws -> Set<URL> {
+        if let rejected = saved.rejectedUpdate {
+            var paths: Set<URL> = [candidate.stateURL]
+            func include(_ url: URL, identities: [DataPathIdentity?]) throws {
+                guard try SignatureSnapshot.entryExists(url) else { return }
+                let actual = try DataPathIdentity.capture(url)
+                guard identities.contains(where: { $0?.matchesFilesystemObject(actual) == true }) else { throw RollbackError.changed }
+                paths.insert(url)
+            }
+            try include(candidate.request.updateBundleURL, identities: [rejected])
+            try include(saved.stage, identities: [saved.targetBefore, saved.stageIdentity])
+            if let receipt = try installationReceipt(candidate) {
+                try include(receipt.stage, identities: [receipt.stageIdentity, receipt.replacement?.identity])
+                if let old = receipt.replacement { try include(old.backup, identities: [old.identity]) }
+            }
+            if saved.source.url != candidate.request.targetBundleURL { try include(saved.source.url, identities: [saved.source.identity]) }
+            return paths
+        }
         var paths: Set<URL> = [caches.appendingPathComponent(candidate.request.bundleIdentifier + ".ShipIt"), saved.stage]
         if let receipt = try installationReceipt(candidate) {
             paths.insert(receipt.stage)
@@ -362,14 +446,15 @@ extension ShipItUpdateRecovery {
         }
     }
 
-    private enum RollbackError: LocalizedError {
-        case busy, applicationRunning, oldApplicationMissing, changed
+    enum RollbackError: LocalizedError {
+        case busy, applicationRunning, oldApplicationMissing, changed, newDownload
         var errorDescription: String? {
             switch self {
             case .busy: return "更新器或其他操作仍在运行，请稍后重试回退。".localized
             case .applicationRunning: return "应用尚未退出，请退出后重试回退。".localized
             case .oldApplicationMissing: return "找不到可核验的完整旧版，无法回退更新。".localized
             case .changed: return "应用位置或更新现场已变化，已停止回退并保留必要副本。".localized
+            case .newDownload: return ShipItUpdateRecovery.Step.preparing.message
             }
         }
     }

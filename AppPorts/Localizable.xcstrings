@@ -138,6 +138,280 @@
         }
       }
     },
+    "新版签名校验失败。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر التحقق من توقيع التحديث."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠋⠁⠊⠇⠑⠙ ⠎⠊⠛⠝⠁⠞⠥⠗⠑ ⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Signatur des Updates konnte nicht bestätigt werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update failed signature verification."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La kontrolo de la subskribo de la ĝisdatigo malsukcesis."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la firma de la actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La signature de la mise à jour est invalide."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट के हस्ताक्षर का सत्यापन विफल रहा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifikasi tanda tangan pembaruan gagal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica della firma dell’aggiornamento non riuscita."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートの署名を検証できませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 서명을 확인할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De handtekening van de update kon niet worden geverifieerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weryfikacja podpisu aktualizacji nie powiodła się."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha na verificação da assinatura da atualização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка подписи обновления не пройдена."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบลายเซ็นของการอัปเดตไม่สำเร็จ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemenin imzası doğrulanamadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác minh chữ ký của bản cập nhật."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版签名校验失败。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版簽章驗證失敗。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版簽洺校驗夨敗。"
+          }
+        }
+      }
+    },
+    "新版签名校验失败，已自动回退至 %@。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر التحقق من توقيع التحديث. تمت استعادة الإصدار ⁦%@⁩ تلقائيًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠎⠊⠛⠝⠁⠞⠥⠗⠑ ⠧⠑⠗⠊⠋⠊⠉⠁⠞⠊⠕⠝ ⠋⠁⠊⠇⠑⠙⠲ ⠠⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽ ⠗⠑⠎⠞⠕⠗⠑⠙ ⠧⠑⠗⠎⠊⠕⠝ %@⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Signaturprüfung des Updates ist fehlgeschlagen. Version %@ wurde automatisch wiederhergestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update signature verification failed. Automatically restored version %@."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La kontrolo de la subskribo de la ĝisdatigo malsukcesis. Versio %@ estis aŭtomate restarigita."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la firma de la actualización. Se restauró automáticamente la versión %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La vérification de la signature a échoué. La version %@ a été restaurée automatiquement."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट के हस्ताक्षर का सत्यापन विफल रहा। संस्करण %@ अपने आप बहाल कर दिया गया।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifikasi tanda tangan pembaruan gagal. Versi %@ dipulihkan secara otomatis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica della firma non riuscita. La versione %@ è stata ripristinata automaticamente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートの署名検証に失敗したため、バージョン %@ に自動的に戻しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 서명 확인에 실패하여 %@ 버전으로 자동 복원했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De handtekening van de update is afgekeurd. Versie %@ is automatisch hersteld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weryfikacja podpisu aktualizacji nie powiodła się. Automatycznie przywrócono wersję %@."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha na verificação da assinatura da atualização. A versão %@ foi restaurada automaticamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка подписи обновления не пройдена. Автоматически восстановлена версия %@."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบลายเซ็นของการอัปเดตไม่สำเร็จ กู้คืนเวอร์ชัน %@ โดยอัตโนมัติแล้ว"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemenin imzası doğrulanamadı. %@ sürümü otomatik olarak geri yüklendi."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác minh chữ ký của bản cập nhật. Đã tự động khôi phục phiên bản %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版签名校验失败，已自动回退至 %@。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版簽章驗證失敗，已自動復原至 %@。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版簽洺校驗夨敗，已洎動囙退至 %@。"
+          }
+        }
+      }
+    },
     "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。" : {
       "extractionState" : "manual",
       "localizations" : {

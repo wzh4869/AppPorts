@@ -112,14 +112,17 @@ enum SignatureInspector {
     }
 
     static func require(_ identity: OriginalDeveloperIdentity, at app: URL) throws {
+        guard try validityStatus(for: identity, at: app) == errSecSuccess else { throw CodeSigner.SigningError.originalApplicationMismatch }
+    }
+
+    static func validityStatus(for identity: OriginalDeveloperIdentity, at app: URL) throws -> OSStatus {
         var requirement: SecRequirement?
         let requirementStatus = SecRequirementCreateWithString(identity.designatedRequirement as CFString, [], &requirement)
         guard requirementStatus == errSecSuccess, let requirement else { throw securityError(requirementStatus, at: app) }
         let code = try staticCode(at: app)
         // Network access is disabled by default. Do not opt into the public
         // kSecCSAllowNetworkAccess flag for an offline identity comparison.
-        let status = SecStaticCodeCheckValidity(code, SecCSFlags(rawValue: kSecCSCheckAllArchitectures), requirement)
-        guard status == errSecSuccess else { throw CodeSigner.SigningError.originalApplicationMismatch }
+        return SecStaticCodeCheckValidity(code, SecCSFlags(rawValue: kSecCSCheckAllArchitectures), requirement)
     }
 
     private static func information(at app: URL) throws -> [String: Any] {

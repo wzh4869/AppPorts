@@ -23,6 +23,10 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
         }
     }
     typealias Reporter = @Sendable (Step) async -> Void
+    struct RejectedUpdate: LocalizedError {
+        let identity: DataPathIdentity
+        var errorDescription: String? { "新版签名校验失败。".localized }
+    }
     enum Activity: Sendable { case idle, updaterRunning, applicationRunning }
     struct Request: Codable, Equatable, Sendable {
         let updateBundleURL: URL
@@ -153,7 +157,8 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
 
     /// Caller owns the foreground operation token; this worker owns the filesystem locks.
     @discardableResult
-    func recover(_ candidate: Candidate, report: @escaping Reporter = { _ in }) async throws -> Bool {
+    func recover(_ candidate: Candidate, previousRejection: DataPathIdentity? = nil,
+                 report: @escaping Reporter = { _ in }) async throws -> Bool {
         await report(.waiting)
         var lock: OperationLock? = operationLock.freshInstance()
         guard lock?.tryAcquire() == true else { return false }
@@ -176,7 +181,14 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
                 return true
             }
         }
-        let result = try await installWithLaunchProtection(candidate, report: report)
+        let result: Bool
+        do {
+            result = try await installWithLaunchProtection(candidate, report: report)
+        } catch let rejection as RejectedUpdate where previousRejection == rejection.identity {
+            try Task.checkCancellation()
+            try prepareAutomaticRollback(candidate, rejected: rejection.identity)
+            return false
+        }
         // Portal refresh uses the same global lock through AppMigrationService.
         lock?.release()
         lock = nil
@@ -233,8 +245,6 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
             if try SignatureSnapshot.entryExists(target) {
                 guard Self.isNewer(candidate) else { return false }
                 try validate(target, candidate.request.bundleIdentifier)
-                try validate(candidate.request.updateBundleURL, candidate.request.bundleIdentifier)
-                try sameDeveloper(target, candidate.request.updateBundleURL)
                 receipt.replacement = .init(identity: try DataPathIdentity.capture(target),
                     backup: parent.appendingPathComponent(".appports-shipit-backup-\(UUID().uuidString).app"))
             }
@@ -256,7 +266,7 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
             guard let old = receipt.replacement,
                   old.identity.matchesFilesystemObject(try DataPathIdentity.capture(target)), Self.isNewer(candidate) else { return false }
         }
-        try validate(candidate.request.updateBundleURL, candidate.request.bundleIdentifier)
+        try verifyIncoming(candidate, replacing: receipt.replacement == nil ? nil : target)
         if !receipt.ready {
             if try SignatureSnapshot.entryExists(receipt.stage) {
                 guard let identity = receipt.stageIdentity,
@@ -424,9 +434,28 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
         let expression = "anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and identifier \"\(identifier)\""
         guard SecStaticCodeCreateWithPath(app as CFURL, [], &code) == errSecSuccess, let code,
               SecRequirementCreateWithString(expression as CFString, [], &requirement) == errSecSuccess,
-              let requirement,
-              SecStaticCodeCheckValidity(code, SecCSFlags(rawValue: kSecCSCheckNestedCode | kSecCSStrictValidate | kSecCSCheckAllArchitectures), requirement) == errSecSuccess else {
+              let requirement else {
             throw CocoaError(.fileReadCorruptFile)
+        }
+        let status = SecStaticCodeCheckValidity(code, SecCSFlags(rawValue: kSecCSCheckNestedCode | kSecCSStrictValidate | kSecCSCheckAllArchitectures), requirement)
+        guard status == errSecSuccess else { throw NSError(domain: NSOSStatusErrorDomain, code: Int(status)) }
+    }
+
+    /// Only a definitive signing failure on the downloaded bundle can initiate automatic rollback.
+    func verifyIncoming(_ candidate: Candidate, replacing old: URL?) throws {
+        let app = candidate.request.updateBundleURL
+        let identity = try DataPathIdentity.capture(app)
+        do {
+            try validate(app, candidate.request.bundleIdentifier)
+            if let old { try sameDeveloper(old, app) }
+        } catch let error as NSError {
+            let rejected = [errSecCSReqFailed, errSecCSSignatureFailed, errSecCSUnsigned,
+                            errSecCSBadResource, errSecCSResourcesInvalid, errSecCSBadNestedCode,
+                            errSecCSUnsignedNestedCode, errSecCSInfoPlistFailed, errSecCSBadMainExecutable,
+                            errSecCSUnsealedAppRoot, errSecCSUnsealedFrameworkRoot]
+            guard error.domain == NSOSStatusErrorDomain, rejected.contains(where: { Int($0) == error.code }),
+                  identity.matchesFilesystemObject(try DataPathIdentity.capture(app)) else { throw error }
+            throw RejectedUpdate(identity: identity)
         }
     }
 
@@ -443,7 +472,8 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
 
     static func requireSameDeveloper(old: URL, new: URL) throws {
         guard let identity = try SignatureInspector.inspect(at: old).developerIdentity else { throw CocoaError(.fileReadCorruptFile) }
-        try SignatureInspector.require(identity, at: new)
+        let status = try SignatureInspector.validityStatus(for: identity, at: new)
+        guard status == errSecSuccess else { throw NSError(domain: NSOSStatusErrorDomain, code: Int(status)) }
     }
 
     @MainActor

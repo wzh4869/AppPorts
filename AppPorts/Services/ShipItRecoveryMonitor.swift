@@ -31,6 +31,7 @@ final class ShipItRecoveryMonitor {
     private var suppressed: Set<String> = []
     private var activeCandidateKey: String?
     private var failures: [String: String] = [:]
+    private var rejectedPackages: [String: DataPathIdentity] = [:]
     private var unfinished: [String: ShipItUpdateRecovery.Candidate] = [:]
 
     init(recovery: ShipItUpdateRecovery? = nil, interval: UInt64 = 5_000_000_000,
@@ -108,10 +109,17 @@ final class ShipItRecoveryMonitor {
                 updateListener()
                 let candidates = try await Task.detached(priority: .utility) { try worker.candidates() }.value
                 let rollbacks = try await Task.detached(priority: .utility) { try worker.pendingRollbacks() }.value
-                for candidate in rollbacks {
-                    suppressed.insert(candidate.key)
-                    display(candidate, status: .attention,
-                            message: "回退尚未完成，可重试回退更新。".localized, offerRollback: true)
+                rejectedPackages = rejectedPackages.filter { key, _ in candidates.contains { $0.key == key } }
+                for pending in rollbacks {
+                    guard !Task.isCancelled else { break }
+                    let candidate = pending.candidate
+                    if pending.automatic {
+                        if !(await recover(candidate, automaticRollback: true)) { retry = true }
+                    } else {
+                        suppressed.insert(candidate.key)
+                        display(candidate, status: .attention,
+                                message: "回退尚未完成，可重试回退更新。".localized, offerRollback: true)
+                    }
                 }
                 for candidate in candidates where !suppressed.contains(candidate.key) {
                     guard !Task.isCancelled else { break }
@@ -149,7 +157,9 @@ final class ShipItRecoveryMonitor {
         }
     }
 
-    private func recover(_ candidate: ShipItUpdateRecovery.Candidate) async -> Bool {
+    private enum Outcome { case waiting, updated, rolledBack(String) }
+
+    private func recover(_ candidate: ShipItUpdateRecovery.Candidate, automaticRollback: Bool = false) async -> Bool {
         guard let token = operationState.begin() else {
             display(candidate, status: .queued, message: ShipItUpdateRecovery.Step.waiting.message)
             return false
@@ -162,19 +172,49 @@ final class ShipItRecoveryMonitor {
         }
         let worker = recovery
         let report = reporter(candidate)
-        let operation = Task.detached(priority: .utility) { try await worker.recover(candidate, report: report) }
+        let previous = rejectedPackages[candidate.key]
+        let operation = Task.detached(priority: .utility) { () throws -> Outcome in
+            if automaticRollback {
+                return .rolledBack(try await worker.rollback(candidate, automatic: true, report: report))
+            }
+            return try await worker.recover(candidate, previousRejection: previous, report: report) ? .updated : .waiting
+        }
         operationState.registerCancellation(for: token) { operation.cancel() }
         do {
             let completed = try await withTaskCancellationHandler {
                 try await operation.value
             } onCancel: { operation.cancel() }
-            if completed {
+            switch completed {
+            case .updated:
                 display(candidate, status: .completed, message: "AppPorts 已成功接手并完成更新。".localized, result: .recovered)
-            } else if !Task.isCancelled {
-                display(candidate, status: .queued, message: ShipItUpdateRecovery.Step.waiting.message)
+            case .rolledBack(let version):
+                display(candidate, status: .completed, message: String(format: "新版签名校验失败，已自动回退至 %@。".localized, version), result: .rolledBack)
+            case .waiting:
+                if !Task.isCancelled { display(candidate, status: .queued, message: ShipItUpdateRecovery.Step.waiting.message) }
+                return false
             }
-            return completed
+            return true
+        } catch let rejection as ShipItUpdateRecovery.RejectedUpdate {
+            rejectedPackages[candidate.key] = rejection.identity
+            display(candidate, status: .queued, message: rejection.localizedDescription + " " + ShipItUpdateRecovery.Step.preparing.message)
+            return false
+        } catch ShipItUpdateRecovery.RollbackError.newDownload {
+            rejectedPackages.removeValue(forKey: candidate.key)
+            return false
+        } catch ShipItUpdateRecovery.RollbackError.oldApplicationMissing {
+            display(candidate, status: .attention, message: ShipItUpdateRecovery.RollbackError.oldApplicationMissing.localizedDescription, offerRollback: true)
+            return true
         } catch {
+            if automaticRollback {
+                if error is CancellationError { return false }
+                if case ShipItUpdateRecovery.RollbackError.busy = error {
+                    display(candidate, status: .queued, message: ShipItUpdateRecovery.Step.waiting.message)
+                    return false
+                }
+                display(candidate, status: .attention, message: String(format: "回退未完成：%@\n必要副本已保留，可重试回退。".localized, error.localizedDescription), offerRollback: true)
+                if case ShipItUpdateRecovery.RollbackError.changed = error { return true }
+                return false
+            }
             AppLogger.shared.logError("自动接手 ShipIt 更新失败，更新副本已保留", error: error)
             if !(error is CancellationError) {
                 failures[candidate.key] = String(format: "接手失败：%@\n将自动重试，也可以回退更新。".localized, error.localizedDescription)

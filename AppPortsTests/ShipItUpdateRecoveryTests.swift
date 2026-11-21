@@ -110,6 +110,15 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
                 stopInstaller: { _ in })
         }
 
+        static func refreshPortal(_ record: AppSearchRecord, in root: URL) throws {
+            let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 },
+                transferStore: AppTransferStore(directoryURL: root.appendingPathComponent("Transfers")),
+                signatureFactStore: SignatureFactStore(backupDirectoryURL: root.appendingPathComponent("Signatures")),
+                writerAdmissionCheck: {}, runningApplications: { [] })
+            guard service.refreshStubPortal(at: URL(fileURLWithPath: record.localPath),
+                from: URL(fileURLWithPath: record.externalPath), force: true) else { throw CocoaError(.fileWriteUnknown) }
+        }
+
         func makeOldTarget(version: String = "1") throws {
             try Self.bundle(at: target, identifier: identifier, executable: "Fixture")
             let url = target.appendingPathComponent("Contents/Info.plist")
@@ -712,6 +721,126 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertEqual(launches.value, 0)
     }
 
+    func testAutomaticRollbackResumesAfterRestartButLetsACorrectedDownloadInstall() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        try fixture.makeOldTarget()
+        let payload = fixture.source.appendingPathComponent("Contents/MacOS/Fixture")
+        try Data("damaged".utf8).write(to: payload)
+        let blocked = fixture.recovery(validate: { url, identifier in
+            do { try Fixture.validate(url, identifier) }
+            catch { throw NSError(domain: NSOSStatusErrorDomain, code: Int(errSecCSSignatureFailed)) }
+        })
+        let candidate = try XCTUnwrap(blocked.candidates().first)
+        do { _ = try await blocked.recover(candidate); XCTFail("Rejected download") }
+        catch let rejected as ShipItUpdateRecovery.RejectedUpdate {
+            XCTAssertTrue(try blocked.pendingRollbacks().isEmpty)
+            let result = try await blocked.recover(candidate, previousRejection: rejected.identity)
+            XCTAssertFalse(result)
+        }
+        XCTAssertEqual(try blocked.pendingRollbacks().map(\.automatic), [true])
+        // The updater repairs the package in place. The request and the bundle inode can both be reused.
+        try Data("fixture payload".utf8).write(to: payload)
+        let restarted = fixture.recovery()
+        do { _ = try await restarted.rollback(candidate, automatic: true); XCTFail("Recheck the corrected download") }
+        catch ShipItUpdateRecovery.RollbackError.newDownload {}
+        XCTAssertTrue(try restarted.pendingRollbacks().isEmpty)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.source.path))
+        let installed = try await restarted.recover(candidate)
+        XCTAssertTrue(installed)
+    }
+
+    func testRejectedDownloadWithoutAProvenOldCopyIsPreserved() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let worker = fixture.recovery(validate: { try ShipItUpdateRecovery.validateApplication(at: $0, identifier: $1) })
+        let candidate = try XCTUnwrap(worker.candidates().first)
+        do { _ = try await worker.recover(candidate); XCTFail("Unsigned download") }
+        catch let rejected as ShipItUpdateRecovery.RejectedUpdate {
+            do { _ = try await worker.recover(candidate, previousRejection: rejected.identity); XCTFail("No verified old copy") }
+            catch ShipItUpdateRecovery.RollbackError.oldApplicationMissing {}
+        }
+        XCTAssertTrue(try worker.pendingRollbacks().isEmpty)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.source.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.state.path))
+    }
+
+    func testRepeatedPublisherMismatchWaitsForRunningOldAppAndResumesAfterRestart() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        try fixture.makeOldTarget()
+        let old = try DataPathIdentity.capture(fixture.target)
+        let activity = ActivityBox()
+        let publisher: @Sendable (URL, URL) throws -> Void = { _, _ in
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(errSecCSReqFailed))
+        }
+        let worker = fixture.recovery(busy: { _, _ in activity.read() }, sameDeveloper: publisher,
+                                      quit: { _, _ in XCTFail("Do not quit a running app for automatic rollback") })
+        let candidate = try XCTUnwrap(worker.candidates().first)
+        do { _ = try await worker.recover(candidate); XCTFail("First mismatch") }
+        catch let rejected as ShipItUpdateRecovery.RejectedUpdate {
+            let installed = try await worker.recover(candidate, previousRejection: rejected.identity)
+            XCTAssertFalse(installed)
+        }
+        do { _ = try await worker.rollback(candidate, automatic: true); XCTFail("Keep the running old app") }
+        catch ShipItUpdateRecovery.RollbackError.busy {}
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.source.path))
+        activity.stopped()
+        let restarted = fixture.recovery(sameDeveloper: publisher)
+        XCTAssertEqual(try restarted.pendingRollbacks().map(\.automatic), [true])
+        let version = try await restarted.rollback(candidate, automatic: true)
+        XCTAssertEqual(version, "1")
+        XCTAssertEqual(try DataPathIdentity.capture(fixture.target), old)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.source.path))
+        XCTAssertTrue(try restarted.pendingRollbacks().isEmpty)
+    }
+
+    @MainActor
+    func testGuardianAutomaticallyRestoresSignedOldApplicationAndCleansRejectedDownload() async throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let output = env["APPPORTS_SHIPIT_VALIDATION_ROOT"], let old = env["APPPORTS_SHIPIT_OLD_SIGNED_FIXTURE"],
+              let new = env["APPPORTS_SHIPIT_SIGNED_FIXTURE"] else { throw XCTSkip("Requires signed DeepSeek bundles") }
+        let fixture = try Fixture(root: URL(fileURLWithPath: output).appendingPathComponent("Rejected-" + UUID().uuidString),
+                                  identifier: "com.deepseek.dsh")
+        let native = FileManager.default.temporaryDirectory.appendingPathComponent(fixture.identifier + ".ShipIt." + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: native); try? FileManager.default.removeItem(at: fixture.root) }
+        try FileManager.default.createDirectory(at: native, withIntermediateDirectories: true)
+        let parked = native.appendingPathComponent("Fixture.app")
+        try SignatureSnapshot.copy(from: URL(fileURLWithPath: old), to: parked)
+        let version = try SignatureAppVersion.read(at: parked)
+        try FileManager.default.removeItem(at: fixture.source)
+        try SignatureSnapshot.copy(from: URL(fileURLWithPath: new), to: fixture.source)
+        let resource = fixture.source.appendingPathComponent("Contents/Resources/app.asar")
+        try Data("signature test".utf8).write(to: resource, options: .atomic)
+        let log = "Detected this as an install request\nMoving bundle from \(fixture.target.absoluteString) to \(parked.absoluteString)\nInstallation error: \(fixture.target.path)\nShipIt quitting\n"
+        try log.write(to: fixture.log, atomically: true, encoding: .utf8)
+        let sibling = fixture.source.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("other-download")
+        try Data("keep".utf8).write(to: sibling)
+        let root = fixture.root
+        let worker = fixture.recovery(refresh: { record in
+            try Fixture.refreshPortal(record, in: root)
+        }, validate: { try ShipItUpdateRecovery.validateApplication(at: $0, identifier: $1) },
+                                      sameDeveloper: { try ShipItUpdateRecovery.requireSameDeveloper(old: $0, new: $1) })
+        let candidate = try XCTUnwrap(worker.candidates().first)
+        let observed = ShipItObservedTaskStore(directory: worker.directory)
+        let finished = expectation(description: "Guardian completed rollback without a user action")
+        let monitor = ShipItRecoveryMonitor(recovery: worker, interval: 50_000_000, didCheck: {
+            if (try? observed.entries().first?.result) == .rolledBack { finished.fulfill() }
+        }, observedStore: observed)
+        finished.assertForOverFulfill = false
+        monitor.start()
+        await fulfillment(of: [finished], timeout: 100)
+        await monitor.stop()
+        XCTAssertEqual(try observed.entries().map(\.candidate), [candidate])
+        XCTAssertEqual(try SignatureAppVersion.read(at: fixture.target), version)
+        XCTAssertEqual(try SignatureAppVersion.read(at: fixture.local).shortVersion, version.shortVersion)
+        XCTAssertEqual(AppPortalMaintenance.entries(at: fixture.local).first?.externalURL.path, fixture.target.path)
+        let restored = fixture.target, identifier = fixture.identifier
+        try await Task.detached { try ShipItUpdateRecovery.validateApplication(at: restored, identifier: identifier) }.value
+        XCTAssertEqual(try Data(contentsOf: sibling), Data("keep".utf8))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.source.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: native.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.state.path))
+        XCTAssertTrue(try worker.pendingRollbacks().isEmpty)
+    }
+
     func testLegacyCompletedReceiptOnlyCleansInstallerStateWithoutRelaunch() async throws {
         let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
         let launches = Calls()
@@ -848,7 +977,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: recovery.rollbackURL(candidate).path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.source.path))
         XCTAssertTrue(try fixture.recovery().candidates().isEmpty, "An interrupted rollback must not reinstall this update")
-        XCTAssertEqual(try fixture.recovery().pendingRollbacks(), [candidate])
+        XCTAssertEqual(try fixture.recovery().pendingRollbacks().map(\.candidate), [candidate])
         let version = try await fixture.recovery().rollback(candidate)
         XCTAssertEqual(version, "1")
         XCTAssertFalse(FileManager.default.fileExists(atPath: recovery.rollbackURL(candidate).path))
@@ -865,7 +994,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: recovery.rollbackURL(candidate).path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: recovery.rollbackIntentURL(candidate).path))
         XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
-        XCTAssertEqual(try fixture.recovery().pendingRollbacks(), [candidate])
+        XCTAssertEqual(try fixture.recovery().pendingRollbacks().map(\.candidate), [candidate])
         let resumed = try await fixture.recovery().recover(candidate)
         XCTAssertFalse(resumed, "Restart must honor the user's rollback request even without an old copy")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.target.path))
@@ -932,7 +1061,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         let monitor = ShipItRecoveryMonitor(recovery: recovery, operationState: state)
         await monitor.rollback(candidate)
         XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
-        XCTAssertEqual(try fixture.recovery().pendingRollbacks(), [candidate])
+        XCTAssertEqual(try fixture.recovery().pendingRollbacks().map(\.candidate), [candidate])
         XCTAssertTrue(FileManager.default.fileExists(atPath: fixture.source.path))
     }
 
@@ -970,12 +1099,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertEqual(try SignatureAppVersion.read(at: fixture.target), try SignatureAppVersion.read(at: fixture.source))
         let root = fixture.root
         let recovery = fixture.recovery(refresh: { record in
-            let service = AppMigrationService(dockShortcutUpdater: { _, _ in 0 },
-                transferStore: AppTransferStore(directoryURL: root.appendingPathComponent("Transfers")),
-                signatureFactStore: SignatureFactStore(backupDirectoryURL: root.appendingPathComponent("Signatures")),
-                writerAdmissionCheck: {}, runningApplications: { [] })
-            guard service.refreshStubPortal(at: URL(fileURLWithPath: record.localPath),
-                from: URL(fileURLWithPath: record.externalPath), force: true) else { throw CocoaError(.fileWriteUnknown) }
+            try Fixture.refreshPortal(record, in: root)
         }, validate: { try ShipItUpdateRecovery.validateApplication(at: $0, identifier: $1) })
         _ = try await recovery.rollback(candidate)
         XCTAssertEqual(try SignatureAppVersion.read(at: fixture.target), version)
