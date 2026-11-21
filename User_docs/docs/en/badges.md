@@ -1,23 +1,32 @@
 # Badges and status
 
-Badges describe an item's current state; they are not a complete health check. Read the label before deciding what to do. Clickable badges provide more detail, and different versions may show different combinations.
+Badges show the current state of an app or directory. The combination of badges varies by item.
 
 ## App location and update protection {#apps}
 
+Badges appear below the app name in both the local and external app lists. When an app has an update status badge, it appears first. Click **Available** to see how to update the app, or **Unknown** to see why AppPorts cannot confirm an update method. Badges and their explanations use your selected AppPorts language in all 22 supported languages.
+
+In the development build with quick hover, resting the pointer on a clickable badge for about 0.25 seconds opens the same content as a click. Moving past it sooner cancels the preview. You can move the pointer into an explanation to keep reading. The preview closes when the pointer leaves both the badge and the explanation. Hovering over a task badge opens its details. Hovering over **Signature replaced** opens the repair panel, where you choose whether to start a repair. In the 2.3.1 candidate (build 84), click the badge to open its details.
+
 | Badge | Meaning | What to do |
 | --- | --- | --- |
-| Local | The app is on your Mac and has no other label to display. | Migrate it when you want to free space. |
 | Linked | A local entry points to the external app (including unlocked ordinary apps and apps such as NetEase Music and WorkBuddy handled as ordinary migrations). | Connect the external drive to use it. |
 | Locked Migration | The app is linked and its external bundle currently has update protection enabled. | Read [app updates](/docs/core#updates); move it back locally before updating if needed. |
-| Unlocked Migration | A linked self-updating app whose external bundle is left unlocked. | Click for details; in-app updates can be attempted, and Application update guardian in Settings can assist with eligible update failures. |
+| Unlocked Migration | A linked self-updating app whose external bundle is left unlocked. When the update guardian is on and the app shows **Available**, the list omits the **Unlocked Migration** badge. | Click for details; in-app updates can be attempted, and Application update guardian in Settings can assist with eligible update failures. |
 | Partially Linked | Only some apps or components in a folder are linked. | Expand the folder and check each item. |
 | Orphaned Link | The local entry exists, but its external target cannot currently be found. | Connect the original drive (or remount the app library image) and refresh. This does not prove the files were deleted. |
 | Unlinked, External | The external app has no usable local entry yet. | Use “Link Back to Local” if needed. |
+| Custom | AppPorts uses its own updater. | Keep AppPorts in the Applications folder on this Mac. |
+| Available | The app has a confirmed update method after migration. | Click to see whether to update in the app, use the App Store, or update locally and move the new version out again. |
+| Checking | AppPorts is checking whether the update guardian is ready. | The badge changes to Available automatically when the guardian is ready. |
+| Unknown | AppPorts cannot confirm how this app will update after migration. | You can still try updating. Click the badge to check whether the guardian is off. |
 | Pending Move Out | A real local app appears newer than the external copy. | Check both versions and the destination, then move the newer local app out. |
 
-[![The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+[![The Mac Local Apps list in an earlier AppPorts build (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
 
-*The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
+*The Mac Local Apps list in an earlier AppPorts build (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
+
+AppPorts recommends keeping Clash Verge, Visual Studio Code (including Insiders), and Xcode on your Mac. Their rows omit the update badge. If you choose to move them, AppPorts explains the risks.
 
 “Locked Migration” protects specific update scenarios; it does not replace a backup, and upgrading AppPorts does not automatically unlock previously locked apps. “Pending Move Out” is not an instruction that must be acted on immediately.
 
@@ -28,9 +37,9 @@ Badges describe an item's current state; they are not a complete health check. R
 | Running | Save your work and quit the app before migrating or restoring it. |
 | System | A macOS system app, generally unsuitable for migration. |
 | Non-native | An iPhone or iPad app running on Mac. Support depends on the device and OS. |
-| App Store | An app from the App Store, or an external installation in the drive's `Applications` folder managed by macOS. Click for details where available. |
+| App Store | The app comes from the Mac App Store. |
 
-The `Sparkle` and `Electron` framework badges shown in earlier versions have been removed from app and app-data lists; self-update handling is represented directly by migration confirmation and the Locked / Unlocked Migration badges.
+Apps verified to update independently show Available with the guardian off. Examples include IINA with Sparkle and Qoder with ShipIt. Other apps with only the same framework identified show Unknown when the guardian is off. App Store copies follow the store’s external installation settings. Detecting Electron alone gives an Unknown badge.
 
 ## Signature status {#signing}
 
