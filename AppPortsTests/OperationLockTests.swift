@@ -291,7 +291,7 @@ final class OperationLockTests: XCTestCase {
         XCTAssertTrue(dataDirsViewSource.contains("resources: MigrationResources(paths: paths, keys: keys, subjectPaths: subjectPaths)"))
         let scheduler = try String(contentsOf: root.appendingPathComponent("AppPorts/Services/MigrationTaskCenter.swift"), encoding: .utf8)
         let acquire = try XCTUnwrap(scheduler.range(of: "guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else"))
-        let execution = try XCTUnwrap(scheduler.range(of: "return try await operation(progress)"))
+        let execution = try XCTUnwrap(scheduler.range(of: "try await operation(progress)"))
         XCTAssertLessThan(acquire.lowerBound, execution.lowerBound)
         let beforeExecution = scheduler[acquire.upperBound..<execution.lowerBound]
         XCTAssertTrue(beforeExecution.contains("throw lock.diagnosticFailure(scope: .global)"))
@@ -309,14 +309,16 @@ final class OperationLockTests: XCTestCase {
             encoding: .utf8
         )
         let maintenanceStart = try XCTUnwrap(maintenanceSource.range(
-            of: #"private\s+static\s+func\s+finishDataOperations\s*\("#, options: .regularExpression))
+            of: #"private\s+static\s+func\s+finishScheduledDataOperations\s*\("#, options: .regularExpression))
         let maintenance = String(maintenanceSource[maintenanceStart.upperBound...])
         XCTAssertTrue(maintenance.contains("let lock = OperationLock()"))
         XCTAssertTrue(maintenance.contains("guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else"))
         XCTAssertTrue(maintenance.contains("defer { lock.release() }"))
         XCTAssertFalse(maintenance.contains("OperationLock.shared"))
         let lockGuard = try XCTUnwrap(maintenance.range(of: "guard await lock.acquire("))
-        for mutation in ["await migrator.performAutomaticMaintenance(ignoresRetryBackoff: interactive)", "await migrator.remountAvailableRecords()",
+        for mutation in ["await retryDataTransfer(retryOperationID,",
+                         "await migrator.performAutomaticMaintenance(ignoresRetryBackoff: interactive)",
+                         "await migrator.remountAvailableRecords()",
                          "await DataDirMover(allowsAdministratorPrompt: interactive).resumeVerifiedTransfer("] {
             let operation = try XCTUnwrap(maintenance.range(of: mutation))
             XCTAssertLessThan(lockGuard.lowerBound, operation.lowerBound)
