@@ -138,10 +138,14 @@ struct AppStoreSettingsView: View {
                 }
                 .font(AppSettingsStyle.secondaryFont)
             }
-            if let error = agentSync.errorMessage {
+            if agentSync.errorMessage != nil || agentSync.guardianRetrying {
                 VStack(alignment: .leading, spacing: AppSettingsStyle.rowGap) {
-                    Text("Background agent settings could not be applied.".localized).foregroundStyle(.red)
-                    Text(verbatim: error).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    if let error = agentSync.errorMessage {
+                        Text("Background agent settings could not be applied.".localized).foregroundStyle(.red)
+                        Text(verbatim: error).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text("更新守护尚未就绪，正在重试…".localized).foregroundStyle(.secondary)
+                    }
                     Button("重试".localized) { agentSync.selectionDidChange() }
                         .font(AppSettingsStyle.bodyFont)
                 }

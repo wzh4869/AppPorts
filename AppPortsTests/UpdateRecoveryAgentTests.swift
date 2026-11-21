@@ -60,6 +60,56 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         XCTAssertEqual(try store.entries().first?.offersRollback, true)
     }
 
+    func testReadinessMatchesOnlyLiveLaunchedBuildAndRegistration() async throws {
+        let fixture = try Fixture()
+        defer { fixture.clean() }
+        let worker = try fixture.launch()
+        defer { if worker.isRunning { worker.terminate(); worker.waitUntilExit() } }
+        let executable = try XCTUnwrap(Bundle.main.executableURL)
+        try await wait {
+            GuardianReadiness.matches(pid: worker.processIdentifier, executable: executable, directory: fixture.root)
+        }
+        XCTAssertFalse(GuardianReadiness.matches(pid: getpid(), executable: executable, directory: fixture.root))
+        XCTAssertFalse(GuardianReadiness.matches(pid: worker.processIdentifier, executable: fixture.root, directory: fixture.root))
+        worker.terminate()
+        try await wait { !worker.isRunning }
+        XCTAssertFalse(GuardianReadiness.matches(pid: worker.processIdentifier, executable: executable, directory: fixture.root))
+    }
+
+    @MainActor
+    func testReadinessRecoversAfterProlongedStartupFailureAndClearsOnExit() async throws {
+        let fixture = try Fixture()
+        defer { fixture.clean() }
+        let root = fixture.root
+        let records = root.appendingPathComponent("app-search-records.json")
+        try Data("invalid".utf8).write(to: records)
+        let worker = try fixture.launch()
+        defer { if worker.isRunning { worker.terminate(); worker.waitUntilExit() } }
+        let pid = worker.processIdentifier
+        let executable = try XCTUnwrap(Bundle.main.executableURL)
+        let sync = AppLibraryAgentSync(synchronize: {})
+        sync.observeGuardianReadiness {
+            GuardianReadiness.matches(pid: pid, executable: executable, directory: root) ? pid : nil
+        }
+        try await wait {
+            let checks = try fixture.observation()?["checks"] ?? 0
+            return sync.guardianRetrying && checks >= 1
+        }
+        // Keep the worker alive past the old 12-second UI timeout. No launchd restart or wake event.
+        try await Task.sleep(nanoseconds: 12_100_000_000)
+        XCTAssertTrue(worker.isRunning)
+        XCTAssertFalse(sync.guardianReady)
+        XCTAssertTrue(sync.guardianRetrying)
+        XCTAssertFalse(GuardianReadiness.matches(pid: pid, executable: executable, directory: root))
+        XCTAssertGreaterThan(try XCTUnwrap(fixture.observation()?["checks"]), 1)
+        try Data("[]".utf8).write(to: records, options: .atomic)
+        try await wait(timeout: 35) { sync.guardianReady }
+        XCTAssertFalse(sync.guardianRetrying)
+        XCTAssertNil(sync.errorMessage)
+        worker.terminate()
+        try await wait { !worker.isRunning && !sync.guardianReady }
+    }
+
     func testChildExitsCleanlyWhenItsAppBundleIsMovedOrRemoved() async throws {
         for mode in ["move", "remove"] {
             let fixture = try Fixture()
@@ -86,6 +136,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         }
     }
 
+    @MainActor
     private func wait(timeout: TimeInterval = 5, until condition: () throws -> Bool) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while try !condition() {

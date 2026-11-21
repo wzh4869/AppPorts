@@ -1,6 +1,143 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "更新守护尚未就绪，正在重试…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجري إعادة التحقق من جاهزية حارس التحديثات…"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠓⠑⠉⠅⠊⠝⠛ ⠁⠛⠁⠊⠝ ⠺⠓⠑⠞⠓⠑⠗ ⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠛⠥⠁⠗⠙⠊⠁⠝ ⠊⠎ ⠗⠑⠁⠙⠽⠲⠲⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bereitschaft des Update-Wächters wird erneut geprüft…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking again whether the update guardian is ready…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rekontrolante ĉu la ĝisdatiga gardanto pretas…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando de nuevo si el guardián de actualizaciones está listo…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle vérification de la disponibilité du gardien des mises à jour…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट गार्ड तैयार है या नहीं, इसकी फिर से जाँच हो रही है…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memeriksa kembali apakah penjaga pembaruan sudah siap…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuova verifica della disponibilità del servizio di protezione aggiornamenti…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートガーディアンの準備状況を再確認しています…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 가디언이 준비되었는지 다시 확인하는 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opnieuw controleren of de updatebewaker gereed is…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trwa ponowne sprawdzanie gotowości strażnika aktualizacji…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando novamente se o guardião de atualizações está pronto…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторная проверка готовности службы контроля обновлений…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังตรวจสอบอีกครั้งว่าตัวเฝ้าการอัปเดตพร้อมแล้วหรือยัง…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme koruyucusunun hazır olup olmadığı yeniden denetleniyor…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang kiểm tra lại xem trình bảo vệ cập nhật đã sẵn sàng chưa…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新守护尚未就绪，正在重试…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新守護尚未就緒，正在重試…"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新垨護尙未僦緒，㊣茬偅試…"
+          }
+        }
+      }
+    },
     "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。" : {
       "extractionState" : "manual",
       "localizations" : {

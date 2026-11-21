@@ -8,6 +8,10 @@ final class AppLibraryAgentSync: ObservableObject {
     @Published private(set) var isSynchronizing = false
     @Published private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    @Published private(set) var guardianReady = false
+    @Published private(set) var guardianRetrying = false
+    private var readinessTask: Task<Void, Never>?
+    private var guardianExit: DispatchSourceProcess?
     private var generation: UInt = 0
     private let synchronize: @Sendable () async throws -> Void
 
@@ -18,6 +22,7 @@ final class AppLibraryAgentSync: ObservableObject {
     }
 
     func selectionDidChange() {
+        invalidateGuardianReadiness()
         generation &+= 1
         guard task == nil else { return }
         isSynchronizing = true
@@ -37,6 +42,44 @@ final class AppLibraryAgentSync: ObservableObject {
             }
             task = nil
             isSynchronizing = false
+            refreshGuardianReadiness()
+        }
+    }
+
+    private func invalidateGuardianReadiness() {
+        readinessTask?.cancel()
+        guardianExit?.cancel()
+        guardianExit = nil
+        guardianReady = false
+        guardianRetrying = false
+    }
+
+    private func refreshGuardianReadiness() {
+        invalidateGuardianReadiness()
+        guard BackgroundAgentPreferences.updateGuardianEnabled(), !AppUpdateController.shared.isInstalling,
+              NSClassFromString("XCTestCase") == nil else { return }
+        observeGuardianReadiness { UpdateRecoveryAgentInstaller.readyGuardianPID() }
+    }
+
+    func observeGuardianReadiness(probe: @escaping @Sendable () -> Int32?) {
+        readinessTask = Task { [weak self] in
+            var delay: UInt64 = 500_000_000
+            while !Task.isCancelled {
+                let pid = await Task.detached(priority: .utility) { probe() }.value
+                guard !Task.isCancelled, let self else { return }
+                if let pid {
+                    let source = DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit, queue: .main)
+                    source.setEventHandler { [weak self] in self?.refreshGuardianReadiness() }
+                    guardianExit = source
+                    source.resume()
+                    guardianRetrying = false
+                    guardianReady = true
+                    return
+                }
+                if delay >= 1_000_000_000 && !guardianRetrying { guardianRetrying = true }
+                do { try await Task.sleep(nanoseconds: delay) } catch { return }
+                delay = min(delay * 2, 15_000_000_000)
+            }
         }
     }
 

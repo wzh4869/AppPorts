@@ -358,6 +358,56 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
     }
 
     @MainActor
+    func testListenerStartFailureRetriesWithoutAnEventAndPublishesOnce() async throws {
+        let fixture = try eventFixture()
+        defer { try? FileManager.default.removeItem(at: fixture.root) }
+        try fixture.writeRequest(failure: false)
+        let first = expectation(description: "First check finished")
+        let second = expectation(description: "Startup retry finished")
+        let recovery = expectation(description: "Recovered after real file event")
+        let checks = Calls(), starts = Calls(), publications = Calls()
+        let monitor = ShipItRecoveryMonitor(recovery: fixture.recovery(launch: { _ in recovery.fulfill() }),
+            debounce: 20_000_000, eventLatency: 0.02, didCheck: {
+                switch checks.next() {
+                case 1: first.fulfill()
+                case 2: second.fulfill()
+                default: break
+                }
+            }, startEvents: { stream, identifiers in
+                starts.next() > 1 && stream.start(identifiers: identifiers)
+            }, didStartListening: {
+                _ = publications.next()
+            })
+        monitor.start()
+        await fulfillment(of: [first], timeout: 5)
+        XCTAssertEqual(publications.value, 0)
+        await fulfillment(of: [second], timeout: 5)
+        XCTAssertEqual(publications.value, 1)
+        XCTAssertGreaterThanOrEqual(starts.value, 2)
+        try fixture.writeRequest(failure: true)
+        await fulfillment(of: [recovery], timeout: 5)
+        await monitor.stop()
+        XCTAssertEqual(publications.value, 1)
+    }
+
+    @MainActor
+    func testStoppingDuringListenerBackoffCancelsRetry() async throws {
+        let fixture = try eventFixture()
+        defer { try? FileManager.default.removeItem(at: fixture.root) }
+        try fixture.writeRequest(failure: false)
+        let first = expectation(description: "Listener failed to start")
+        let starts = Calls()
+        let monitor = ShipItRecoveryMonitor(recovery: fixture.recovery(), didCheck: { first.fulfill() },
+            startEvents: { _, _ in _ = starts.next(); return false },
+            didStartListening: { XCTFail("A stopped listener cannot publish readiness") })
+        monitor.start()
+        await fulfillment(of: [first], timeout: 5)
+        await monitor.stop()
+        try await Task.sleep(nanoseconds: 1_200_000_000)
+        XCTAssertEqual(starts.value, 1)
+    }
+
+    @MainActor
     func testIdleMonitorDoesNotPollAndIgnoresUnrelatedWrites() async throws {
         let fixture = try eventFixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
         try fixture.writeRequest(failure: false)

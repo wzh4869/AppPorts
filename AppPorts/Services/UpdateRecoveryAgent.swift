@@ -41,6 +41,12 @@ enum UpdateRecoveryAgent {
         let termination = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
         let initialExecutablePath = (try? WriterAdmission.currentProcessIdentity().executablePath)
             ?? (Bundle.main.executableURL ?? Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/AppPorts")).standardizedFileURL.path
+        let readiness: GuardianReadiness
+        do { readiness = try GuardianReadiness(executable: URL(fileURLWithPath: initialExecutablePath)) }
+        catch {
+            AppLogger.shared.logError("无法确认更新守护启动时的进程身份", error: error)
+            exit(1)
+        }
         Task { @MainActor in
             var didCheck: (() -> Void)?
             #if DEBUG
@@ -57,7 +63,8 @@ enum UpdateRecoveryAgent {
             #endif
             let monitor = ShipItRecoveryMonitor(recovery: recovery,
                 didCheck: didCheck,
-                observedStore: ShipItObservedTaskStore(directory: directory))
+                observedStore: ShipItObservedTaskStore(directory: directory),
+                didStartListening: { try readiness.publish(in: dataDirectory) })
             var shuttingDown = false
             var executableMonitor: ExecutableReplacementMonitor?
             let shutdown: @MainActor (String) -> Void = { message in
@@ -157,5 +164,38 @@ enum UpdateRecoveryAgent {
             }
             return nil
         }
+    }
+}
+
+// A launchd registration can outlive its worker. The snapshot only describes this process
+// and the executable it started from. It grants no permission to install an update.
+struct GuardianReadiness: Codable {
+    let process: WriterProcessIdentity
+    let executableIdentity: DataPathIdentity
+    let build: String
+
+    init(executable: URL) throws {
+        process = try WriterAdmission.currentProcessIdentity()
+        executableIdentity = try DataPathIdentity.capture(executable)
+        build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+    }
+
+    private static func file(in directory: URL) -> URL {
+        directory.appendingPathComponent("update-guardian-ready.plist")
+    }
+
+    func publish(in directory: URL) throws {
+        try PropertyListEncoder().encode(self).write(to: Self.file(in: directory), options: .atomic)
+    }
+
+    static func matches(pid: Int32, executable: URL, directory: URL) -> Bool {
+        guard let data = try? Data(contentsOf: file(in: directory)),
+              let ready = try? PropertyListDecoder().decode(Self.self, from: data),
+              ready.process.processID == pid, !ready.build.isEmpty,
+              ready.build == Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+              WriterAdmission.matchesRunningProcess(ready.process),
+              WriterAdmission.isProcessCompliantWriter(pid: pid, expectedExecutablePath: executable.path, dataDirectory: directory),
+              let installed = try? DataPathIdentity.capture(executable) else { return false }
+        return installed.matchesFilesystemObject(ready.executableIdentity)
     }
 }

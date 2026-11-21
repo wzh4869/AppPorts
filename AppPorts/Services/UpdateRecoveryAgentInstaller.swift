@@ -18,12 +18,24 @@ enum UpdateRecoveryAgentInstaller {
             "KeepAlive": ["SuccessfulExit": false],
             "LimitLoadToSessionType": ["Aqua"]
         ]
+        if let file = try? SignatureSnapshot.info(at: URL(fileURLWithPath: executablePath)) {
+            result["AppPortsExecutableIdentity"] = "\(file.st_dev):\(file.st_ino)"
+        }
         if let signatureIdentity { result["AppPortsSignatureIdentity"] = signatureIdentity }
         return result
     }
 
     static func suspendForApplicationUpdate() throws -> Bool {
         try ContainerMountAgentInstaller.suspendAgent(label: label)
+    }
+
+    static func readyGuardianPID() -> Int32? {
+        guard BackgroundAgentPreferences.updateGuardianEnabled(),
+              let executable = Bundle.main.executableURL,
+              let pid = ContainerMountAgentInstaller.runningServicePID(label: label),
+              GuardianReadiness.matches(pid: pid, executable: executable, directory: WriterAdmission.defaultDataDirectory)
+        else { return nil }
+        return pid
     }
 
     /// The caller holds the shared operation lock before stopping a live worker.
@@ -65,7 +77,7 @@ enum UpdateRecoveryAgentInstaller {
                 ("expected_executable", executable)
             ], level: "WARN")
         }
-        try ContainerMountAgentInstaller.configureAgent(
+        let reloaded = try ContainerMountAgentInstaller.configureAgent(
             definitionMatches: existing == data,
             writeDefinition: {
                 try FileManager.default.createDirectory(at: definitionURL.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -78,5 +90,12 @@ enum UpdateRecoveryAgentInstaller {
             previousPID: livePID,
             waitForExit: waitForExit
         )
+        // A clean exit leaves the job registered. Kickstart without -k also preserves
+        // a worker launchd may have started between the PID check and this request.
+        if !reloaded && livePID == nil {
+            guard run(["kickstart", "gui/\(getuid())/\(label)"]) == 0 else {
+                throw ContainerMountAgentInstaller.InstallError.launchAgentLoadFailed
+            }
+        }
     }
 }

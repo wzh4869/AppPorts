@@ -56,7 +56,8 @@ final class BackgroundAgentTests: XCTestCase {
         try UpdateRecoveryAgentInstaller.synchronizeConfiguration(enabled: true, definitionURL: definition,
             running: URL(fileURLWithPath: executable), selectExecutable: { _, recorded in recorded },
             signatureIdentity: { _ in "new" }, run: { commands.append($0); return 0 })
-        XCTAssertEqual(commands.map { $0[0] }, ["enable", "print"])
+        XCTAssertEqual(commands.map { $0[0] }, ["enable", "print", "kickstart"])
+        XCTAssertEqual(commands.last, ["kickstart", "gui/\(getuid())/\(UpdateRecoveryAgentInstaller.label)"])
     }
 
     func testTurningGuardianOffOnlyRemovesItsRegistrationAndDefinition() throws {

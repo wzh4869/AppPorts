@@ -13,6 +13,8 @@ final class ShipItRecoveryMonitor {
     private let eventLatency: TimeInterval
     private let operationState: AppOperationState
     private let workspaceCenter: NotificationCenter
+    private let startEvents: (ShipItUpdateEventMonitor, Set<String>) -> Bool
+    private let didStartListening: () throws -> Void
     private let didCheck: (() -> Void)?
     private let taskCenter: MigrationTaskCenter?
     private let observedStore: ShipItObservedTaskStore?
@@ -21,6 +23,8 @@ final class ShipItRecoveryMonitor {
     private var task: Task<Void, Never>?
     private var scheduled: Task<Void, Never>?
     private var started = false
+    private var listenerReady = false
+    private var startupRetryDelay: UInt64 = 1_000_000_000
     private var needsCheck = false
     private var recovering = false
     private var identifiers: Set<String> = []
@@ -33,11 +37,15 @@ final class ShipItRecoveryMonitor {
          operationState: AppOperationState? = nil, debounce: UInt64 = 1_000_000_000,
          eventLatency: TimeInterval = 1, workspaceCenter: NotificationCenter = NSWorkspace.shared.notificationCenter,
          didCheck: (() -> Void)? = nil, taskCenter: MigrationTaskCenter? = nil,
-         observedStore: ShipItObservedTaskStore? = nil) {
+         observedStore: ShipItObservedTaskStore? = nil,
+         startEvents: @escaping (ShipItUpdateEventMonitor, Set<String>) -> Bool = { $0.start(identifiers: $1) },
+         didStartListening: @escaping () throws -> Void = {}) {
         self.recovery = recovery ?? ShipItUpdateRecovery(); injected = recovery != nil
         self.interval = interval; self.debounce = debounce; self.eventLatency = eventLatency
         self.operationState = operationState ?? .shared
         self.workspaceCenter = workspaceCenter; self.didCheck = didCheck
+        self.startEvents = startEvents
+        self.didStartListening = didStartListening
         self.taskCenter = taskCenter ?? (recovery == nil ? .shared : nil)
         self.observedStore = observedStore ?? (recovery == nil ? ShipItObservedTaskStore() : nil)
     }
@@ -49,6 +57,8 @@ final class ShipItRecoveryMonitor {
                   NSClassFromString("XCTestCase") == nil else { return }
         }
         started = true
+        listenerReady = false
+        startupRetryDelay = 1_000_000_000
         events = ShipItUpdateEventMonitor(caches: recovery.cacheDirectory, latency: eventLatency,
             watchedFiles: [recovery.records.storageURL]) { [weak self] in
             Task { @MainActor [weak self] in self?.requestCheck() }
@@ -94,9 +104,8 @@ final class ShipItRecoveryMonitor {
             do {
                 let worker = recovery
                 identifiers = try await Task.detached(priority: .utility) { try worker.monitoredBundleIdentifiers() }.value
-                if events?.start(identifiers: identifiers) != true {
-                    AppLogger.shared.log("ShipIt 文件事件监听启动失败，后续补查时重试", level: "WARN")
-                }
+                try Task.checkCancellation()
+                updateListener()
                 let candidates = try await Task.detached(priority: .utility) { try worker.candidates() }.value
                 let rollbacks = try await Task.detached(priority: .utility) { try worker.pendingRollbacks() }.value
                 for candidate in rollbacks {
@@ -111,13 +120,32 @@ final class ShipItRecoveryMonitor {
                     activeCandidateKey = nil
                     if operationState.isBusy { break }
                 }
+            } catch is CancellationError {
+                // A stopped check must never publish readiness.
             } catch { AppLogger.shared.logError("检查 ShipIt 更新恢复失败", error: error) }
             task = nil
             didCheck?()
             if needsCheck {
                 needsCheck = false
                 requestCheck()
+            } else if !listenerReady && started {
+                requestCheck(after: retry ? min(interval, startupRetryDelay) : startupRetryDelay)
+                startupRetryDelay = min(startupRetryDelay * 2, 30_000_000_000)
             } else if retry { requestCheck(after: interval) }
+        }
+    }
+
+    private func updateListener() {
+        guard let events, startEvents(events, identifiers) else {
+            AppLogger.shared.log("ShipIt 文件事件监听启动失败，将自动重试", level: "WARN")
+            return
+        }
+        guard !listenerReady else { return }
+        do {
+            try didStartListening()
+            listenerReady = true
+        } catch {
+            AppLogger.shared.logError("无法记录更新守护就绪状态，将自动重试", error: error)
         }
     }
 
