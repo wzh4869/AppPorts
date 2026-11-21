@@ -6,6 +6,10 @@ AppPorts and its documentation use the following projects. Follow each project's
 
 AppPorts uses the [Apache License 2.0](https://github.com/wzh4869/AppPorts/blob/main/LICENSE). The app icon was created by this project. The full license text and the [NOTICE](https://github.com/wzh4869/AppPorts/blob/main/NOTICE) file (copyright: AppPorts © 2025–2026 shimoko.com) ship with the app; their source copies are `LICENSE` and `NOTICE` at the repository root. The "Apache License 2.0" link in the app's About window points to the same text in the repository.
 
+[![The Copyright and License section of About AppPorts links to Apache License 2.0, third-party license details and the privacy policy.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-licenses-en-f94d8063102ce4c5.png?sign=vduWxH_BgEbtTIXw8lv7b7J3lulc1xqUEmCfA0mCw8U%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-licenses-en-f94d8063102ce4c5.png?sign=vduWxH_BgEbtTIXw8lv7b7J3lulc1xqUEmCfA0mCw8U%3D%3A0)
+
+*The Copyright and License section of About AppPorts links to Apache License 2.0, third-party license details and the privacy policy.*
+
 ## Referenced and incorporated third-party projects {#section-2}
 
 Directory-size scanning and related implementations reference [Pearcleaner](https://github.com/alienator88/Pearcleaner). It is distributed under **Apache 2.0 with Commons Clause**, a source-available fair-code license, not an OSI-approved open-source license.

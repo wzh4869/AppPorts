@@ -19,6 +19,10 @@ No warning badge does not prove every aspect of compatibility. If the signature 
 
 Click Signature replaced or Repair in the app list, or use View Repair Steps in its context menu. Connect the original external drive, quit related apps completely and retain existing copies before starting.
 
+[![The signature repair panel first checks for legacy container links, then offers to restore the original signature, select an official copy, or check again (Simplified Chinese interface).](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-signature-repair-2d87d56892fc9472.png?sign=kbvJNzdSO_Qj7eg9Jx1xMV4WfyUsN7_8bh5vih6rXVo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-signature-repair-2d87d56892fc9472.png?sign=kbvJNzdSO_Qj7eg9Jx1xMV4WfyUsN7_8bh5vih6rXVo%3D%3A0)
+
+*The signature repair panel first checks for legacy container links, then offers to restore the original signature, select an official copy, or check again (Simplified Chinese interface).*
+
 From 1.9.1 build 31, newly retained originals are in `AppPorts Backups` at an external volume's root. Restoration requires that drive even if the installed app remains internal. With several drives, it may differ from the current application library's drive. Connect the original drive and retry; temporary disconnection does not establish a missing backup. See [signature originals](/docs/settings#signature-backups) for location and cleanup rules.
 
 1. **Handle old container links.** Restore related container data moved through legacy symbolic links to local storage first. APFS-mounted data need not all move back merely to repair a signature; follow the dependencies reported by the repair panel.

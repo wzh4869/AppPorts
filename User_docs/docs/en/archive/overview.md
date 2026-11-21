@@ -10,6 +10,19 @@ This archive retains retired features, earlier migration methods, and experiment
 | [Earlier app migration methods](/docs/archive/app-strategies) | Old Contents layouts and launcher changes; whole-app symlinks remain manually available; a disabled prototype is listed separately. | [App migration methods](/docs/migration-strategy/portal) |
 | [Mount experiments not adopted](/docs/archive/mount-experiments) | Disk images, system mount configuration, and daemon approaches tested in September 2026; these were not released features. | [Mount migration](/docs/datamigrae/baseinfo#mount), [automatic remount experiments](/docs/blog/why-mount-and-apfs#startup-method) |
 
+```mermaid
+flowchart TB
+    A["What was moved?"]
+    B["App bundle"]
+    C["Container data"]
+    D["See early app migration methods"]
+    E["See legacy links or mount experiments"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 ## Reading version notes {#versions}
 
 Current guides describe the latest interface and behavior. A feature appearing in an older release does not mean its switch still works. The old “re-sign after migration” and “automatically re-sign at login” workflows and limitations remain in the archive. For current behavior, see [settings and permissions](/docs/settings).

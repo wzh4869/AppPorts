@@ -20,6 +20,15 @@ From the `…` menu beside Destination Storage in the sidebar, you can use an AP
 2. In the Destination Storage menu, choose Create APFS Image (set location, disk name and maximum capacity, then choose Create and Use) or Open Existing Image….
 3. AppPorts verifies both the backing storage identity (SMB share URL or underlying volume UUID) and the APFS volume UUID inside the image; it never overwrites existing files or guesses targets by volume name.
 
+```mermaid
+flowchart TB
+    A["NAS share or non-APFS drive"]
+    B["The .sparsebundle stored there"]
+    C["Open the image to mount the APFS app library"]
+    A --> B
+    B --> C
+```
+
 When Disk maintenance agent is enabled under Settings → Background agents, login, volume events and a one-minute background check attempt to reattach the currently selected app library image. Migrated apps whose local entries have been refreshed to format 8 also run a silent windowless preparation step before launch to reattach the required image and any associated data volumes inside it. After upgrading from an earlier build, open AppPorts once while the image is online so a scan can refresh existing local entries.
 
 When you no longer need the image mounted, choose Unmount Image from the eject menu under Destination Storage. **Unmounting an image persistently pauses automatic remounting**: restarting AppPorts, reconnecting the drive or reconnecting to the NAS will not clear the pause until you explicitly choose Mount Image Again (or reopen the image).
@@ -42,6 +51,10 @@ AppPorts creates dedicated data volumes for mount migration. You normally do not
 ## Encrypted external drives {#encrypted-drives}
 
 AppPorts can create an independently encrypted data volume on an encrypted APFS destination. After preflight, enter and confirm a new data-volume password before continuing. The volume does not inherit the existing drive password, and existing passwords and files are unchanged. Multiple new volumes in a split WeChat migration share this setup.
+
+[![A new encrypted data volume requires its own password and confirmation. The checkbox controls whether the password is saved in this Mac’s Keychain.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-password-en-4e1a77099d44e674.png?sign=8QcDykY93c82funFhs0IECh9ErKBKFzmJKiGJNEF8d4%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-password-en-4e1a77099d44e674.png?sign=8QcDykY93c82funFhs0IECh9ErKBKFzmJKiGJNEF8d4%3D%3A0)
+
+*A new encrypted data volume requires its own password and confirmation. The checkbox controls whether the password is saved in this Mac’s Keychain.*
 
 The option to save the password in this Mac's Keychain for automatic unlocking is selected by default and can be cleared. Saved passwords remain on this Mac and do not sync. Without a saved password, or when Keychain is unavailable, unlock manually; the background agent does not repeatedly show password dialogs. Passwords are not written to migration records or logs. Unsaved passwords are held temporarily in the process, and may need entering again after quitting. Keep the password safe: forgotten passwords cannot recover encrypted data.
 

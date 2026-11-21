@@ -10,6 +10,19 @@
 | [早期應用遷移方式](/docs/archive/app-strategies) | Contents 等舊結構與啟動殼實現變化；整體符號連結仍可手動選用，另列預設關閉原型。 | [應用遷移方式](/docs/migration-strategy/portal) |
 | [未採用的掛載實驗方案](/docs/archive/mount-experiments) | 2026 年 9 月實驗中的磁碟映像、系統掛載配置與系統背景服務方案；不能當作正式功能。 | [掛載遷移](/docs/datamigrae/baseinfo#mount)、[自動接回實驗](/docs/blog/why-mount-and-apfs#startup-method) |
 
+```mermaid
+flowchart TB
+    A["要辨認的舊結構"]
+    B["應用程式本體"]
+    C["容器資料"]
+    D["參閱早期 App 遷移方式"]
+    E["查舊連結與簽署或掛載實驗"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 ## 怎樣理解版本說明 {#versions}
 
 目前正文按最新介面和行為整理。某個功能在舊版本出現過，不意味著目前開關仍有效。舊版「遷移後重簽名」「開機自動重簽名」的操作與侷限在歸檔中保留，目前應按[設定與權限](/docs/settings)處理。

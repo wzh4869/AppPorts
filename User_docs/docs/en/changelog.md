@@ -9,6 +9,10 @@ These entries describe changes at the time of each release. **Historical feature
 - **App Data** displays per-app totals, migrated and local sizes, and three sort options. The **External Drive** header shows the combined size of the app bundles in the current list.
 - Fix switching appearance back to **System** and keep the appearance consistent across the main and secondary windows.
 
+[![To match your installation to a release, read the version and build below AppPorts in Settings. This capture shows 2.3.1 (80), with Check for Updates on the right (Simplified Chinese interface).](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-version-4d9efdc6478df5ca.png?sign=XiUIDjMT0J6lPuTAxR4sMabdQBOY0hOX9d2Q4JbmCBo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-version-4d9efdc6478df5ca.png?sign=XiUIDjMT0J6lPuTAxR4sMabdQBOY0hOX9d2Q4JbmCBo%3D%3A0)
+
+*To match your installation to a release, read the version and build below AppPorts in Settings. This capture shows 2.3.1 (80), with Check for Updates on the right (Simplified Chinese interface).*
+
 [View v2.3.1](https://github.com/wzh4869/AppPorts/releases/tag/2.3.1) · [Grant permissions again](/docs/settings#permissions) · [Manual updates](/docs/settings#updates) · [WeChat account migration](/docs/datamigrae/operation#wechat) · [Manage existing symlinks](/docs/restore#reconnect)
 
 ## v2.3.0 {#v2-3-0}

@@ -10,6 +10,10 @@
 | 包管理器缓存、模型等工具数据 | 左侧边栏“工具目录”，查看已识别项目。 |
 | 自己的项目、素材或其他文件夹 | 左侧边栏“目录迁移”，点击本地文件夹区域的“+”，选择源文件夹和外部目标。 |
 
+[![点击 Caches 左侧的箭头，选中 com.microsoft.VSCode，在列表底部查看完整路径。再点一次箭头即可收起。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-browse-data-folders-zh-hans-931bd78477f93316.gif?sign=5wIgqsGgRMvyiBkgtmPcIgvdIeD7VfVpLDEbIB1Gros%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-browse-data-folders-zh-hans-931bd78477f93316.gif?sign=5wIgqsGgRMvyiBkgtmPcIgvdIeD7VfVpLDEbIB1Gros%3D%3A0)
+
+*点击 Caches 左侧的箭头，选中 com.microsoft.VSCode，在列表底部查看完整路径。再点一次箭头即可收起。*
+
 “应用数据”在当前页面会话内会复用完整扫描结果，减少来回切换应用时的重复等待；权限、目标盘、迁移记录或挂载状态变化时会自动重新检查，也可点击侧栏底部的“刷新缓存”重新测量。缺少完全磁盘访问权限时，页面会单独提示权限未就绪并提供检查入口，不会把受限读取显示为没有数据。
 
 左侧应用列表会显示每个应用识别到的数据总量，有已迁移数据的应用还会显示「已迁移」和「本地」明细，并排在前面。搜索框旁的菜单可选「按大小」（默认）、「默认」或「按首字母」，分别为已迁移组和其他应用排序。外置盘离线、数据卷未解锁或自动挂载暂停时，大小可能不完整；接回原盘并恢复挂载后，可用「刷新缓存」重新测量。
@@ -61,13 +65,34 @@
 - “全部迁移”：迁移所选账号的整个目录。
 - “拆分迁移（msg + business）”：迁出 `msg` 与 `business` 媒体目录，数据库（`db_storage`）和配置保留本地；确认框分别列出媒体大小与本地保留大小。
 
+```mermaid
+flowchart TB
+    A["一个微信账号"]
+    B["全部迁移"]
+    C["拆分迁移"]
+    D["账号目录整体移到外盘"]
+    E["msg 与 business 外迁，数据库留在本机"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 等目录大小读取完整后，再点击“开始迁移”。切换方式前，先完整还原该账号已迁移的数据。拆分后离线时，媒体或文件/视频入口与其他受管离线目录同样保持只读可遍历、拒绝新建写入，避免登录时因路径权限报错崩溃；能否继续查看文字或历史记录仍取决于微信版本，不保证所有内容在未连盘时可用。加密目标还需[设置数据卷密码](/docs/storage-guide#encrypted-drives)。
 
 新版按整个 `msg` 目录拆分迁移，让 `msg/file` 与 `msg/attach` 里可能指向同一份文件的硬链接保留在同一卷。旧版「仅大文件与视频（`msg/file + msg/video`）」已停止新迁移。已使用旧模式的账号可继续使用：连接原外置盘，在「应用数据」选中微信和对应账号，按状态提示解锁或挂载。想把数据搬回内盘或换一种迁移方式时，先点击「还原」，等该账号已迁出的目录全部还原后，再按需选择「全部迁移」或「拆分迁移」。
 
+[![已有拆分迁移的示例。账号行标出 msg/file 和 msg/video 的合计范围及「已挂载」状态，右侧可还原。下一行 WMPF 仍在本地。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hans-9c98ce2c39213106.png?sign=bfHYBYn6NmoihVKSzp_jnliz0GiACSUuFBr8Rr3i9SY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hans-9c98ce2c39213106.png?sign=bfHYBYn6NmoihVKSzp_jnliz0GiACSUuFBr8Rr3i9SY%3D%3A0)
+
+*已有拆分迁移的示例。账号行标出 msg/file 和 msg/video 的合计范围及「已挂载」状态，右侧可还原。下一行 WMPF 仍在本地。*
+
 ## 怎样看迁移进度 {#progress}
 
 “总体进度（估算）”包含准备、扫描、复制、磁盘写入、各轮校验、切换和收尾；多个目录会合算为同一任务的总体百分比。当前目录另有“准备 → 扫描 → 复制 → 校验 → 切换 → 收尾”阶段提示。**总体百分比、当前目录阶段与已复制字节表示不同范围，不能互相替代。** 复制达到 100% 不代表任务完成，空间释放也要等清理完成。
+
+[![复制阶段示例。顶部 19% 是总体进度估算，下面的 50% 是当前目录的复制进度。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-copy-wechat-zh-hans-a9a576ed1e34ff68.png?sign=rocRmqnv3XRT0ILAOoKNuinnIoCxpAmEJ5_L9GNMsWU%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-copy-wechat-zh-hans-a9a576ed1e34ff68.png?sign=rocRmqnv3XRT0ILAOoKNuinnIoCxpAmEJ5_L9GNMsWU%3D%3A0)
+
+*复制阶段示例。顶部 19% 是总体进度估算，下面的 50% 是当前目录的复制进度。*
 
 扫描和校验会显示已处理项数、读取字节或当前文件。长时间没有新的进展时，窗口会说明距离上次活动的时间；先结合阶段和提示判断，不要只因百分比暂时不变就拔盘或强制退出。
 
@@ -85,6 +110,10 @@
 
 在左侧边栏打开“任务中心”（有未结束任务或异常时会显示数量与提醒标记），查看应用、应用数据、工具目录和目录迁移任务。点击任务名称打开详情；详情中的“加入后台”只收起窗口，任务继续在 AppPorts 内运行，可以切换页面后再回来查看。它不表示退出 AppPorts 后还能继续迁移。
 
+[![在任务中心点击已完成的 IINA 示例任务，查看详情，再用「任务列表」回到列表。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-task-history-tour-zh-hans-c9599493487b22d8.gif?sign=Iq3lldNHcdIxMp01_rXQ7QxBhFf4c1fv2gNIO84F7bw%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-task-history-tour-zh-hans-c9599493487b22d8.gif?sign=Iq3lldNHcdIxMp01_rXQ7QxBhFf4c1fv2gNIO84F7bw%3D%3A0)
+
+*在任务中心点击已完成的 IINA 示例任务，查看详情，再用「任务列表」回到列表。*
+
 - 选中一个或多个迁移任务，使用“暂停”“继续”或“取消任务”。暂停要等到可暂停的位置；入口切换等关键步骤可能先完成。
 - 取消后若显示“正在取消，等待安全收尾”，请保持磁盘连接并等待。取消不会撤销已完成的迁移步骤，也不保证立即释放占用空间。
 - 互不冲突的任务可以并行，存在路径或资源冲突的任务会排队；排队不等于卡住。
@@ -92,6 +121,10 @@
 - “清空已完成”和行末移除按钮只删除任务展示记录，不删除文件，也不处理尚未完成的恢复或清理。
 
 重新打开 AppPorts 后，上次未结束的任务需要先检查迁移记录，不会仅凭任务历史自动重新迁移。出现“需要处理”时打开详情的“处理异常”（或更新任务的“回退更新”），按当前记录继续；具体见[异常恢复](/docs/restore#recovery)。
+
+[![任务中心示例。这项任务显示「需要处理」。打开任务详情可查看原因和可用操作。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-tasks-iina-zh-hans-360221bd127a9be3.png?sign=Yf52t_5L63oaubSiBg7MkPz6qV1Og_3LN0SgxnQwLFY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-tasks-iina-zh-hans-360221bd127a9be3.png?sign=Yf52t_5L63oaubSiBg7MkPz6qV1Og_3LN0SgxnQwLFY%3D%3A0)
+
+*任务中心示例。这项任务显示「需要处理」。打开任务详情可查看原因和可用操作。*
 
 ## 迁移期间的启动保护 {#launch-protection}
 

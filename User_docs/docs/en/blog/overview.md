@@ -31,4 +31,17 @@ For practical instructions, start with [quick start](/docs/faststart). The six f
 | Why protect the container skeleton, and how was the rule found? | [A real crash and system probes](/docs/blog/data-migration-boundaries#starting-point) |
 | Why does finishing the file copy not finish verification? | [Attributes, late writes, and a complete round trip](/docs/blog/data-migration-boundaries#copy-and-switch) |
 
+```mermaid
+flowchart TB
+    A["Symptom after migration"]
+    B["Path exists, data is unreadable"]
+    C["App fails after a folder is moved"]
+    D["Link and mount experiments"]
+    E["Container boundary experiments"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 For retired features and approaches not adopted, see the [historical feature archive](/docs/archive/overview).

@@ -9,6 +9,10 @@
 - 「應用程式資料」清單顯示各應用程式的資料總量與已遷移、本地明細，並提供三種排序方式；「外部儲存」顯示目前清單中應用程式本體的合計大小。
 - 修正外觀切回「跟隨系統」後未生效，以及主視窗與其他視窗外觀不一致的問題。
 
+[![核對版本時，可在設定頁的 AppPorts 名稱下方查看版本號及組建號。圖中為 2.3.1（80），右側可檢查更新（簡體中文介面）。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-version-4d9efdc6478df5ca.png?sign=XiUIDjMT0J6lPuTAxR4sMabdQBOY0hOX9d2Q4JbmCBo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-version-4d9efdc6478df5ca.png?sign=XiUIDjMT0J6lPuTAxR4sMabdQBOY0hOX9d2Q4JbmCBo%3D%3A0)
+
+*核對版本時，可在設定頁的 AppPorts 名稱下方查看版本號及組建號。圖中為 2.3.1（80），右側可檢查更新（簡體中文介面）。*
+
 [檢視 v2.3.1 釋出](https://github.com/wzh4869/AppPorts/releases/tag/2.3.1) · [重新授權](/docs/settings#permissions) · [手動更新](/docs/settings#updates) · [微信帳號遷移](/docs/datamigrae/operation#wechat) · [管理既有符號連結](/docs/restore#reconnect)
 
 ## v2.3.0 {#v2-3-0}

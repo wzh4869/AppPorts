@@ -14,6 +14,10 @@
 4. 等待 AppPorts 完成複製、檢查和本地入口建立。macOS 27 上下載應用自帶的隔離標記（quarantine）不會中斷遷移，能否首次開啟仍由系統安全策略決定。
 5. 從 Finder 或 Dock 啟動應用，檢查開啟檔案等常用功能。
 
+[![AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+
+*AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。*
+
 完成後，外部應用庫中能看到真實應用，本地保留[啟動入口](/docs/glossary#local-portal)。進度接近完成時仍可能在核驗或清理，請以最終結果為準。
 
 如果應用不在預設掃描位置，可在「Mac 本地應用程式」標題列點選「+」新增掃描目錄，例如其他工具管理的安裝目錄。
@@ -25,6 +29,10 @@
 ## 遷移後如何更新 {#updates}
 
 不同應用的更新方式並不相同。網易雲音樂、WorkBuddy 等已確認按一般方式處理的應用在遷移時不彈出鎖定選擇，未上鎖時直接顯示「已連結」；其他檢測到自更新器的應用會在遷移或接回前提供「非鎖定遷移」（預設醒目提示）和「鎖定遷移」兩種選擇。
+
+[![自動更新 App 的遷移確認視窗。範例中的「非鎖定遷移」允許 App 自行更新，「鎖定遷移」則保護外接磁碟上的 App 原件。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hant-fd96aad9b4d68558.png?sign=beqNUQoDEqoKTsA3taYu3dSp6gWsEiZpzWo27NF4qYQ%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hant-fd96aad9b4d68558.png?sign=beqNUQoDEqoKTsA3taYu3dSp6gWsEiZpzWo27NF4qYQ%3D%3A0)
+
+*自動更新 App 的遷移確認視窗。範例中的「非鎖定遷移」允許 App 自行更新，「鎖定遷移」則保護外接磁碟上的 App 原件。*
 
 | 情況 | 建議操作 |
 | --- | --- |
@@ -49,6 +57,10 @@ macOS 15.1 及以上可在 App Store 設定中開啟「下載並安裝大型 App
 ## 列表、大小快取與重複搜尋結果 {#search-cache}
 
 應用頁頂部的「全部 / 已連結 / 未連結」只篩選清單，不會還原或刪除應用；切換篩選後，被隱藏的已選項不會繼續參與批次操作。本地與外部應用清單均可按名稱或大小排序。應用與工具目錄可顯示上次快取時間；磁碟內容已變化或大小看起來過時時，點選側欄底部的「重新整理快取」重新計算，不要把舊快取當成目前精確佔用。
+
+[![在「Mac 本地應用程式」清單點選「大小」，比較範例 App 的佔用空間，再點選「名稱」按名稱排列。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-zh-hant-9b01fa61e4d77f49.gif?sign=kvQavssklFHXBEe-1FTXa8jQFK9XLA1c83DDH-oP4yU%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-zh-hant-9b01fa61e4d77f49.gif?sign=kvQavssklFHXBEe-1FTXa8jQFK9XLA1c83DDH-oP4yU%3D%3A0)
+
+*在「Mac 本地應用程式」清單點選「大小」，比較範例 App 的佔用空間，再點選「名稱」按名稱排列。*
 
 「外部儲存」標題旁的大小是目前搜尋與篩選結果中應用程式本體的合計。例如從「全部」切換到「已連結」後，大小只加總目前顯示的已連結應用程式，背景計算完成時會自動更新。統計採用應用程式套件中檔案的邏輯大小；外接磁碟的實際剩餘空間請查看側欄的目標儲存位置。
 

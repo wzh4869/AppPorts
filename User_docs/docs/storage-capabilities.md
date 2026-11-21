@@ -13,6 +13,10 @@
 | 资源叉 | 少数应用的自定义图标、旧式本地化资源可能缺失 | 能用；外观可能不完整 |
 | POSIX 权限位 | 所有文件权限变成该盘固定默认值 | 能用；但依赖特定权限的应用可能异常 |
 
+[![目标盘能力检查示例。确认框逐项列出无法保留的属性，可以取消并改选目标盘。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-capabilities-zh-hans-3c6a5fa20e23ee62.png?sign=CzK7GQtN3tp_azTcY-qKT0BrNJHLO3O1DLYtZ3Oz2MY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-capabilities-zh-hans-3c6a5fa20e23ee62.png?sign=CzK7GQtN3tp_azTcY-qKT0BrNJHLO3O1DLYtZ3Oz2MY%3D%3A0)
+
+*目标盘能力检查示例。确认框逐项列出无法保留的属性，可以取消并改选目标盘。*
+
 一句话：**这些都属于"能用，但不完整"。** 真正会拒绝迁移的是另一类问题，见[迁移失败](#refused)。
 
 ## 为什么会出现 {#why}

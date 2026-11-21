@@ -14,6 +14,10 @@
 4. 等待 AppPorts 完成复制、检查和本地入口创建。macOS 27 上下载应用自带的隔离标记（quarantine）不会中断迁移，能否首次打开仍由系统安全策略决定。
 5. 从 Finder 或 Dock 启动应用，检查打开文件等常用功能。
 
+[![AppPorts 实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+
+*AppPorts 实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。*
+
 完成后，外部应用库中能看到真实应用，本地保留[启动入口](/docs/glossary#local-portal)。进度接近完成时仍可能在核验或清理，请以最终结果为准。
 
 如果应用不在默认扫描位置，可在“Mac 本地应用”标题栏点击“+”添加扫描目录，例如其他工具管理的安装目录。
@@ -25,6 +29,10 @@
 ## 迁移后如何更新 {#updates}
 
 不同应用的更新方式并不相同。网易云音乐、WorkBuddy 等已确认按普通方式处理的应用在迁移时不弹锁定选择，未上锁时直接显示“已链接”；其他检测到自更新器的应用会在迁移或接回前提供“非锁定迁移”（默认高亮）和“锁定迁移”两种选择。
+
+[![自更新应用的迁移确认框。示例中的「非锁定迁移」允许应用更新自身，「锁定迁移」保护外部应用原件。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hans-45724eb40fcfd193.png?sign=CXsmN9zgy6N5e8QpPmkFxUUcJsrEM9clrEOBUAOPW-M%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hans-45724eb40fcfd193.png?sign=CXsmN9zgy6N5e8QpPmkFxUUcJsrEM9clrEOBUAOPW-M%3D%3A0)
+
+*自更新应用的迁移确认框。示例中的「非锁定迁移」允许应用更新自身，「锁定迁移」保护外部应用原件。*
 
 | 情况 | 建议操作 |
 | --- | --- |
@@ -49,6 +57,10 @@ macOS 15.1 及以上可在 App Store 设置中开启“下载并安装大型 App
 ## 列表、大小缓存与重复搜索结果 {#search-cache}
 
 应用页顶部的“全部 / 已链接 / 未链接”只筛选列表，不会还原或删除应用；切换筛选后，被隐藏的已选项不会继续参与批量操作。本地与外部应用列表均可按名称或大小排序。应用与工具目录可显示“上次缓存时间”；磁盘内容已变化或大小看起来过时时，点击侧栏底部的“刷新缓存”重新计算，不要把旧缓存当成当前精确占用。
+
+[![在「Mac 本地应用」列表点击「大小」，比较示例应用的占用，再点击「名称」恢复按名称排列。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-zh-hans-c70875d99360d98e.gif?sign=VksxUK9cJL1IvN8tKuc1-Y8gzv99Rsko9t8f3GzOeks%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-zh-hans-c70875d99360d98e.gif?sign=VksxUK9cJL1IvN8tKuc1-Y8gzv99Rsko9t8f3GzOeks%3D%3A0)
+
+*在「Mac 本地应用」列表点击「大小」，比较示例应用的占用，再点击「名称」恢复按名称排列。*
 
 「外部应用库」标题旁的大小是当前搜索和筛选结果中应用本体的合计。例如，从「全部」切换到「已链接」后，大小只汇总当前显示的已链接应用，后台计算完成时会自动更新。统计采用应用包的逻辑文件大小，适合比较列表中的应用大小；外置盘实际剩余空间请看侧栏「目标存储」。
 

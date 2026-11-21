@@ -12,6 +12,16 @@ Tool caches, some application-support files and custom folders can use this meth
 
 Some apps store data in system-managed containers. Containers have access restrictions; leaving a link at the original path does not necessarily let the app access any target that link names.
 
+```mermaid
+flowchart TB
+    A["Original folder path"]
+    B["Link points to external folder"]
+    C["Original container data path"]
+    D["External APFS volume mounted here"]
+    A --> B
+    C --> D
+```
+
 For eligible container data directories, AppPorts creates a dedicated APFS volume on the external drive, copies the data into it and attaches that volume at the original directory. The app continues to use the same path. This is **mount migration**.
 
 | Comparison | Link migration | Mount migration |

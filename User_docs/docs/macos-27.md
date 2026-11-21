@@ -19,6 +19,10 @@
 
 在应用列表中点击“签名已替换”徽章或“修复”，也可以使用右键菜单的“查看修复步骤”。开始前连接原外置盘，完全退出关联应用，并保留已有副本。
 
+[![签名修复面板实机截图。上方检查旧容器链接，中间列出恢复原始签名、选择原版应用和重新检查的入口。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-signature-repair-2d87d56892fc9472.png?sign=kbvJNzdSO_Qj7eg9Jx1xMV4WfyUsN7_8bh5vih6rXVo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-signature-repair-2d87d56892fc9472.png?sign=kbvJNzdSO_Qj7eg9Jx1xMV4WfyUsN7_8bh5vih6rXVo%3D%3A0)
+
+*签名修复面板实机截图。上方检查旧容器链接，中间列出恢复原始签名、选择原版应用和重新检查的入口。*
+
 从 1.9.1 build 31 起，新保存的官方原包位于外盘根目录的 `AppPorts Backups`。即使应用仍在内盘，恢复也需要连接保存原包的外盘；有多块盘时，不一定与当前应用库在同一块盘上。先连接原盘再重试，不能把暂时离线当成备份丢失。位置与清理规则见[签名原包](/docs/settings#signature-backups)。
 
 1. **处理旧容器链接。** 若相关容器数据通过旧符号链接迁移，先使用“还原”回到本机。已经使用 APFS 挂载的数据不必仅为签名修复而全部迁回；按修复面板检查的依赖处理。

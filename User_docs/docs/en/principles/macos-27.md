@@ -14,6 +14,19 @@ In the tested macOS 27.0 environment, officially signed and re-signed WeChat beh
 
 Mount migration attaches an eligible data volume at the original path while preserving the real app's signature. Migration and manual signing are now separate, so choosing a new storage location does not also change app identity.
 
+```mermaid
+flowchart TB
+    A["Inspect the existing migration"]
+    B["Legacy container link"]
+    C["App signature was replaced"]
+    D["Check and restore affected data"]
+    E["Check the official copy in Repair"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 AppPorts protects critical container structure and distinguishes Signature Replaced from Signature check pending. The latter may result from an offline drive or a failed read; it must not be treated as proof of a damaged signature.
 
 Mounting still requires suitable storage and authorization. It does not make every container directory eligible. See [data migration methods](/docs/datamigrae/baseinfo).

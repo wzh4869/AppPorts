@@ -187,6 +187,17 @@ See [LOCALIZATION.md](https://github.com/wzh4869/AppPorts/blob/main/LOCALIZATION
 4. Complete required fields in the PR template.
 5. Wait for CI and code review.
 
+```mermaid
+flowchart TB
+    A["Branch from main"]
+    B["Make and verify the change"]
+    C["Open a PR to main with test results"]
+    D["Check CI and respond to review"]
+    A --> B
+    B --> C
+    C --> D
+```
+
 ::: tip Help review move smoothly
 - Keep each PR focused on one issue or feature.
 - Report testing accurately in the template.

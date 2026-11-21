@@ -15,6 +15,10 @@
 | 未連結、外部 | 外部應用尚無可用的本地入口。 | 需要時使用「連結回本地」。 |
 | 待遷出 | 識別到本地真實應用比外部副本更新。 | 核對版本和目標，再將本地新版遷出。 |
 
+[![AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+
+*AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。*
+
 「鎖定遷移」保護的是特定更新場景，並不替代備份；升級 AppPorts 不會自動解除先前已加鎖的應用。「待遷出」也不是必須立即執行的命令。
 
 ## 應用型別 {#types}

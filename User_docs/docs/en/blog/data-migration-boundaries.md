@@ -157,6 +157,19 @@ Two independent rules also apply:
 
 The WeChat policy is narrower than the general structural table. Earlier access tests succeeded at the higher `xwechat_files` level, so its entire restriction cannot be attributed to an explicit macOS prohibition. This is AppPorts' chosen compatibility scope. Execution still requires volume, occupancy, and parent/child checks. See the [path policy](https://github.com/wzh4869/AppPorts/blob/468c7889f367281543c96e9c8f40515c37b65403/AppPorts/Models/DataPathPolicy.swift).
 
+```mermaid
+flowchart TB
+    A["System-managed container"]
+    B["Required structural folders"]
+    C["App-owned child folders"]
+    D["Keep the structure in place"]
+    E["Check each folder and its access"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 ### A directory name alone does not establish ownership {#path-ownership}
 
 Different apps have their own `Data/Documents`; the shared name does not make them the same directory. Containers can also include shortcuts to personal Desktop or Downloads locations. A familiar name does not prove exclusive app ownership.

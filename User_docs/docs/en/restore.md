@@ -15,6 +15,19 @@ Decide whether you want to change the **storage location** or the **access entry
 | Drive is unavailable; remove only a data symlink and start with an empty folder | Link Details → Force Unlink | An empty folder is created locally while external originals remain untouched. |
 | Remove only an app's local entry | Row `…` (More Actions) or context menu in Local Apps → Delete Local Entry | The real external app is retained. |
 
+```mermaid
+flowchart TB
+    A["What do you need back?"]
+    B["Content back on the Mac"]
+    C["External content present, entry missing"]
+    D["Move back or restore"]
+    E["Verify the target, then reconnect"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 ## Move an app back locally {#apps}
 
 1. Select it in the external library and choose Move Back to Local.
@@ -52,6 +65,10 @@ Before removing AppPorts, restore container data it still manages. Otherwise the
 ## Resolve unfinished work and retained copies {#recovery}
 
 Open a task needing attention in Task Center and choose Resolve Issues. Read the current migration records first; the panel displays the Current data location separately from the Retained old copy path so you can tell which copy is active. Quit the associated app and connect and unlock the original drive. Use Check Permissions if needed, then retry. Check the items shown in the panel: Retry All Pending Items can affect several records.
+
+[![Recovery example. Compare the current data path with the retained copy before choosing Retry, Open Old Copy, or Decide Later.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-en-d9a52652047127a6.png?sign=sIwyVu4T51_Do5djyWlhD3XVxLu3ttPNeA4irVW_Qow%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-en-d9a52652047127a6.png?sign=sIwyVu4T51_Do5djyWlhD3XVxLu3ttPNeA4irVW_Qow%3D%3A0)
+
+*Recovery example. Compare the current data path with the retained copy before choosing Retry, Open Old Copy, or Decide Later.*
 
 | Choice in the data recovery panel | Effect |
 | --- | --- |

@@ -6,6 +6,10 @@ AppPorts 的实现与文档使用了以下项目。使用或分发时，请遵�
 
 AppPorts 使用 [Apache License 2.0](https://github.com/wzh4869/AppPorts/blob/main/LICENSE)。应用图标由本项目制作。许可全文与 [NOTICE](https://github.com/wzh4869/AppPorts/blob/main/NOTICE)（版权归属：AppPorts © 2025–2026 shimoko.com）随应用一起分发，源码副本分别是仓库根目录的 `LICENSE` 和 `NOTICE`；应用「关于」窗口中的「Apache License 2.0」链接指向仓库中的同一份文本。
 
+[![在「关于 AppPorts」的「版权与许可」中，可分别打开 Apache License 2.0、第三方许可证说明和隐私政策。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-licenses-zh-hans-a9b6d0704ce7e7ed.png?sign=5OSiI7SxqZMqvx6A-GKY9uX6aHz-8O_OXlY7Wubb4J0%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-licenses-zh-hans-a9b6d0704ce7e7ed.png?sign=5OSiI7SxqZMqvx6A-GKY9uX6aHz-8O_OXlY7Wubb4J0%3D%3A0)
+
+*在「关于 AppPorts」的「版权与许可」中，可分别打开 Apache License 2.0、第三方许可证说明和隐私政策。*
+
 ## 参考与使用的第三方项目 {#section-2}
 
 目录体积扫描等实现参考了 [Pearcleaner](https://github.com/alienator88/Pearcleaner)。它以 **Apache 2.0 with Commons Clause** 发布，这是源码可见的 fair-code 许可，并非 OSI 认可的开源许可。

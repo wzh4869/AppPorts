@@ -36,4 +36,8 @@ AppPorts 是一款免費、開源的 macOS 應用與資料遷移工具。它幫�
 
 先了解要搬的是應用本體還是應用資料，再確認外接磁碟和權限。AppPorts 不會把不支援的目錄變成可遷移目錄，也不能保證任意應用在任意儲存裝置上都能照常工作。
 
+[![側邊欄按內容分為「應用程式」「工具目錄」「應用程式資料」和「目錄遷移」。圖中已選取目錄遷移，可在右側加入本機資料夾（簡體中文介面）。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-navigation-e9d2f12c105517f2.png?sign=YXYXzqUxWXjfroVApwggGfQ0rJu9H2ScYHnjNVr6iMc%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-navigation-e9d2f12c105517f2.png?sign=YXYXzqUxWXjfroVApwggGfQ0rJu9H2ScYHnjNVr6iMc%3D%3A0)
+
+*側邊欄按內容分為「應用程式」「工具目錄」「應用程式資料」和「目錄遷移」。圖中已選取目錄遷移，可在右側加入本機資料夾（簡體中文介面）。*
+
 繼續閱讀：[快速開始](/docs/faststart) · [外接磁碟與日常使用](/docs/storage-guide) · [隱私政策](/docs/privacy) · [開源許可](/docs/licenses)

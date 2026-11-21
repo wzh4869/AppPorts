@@ -6,6 +6,10 @@
 
 如果升級後「App 管理」或「完整磁碟取用權限」的開關已開啟，但 AppPorts 仍提示缺少權限，請依[準備狀況與系統權限](/docs/settings#permissions)重新授權。舊項目仍未生效時，可在「準備狀況」清理舊版授權記錄。
 
+[![系統權限清單中找不到 AppPorts 時，將引導視窗中的 App 圖示拖到「完整磁碟存取權」清單。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-permission-zh-hant-fdc9ef82e05fd7dd.png?sign=C-wmlw1XUgCIomgtSMBwPbjV8mJHbnF6onYppGIfF3E%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-permission-zh-hant-fdc9ef82e05fd7dd.png?sign=C-wmlw1XUgCIomgtSMBwPbjV8mJHbnF6onYppGIfF3E%3D%3A0)
+
+*系統權限清單中找不到 AppPorts 時，將引導視窗中的 App 圖示拖到「完整磁碟存取權」清單。*
+
 ## 應用打不開或開啟後立即退出 {#launch}
 
 先確認原外接磁碟（或應用庫映像）線上、本地入口沒有變成「孤立連結」。如果出現「簽名已替換」，或升級 macOS 27 後才發生問題，按[升級與修復](/docs/macos-27)處理。沒有這類提示時，檢查原應用是否支援目前系統，並保留錯誤資訊；不能把所有啟動失敗都歸因於簽名。

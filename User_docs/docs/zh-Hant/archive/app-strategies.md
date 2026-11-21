@@ -8,6 +8,15 @@
 
 早期的 Deep Contents Wrapper 將應用的 `Contents` 內容放到外部，本地保留外層 `.app`，內部透過連結訪問外部內容。它希望保留熟悉的應用外觀，並釋放本地空間。
 
+```mermaid
+flowchart TB
+    A["Mac 上保留外層 .app"]
+    B["套件內的 Contents 連結"]
+    C["外接磁碟保存實際 Contents"]
+    A --> B
+    B --> C
+```
+
 但一些應用或更新器會解析連結的實際位置，在外部真實目錄上替換、刪除或改寫內容。路徑、簽名和更新行為因此難以一致處理。從歷史更新記錄看，1.2.0 開始引入 Stub Portal 替代這一方向。當前仍識別舊 Contents 結構以便管理，不將它作為新遷移的預設方案。
 
 ## 整體符號連結 {#whole-symlink}

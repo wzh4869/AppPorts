@@ -30,6 +30,12 @@
 
 如果升級後系統設定中的「App 管理」或「完整磁碟取用權限」開關已開啟，但 AppPorts 仍提示缺少權限，系統可能仍在使用舊簽署憑證的授權記錄。出現「需要重新授予系統權限」提示時，請依指示開啟對應設定，將新版 AppPorts 加入清單並開啟開關。如果舊項目仍未生效，請在「準備狀況」按一下「清理舊版授權記錄」，再回到系統設定重新加入並開啟。清理「完整磁碟取用權限」時可能需要確認管理員授權；如果清理失敗，也可以在系統設定中選取舊項目，按 `-` 移除後重新加入。完成後依提示重新開啟 AppPorts，並回到「準備狀況」查看狀態。
 
+
+![在設定中開啟準備狀況、點選檢查並查看權限與外接儲存狀態（簡體中文介面）](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-4e6a0bbfbc33714f.gif?sign=QeBq7i0li3XCK2-rJQ89siGLCGWWhMHhGhMYNX8Apyo%3D%3A0)
+
+
+[查看完整錄影（MP4）](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-3174a4492f75ecd4.mp4?sign=cTwbXybA3aUlpQQWk91OQBGuxGLLHAptXRvzyEdIK68%3D%3A0)
+
 ## App Store 與非原生應用 {#app-store}
 
 macOS 15.1 及以上顯示「App Store 應用程式外部安裝」卡片，AppPorts 會唯讀核對系統 App Store 的外接安裝設定是否與目前所選外接磁碟一致：
@@ -90,6 +96,10 @@ AppPorts 會保留仍有恢復價值的原包。在確認應用已經恢復官�
 ## 日誌設定 {#logs}
 
 可以在設定卡片中開關日誌記錄、調整最大日誌大小（1 MB 至 100 MB），直接點選「在 Finder 中檢視」「匯出診斷包」或「清空日誌」（選單欄「日誌 → 匯出診斷包」同樣可用）；匯出不會自動傳送。
+
+[![診斷套件匯出視窗。「允許包含本機應用程式列表」預設未勾選，儲存位置由你選擇。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hant-d7fd49f9e2edd480.png?sign=eEyRHO9j7fYJVQpO4Cr0k-D5We0xG7OvPDweQHDFVoI%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hant-d7fd49f9e2edd480.png?sign=eEyRHO9j7fYJVQpO4Cr0k-D5We0xG7OvPDweQHDFVoI%3D%3A0)
+
+*診斷套件匯出視窗。「允許包含本機應用程式列表」預設未勾選，儲存位置由你選擇。*
 
 提交前檢查內容，說明系統版本、AppPorts 版本、發生的操作和介面提示。見[反饋問題](/docs/faq#feedback)與[隱私政策](/docs/privacy)。
 

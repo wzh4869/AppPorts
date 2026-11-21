@@ -99,6 +99,10 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 - 导出前，本软件会将日志中的用户名替换为 ~，将 /Users/＜用户名＞ 替换为 /Users/＜redacted-user＞，并对您的外部存储介质名称作脱敏处理；
 - 本软件不会自动上传该文件，亦不会将其提供给任何第三方。是否将其提供给我们，完全由您自行决定。
 
+[![诊断包导出窗口。默认不勾选「允许包含本机应用列表」，保存位置由你选择。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hans-3642bfd368e295ab.png?sign=3btk3NkmpVvvFpUOzeDTgATr2yBpS2IywUYGaiToDuY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hans-3642bfd368e295ab.png?sign=3btk3NkmpVvvFpUOzeDTgATr2yBpS2IywUYGaiToDuY%3D%3A0)
+
+*诊断包导出窗口。默认不勾选「允许包含本机应用列表」，保存位置由你选择。*
+
 ## 第九条  系统权限 {#section-9}
 
 为实现上述功能，本软件可能涉及下列系统权限：

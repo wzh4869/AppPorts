@@ -10,6 +10,10 @@ Data migration moves application data, tool directories or your own folders. It 
 | Package-manager caches, models and tool data | Tool Directories in the sidebar; inspect detected items. |
 | Your projects, media or other folders | Directory Migration in the sidebar; use + in the local folder area and choose the source and external destination. |
 
+[![Click the arrow beside Caches, then select com.microsoft.VSCode to see its full path below the list. Click the arrow again to collapse the group.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-browse-data-folders-en-114dc0bc5c1b704d.gif?sign=hUfZf2BuweFtgbe5dq3_fhHMsmoSfTxQViJycBWBGZ0%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-browse-data-folders-en-114dc0bc5c1b704d.gif?sign=hUfZf2BuweFtgbe5dq3_fhHMsmoSfTxQViJycBWBGZ0%3D%3A0)
+
+*Click the arrow beside Caches, then select com.microsoft.VSCode to see its full path below the list. Click the arrow again to collapse the group.*
+
 App Data reuses complete scan results within the current page session so revisiting an app does not rescan every time. Changes to permissions, the destination drive, migration records or mount state trigger fresh checks automatically, and Refresh Cache at the bottom of the sidebar forces remeasurement. When Full Disk Access is not ready, the page displays the permission state and a check entry rather than treating restricted reads as missing data.
 
 The app list on the left shows the total size of the data detected for each app. Apps with migrated data appear first and show separate **Migrated** and **Local** sizes. Use the menu beside search to sort each group by **By Size** (the initial setting), **Default**, or **Alphabetical**. Sizes may be incomplete while the external drive is offline, a data volume is locked, or automatic mounting is paused. Reconnect the original drive, restore the mount, and choose **Refresh Cache** to measure again.
@@ -61,13 +65,34 @@ Choose migration for a recognized WeChat account directory, then select a mode i
 - **Whole migration** moves the selected account's entire directory.
 - **Split migration (`msg + business`)** moves media directories while keeping databases (`db_storage`) and configuration local. The confirmation displays moved media size and locally retained size separately.
 
+```mermaid
+flowchart TB
+    A["One WeChat account"]
+    B["Whole account"]
+    C["Split migration"]
+    D["Entire account moves to the external drive"]
+    E["Media moves out, database stays local"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 Wait for a complete size calculation before starting. Fully restore the account’s migrated data before switching modes. When the drive is offline after split migration, moved `msg`, `msg/file` or `msg/video` entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether existing messages remain readable depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
 
 The current split mode moves `msg` as a whole so hard links to the same file in `msg/file` and `msg/attach` stay on one volume. The older **Large files & videos only** mode (`msg/file + msg/video`) no longer accepts new migrations. To keep using an account already migrated in that mode, connect the original external drive, select WeChat and the account in **App Data**, and unlock or mount it as prompted. To bring its data back to your Mac or change migration modes, click **Restore** and wait for all migrated directories for that account to return before choosing **Migrate everything** or **Split migration** if needed.
 
+[![An existing split migration. The account row shows the combined scope of msg/file and msg/video, its mounted status and the Restore button. WMPF on the next row remains local.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-en-010342b00f838012.png?sign=5kmRssjw9AkI76Ew-8M2v-URb-NkS4LJvccVrz5Y7y4%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-en-010342b00f838012.png?sign=5kmRssjw9AkI76Ew-8M2v-URb-NkS4LJvccVrz5Y7y4%3D%3A0)
+
+*An existing split migration. The account row shows the combined scope of msg/file and msg/video, its mounted status and the Restore button. WMPF on the next row remains local.*
+
 ## Read migration progress {#progress}
 
 Overall progress (estimated) includes preparation, scanning, copying, disk writes, verification rounds, entry switching and cleanup. For multiple directories, the percentage combines their work into one task. Separate steps identify the current directory's preparation, scan, copy, verification, switch and cleanup. **Overall percentage, current-directory steps and copied bytes describe different scopes.** Copying at 100% does not mean the task is complete; freeing space also depends on cleanup.
+
+[![Copy-stage example. The 19% at the top estimates the whole operation. The 50% below measures copying for the current directory.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-copy-wechat-en-1cfb35ca54bda938.png?sign=N1BT3s_8PgdGmL8pBwoT7PkBgDVn4Fa5s5Y3VQc8pW8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-copy-wechat-en-1cfb35ca54bda938.png?sign=N1BT3s_8PgdGmL8pBwoT7PkBgDVn4Fa5s5Y3VQc8pW8%3D%3A0)
+
+*Copy-stage example. The 19% at the top estimates the whole operation. The 50% below measures copying for the current directory.*
 
 Scanning and verification show processed items, bytes read or the current file. If activity stops for a while, the window shows time since the last activity. Consider the stage and message before acting; do not disconnect the drive or force quit merely because the percentage is unchanged.
 
@@ -85,6 +110,10 @@ For the reasons behind protected directories and parent/child limits, read [data
 
 Open Task Center in the sidebar (which displays active task counts and attention indicators) to see app, app-data, tool-directory and custom-folder tasks. Select a task name to open its details. Run in Background dismisses the detail window while work continues inside AppPorts, so you can visit other pages and return later. It does not let an active migration continue after quitting AppPorts.
 
+[![Click the completed IINA example in Task Center to view its details, then choose Task List to return.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-task-history-tour-en-5c3790f33e04d3b1.gif?sign=UKo6uGyTIW7ALiisj2lYsg9n8lKUmpyF7T4lzD1nnwk%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-task-history-tour-en-5c3790f33e04d3b1.gif?sign=UKo6uGyTIW7ALiisj2lYsg9n8lKUmpyF7T4lzD1nnwk%3D%3A0)
+
+*Click the completed IINA example in Task Center to view its details, then choose Task List to return.*
+
 - Select one or more migration tasks and choose Pause, Continue or Cancel Task. Pausing takes effect at a safe checkpoint; critical steps such as switching entries may finish first.
 - If cancellation says it is waiting for safe cleanup, keep the drive connected and wait. Cancellation does not undo completed migration steps or guarantee immediate space recovery.
 - Tasks with independent resources can run concurrently. Tasks with conflicting paths or resources wait in the queue; waiting does not necessarily mean a stall.
@@ -92,6 +121,10 @@ Open Task Center in the sidebar (which displays active task counts and attention
 - Clear Completed and the row removal button remove display history only. They do not delete files or resolve pending recovery or cleanup.
 
 After reopening AppPorts, check migration records for tasks that were unfinished. Display history alone never automatically restarts a migration. For Needs Attention, open the task's details and choose Resolve Issues (or Roll Back Update for an observed update task), then follow the current records. See [recovery](/docs/restore#recovery).
+
+[![Task Center example. Open the task marked Needs Attention to see its explanation and available actions.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-tasks-iina-en-1f7d47007ad919fe.png?sign=aehza6cSkSGZt1ydZodIjHBTnMucmCCRWudQgRQnxjY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-tasks-iina-en-1f7d47007ad919fe.png?sign=aehza6cSkSGZt1ydZodIjHBTnMucmCCRWudQgRQnxjY%3D%3A0)
+
+*Task Center example. Open the task marked Needs Attention to see its explanation and available actions.*
 
 ## Launch protection during migration {#launch-protection}
 

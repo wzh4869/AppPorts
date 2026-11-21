@@ -13,6 +13,10 @@
 | 資源分支 | 少數應用程式的自訂圖示、舊式本地化資源可能缺失 | 能用；外觀可能不完整 |
 | POSIX 權限位 | 所有檔案權限變成該碟固定預設值 | 能用；但依賴特定權限的應用程式可能異常 |
 
+[![目標磁碟能力檢查範例。確認視窗逐項列出無法保留的屬性，可取消並改選其他磁碟。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-capabilities-zh-hant-125e6e5dc01619ba.png?sign=AI7dc1tViRJM6lllXRbyb9V-2zd7MlE4Zcpm3yTY1Uw%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-capabilities-zh-hant-125e6e5dc01619ba.png?sign=AI7dc1tViRJM6lllXRbyb9V-2zd7MlE4Zcpm3yTY1Uw%3D%3A0)
+
+*目標磁碟能力檢查範例。確認視窗逐項列出無法保留的屬性，可取消並改選其他磁碟。*
+
 一句話：**這些都屬於「能用，但不完整」。** 真正會拒絕遷移的是另一類問題，見[遷移失敗](#refused)。
 
 ## 為什麼會出現 {#why}

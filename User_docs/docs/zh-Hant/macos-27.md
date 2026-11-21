@@ -19,6 +19,10 @@
 
 在應用清單中點選「簽名已替換」徽章或「修復」，也可以使用右鍵選單的「檢視修復步驟」。開始前連線原外接磁碟，完全結束關聯應用，並保留已有副本。
 
+[![簽署修復面板實機截圖。上方檢查舊容器連結，中間列出回復原始簽署、選擇原版 App 與重新檢查的入口（簡體中文介面）。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-signature-repair-2d87d56892fc9472.png?sign=kbvJNzdSO_Qj7eg9Jx1xMV4WfyUsN7_8bh5vih6rXVo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-signature-repair-2d87d56892fc9472.png?sign=kbvJNzdSO_Qj7eg9Jx1xMV4WfyUsN7_8bh5vih6rXVo%3D%3A0)
+
+*簽署修復面板實機截圖。上方檢查舊容器連結，中間列出回復原始簽署、選擇原版 App 與重新檢查的入口（簡體中文介面）。*
+
 從 1.9.1 build 31 起，新儲存的官方原包位於外接磁碟根目錄的 `AppPorts Backups`。即使應用仍在內建磁碟，恢復也需要連線儲存原包的外接磁碟；有多塊磁碟時，不一定與目前應用庫在同一塊磁碟上。先連線原磁碟再重試，不能把暫時離線當成備份丟失。位置與清理規則見[簽名原包](/docs/settings#signature-backups)。
 
 1. **處理舊容器連結。** 若相關容器資料透過舊符號連結遷移，先使用「還原」回到本機。已經使用 APFS 掛載的資料不必僅為簽名修復而全部遷回；按修復面板檢查的依賴處理。

@@ -18,6 +18,10 @@ This does not establish that every app fails, or that re-signing again fixes the
 
 Open Settings in the main window and look for Classic Data Migration Mode (Not Recommended). Read the confirmation before enabling it. Leave it off if you do not need legacy migration.
 
+[![Classic data migration mode in Settings. The switch is off in this example. Use the link beneath it to read when the mode applies.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-classic-en-123f531d61cd1b9f.png?sign=Y_Fu9qFD96REvWUiRgj4jIi_uuCrhcKmf0jIICUwEkg%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-classic-en-123f531d61cd1b9f.png?sign=Y_Fu9qFD96REvWUiRgj4jIi_uuCrhcKmf0jIICUwEkg%3D%3A0)
+
+*Classic data migration mode in Settings. The switch is off in this example. Use the link beneath it to read when the mode applies.*
+
 **Turning it off does not restore existing links or signatures changed earlier.** Handle existing data according to its actual state; the switch position alone does not establish that an upgrade is complete.
 
 ## If you already use the old method {#transition}

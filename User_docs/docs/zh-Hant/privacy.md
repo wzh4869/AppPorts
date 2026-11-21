@@ -99,6 +99,10 @@ AppPorts（以下稱“本軟體”）是一款執行於 macOS 平臺的應用�
 - 匯出前，本軟體會將日誌中的使用者名稱替換為 ~，將 /Users/＜使用者名稱＞ 替換為 /Users/＜redacted-user＞，並對您的外部儲存介質名稱作脫敏處理；
 - 本軟體不會自動上傳該檔案，亦不會將其提供給任何第三方。是否將其提供給我們，完全由您自行決定。
 
+[![診斷套件匯出視窗。「允許包含本機應用程式列表」預設未勾選，儲存位置由你選擇。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hant-d7fd49f9e2edd480.png?sign=eEyRHO9j7fYJVQpO4Cr0k-D5We0xG7OvPDweQHDFVoI%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hant-d7fd49f9e2edd480.png?sign=eEyRHO9j7fYJVQpO4Cr0k-D5We0xG7OvPDweQHDFVoI%3D%3A0)
+
+*診斷套件匯出視窗。「允許包含本機應用程式列表」預設未勾選，儲存位置由你選擇。*
+
 ## 第九條  系統權限 {#section-9}
 
 為實現上述功能，本軟體可能涉及下列系統權限：

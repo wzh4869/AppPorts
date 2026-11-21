@@ -8,11 +8,19 @@
 2. 打开安装包，把 AppPorts 拖入 Mac 的“应用程序”文件夹。
 3. 从“应用程序”打开 AppPorts，按首次使用引导继续。发起新迁移、操作磁盘映像和打开权限引导前，AppPorts 会检查自身是否位于“应用程序”文件夹；不要从安装镜像或临时目录长期运行。
 
+[![打开 DMG，把左侧的 AppPorts 图标拖到右侧的 Applications 文件夹上，然后松开。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)
+
+*打开 DMG，把左侧的 AppPorts 图标拖到右侧的 Applications 文件夹上，然后松开。*
+
 ## 准备权限与外置盘 {#permissions}
 
 1. 连接外置盘，在左侧边栏“目标存储”选择外部存储文件夹；若目标是 NAS 共享或非 APFS 外盘，也可以从同一菜单创建或打开 [APFS 应用库映像](/docs/storage-guide#app-library-image)。
 2. 点击侧栏底部的设置齿轮（或按 `Command + ,`），查看“准备情况”卡片。按提示点击“打开系统设置”，为 AppPorts 开启“完全磁盘访问权限”，系统需要时再授予“App 管理”权限；如果系统列表中找不到 AppPorts，可直接把屏幕上的引导图标拖入系统设置列表。
 3. 按提示重新打开 AppPorts，可在“准备情况”标题右侧点击“检查”核对状态。
+
+[![从侧栏底部进入设置，点击「检查」刷新准备情况。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-4e6a0bbfbc33714f.gif?sign=QeBq7i0li3XCK2-rJQ89siGLCGWWhMHhGhMYNX8Apyo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-4e6a0bbfbc33714f.gif?sign=QeBq7i0li3XCK2-rJQ89siGLCGWWhMHhGhMYNX8Apyo%3D%3A0)
+
+*从侧栏底部进入设置，点击「检查」刷新准备情况。*
 
 **只有容器数据的挂载迁移要求 APFS 存储。** 普通应用和普通文件夹按各自条件检查，不必为了第一次应用迁移就抹掉现有磁盘。格式不符合要求时，先阅读[外置盘准备方法](/docs/storage-guide#apfs)。
 

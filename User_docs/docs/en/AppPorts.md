@@ -36,4 +36,8 @@ These principles also preserve choice. Moving an app does not require studying c
 
 Decide whether you are moving the application itself or its data, then check storage and permissions. AppPorts cannot make an unsupported directory eligible or guarantee that every app works on every storage device.
 
+[![Choose a sidebar section according to what you want to move. Directory Migration is selected here, with the add-folder button on the right (Simplified Chinese interface).](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-navigation-e9d2f12c105517f2.png?sign=YXYXzqUxWXjfroVApwggGfQ0rJu9H2ScYHnjNVr6iMc%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-navigation-e9d2f12c105517f2.png?sign=YXYXzqUxWXjfroVApwggGfQ0rJu9H2ScYHnjNVr6iMc%3D%3A0)
+
+*Choose a sidebar section according to what you want to move. Directory Migration is selected here, with the add-folder button on the right (Simplified Chinese interface).*
+
 Continue with [Quick start](/docs/faststart), [external drives](/docs/storage-guide), the [privacy policy](/docs/privacy) or [licenses](/docs/licenses).

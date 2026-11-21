@@ -14,6 +14,15 @@ This page documents older releases. Current builds separate migration from manua
 | Identity-only signature backups | Stored an app identifier, path, identity name, and timestamp without a complete original app. | Insufficient to restore the original signature. Records with provenance value remain until cleanup conditions are verified. |
 | Complete originals on internal storage | Later implementations stored official app originals internally to restore contents and signatures. | Build 31 saves new long-term originals externally. Useful older originals move out automatically when conditions permit; the internal copy is removed only after verification. |
 
+```mermaid
+flowchart TB
+    A["Through 1.8.1 · container symlinks"]
+    B["1.9.0 · transition to mount migration"]
+    C["1.9.1 development · automatic re-signing retired"]
+    A --> B
+    B --> C
+```
+
 ## What the old workflow did {#flow}
 
 Legacy link migration copied data to a managed external location, then replaced the original directory with a symbolic link. If re-signing was selected, data migration and ad-hoc signing ran in sequence. Signing had to apply to the real app, not its local launcher.

@@ -9,6 +9,10 @@
 - 「应用数据」列表显示每个应用的数据总量和已迁移、本地明细，并提供三种排序；「外部应用库」显示当前列表的应用本体合计大小。
 - 修复外观切回「跟随系统」后未生效，以及主窗口与其他窗口外观不一致的问题。
 
+[![核对版本时，在设置页 AppPorts 名称下查看版本号和构建号。图中为 2.3.1（80），右侧是「检查更新」。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-version-4d9efdc6478df5ca.png?sign=XiUIDjMT0J6lPuTAxR4sMabdQBOY0hOX9d2Q4JbmCBo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-version-4d9efdc6478df5ca.png?sign=XiUIDjMT0J6lPuTAxR4sMabdQBOY0hOX9d2Q4JbmCBo%3D%3A0)
+
+*核对版本时，在设置页 AppPorts 名称下查看版本号和构建号。图中为 2.3.1（80），右侧是「检查更新」。*
+
 [查看 v2.3.1 发布](https://github.com/wzh4869/AppPorts/releases/tag/2.3.1) · [重新授权](/docs/settings#permissions) · [手动更新](/docs/settings#updates) · [微信账号迁移](/docs/datamigrae/operation#wechat) · [现有软链处理](/docs/restore#reconnect)
 
 ## v2.3.0 {#v2-3-0}

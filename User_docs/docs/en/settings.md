@@ -30,6 +30,12 @@ Before starting new migrations, creating/opening/remounting an app library image
 
 If **App Management** or **Full Disk Access** is already enabled in System Settings after an upgrade but AppPorts still reports it missing, macOS may be using a permission record tied to the previous signing certificate. If you see **System Permissions Need to Be Granted Again**, follow the prompt to open the relevant settings, add the new AppPorts, and turn on its switch. If the old entry still does not work, click **Clear Legacy Permission Records** in **Readiness**, then return to System Settings to add AppPorts and switch it on again. Clearing **Full Disk Access** may require administrator confirmation. If clearing fails, select the old entry in System Settings, remove it with `-`, and add AppPorts again. Reopen AppPorts as prompted and check its status in **Readiness**.
 
+
+![Open Settings, run the readiness check, and read the permission and storage results (Simplified Chinese interface)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-4e6a0bbfbc33714f.gif?sign=QeBq7i0li3XCK2-rJQ89siGLCGWWhMHhGhMYNX8Apyo%3D%3A0)
+
+
+[View the full recording (MP4)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-3174a4492f75ecd4.mp4?sign=cTwbXybA3aUlpQQWk91OQBGuxGLLHAptXRvzyEdIK68%3D%3A0)
+
 ## App Store and non-native apps {#app-store}
 
 On macOS 15.1 and later, Settings displays App Store App External Installation and checks read-only whether the App Store's preferred external disk matches the external drive selected in AppPorts:
@@ -90,6 +96,10 @@ Both agents run windowless modes of the AppPorts bundle installed in Application
 ## Log settings {#logs}
 
 Use the Log Settings card to enable or disable logging, adjust maximum log size (1 MB to 100 MB), reveal logs in Finder, export a diagnostic package or clear logs (Logs → Export Diagnostic Package in the menu bar also works). Export does not send the package automatically.
+
+[![Diagnostics export dialog. Including this Mac’s app list is unchecked by default. You choose the save location.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-en-c1e3fed21079e128.png?sign=3bUYvlhGHcCYG7lsuVQlhVFPtnevKDD_0XHB5rXQZo8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-en-c1e3fed21079e128.png?sign=3bUYvlhGHcCYG7lsuVQlhVFPtnevKDD_0XHB5rXQZo8%3D%3A0)
+
+*Diagnostics export dialog. Including this Mac’s app list is unchecked by default. You choose the save location.*
 
 Inspect the contents before sharing, and include macOS and AppPorts versions, the action you took and the displayed message. See [reporting a problem](/docs/faq#feedback) and the [privacy policy](/docs/privacy).
 

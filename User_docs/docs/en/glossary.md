@@ -8,6 +8,15 @@ This page explains terms used in AppPorts and its documentation. The first secti
 
 A small entry left on the Mac after migration that opens the real external app. It is neither a complete app nor a backup. It cannot run the full program when the external drive is offline. When an app lives inside a managed app library image, refreshed entries attempt a windowless reattachment of the image and its data volumes before launch. See [app migration methods](/docs/migration-strategy/portal#portal).
 
+```mermaid
+flowchart TB
+    A["Finder or Dock"]
+    B["Local launch portal on Mac"]
+    C["Real app in the external library"]
+    A --> B
+    B --> C
+```
+
 ### Real app, external copy {#real-app}
 
 The complete application bundle, as distinct from its local launcher. After migration, the “external copy” may be the only real app in use. Do not delete it merely because it is called a copy.

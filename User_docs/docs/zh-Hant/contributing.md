@@ -198,6 +198,17 @@ CI 的完整命令見[共用指令碼](https://github.com/wzh4869/AppPorts/blob/
 4. 填寫 PR 模板中的必填項。
 5. 等待 CI 檢查通過和 Code Review。
 
+```mermaid
+flowchart TB
+    A["從 main 建立工作分支"]
+    B["完成變更與對應驗證"]
+    C["向 main 提交 PR 並說明驗證結果"]
+    D["檢查 CI 結果並回應審查"]
+    A --> B
+    B --> C
+    C --> D
+```
+
 ::: tip 提高合併效率
 - 保持每個 PR 聚焦於單一問題或功能。
 - 如實填寫 PR 模板中的測試情況。

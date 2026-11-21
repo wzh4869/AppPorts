@@ -15,6 +15,10 @@ Badges describe an item's current state; they are not a complete health check. R
 | Unlinked, External | The external app has no usable local entry yet. | Use “Link Back to Local” if needed. |
 | Pending Move Out | A real local app appears newer than the external copy. | Check both versions and the destination, then move the newer local app out. |
 
+[![The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+
+*The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
+
 “Locked Migration” protects specific update scenarios; it does not replace a backup, and upgrading AppPorts does not automatically unlock previously locked apps. “Pending Move Out” is not an instruction that must be acted on immediately.
 
 ## App types {#types}

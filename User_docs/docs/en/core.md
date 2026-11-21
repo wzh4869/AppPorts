@@ -14,6 +14,10 @@ Connect external storage, select an external application library under Destinati
 4. Wait for copying, verification and creation of the local entry. Download quarantine markers on macOS 27 do not abort migration; whether an app may open for the first time is still governed by macOS security checks.
 5. Launch the app from Finder or the Dock and test everyday actions such as opening files.
 
+[![The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+
+*The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
+
 The external library contains the real app; a [launch entry](/docs/glossary#local-portal) remains locally. Verification or cleanup may still be running near the end of the progress display. Wait for the final result.
 
 If the app is outside the default scan locations, use + beside Local Apps to add a scan directory, such as an installation folder managed by another tool.
@@ -25,6 +29,10 @@ If a destination capability warning appears before migration, read [what the des
 ## Updates after migration {#updates}
 
 Update behavior differs by app. Apps confirmed to update cleanly as ordinary apps (such as NetEase Music and WorkBuddy) migrate without a lock prompt and show Linked when unlocked; other apps with detected self-updaters offer Unlocked Migration (highlighted by default) and Locked Migration before moving or relinking.
+
+[![Migration choices for a self-updating app. In this example, Unlocked Migration allows the app to update itself. Locked Migration protects the external app bundle.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-en-2430999364260faa.png?sign=yD158qQRZmytzF-NIp4l4PJPVeUPqp5WKBfcvlQO3iY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-en-2430999364260faa.png?sign=yD158qQRZmytzF-NIp4l4PJPVeUPqp5WKBfcvlQO3iY%3D%3A0)
+
+*Migration choices for a self-updating app. In this example, Unlocked Migration allows the app to update itself. Locked Migration protects the external app bundle.*
 
 | Situation | Suggested action |
 | --- | --- |
@@ -49,6 +57,10 @@ See [Restore, reconnect and unlink](/docs/restore) for the distinctions and step
 ## Lists, size caches and duplicate search results {#search-cache}
 
 The All / Linked / Unlinked filter at the top of Apps filters the list without restoring or deleting apps; hidden selections are excluded from batch actions when switching filters. Local and external lists can each be sorted by name or size. App and tool-directory sizes can show a cache timestamp. If disk contents have changed or sizes look stale, click Refresh Cache at the bottom of the sidebar to recalculate; old cached sizes are not exact current usage.
+
+[![Click Size in Local Apps to compare the example apps, then click Name to sort them by name.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-en-035c023727239ed0.gif?sign=kBt_ERWZrx9XbFNsZpEjs0O7RhJEAAXd58vybxq9KjM%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-en-035c023727239ed0.gif?sign=kBt_ERWZrx9XbFNsZpEjs0O7RhJEAAXd58vybxq9KjM%3D%3A0)
+
+*Click Size in Local Apps to compare the example apps, then click Name to sort them by name.*
 
 The size beside the **External Drive** heading is the combined size of the app bundles in the current search and filter results. For example, switching from **All** to **Linked** limits the total to the linked apps shown. The total updates as measurements finish. It uses logical file sizes within the app bundles. For actual free space, see the storage target in the sidebar.
 

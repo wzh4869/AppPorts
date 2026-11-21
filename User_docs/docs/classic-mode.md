@@ -18,6 +18,10 @@
 
 在主窗口打开“设置”，找到“经典数据迁移模式（不推荐）”。开启前需要阅读确认说明；不需要旧式迁移时保持关闭即可。
 
+[![「经典数据迁移模式」位于设置页。图中开关已关闭，下方的「查看完整说明」可打开使用条件。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-classic-zh-hans-69c0e6d5566a2036.png?sign=kJyraHzRimR-FuJyCY_m2nQ2EQrHR8o_gVSxIfFrNs0%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-classic-zh-hans-69c0e6d5566a2036.png?sign=kJyraHzRimR-FuJyCY_m2nQ2EQrHR8o_gVSxIfFrNs0%3D%3A0)
+
+*「经典数据迁移模式」位于设置页。图中开关已关闭，下方的「查看完整说明」可打开使用条件。*
+
 **关闭开关不会自动还原已存在的链接，也不会恢复过去改过的签名。** 原有数据需要按实际状态单独处理，不能只看开关位置判断已经完成升级。
 
 ## 已经使用旧方式怎么办 {#transition}

@@ -31,4 +31,17 @@ AppPorts 的一些選擇，來自看似成功的遷移之後暴露的問題。�
 | 為什麼保護容器骨架、怎樣找到這條規則 | [真實崩潰與系統探針](/docs/blog/data-migration-boundaries#starting-point) |
 | 檔案複製完，為什麼還不算驗證完整 | [屬性、晚寫入與完整往返](/docs/blog/data-migration-boundaries#copy-and-switch) |
 
+```mermaid
+flowchart TB
+    A["遷移後遇到的現象"]
+    B["原路徑存在，讀不到資料"]
+    C["變更目錄後 App 無法啟動"]
+    D["連結、掛載與存取實驗"]
+    E["容器結構與目錄邊界實驗"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 已停用的功能和未採用的方案，另見[歷史功能歸檔](/docs/archive/overview)。

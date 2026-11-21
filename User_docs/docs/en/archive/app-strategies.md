@@ -8,6 +8,15 @@ This page explains older entry layouts and implementation changes. For the curre
 
 The early Deep Contents Wrapper moved an app's `Contents` externally while retaining the outer `.app` locally, with links to external contents. It aimed to keep a familiar app appearance while freeing local space.
 
+```mermaid
+flowchart TB
+    A["Outer .app stays on the Mac"]
+    B["Contents link inside the bundle"]
+    C["Actual Contents on the external drive"]
+    A --> B
+    B --> C
+```
+
 Some apps and updaters resolve links and replace, delete, or modify the real external contents. This made paths, signatures, and updates difficult to handle consistently. Historical release notes show Stub Portal being introduced from 1.2.0 to replace this direction. AppPorts still recognizes old Contents layouts for management, but does not use them as the default for new migrations.
 
 ## Whole-app symbolic links {#whole-symlink}

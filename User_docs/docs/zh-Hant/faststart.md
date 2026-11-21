@@ -8,11 +8,19 @@
 2. 開啟安裝包，把 AppPorts 拖入 Mac 的「應用程式」資料夾。
 3. 從「應用程式」開啟 AppPorts，按首次使用引導繼續。發起新遷移、操作磁碟映像和開啟權限引導前，AppPorts 會檢查自身是否位於「應用程式」資料夾；不要從安裝映像或暫存目錄長期執行。
 
+[![開啟 DMG，將左側的 AppPorts 圖示拖到右側的 Applications 資料夾上，再放開。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)
+
+*開啟 DMG，將左側的 AppPorts 圖示拖到右側的 Applications 資料夾上，再放開。*
+
 ## 準備權限與外接磁碟 {#permissions}
 
 1. 連線外接磁碟，在左側邊欄「目的地儲存」選擇外部儲存資料夾；若目標是 NAS 共享或非 APFS 外接磁碟，也可以從同一選單建立或開啟 [APFS 應用庫映像](/docs/storage-guide#app-library-image)。
 2. 點選側欄底部的設定齒輪（或按 `Command + ,`），檢視「準備狀況」卡片。按提示點選「開啟系統設定」，為 AppPorts 開啟「完全磁碟取用權限」，系統需要時再授予「App 管理」權限；如果系統清單中找不到 AppPorts，可直接把畫面上的引導圖示拖入系統設定清單。
 3. 按提示重新開啟 AppPorts，可在「準備狀況」標題右側點選「檢查」核對狀態。
+
+[![從側邊欄底部進入設定，點選「檢查」以重新整理準備狀況（簡體中文介面）。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-4e6a0bbfbc33714f.gif?sign=QeBq7i0li3XCK2-rJQ89siGLCGWWhMHhGhMYNX8Apyo%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-readiness-pointer-4e6a0bbfbc33714f.gif?sign=QeBq7i0li3XCK2-rJQ89siGLCGWWhMHhGhMYNX8Apyo%3D%3A0)
+
+*從側邊欄底部進入設定，點選「檢查」以重新整理準備狀況（簡體中文介面）。*
 
 **只有容器資料的掛載遷移要求 APFS 儲存。** 普通應用和普通資料夾按各自條件檢查，不必為了第一次應用遷移就抹掉現有磁碟。格式不符合要求時，先閱讀[外接磁碟準備方法](/docs/storage-guide#apfs)。
 

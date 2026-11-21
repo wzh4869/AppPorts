@@ -13,6 +13,10 @@ This page covers why each case happens, what it means, and what to do.
 | Resource forks | A few apps may lose custom icons or legacy localized resources | Usable; appearance may be incomplete |
 | POSIX permission bits | All file permissions become the drive's fixed default | Usable; apps that depend on specific permissions may misbehave |
 
+[![Example destination check. The dialog lists the attributes this drive cannot preserve. Cancel to select another drive.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-capabilities-en-9ce0d4432123dfad.png?sign=DkNtMhTGMCt6St0kn_A_kpPmRZBgaPsKXWlqtCh898k%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-capabilities-en-9ce0d4432123dfad.png?sign=DkNtMhTGMCt6St0kn_A_kpPmRZBgaPsKXWlqtCh898k%3D%3A0)
+
+*Example destination check. The dialog lists the attributes this drive cannot preserve. Cancel to select another drive.*
+
 In short: **these are all "works, but incomplete."** The cases that genuinely refuse a migration are different — see [when a migration is refused](#refused).
 
 ## Why this happens {#why}

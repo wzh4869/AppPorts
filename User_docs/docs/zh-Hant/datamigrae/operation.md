@@ -10,6 +10,10 @@
 | 套件管理器快取、模型等工具資料 | 左側邊欄「工具目錄」，檢視已識別項目。 |
 | 自己的專案、素材或其他資料夾 | 左側邊欄「目錄遷移」，點選本地資料夾區域的「+」，選擇來源資料夾和外部目標。 |
 
+[![點選 Caches 左側的箭頭，選取 com.microsoft.VSCode，在清單底部查看完整路徑。再點一次箭頭即可收合。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-browse-data-folders-zh-hant-e3d27e3cb05d476d.gif?sign=2ZbdxylOEGMfpQU5PeTUVxTFkjI9fQlD6g3pLRzAw1U%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-browse-data-folders-zh-hant-e3d27e3cb05d476d.gif?sign=2ZbdxylOEGMfpQU5PeTUVxTFkjI9fQlD6g3pLRzAw1U%3D%3A0)
+
+*點選 Caches 左側的箭頭，選取 com.microsoft.VSCode，在清單底部查看完整路徑。再點一次箭頭即可收合。*
+
 「應用程式資料」在目前頁面工作階段內會重用完整掃描結果，減少來回切換應用時的重複等待；權限、目標磁碟、遷移記錄或掛載狀態變化時會自動重新檢查，也可點選側欄底部的「重新整理快取」重新測量。缺少完全磁碟取用權限時，頁面會單獨提示權限未就緒並提供檢查入口，不會把受限讀取顯示為沒有資料。
 
 左側應用程式清單會顯示每個應用程式偵測到的資料總量。有已遷移資料的應用程式會排在前面，並顯示「已遷移」和「本地」明細。搜尋框旁的選單可選「按大小」（初始選項）、「預設」或「按首字母」，分別為已遷移組和其他應用程式排序。外接磁碟離線、資料卷宗未解鎖或自動掛載已暫停時，大小可能不完整；接回原磁碟並恢復掛載後，可使用「重新整理快取」重新測量。
@@ -61,13 +65,34 @@
 - **全部遷移**：遷移所選帳號的整個目錄。
 - **拆分遷移（`msg + business`）**：遷出 `msg` 與 `business` 媒體目錄，資料庫（`db_storage`）和設定保留本機；確認框分別列出媒體大小與本機保留大小。
 
+```mermaid
+flowchart TB
+    A["一個微信帳號"]
+    B["全部遷移"]
+    C["拆分遷移"]
+    D["整個帳號目錄移至外接磁碟"]
+    E["msg 與 business 外移，資料庫留在本機"]
+    A --> B
+    A --> C
+    B --> D
+    C --> E
+```
+
 等目錄大小讀取完整後，再開始遷移。切換方式前，先完整還原該帳號已遷移的資料。拆分後離線時，媒體或檔案/影片入口與其他受管離線目錄同樣保持唯讀可瀏覽、拒絕新建寫入，避免登入時因路徑權限錯誤而崩潰；能否繼續查看文字訊息仍取決於微信版本，不保證所有內容在未連接磁碟時可用。加密目標還需[設定資料卷宗密碼](/docs/storage-guide#encrypted-drives)。
 
 新版以整個 `msg` 目錄為單位拆分遷移，讓 `msg/file` 與 `msg/attach` 中可能指向同一份檔案的硬連結保留在同一卷宗。舊版「僅大檔案與影片（`msg/file + msg/video`）」已停止新遷移。已使用舊模式的帳號可繼續使用：接回原外接磁碟，在「應用程式資料」選取微信和對應帳號，依狀態提示解鎖或掛載。想把資料搬回內建磁碟或改用其他遷移方式時，先按一下「還原」，等該帳號已遷出的目錄全部還原後，再視需要選擇「全部遷移」或「拆分遷移」。
 
+[![既有拆分遷移的範例。帳號列標出 msg/file 和 msg/video 的合計範圍與「已掛載」狀態，可從右側還原。下一列 WMPF 仍在本機。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hant-8212e352bb7a2e5c.png?sign=oarsds3Fl7-CUMwzt-RNV22dquhwHuYo-B8OI3BrAEg%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hant-8212e352bb7a2e5c.png?sign=oarsds3Fl7-CUMwzt-RNV22dquhwHuYo-B8OI3BrAEg%3D%3A0)
+
+*既有拆分遷移的範例。帳號列標出 msg/file 和 msg/video 的合計範圍與「已掛載」狀態，可從右側還原。下一列 WMPF 仍在本機。*
+
 ## 怎樣看遷移進度 {#progress}
 
 「總體進度（估算）」包含準備、掃描、複製、磁碟寫入、各輪驗證、切換和收尾；多個目錄會合算為同一任務的總體百分比。目前目錄另有「準備 → 掃描 → 複製 → 驗證 → 切換 → 收尾」階段提示。**總體百分比、目前目錄階段與已複製位元組表示不同範圍，不能互相替代。** 複製達到 100% 不代表任務完成，空間釋放也要等清理完成。
+
+[![複製階段的範例。上方 19% 是整體進度估算，下方 50% 是目前目錄的複製進度。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-copy-wechat-zh-hant-bb7d73bf0f3cdb4d.png?sign=QOa0bC5z0GFcCopwCKbz1gsmtd60kEU8Fx_UOsBGHrs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-copy-wechat-zh-hant-bb7d73bf0f3cdb4d.png?sign=QOa0bC5z0GFcCopwCKbz1gsmtd60kEU8Fx_UOsBGHrs%3D%3A0)
+
+*複製階段的範例。上方 19% 是整體進度估算，下方 50% 是目前目錄的複製進度。*
 
 掃描和驗證會顯示已處理項目數、讀取位元組或目前檔案。長時間沒有新進展時，視窗會說明距離上次活動的時間；先結合階段和提示判斷，不要只因百分比暫時不變就拔除磁碟或強制結束。
 
@@ -85,6 +110,10 @@
 
 在左側邊欄開啟「任務中心」（有未結束任務或異常時會顯示數量與提醒標記），查看應用、應用資料、工具目錄和目錄遷移任務。點擊任務名稱開啟詳細資料；其中的「加入背景」只收起視窗，任務繼續在 AppPorts 內執行，可以切換頁面後再回來查看。這不表示結束 AppPorts 後仍可繼續遷移。
 
+[![在任務中心點選已完成的 IINA 範例任務，查看詳細資料，再用「任務列表」返回清單。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-task-history-tour-zh-hant-e6e37f4a4be477c7.gif?sign=Y6pfxoh-9ddu4BqgRucBR3TE-smwGeoGXybZyyO-roM%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-task-history-tour-zh-hant-e6e37f4a4be477c7.gif?sign=Y6pfxoh-9ddu4BqgRucBR3TE-smwGeoGXybZyyO-roM%3D%3A0)
+
+*在任務中心點選已完成的 IINA 範例任務，查看詳細資料，再用「任務列表」返回清單。*
+
 - 選取一個或多個遷移任務，使用「暫停」「繼續」或「取消任務」。暫停要等到可暫停的位置；入口切換等關鍵步驟可能先完成。
 - 取消後若顯示「正在取消，等待安全收尾」，請保持磁碟連接並等待。取消不會撤銷已完成的遷移步驟，也不保證立即釋放佔用空間。
 - 互不衝突的任務可以並行，路徑或資源衝突的任務會排隊；排隊不等於停滯。
@@ -92,6 +121,10 @@
 - 「清空已完成」和列末移除按鈕只刪除任務顯示記錄，不刪除檔案，也不處理尚未完成的恢復或清理。
 
 重新開啟 AppPorts 後，上次未結束的任務需要先檢查遷移記錄，不會僅憑任務歷史自動重新遷移。出現「需要處理」時開啟詳細資料的「處理異常」（或更新任務的「復原更新」），按目前記錄繼續；詳見[異常恢復](/docs/restore#recovery)。
+
+[![任務中心範例。這項任務顯示「需要處理」，開啟詳細資料即可查看原因和可用操作。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-tasks-iina-zh-hant-faa0a225758c8f11.png?sign=0tgKyPIvYNHAnnzIGsdXOcnKsBt-P6aXnThWwMKbXMQ%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-tasks-iina-zh-hant-faa0a225758c8f11.png?sign=0tgKyPIvYNHAnnzIGsdXOcnKsBt-P6aXnThWwMKbXMQ%3D%3A0)
+
+*任務中心範例。這項任務顯示「需要處理」，開啟詳細資料即可查看原因和可用操作。*
 
 ## 遷移期間的啟動保護 {#launch-protection}
 

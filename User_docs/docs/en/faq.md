@@ -6,6 +6,10 @@ Save your work and note the state and error AppPorts displays. For missing data 
 
 If **App Management** or **Full Disk Access** is already on after an upgrade but AppPorts still reports it missing, follow the reauthorization steps in [Readiness and system permissions](/docs/settings#permissions). If the old entry still does not work, clear its legacy record in **Readiness**.
 
+[![If AppPorts is missing from Full Disk Access, drag the app icon from this guide into the macOS permission list.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-permission-en-e8f21cc870df962b.png?sign=WAu9enIz4VllspwDjZtbsFUHXbVRj5_cqzRwmzExjqQ%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-permission-en-e8f21cc870df962b.png?sign=WAu9enIz4VllspwDjZtbsFUHXbVRj5_cqzRwmzExjqQ%3D%3A0)
+
+*If AppPorts is missing from Full Disk Access, drag the app icon from this guide into the macOS permission list.*
+
 ## App will not open or quits immediately {#launch}
 
 Check that the original external drive (or app library image) is online and the local entry is not an Orphaned Link. For Signature replaced, or a problem that began after upgrading to macOS 27, follow [upgrades and repair](/docs/macos-27). Otherwise check whether the original app supports the OS and retain error details. Not every launch failure is caused by signing.

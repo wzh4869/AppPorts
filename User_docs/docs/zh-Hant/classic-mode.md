@@ -18,6 +18,10 @@
 
 在主視窗開啟「設定」，找到「經典資料遷移模式（不推薦）」。開啟前需要閱讀確認說明；不需要舊式遷移時保持關閉即可。
 
+[![「經典資料遷移模式」位於設定頁。圖中的開關已關閉，可使用下方的按鈕查看完整說明。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-classic-zh-hant-cc5d2c2c4e8a3c5c.png?sign=hQ2VQzYHDKsQRK42BujMoygWhNQnLafbleGezpOmlGY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-classic-zh-hant-cc5d2c2c4e8a3c5c.png?sign=hQ2VQzYHDKsQRK42BujMoygWhNQnLafbleGezpOmlGY%3D%3A0)
+
+*「經典資料遷移模式」位於設定頁。圖中的開關已關閉，可使用下方的按鈕查看完整說明。*
+
 **關閉開關不會自動還原已存在的連結，也不會恢復過去改過的簽名。** 原有資料需要按實際狀態單獨處理，不能只看開關位置判斷已經完成升級。
 
 ## 已經使用舊方式怎麼辦 {#transition}

@@ -15,6 +15,10 @@
 | 未链接、外部 | 外部应用尚无可用的本地入口。 | 需要时使用“链接回本地”。 |
 | 待迁出 | 识别到本地真实应用比外部副本更新。 | 核对版本和目标，再将本地新版迁出。 |
 
+[![AppPorts 实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+
+*AppPorts 实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。*
+
 “锁定迁移”保护的是特定更新场景，并不替代备份；升级 AppPorts 不会自动解除此前已加锁的应用。“待迁出”也不是必须立即执行的命令。
 
 ## 应用类型 {#types}
