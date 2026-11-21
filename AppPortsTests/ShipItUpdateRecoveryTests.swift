@@ -40,7 +40,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         }
 
         init(root: URL = FileManager.default.temporaryDirectory.appendingPathComponent("ShipIt-\(UUID().uuidString)"),
-             identifier: String = "org.appports.shipit.fixture") throws {
+             identifier: String = "org.appports.shipit.fixture", externalDirectory: URL? = nil) throws {
             self.root = root.resolvingSymlinksInPath().standardizedFileURL
             self.identifier = identifier
             caches = self.root.appendingPathComponent("Caches")
@@ -48,7 +48,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
             source = cache.appendingPathComponent("update.fixture/Fixture.app")
             state = cache.appendingPathComponent("ShipItState.plist")
             log = cache.appendingPathComponent("ShipIt_stderr.log")
-            target = self.root.appendingPathComponent("External/Fixture.app")
+            target = (externalDirectory ?? self.root.appendingPathComponent("External")).appendingPathComponent("Fixture.app")
             local = self.root.appendingPathComponent("Local/Fixture.app")
             store = AppSearchRecordStore(fileURL: self.root.appendingPathComponent("Records/search.json"))
             try FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -91,6 +91,25 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
             let latest = try Data(contentsOf: log)
             let history = String(repeating: "Could not read update request\n", count: 40_000)
             try (Data(history.utf8) + latest).write(to: log)
+        }
+
+        func backdateLegacyReceipt(_ candidate: ShipItUpdateRecovery.Candidate, to completion: Date) throws {
+            let url = root.appendingPathComponent("Receipts/" + candidate.key + ".json")
+            var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+            json.removeValue(forKey: "handledInstallStart")
+            try JSONSerialization.data(withJSONObject: json).write(to: url)
+            try FileManager.default.setAttributes([.modificationDate: completion], ofItemAtPath: url.path)
+        }
+
+        func writeRepeatedFailure(startedAt date: Date, destination: URL? = nil) throws {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = .current
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+            let header = formatter.string(from: date) + " ShipIt[72038:3431032] "
+            let failure = header + "Detected this as an install request\n" +
+                "Installation error: Couldn't copy to " + (destination ?? target).path + "\nShipIt quitting\n"
+            try failure.write(to: log, atomically: true, encoding: .utf8)
         }
 
         func recovery(busy: @escaping @Sendable (String, URL) async throws -> ShipItUpdateRecovery.Activity = { _, _ in .idle },
@@ -175,6 +194,92 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         let repeated = try await fixture.recovery(launch: { _ in _ = launches.next() }).recover(candidate)
         XCTAssertFalse(repeated)
         XCTAssertEqual(launches.value, 1)
+    }
+
+    @MainActor
+    func testSecondFailedInstallOfUnchangedRequestGetsANewRecoveryAndTask() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let launches = Calls()
+        let recovery = fixture.recovery(launch: { _ in _ = launches.next() })
+        let state = AppOperationState(notificationCenter: NotificationCenter())
+        let history = MigrationTaskHistoryStore(fileURL: fixture.root.appendingPathComponent("history.json"))
+        let center = MigrationTaskCenter(historyStore: history, operationState: state)
+        func scan() async {
+            let checked = expectation(description: "Finished checking the isolated ShipIt cache")
+            let monitor = ShipItRecoveryMonitor(recovery: recovery, operationState: state,
+                didCheck: { checked.fulfill() }, taskCenter: center)
+            monitor.start()
+            await fulfillment(of: [checked], timeout: 5)
+            await monitor.stop()
+        }
+
+        let first = try XCTUnwrap(recovery.candidates().first)
+        await scan()
+        let completedAt = Date().addingTimeInterval(-120)
+        try fixture.backdateLegacyReceipt(first, to: completedAt)
+        let owned = fixture.root.appendingPathComponent("Owned.app")
+        try FileManager.default.moveItem(at: fixture.target, to: owned)
+        XCTAssertTrue(try recovery.candidates().isEmpty, "Losing the target alone cannot reopen the request")
+        try fixture.writeRepeatedFailure(startedAt: completedAt.addingTimeInterval(-1))
+        XCTAssertTrue(try recovery.candidates().isEmpty, "Rewriting an older failure also updates the log mtime")
+        let nextStart = completedAt.addingTimeInterval(60)
+        try fixture.writeRepeatedFailure(startedAt: nextStart, destination: fixture.root.appendingPathComponent("Other.app"))
+        XCTAssertTrue(try recovery.candidates().isEmpty)
+        try fixture.writeRepeatedFailure(startedAt: nextStart)
+        try fixture.prependOldLog()
+        try FileManager.default.moveItem(at: owned, to: fixture.target)
+        XCTAssertTrue(try recovery.candidates().isEmpty, "A healthy copy of the same version needs no reinstall")
+        try FileManager.default.moveItem(at: fixture.target, to: owned)
+        let second = try XCTUnwrap(fixture.recovery().candidates().first)
+        XCTAssertEqual(first.requestBytes, second.requestBytes)
+        XCTAssertNotEqual(first.key, second.key)
+        let stale = try await recovery.recover(first)
+        XCTAssertFalse(stale)
+        await scan()
+        try Fixture.validate(fixture.target, fixture.identifier)
+        let jobs = history.load()
+        XCTAssertEqual(Set(jobs.compactMap(\.observedKey)), Set([first.key, second.key]))
+        XCTAssertEqual(jobs.map(\.observedResult), [.recovered, .recovered])
+        try FileManager.default.removeItem(at: fixture.target)
+        try fixture.prependOldLog()
+        XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
+        XCTAssertEqual(launches.value, 1, "Reusing the request must not restart the application again")
+    }
+
+    func testNewFailureDuringAutomaticRelaunchDoesNotCauseARelaunchLoop() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let earlier = Date().addingTimeInterval(-120)
+        try fixture.writeRepeatedFailure(startedAt: earlier)
+        let launches = Calls()
+        let recovery = fixture.recovery(launch: { _ in
+            _ = launches.next()
+            try fixture.writeRepeatedFailure(startedAt: earlier.addingTimeInterval(60))
+            try FileManager.default.moveItem(at: fixture.target, to: fixture.root.appendingPathComponent("Owned.app"))
+        })
+        let first = try XCTUnwrap(recovery.candidates().first)
+        let recovered = try await recovery.recover(first)
+        XCTAssertTrue(recovered)
+        let second = try XCTUnwrap(recovery.candidates().first)
+        let repaired = try await recovery.recover(second)
+        XCTAssertTrue(repaired)
+        XCTAssertEqual(launches.value, 1)
+        try Fixture.validate(fixture.target, fixture.identifier)
+        try FileManager.default.removeItem(at: fixture.target)
+        XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
+    }
+
+    func testLaterStartHonorsOutstandingRollbackOnCompletedReceipt() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let recovery = fixture.recovery()
+        let first = try XCTUnwrap(recovery.candidates().first)
+        let recovered = try await recovery.recover(first)
+        XCTAssertTrue(recovered)
+        try recovery.requestRollback(first)
+        try fixture.backdateLegacyReceipt(first, to: Date().addingTimeInterval(-120))
+        try fixture.writeRepeatedFailure(startedAt: Date().addingTimeInterval(-60))
+        try FileManager.default.removeItem(at: fixture.target)
+        XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
+        XCTAssertEqual(try recovery.pendingRollbacks().map { $0.candidate.key }, [first.key])
     }
 
     func testNormalUpdateAndDeletedPortalNeverQualify() throws {
@@ -1109,6 +1214,51 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: fixture.target.deletingLastPathComponent().path), ["Fixture.app"])
         XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.source.path))
         XCTAssertTrue(try recovery.pendingRollbacks().isEmpty)
+    }
+
+    func testIndependentReplayOfRepeatedShipItFailureWithSignedBundle() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard let output = environment["APPPORTS_SHIPIT_VALIDATION_ROOT"],
+              let receiptPath = environment["APPPORTS_SHIPIT_REPLAY_RECEIPT"] else {
+            throw XCTSkip("Opt-in replay of a completed request and a subsequent failure on another volume")
+        }
+        // The incident receipt, log and signed bundle are read-only inputs.
+        let receiptURL = URL(fileURLWithPath: receiptPath)
+        let old = try JSONDecoder().decode(ShipItUpdateRecovery.Receipt.self, from: Data(contentsOf: receiptURL))
+        let completedAt = try XCTUnwrap(receiptURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
+        let original = old.candidate
+        let log = original.stateURL.deletingLastPathComponent().appendingPathComponent("ShipIt_stderr.log")
+        let logTail = String(decoding: try SignatureRecordFile.tail(at: log, maxBytes: 1_048_576), as: UTF8.self)
+        let external = URL(fileURLWithPath: output).appendingPathComponent("Repeat-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: external) }
+        let fixture = try Fixture(identifier: original.request.bundleIdentifier, externalDirectory: external)
+        defer { try? FileManager.default.removeItem(at: fixture.root) }
+        XCTAssertNotEqual(try DataPathIdentity.capture(fixture.caches).volumeUUID, try DataPathIdentity.capture(external).volumeUUID)
+        try FileManager.default.removeItem(at: fixture.source)
+        try SignatureSnapshot.copy(from: original.request.updateBundleURL, to: fixture.source)
+        let root = fixture.root, launches = Calls()
+        let recovery = fixture.recovery(refresh: { try Fixture.refreshPortal($0, in: root) },
+            launch: { _ in _ = launches.next() },
+            validate: { try ShipItUpdateRecovery.validateApplication(at: $0, identifier: $1) })
+        let first = try XCTUnwrap(recovery.candidates().first)
+        let firstResult = try await recovery.recover(first)
+        XCTAssertTrue(firstResult)
+        try fixture.backdateLegacyReceipt(first, to: completedAt)
+        try FileManager.default.moveItem(at: fixture.target, to: external.appendingPathComponent("Owned.app"))
+        let replay = logTail.replacingOccurrences(of: original.request.targetBundleURL.absoluteString,
+                                                  with: first.request.targetBundleURL.absoluteString)
+            .replacingOccurrences(of: original.request.targetBundleURL.path, with: fixture.target.path)
+        try replay.write(to: fixture.log, atomically: true, encoding: .utf8)
+        let second = try XCTUnwrap(recovery.candidates().first)
+        XCTAssertEqual(first.requestBytes, second.requestBytes)
+        XCTAssertNotEqual(first.key, second.key)
+        let secondResult = try await recovery.recover(second)
+        XCTAssertTrue(secondResult)
+        try ShipItUpdateRecovery.validateApplication(at: fixture.target, identifier: fixture.identifier)
+        XCTAssertEqual(try SignatureAppVersion.read(at: fixture.target), try SignatureAppVersion.read(at: fixture.source))
+        XCTAssertEqual(AppPortalMaintenance.entries(at: fixture.local).first?.externalURL.path, fixture.target.path)
+        XCTAssertTrue(try recovery.candidates().isEmpty)
+        XCTAssertEqual(launches.value, 1, "The repeated recovery repairs the portal without relaunching ShipIt")
     }
 
     func testIndependentExternalVolumeWithRealSignedCache() async throws {

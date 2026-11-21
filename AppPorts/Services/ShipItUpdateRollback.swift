@@ -390,7 +390,7 @@ extension ShipItUpdateRecovery {
 
     private func nativeTemporaryApplications(_ candidate: Candidate, movedFromTarget: Bool) throws -> [URL] {
         let log = candidate.stateURL.deletingLastPathComponent().appendingPathComponent("ShipIt_stderr.log")
-        guard let attempt = try Self.latestInstallationAttempt(in: log) else { throw RollbackError.changed }
+        guard let attempt = try Self.latestInstallationAttempt(in: log)?.details else { throw RollbackError.changed }
         let expression = try NSRegularExpression(pattern: "(?:Moving bundle|Moved bundle contents across volumes) from (file://\\S+) to (file://\\S+)")
         let target = candidate.request.targetBundleURL.standardizedFileURL
         return expression.matches(in: attempt, range: NSRange(attempt.startIndex..., in: attempt)).compactMap { match in
