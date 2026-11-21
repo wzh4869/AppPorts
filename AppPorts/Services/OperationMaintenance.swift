@@ -82,6 +82,27 @@ actor OperationMaintenance {
         return warnings
     }
 
+    static func retryDataTransfer(_ id: UUID, store: ContainerMountStore, migrator: ContainerVolumeMigrator,
+                                  mover: DataDirMover) async -> [String] {
+        do {
+            guard let transfer = try store.transfer(operationID: id) else { return [] }
+            if transfer.mode == .mount, try store.manualMountPauseBlocks(transfer) {
+                return [ManualMountPauseError.retryPaused.localizedDescription]
+            }
+            if transfer.cleanupDisposition != nil { try store.setCleanupDisposition(nil, expected: transfer) }
+            if transfer.isDataSwitchComplete {
+                if transfer.mode == .mount { try await migrator.cleanupRetainedTransfer(operationID: id) }
+                else { try await mover.cleanupRetainedTransfer(operationID: id) }
+                return []
+            }
+            if transfer.mode == .symlink {
+                let warning = try await mover.resumeVerifiedTransfer(operationID: id, progressHandler: nil)
+                return warning.map { [$0] } ?? []
+            }
+            return await migrator.performAutomaticMaintenance(only: id, ignoresRetryBackoff: true)
+        } catch { return [error.localizedDescription] }
+    }
+
     private static func finishScheduledDataOperations(interactive: Bool, retryOperationID: UUID?) async -> [String] {
         let lock = OperationLock()
         guard await lock.acquire(timeout: OperationLock.appWaitTimeout) else {
@@ -96,37 +117,17 @@ actor OperationMaintenance {
         let ejection: DiskEjectionPauseStore.Snapshot
         do { ejection = try await DiskEjectionPauseStore(store: store).refreshed(using: DiskUtility(administratorRunner: nil)) }
         catch { return [error.localizedDescription] }
-        if interactive {
-            do {
-                // Check explicit retry before changing cleanup intent or selecting a direct cleanup path.
-                if let retryOperationID, let transfer = try store.transfer(operationID: retryOperationID),
-                   transfer.mode == .mount, try store.manualMountPauseBlocks(transfer) {
-                    return [ManualMountPauseError.retryPaused.localizedDescription]
-                }
-                for transfer in try store.transfers() where transfer.cleanupDisposition != nil {
-                    // A general retry resumes deferred work, never a copy the
-                    // user explicitly chose to keep. That requires its own retry.
-                    if transfer.operationID == retryOperationID
-                        || retryOperationID == nil && transfer.cleanupDisposition == .deferred {
-                        try store.setCleanupDisposition(nil, expected: transfer)
-                    }
-                }
-            } catch { return [error.localizedDescription] }
-        }
         let migrator = ContainerVolumeMigrator(disk: interactive ? DiskUtility() : DiskUtility(administratorRunner: nil))
         if let retryOperationID {
+            return await retryDataTransfer(retryOperationID, store: store, migrator: migrator,
+                                           mover: DataDirMover(allowsAdministratorPrompt: interactive))
+        }
+        if interactive {
             do {
-                guard let transfer = try store.transfer(operationID: retryOperationID) else { return [] }
-                if transfer.isDataSwitchComplete {
-                    if transfer.mode == .mount { try await migrator.cleanupRetainedTransfer(operationID: retryOperationID) }
-                    else { try await DataDirMover(allowsAdministratorPrompt: interactive).cleanupRetainedTransfer(operationID: retryOperationID) }
-                    return []
+                // Only an explicit single-copy retry may reverse a keep decision.
+                for transfer in try store.transfers() where transfer.cleanupDisposition == .deferred {
+                    try store.setCleanupDisposition(nil, expected: transfer)
                 }
-                if transfer.mode == .symlink {
-                    let warning = try await DataDirMover(allowsAdministratorPrompt: interactive).resumeVerifiedTransfer(operationID: retryOperationID, progressHandler: nil)
-                    return warning.map { [$0] } ?? []
-                }
-                return await migrator.performAutomaticMaintenance(only: retryOperationID, ignoresRetryBackoff: true)
             } catch { return [error.localizedDescription] }
         }
         warnings += await migrator.performAutomaticMaintenance(ignoresRetryBackoff: interactive)

@@ -370,7 +370,7 @@ struct DataDirsView: View {
         .sheet(isPresented: $showCleanupResolution) {
             DataCleanupResolutionSheet(transfers: dataTransfers, currentDataPaths: currentDataPaths,
                 pendingCleanups: pendingCleanups, preservedMaterials: preservedMaterials,
-                onRetry: { id in
+                title: "全部待处理项".localized, onRetryAll: { retryPendingOperations() }, onRetry: { id in
                     DispatchQueue.main.async { retryPendingOperations(operationID: id) }
                 }, onChanged: { refreshOperationRecords() }, onPermissions: {
                     DispatchQueue.main.async { showReadinessCheck = true }
@@ -2530,7 +2530,7 @@ struct DataDirsView: View {
             if requestAssociatedAppExit(for: item, useSelectedApp: false, continuing: { retryPendingOperations(operationID: operationID) }) { return }
         }
         MigrationTaskCenter.shared.submit(title: "正在继续处理".localized, category: .appData,
-            resources: MigrationResources(paths: [], keys: ["all-file-operations"]), operation: { _ in
+            resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set([operationID].compactMap { $0 })), operation: { _ in
                 let warnings = await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: operationID)
                 try Task.checkCancellation()
                 return warnings.isEmpty ? nil : warnings.joined(separator: "\n\n")

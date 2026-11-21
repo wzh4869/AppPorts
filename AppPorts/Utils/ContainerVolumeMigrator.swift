@@ -1022,7 +1022,11 @@ actor ContainerVolumeMigrator {
             await progressHandler?(.init(copiedBytes: 0, totalBytes: 0, currentFile: "重试".localized, showsByteProgress: false, stage: .recovering))
             try requirePreparationLedger(transfer)
             if let verified = try await promoteCompletePreparation(transfer) { transfer = verified }
-            else { return try await restartPreparation(transfer, progressHandler: progressHandler) }
+            else {
+                return try await MigrationExecution.$dataTaskID.withValue(transfer.migrationTaskID) {
+                    try await restartPreparation(transfer, progressHandler: progressHandler)
+                }
+            }
         }
         guard transfer.mode == .mount else {
             throw DataOperationSafety.Failure.inspection(transfer.operationID.uuidString)

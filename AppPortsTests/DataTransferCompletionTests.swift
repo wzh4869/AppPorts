@@ -4,6 +4,87 @@ import Testing
 @testable import AppPorts
 
 struct DataTransferCompletionTests {
+    @Test("Reopened task selects its own directories and a targeted retry preserves a sibling task")
+    @MainActor
+    func scopedRecoveryAfterRelaunch() async throws {
+        let f = try Fixture()
+        defer { f.remove() }
+        let second = f.home.appendingPathComponent("More")
+        let sibling = f.home.appendingPathComponent("Other")
+        for url in [second, sibling] {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)
+            try f.writePayload(url.lastPathComponent, at: url)
+        }
+        let history = MigrationTaskHistoryStore(fileURL: f.root.appendingPathComponent("history.json"))
+        func center() -> MigrationTaskCenter {
+            MigrationTaskCenter(historyStore: history, operationState: AppOperationState(notificationCenter: NotificationCenter()),
+                makeOperationLock: { OperationLock(fileURL: f.root.appendingPathComponent("task.lock"), writerAdmissionCheck: {}) })
+        }
+        let tasks = center()
+        func migrate(_ urls: [URL]) async throws -> UUID {
+            let id = tasks.submit(title: "Same app", category: .appData,
+                resources: MigrationResources(paths: urls + [f.home], keys: ["application:org.example.shared"], subjectPaths: urls),
+                operation: { _ in
+                    for url in urls {
+                        let item = DataDirItem(name: "Same app", path: url, type: .custom, priority: .optional, description: "")
+                        try await f.mover.migrate(item: item, to: f.external, progressHandler: nil)
+                    }
+                    return "Inspect retained copies"
+                })
+            let job = try #require(tasks.detail)
+            await job.worker?.value
+            #expect(job.message == "Inspect retained copies")
+            return id
+        }
+        let a = try await migrate([f.source, second])
+        let b = try await migrate([sibling])
+        let reloaded = try #require(center().jobs.first { $0.id == a })
+        let scope = DataTaskRecoveryScope(jobID: a, resources: reloaded.resources, startedAt: reloaded.startedAt, elapsed: reloaded.elapsed)
+        let store = ContainerMountStore(fileURL: f.file)
+        let records = try store.transfers()
+        let selected = scope.operationIDs(transfers: records, materials: [])
+        let owned = records.filter { $0.migrationTaskID == a }
+        #expect(owned.count == 2)
+        #expect(selected == Set(owned.map(\.id)))
+        let other = try #require(records.first { $0.migrationTaskID == b })
+        try store.setCleanupDisposition(.deferred, expected: other)
+        let untouched = try #require(try store.transfer(operationID: other.id))
+        let otherCopy = URL(fileURLWithPath: try #require(other.backupPath))
+        let before = try DataPathIdentity.capture(otherCopy)
+        let chosen = try #require(owned.first)
+        let warnings = await OperationMaintenance.retryDataTransfer(chosen.id, store: store,
+            migrator: ContainerVolumeMigrator(store: store), mover: f.mover)
+        #expect(warnings.isEmpty)
+        #expect(try store.transfer(operationID: chosen.id) == nil)
+        #expect(try store.transfer(operationID: other.id) == untouched)
+        #expect(try DataPathIdentity.capture(otherCopy) == before)
+        #expect(try f.payload(at: otherCopy) == "Other")
+        #expect(try f.payload(at: sibling) == "Other")
+    }
+
+    @Test("Legacy history requires a unique exact directory during the original task")
+    func legacyScopeRejectsReusedPaths() throws {
+        let f = try Fixture()
+        defer { f.remove() }
+        let resources = try JSONDecoder().decode(MigrationResources.self, from: JSONSerialization.data(withJSONObject:
+            ["paths": [f.home.path, f.source.path], "subjectPaths": [f.source.path], "keys": ["application:shared"]]))
+        let start = Date()
+        let scope = DataTaskRecoveryScope(jobID: UUID(), resources: resources, startedAt: start, elapsed: 20)
+        let identity = try DataPathIdentity.capture(f.source)
+        func record(_ path: String, _ seconds: TimeInterval) -> DataTransferRecord {
+            DataTransferRecord(mode: .symlink, direction: .migrate, appName: "Same app", dataDirType: "custom",
+                originalPath: path, activePath: path, destinationPath: f.destination.path,
+                sourceIdentity: identity, createdAt: start.addingTimeInterval(seconds))
+        }
+        let one = record(f.source.path, 2), old = record(f.source.path, -100)
+        let sibling = record(f.home.appendingPathComponent("Other").path, 2)
+        #expect(scope.operationIDs(transfers: [one, sibling], materials: []) == [one.id])
+        #expect(scope.operationIDs(transfers: [old, sibling], materials: []).isEmpty)
+        #expect(scope.operationIDs(transfers: [one, sibling], materials: [.init(transfer: old, reason: "retained")]).isEmpty)
+        let fresh = DataTaskRecoveryScope(jobID: UUID(), resources: MigrationResources(paths: [f.source]), startedAt: start, elapsed: 20)
+        #expect(fresh.operationIDs(transfers: [one], materials: []).isEmpty)
+    }
+
     @Test("Restoration preserves the application identity from retained history when the link index is missing")
     func restoreKeepsLaunchIdentityFromHistory() async throws {
         let fixture = try Fixture()

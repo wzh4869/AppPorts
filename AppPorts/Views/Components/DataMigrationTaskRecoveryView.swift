@@ -13,6 +13,9 @@ struct DataMigrationTaskRecoveryView: View {
     @State private var currentDataPaths: [UUID: String] = [:]
     @State private var errorMessage: String?
     @State private var loading = true
+    @State private var showingAll = false
+
+    private var title: String { showingAll ? "全部待处理项".localized : job.displayTitle }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,26 +25,21 @@ struct DataMigrationTaskRecoveryView: View {
                 DataCleanupResolutionSheet(transfers: transfers, currentDataPaths: currentDataPaths,
                     pendingCleanups: pendingCleanups, preservedMaterials: preservedMaterials,
                     remountInterventions: remountInterventions,
-                    onRetry: { operationID in
-                        MigrationTaskCenter.shared.submit(title: "正在继续处理".localized,
-                            category: job.category,
-                            resources: MigrationResources(paths: [], keys: ["all-file-operations"]),
-                            operation: { _ in
-                                let warnings = await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: operationID)
-                                try Task.checkCancellation()
-                                return warnings.isEmpty ? nil : warnings.joined(separator: "\n\n")
-                            })
-                    }, onChanged: { Task { await loadRecords() } }, onPermissions: {
+                    title: title, onShowAll: showingAll ? nil : { showingAll = true },
+                    onRetryAll: showingAll ? { submitRetry(nil) } : nil,
+                    onRetry: { submitRetry($0) }, onChanged: { Task { await loadRecords() } }, onPermissions: {
                         FullDiskAccessGuide.shared.openSettings()
                     })
             } else {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("处理异常".localized).font(AppDialogTypography.title)
+                    Text(verbatim: title).font(AppDialogTypography.title)
                     Text(verbatim: errorMessage
-                        ?? "未找到待处理的迁移记录，可能已由后台完成收尾。请关闭窗口后刷新应用列表。".localized)
+                        ?? (showingAll ? "未找到待处理的迁移记录，可能已由后台完成收尾。请关闭窗口后刷新应用列表。".localized
+                           : "没有可确认属于此任务的待处理记录。".localized))
                         .textSelection(.enabled)
                     HStack {
                         Button("刷新".localized) { Task { await loadRecords() } }
+                        if !showingAll { Button("查看全部待处理项".localized) { showingAll = true } }
                         Button(job.category.title) {
                             dismiss()
                             MigrationTaskCenter.shared.recoveryJobID = job.id
@@ -55,25 +53,42 @@ struct DataMigrationTaskRecoveryView: View {
             }
         }
         .appDialogTypography()
-        .task { await loadRecords() }
+        .task(id: showingAll) { await loadRecords() }
     }
 
     private func loadRecords() async {
         loading = true
         errorMessage = nil
         do {
-            let (inspection, paths) = try await Task.detached(priority: .utility) {
-                let inspection = try ContainerMountStore.shared.recordsForInspection()
-                return (inspection, DataCleanupResolution.currentDataPaths(for: inspection.transfers))
+            let global = showingAll
+            let scope = DataTaskRecoveryScope(jobID: job.id, resources: job.resources, startedAt: job.startedAt, elapsed: job.elapsed)
+            let (inspection, selected, material, paths) = try await Task.detached(priority: .utility) {
+                let inventory = try ContainerMountStore.shared.recordsForInspection()
+                if let error = inventory.validationError { throw error }
+                let ids = global ? [] : scope.operationIDs(transfers: inventory.transfers, materials: inventory.preservedMaterials)
+                let selected = inventory.transfers.filter { $0.retainedCopyRemovedAt == nil && (global || ids.contains($0.id)) }
+                let material = inventory.preservedMaterials.filter { global || ids.contains($0.id) }
+                return (inventory, selected, material, DataCleanupResolution.currentDataPaths(for: selected))
             }.value
-            guard !Task.isCancelled else { return }
-            if let error = inspection.validationError { throw error }
-            transfers = inspection.transfers.filter { $0.retainedCopyRemovedAt == nil }
+            guard !Task.isCancelled, showingAll == global else { return }
+            transfers = selected
+            preservedMaterials = material
             currentDataPaths = paths
-            pendingCleanups = inspection.cleanups
-            preservedMaterials = inspection.preservedMaterials
-            remountInterventions = inspection.remountInterventions.values.sorted()
+            pendingCleanups = global ? inspection.cleanups : []
+            remountInterventions = global ? inspection.remountInterventions.values.sorted() : []
         } catch { errorMessage = error.localizedDescription }
         loading = false
     }
+
+    private func submitRetry(_ operationID: UUID?) {
+        guard operationID != nil || showingAll else { return }
+        MigrationTaskCenter.shared.submit(title: "正在继续处理".localized, category: job.category,
+            resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set([operationID].compactMap { $0 })),
+            operation: { _ in
+                let warnings = await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: operationID)
+                try Task.checkCancellation()
+                return warnings.isEmpty ? nil : warnings.joined(separator: "\n\n")
+            })
+    }
+
 }

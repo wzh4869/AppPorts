@@ -108,6 +108,7 @@ final class MigrationTaskControl: @unchecked Sendable {
 }
 
 enum MigrationExecution {
+    @TaskLocal static var dataTaskID: UUID?
     @TaskLocal static var control: MigrationTaskControl?
     /// Managed jobs have already claimed all overlapping paths. Their leases
     /// share one process lock, still excluding agents and older app instances.

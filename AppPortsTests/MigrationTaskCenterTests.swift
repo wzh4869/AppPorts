@@ -4,6 +4,25 @@ import Testing
 
 @MainActor
 struct MigrationTaskCenterTests {
+    @Test("Single-record and global maintenance queue separately and repeated requests reuse their own row")
+    func targetedMaintenanceDoesNotAdoptGlobalRetry() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let hold = try #require(fixture.state.begin())
+        let first = UUID(), second = UUID()
+        func submit(_ ids: Set<UUID>) -> UUID {
+            fixture.center.submit(title: "Retry", category: .appData,
+                resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: ids),
+                operation: { _ in nil })
+        }
+        let global = submit([]), a = submit([first]), b = submit([second])
+        #expect(Set([global, a, b]).count == 3)
+        #expect(submit([first]) == a)
+        #expect(submit([]) == global)
+        fixture.center.cancel([global, a, b])
+        fixture.state.finish(hold)
+    }
+
     @Test("A structured failure keeps one association across task display, history and diagnostics")
     func blockedTaskKeepsDiagnosticAssociation() async throws {
         let fixture = try Fixture()

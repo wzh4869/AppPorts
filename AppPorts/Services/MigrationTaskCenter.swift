@@ -31,12 +31,15 @@ struct MigrationResources: Codable, Sendable {
     let paths: Set<String>
     let subjectPaths: Set<String>
     let keys: Set<String>
+    let dataOperationIDs: Set<UUID>?
 
     private enum CodingKeys: String, CodingKey {
-        case paths, subjectPaths, keys
+        case paths, subjectPaths, keys, dataOperationIDs
     }
 
-    init(paths urls: [URL], keys: Set<String> = [], subjectPaths subjectURLs: [URL]? = nil) {
+    init(paths urls: [URL], keys: Set<String> = [], subjectPaths subjectURLs: [URL]? = nil,
+         dataOperationIDs: Set<UUID> = []) {
+        self.dataOperationIDs = dataOperationIDs
         // Claim both spellings: a local link and its external target must not
         // permit two jobs to edit the same object through different aliases.
         paths = Set(urls.flatMap { [$0.standardizedFileURL.path,
@@ -49,6 +52,7 @@ struct MigrationResources: Codable, Sendable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        dataOperationIDs = try container.decodeIfPresent(Set<UUID>.self, forKey: .dataOperationIDs)
         paths = try container.decode(Set<String>.self, forKey: .paths)
         keys = try container.decode(Set<String>.self, forKey: .keys)
         subjectPaths = try container.decodeIfPresent(Set<String>.self, forKey: .subjectPaths) ?? paths
@@ -289,7 +293,7 @@ final class MigrationTaskCenter: ObservableObject {
         jobs.first { job in
             guard !job.status.isFinished, job.supportsExecutionControls else { return false }
             if job.resources.keys.contains("all-file-operations") && resources.keys.contains("all-file-operations") {
-                return true
+                return job.resources.dataOperationIDs == resources.dataOperationIDs
             }
             return job.resources.overlapsSubject(with: resources)
         }
@@ -464,7 +468,9 @@ final class MigrationTaskCenter: ObservableObject {
                                 defer { lock.release() }
                                 try await control.checkpointAsync()
                                 progress.begin(.preparing)
-                                return try await operation(progress)
+                                return try await MigrationExecution.$dataTaskID.withValue(job.id) {
+                                    try await operation(progress)
+                                }
                             }
                         }
                     }

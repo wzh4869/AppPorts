@@ -828,7 +828,11 @@ actor DataDirMover {
                 throw DataOperationSafety.Failure.conflict(transfer.originalPath)
             }
             if let verified = try await promoteCompletePreparation(transfer) { transfer = verified }
-            else { return try await restartPreparation(transfer, progressHandler: progressHandler) }
+            else {
+                return try await MigrationExecution.$dataTaskID.withValue(transfer.migrationTaskID) {
+                    try await restartPreparation(transfer, progressHandler: progressHandler)
+                }
+            }
         }
         guard transfer.mode == .symlink,
               !runningMigrations.contains(operationID), !runningRestores.contains(operationID),

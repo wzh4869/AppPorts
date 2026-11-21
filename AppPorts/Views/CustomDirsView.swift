@@ -445,7 +445,7 @@ struct CustomDirsView: View {
         let operationIDs = idleAttentionTransfers.map(\.operationID)
         guard !operationIDs.isEmpty else { return }
         MigrationTaskCenter.shared.submit(title: "正在继续处理目录".localized, category: .directories,
-            resources: MigrationResources(paths: [], keys: ["all-file-operations"]), operation: { _ in
+            resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set(operationIDs)), operation: { _ in
                 var warnings: [String] = []
                 for id in operationIDs {
                     try await MigrationExecution.control?.checkpointAsync()

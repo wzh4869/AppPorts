@@ -60,6 +60,7 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
 
     var id: UUID { operationID }
     let operationID: UUID
+    let migrationTaskID: UUID?
     let mode: Mode
     let direction: Direction
     /// Source-relative UI identifier, never derived from the active external path.
@@ -154,6 +155,7 @@ struct DataTransferRecord: Codable, Equatable, Identifiable, Sendable {
          backupIdentity: DataPathIdentity? = nil, createdVolumeUUID: String? = nil,
          priorOperationID: UUID? = nil, createdAt: Date = Date(), policyVersion: Int = 1,
          phase: Phase = .preparing, baseline: Data? = nil, recoverableReason: String? = nil) {
+        self.migrationTaskID = MigrationExecution.dataTaskID
         self.operationID = operationID
         self.mode = mode
         self.direction = direction

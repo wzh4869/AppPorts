@@ -1005,7 +1005,7 @@ final class ContainerMountStore: @unchecked Sendable {
     private func replaceTransfer(_ transfer: DataTransferRecord, in document: inout Document) throws {
         guard let index = document.transfers.firstIndex(where: { $0.operationID == transfer.operationID }) else { throw StoreError.missingTransfer(transfer.operationID) }
         let old = document.transfers[index]
-        guard old.mode == transfer.mode, old.direction == transfer.direction, old.sourceID == transfer.sourceID,
+        guard old.migrationTaskID == transfer.migrationTaskID, old.mode == transfer.mode, old.direction == transfer.direction, old.sourceID == transfer.sourceID,
               old.originalPath == transfer.originalPath, validSourceIdentityUpdate(old, transfer),
               old.destinationPath == transfer.destinationPath,
               old.backupPath == nil || old.backupPath == transfer.backupPath,

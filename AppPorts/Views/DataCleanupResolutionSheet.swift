@@ -6,7 +6,10 @@ struct DataCleanupResolutionSheet: View {
     var pendingCleanups: [ContainerCleanupRecord] = []
     var preservedMaterials: [DataTransferMaterial] = []
     var remountInterventions: [String] = []
-    let onRetry: (UUID?) -> Void
+    var title: String = "处理异常".localized
+    var onShowAll: (() -> Void)?
+    var onRetryAll: (() -> Void)?
+    let onRetry: (UUID) -> Void
     let onChanged: () -> Void
     let onPermissions: () -> Void
     @Environment(\.dismiss) private var dismiss
@@ -20,7 +23,7 @@ struct DataCleanupResolutionSheet: View {
         let visibleTransfers = transfers.filter { $0.retainedCopyRemovedAt == nil }
         return VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("处理异常".localized).font(AppDialogTypography.title)
+                Text(verbatim: title).font(AppDialogTypography.title)
                 Spacer()
                 Button("检查权限".localized) { dismiss(); onPermissions() }
             }
@@ -72,8 +75,11 @@ struct DataCleanupResolutionSheet: View {
                 Text(verbatim: errorMessage).font(AppDialogTypography.body).foregroundStyle(.red).textSelection(.enabled)
             }
             HStack {
-                if !pendingCleanups.isEmpty || !remountInterventions.isEmpty || preservedMaterials.contains(where: { $0.recoveryRecord != nil }) {
-                    Button("重试所有待处理项".localized) { dismiss(); onRetry(nil) }
+                if let onShowAll {
+                    Button("查看全部待处理项".localized, action: onShowAll)
+                }
+                if let onRetryAll, !pendingCleanups.isEmpty || !remountInterventions.isEmpty || preservedMaterials.contains(where: { $0.recoveryRecord != nil }) {
+                    Button("重试所有待处理项".localized) { dismiss(); onRetryAll() }
                 }
                 Spacer()
                 Button("完成".localized) { dismiss() }.keyboardShortcut(.cancelAction)
