@@ -140,8 +140,7 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
               Self.canonical(request.updateBundleURL).path == request.updateBundleURL.standardizedFileURL.path else { return nil }
         let log = cache.appendingPathComponent("ShipIt_stderr.log")
         guard FileManager.default.fileExists(atPath: log.path),
-              let text = String(data: try Self.smallFile(log), encoding: .utf8),
-              let attempt = text.components(separatedBy: "Detected this as an install request").last,
+              let attempt = try Self.latestInstallationAttempt(in: log),
               attempt.contains("ShipIt quitting"),
               (attempt.contains("Installation error:") || attempt.contains("Too many attempts to install, aborting update")
                   || attempt.contains("Error aborting installation:")),
@@ -389,6 +388,14 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
         receipt.complete = true
         receipt.installerStateCleaned = true
         try save(receipt)
+    }
+
+    static func latestInstallationAttempt(in log: URL) throws -> String? {
+        let tail = try SignatureRecordFile.tail(at: log, maxBytes: 1_048_576)
+        // The window can start inside a UTF-8 character or a previous attempt.
+        let marker = Data("Detected this as an install request".utf8)
+        guard let start = tail.range(of: marker, options: .backwards) else { return nil }
+        return String(data: tail[start.upperBound...], encoding: .utf8)
     }
 
     static func smallFile(_ url: URL) throws -> Data {

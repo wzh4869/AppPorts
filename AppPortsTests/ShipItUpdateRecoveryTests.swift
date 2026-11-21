@@ -87,6 +87,12 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
             try text.write(to: log, atomically: true, encoding: .utf8)
         }
 
+        func prependOldLog() throws {
+            let latest = try Data(contentsOf: log)
+            let history = String(repeating: "Could not read update request\n", count: 40_000)
+            try (Data(history.utf8) + latest).write(to: log)
+        }
+
         func recovery(busy: @escaping @Sendable (String, URL) async throws -> ShipItUpdateRecovery.Activity = { _, _ in .idle },
                       refresh: @escaping @Sendable (AppSearchRecord) async throws -> Void = { _ in },
                       launch: @escaping @Sendable (URL) async throws -> Void = { _ in },
@@ -331,6 +337,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
     func testMonitorRecoversResumedFailureWithTargetBeforeFinalErrorLine() async throws {
         let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
         try fixture.writeResumedFailureLog()
+        try fixture.prependOldLog()
         let launched = expectation(description: "Resumed failure is automatically recovered")
         let recovery = fixture.recovery(launch: { _ in launched.fulfill() })
         let monitor = ShipItRecoveryMonitor(recovery: recovery, interval: 20_000_000,
@@ -544,6 +551,21 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         var text = try String(contentsOf: fixture.log, encoding: .utf8)
         text += "\nDetected this as an install request\nBeginning installation\nShipIt quitting\n"
         try text.write(to: fixture.log, atomically: true, encoding: .utf8)
+        try fixture.prependOldLog()
+        XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
+    }
+
+    func testIncompleteStartMarkerAtTailBoundaryDoesNotAuthorizeRecovery() throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let marker = "Detected this as an install request"
+        let failure = "\nInstallation error: Couldn't copy to \(fixture.target.path)\nShipIt quitting\n"
+        let filler = String(repeating: " ", count: 1_048_576 - marker.utf8.count - failure.utf8.count)
+        let attempt = marker + filler + failure
+        try ("older history\n" + attempt).write(to: fixture.log, atomically: true, encoding: .utf8)
+        XCTAssertEqual(try fixture.recovery().candidates().count, 1)
+        try ("older history\n" + attempt + "\n").write(to: fixture.log, atomically: true, encoding: .utf8)
+        XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
+        try failure.write(to: fixture.log, atomically: true, encoding: .utf8)
         XCTAssertTrue(try fixture.recovery().candidates().isEmpty)
     }
 
@@ -747,6 +769,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         ShipIt quitting
         """
         try log.write(to: fixture.log, atomically: true, encoding: .utf8)
+        try fixture.prependOldLog()
         let recovery = fixture.recovery()
         let candidate = try XCTUnwrap(recovery.candidates().first)
         let version = try await recovery.rollback(candidate)

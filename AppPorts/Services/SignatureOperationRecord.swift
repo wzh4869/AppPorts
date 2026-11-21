@@ -55,20 +55,29 @@ enum SignatureRecordFile {
     }
 
     static func data(at url: URL, maxBytes: Int64 = 256 * 1024 * 1024) throws -> Data {
+        try read(at: url, maxBytes: maxBytes, fromEnd: false)
+    }
+
+    static func tail(at url: URL, maxBytes: Int64) throws -> Data {
+        try read(at: url, maxBytes: maxBytes, fromEnd: true)
+    }
+
+    private static func read(at url: URL, maxBytes: Int64, fromEnd: Bool) throws -> Data {
         let fd = open(url.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
         guard fd >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         defer { close(fd) }
         var before = stat()
         guard fstat(fd, &before) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         guard before.st_mode & S_IFMT == S_IFREG, before.st_size >= 0 else { throw CodeSigner.SigningError.snapshotInvalid }
-        guard before.st_size <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
-        let limit = Int(min(maxBytes, Int64(Int.max - 1))) + 1
-        let data = try FileHandle(fileDescriptor: fd, closeOnDealloc: false).read(upToCount: limit) ?? Data()
-        guard Int64(data.count) <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
+        guard maxBytes >= 0, fromEnd || before.st_size <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
+        let count = min(before.st_size, maxBytes)
+        let handle = FileHandle(fileDescriptor: fd, closeOnDealloc: false)
+        if count < before.st_size { try handle.seek(toOffset: UInt64(before.st_size - count)) }
+        let data = try handle.read(upToCount: Int(count)) ?? Data()
         var after = stat()
         guard fstat(fd, &after) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         let current = try SignatureSnapshot.info(at: url)
-        guard Int64(data.count) == before.st_size, after.st_size == before.st_size,
+        guard Int64(data.count) == count, after.st_size == before.st_size,
               after.st_mtimespec.tv_sec == before.st_mtimespec.tv_sec,
               after.st_mtimespec.tv_nsec == before.st_mtimespec.tv_nsec,
               after.st_ctimespec.tv_sec == before.st_ctimespec.tv_sec,
