@@ -1,3 +1,4 @@
+import AppKit
 import Darwin
 import XCTest
 @testable import AppPorts
@@ -51,6 +52,147 @@ final class AppTransferTransactionTests: XCTestCase {
             }
             try? FileManager.default.removeItem(at: root)
         }
+    }
+
+    @MainActor
+    func testQuitRunningApplicationThenRetrySameTask() async throws {
+        let w = try Workspace()
+        defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("MigrationProbe.app")
+        let destination = w.external.appendingPathComponent(source.lastPathComponent)
+        try makeApp(source, identifier: "org.appports.tests.block-" + UUID().uuidString)
+        // Use a real, normally terminating Cocoa app without activating a user's app.
+        let probe = w.root.appendingPathComponent("probe.m")
+        try Data("""
+            #import <AppKit/AppKit.h>
+            @interface SaveProbe : NSObject <NSApplicationDelegate>
+            @end
+            @implementation SaveProbe
+            - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+                NSString *path = NSProcessInfo.processInfo.environment[@"APPPORTS_PROBE_SAVE"];
+                [@"waiting" writeToFile:[path stringByAppendingString:@".waiting"]
+                             atomically:YES encoding:NSUTF8StringEncoding error:nil];
+                NSTimer *timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer *timer) {
+                    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+                        [timer invalidate];
+                        [@"saved" writeToFile:[path stringByAppendingString:@".saved"]
+                                   atomically:YES encoding:NSUTF8StringEncoding error:nil];
+                        [sender replyToApplicationShouldTerminate:YES];
+                    }
+                }];
+                [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+                [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSModalPanelRunLoopMode];
+                return NSTerminateLater;
+            }
+            @end
+            int main(void) {
+                NSApplication *app = [NSApplication sharedApplication];
+                SaveProbe *delegate = [SaveProbe new];
+                app.delegate = delegate;
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC),
+                               dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{ _Exit(2); });
+                [app setActivationPolicy:NSApplicationActivationPolicyAccessory];
+                [app run];
+                return 0;
+            }
+            """.utf8).write(to: probe)
+        let compiler = Process()
+        compiler.executableURL = URL(fileURLWithPath: "/usr/bin/clang")
+        compiler.arguments = [probe.path, "-framework", "AppKit", "-o", source.appendingPathComponent("Contents/MacOS/App").path]
+        try compiler.run()
+        compiler.waitUntilExit()
+        XCTAssertEqual(compiler.terminationStatus, 0)
+        let options = NSWorkspace.OpenConfiguration()
+        options.activates = false
+        let save = w.root.appendingPathComponent("save-complete")
+        options.environment = ["APPPORTS_PROBE_SAVE": save.path]
+        let state = AppOperationState(notificationCenter: NotificationCenter())
+        let center = MigrationTaskCenter(historyStore: .init(fileURL: w.root.appendingPathComponent("history")),
+            operationState: state, makeOperationLock: { OperationLock(fileURL: w.root.appendingPathComponent("task.lock"), writerAdmissionCheck: {}) })
+        let item = item(source)
+        let busy = try XCTUnwrap(state.begin())
+        let jobID = center.submit(title: "Move probe", category: .apps, resources: .application(paths: [source, destination], appURL: source),
+            operation: { _ in
+                let running = await MigrationApplicationState.isRunning(appURL: source)
+                _ = try await w.service().moveAndLink(appToMove: item, destinationURL: destination, isRunning: running,
+                    lockExternal: false, progressHandler: nil)
+                return nil
+            })
+        let initial = try XCTUnwrap(center.detail)
+        XCTAssertEqual(initial.status, .queued)
+        let process = try await NSWorkspace.shared.openApplication(at: source, configuration: options)
+        defer {
+            try? Data().write(to: save)
+            if !process.isTerminated { _ = process.terminate() }
+        }
+        state.finish(busy)
+        center.schedule()
+        await initial.worker?.value
+        XCTAssertEqual(initial.status, .attention)
+        let block = try XCTUnwrap(initial.blockedAppStart)
+        XCTAssertEqual(try w.store.inventory().records.count, 0)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+        XCTAssertEqual(try Data(contentsOf: source.appendingPathComponent("Contents/Resources/payload")), Data("payload".utf8))
+        XCTAssertEqual(block.runningApplications().map(\.processIdentifier), [process.processIdentifier])
+        let retry = try XCTUnwrap(initial.recoveryAction)
+        let quitting = Task { try await block.quitAndWait() }
+        let waiting = save.path + ".waiting"
+        for _ in 0..<100 where !FileManager.default.fileExists(atPath: waiting) {
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: waiting))
+        XCTAssertFalse(process.isTerminated)
+        XCTAssertEqual(initial.status, .attention)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+        try Data().write(to: save)
+        let didQuit = try await quitting.value
+        XCTAssertTrue(didQuit)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: save.path + ".saved"))
+        XCTAssertTrue(process.isTerminated)
+        XCTAssertTrue(block.runningApplications().isEmpty)
+        retry()
+        retry()
+        let resumed = try XCTUnwrap(center.detail)
+        await resumed.worker?.value
+        XCTAssertEqual(center.jobs.map(\.id), [jobID])
+        XCTAssertEqual(resumed.status, .completed, resumed.message)
+        XCTAssertEqual(try Data(contentsOf: destination.appendingPathComponent("Contents/Resources/payload")), Data("payload".utf8))
+    }
+
+    func testOutwardLateLaunchUsesExistingJournalAndChangedDestinationBlocksFreshRetry() async throws {
+        let w = try Workspace()
+        defer { w.cleanup() }
+        let source = w.local.appendingPathComponent("Probe.app")
+        let destination = w.external.appendingPathComponent(source.lastPathComponent)
+        try makeApp(source)
+        let app = item(source)
+        let live = AppRunningState.RunningApplication(bundleURL: source, bundleIdentifier: nil)
+        do {
+            _ = try await w.service(running: { [live] }).moveAndLink(appToMove: app, destinationURL: destination,
+                isRunning: false, lockExternal: false, progressHandler: nil)
+            XCTFail("Expected preflight to catch a launch after the UI check")
+        } catch let block as AppMigrationStartBlock {
+            try block.validate()
+            try makeApp(destination, payload: "other")
+            XCTAssertThrowsError(try block.validate())
+            try FileManager.default.removeItem(at: destination)
+        }
+        var copied = false
+        let service = w.service(hook: { step, _ in if step == .copied { copied = true } }, running: { copied ? [live] : [] })
+        do {
+            _ = try await service.moveAndLink(appToMove: app, destinationURL: destination,
+                isRunning: false, lockExternal: false, progressHandler: nil)
+            XCTFail("Expected a journaled interruption")
+        } catch AppMoverError.appIsRunning {}
+        XCTAssertTrue(copied)
+        let journal = try XCTUnwrap(w.store.inventory().records.first)
+        do {
+            _ = try await service.moveAndLink(appToMove: app, destinationURL: destination,
+                isRunning: true, lockExternal: false, progressHandler: nil)
+            XCTFail("Existing journal must not get a fresh retry")
+        } catch AppMoverError.appIsRunning {}
+        XCTAssertEqual(try w.store.inventory().records.map(\.operationID), [journal.operationID])
+        XCTAssertTrue(FileManager.default.fileExists(atPath: source.appendingPathComponent("Contents/Resources/payload").path))
     }
 
     @MainActor

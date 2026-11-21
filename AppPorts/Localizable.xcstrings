@@ -1,6 +1,143 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "应用正在运行，迁移尚未开始。应用仍在原位置。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التطبيق قيد التشغيل. لم يبدأ الترحيل بعد، ولا يزال التطبيق في موقعه الأصلي."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠁⠏⠏ ⠊⠎ ⠗⠥⠝⠝⠊⠝⠛⠲ ⠠⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠓⠁⠎⠝⠄⠞ ⠎⠞⠁⠗⠞⠑⠙⠂ ⠁⠝⠙ ⠞⠓⠑ ⠁⠏⠏ ⠊⠎ ⠎⠞⠊⠇⠇ ⠊⠝ ⠊⠞⠎ ⠕⠗⠊⠛⠊⠝⠁⠇ ⠇⠕⠉⠁⠞⠊⠕⠝⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App läuft. Die Migration hat noch nicht begonnen. Die App befindet sich noch am ursprünglichen Speicherort."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app is running. Migration hasn’t started, and the app is still in its original location."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La aplikaĵo funkcias. La migrado ankoraŭ ne komenciĝis kaj la aplikaĵo restas en sia origina loko."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app está abierta. La migración aún no ha comenzado y la app sigue en su ubicación original."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app est ouverte. La migration n’a pas commencé et l’app se trouve toujours à son emplacement d’origine."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप चल रहा है। माइग्रेशन अभी शुरू नहीं हुआ है और ऐप अपने मूल स्थान पर है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi sedang berjalan. Migrasi belum dimulai dan aplikasi masih berada di lokasi asalnya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app è aperta. La migrazione non è ancora iniziata e l’app si trova ancora nella posizione originale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリは実行中です。移行はまだ始まっておらず、アプリは元の場所にあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱이 실행 중입니다. 마이그레이션이 아직 시작되지 않아 앱은 원래 위치에 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De app is geopend. De migratie is nog niet begonnen en de app staat nog op de oorspronkelijke locatie."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikacja jest uruchomiona. Migracja jeszcze się nie rozpoczęła, a aplikacja nadal znajduje się w pierwotnej lokalizacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O app está em execução. A migração ainda não começou e o app continua no local original."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение запущено. Перенос ещё не начался, приложение находится на прежнем месте."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปกำลังทำงาน การย้ายยังไม่เริ่ม และแอปยังอยู่ในตำแหน่งเดิม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama çalışıyor. Taşıma henüz başlamadı ve uygulama hâlâ asıl konumunda."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đang chạy. Quá trình di chuyển chưa bắt đầu và ứng dụng vẫn ở vị trí ban đầu."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用正在运行，迁移尚未开始。应用仍在原位置。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用程式正在執行，遷移尚未開始。應用程式仍在原來的位置。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應詠㊣茬運荇，遷移尙未開始。應詠仍茬原位置。"
+          }
+        }
+      }
+    },
     "自有" : {
       "extractionState" : "manual",
       "localizations" : {

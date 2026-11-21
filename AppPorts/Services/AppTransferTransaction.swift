@@ -91,6 +91,20 @@ final class AppTransferTransaction {
         }
     }
 
+    func runningBeforeStart(app: AppItem, destination: URL) throws -> Error {
+        let source = Self.canonical(app.path), destination = Self.canonical(destination)
+        let inventory = try store.inventory()
+        try requireNoDamagedRecordConflict(inventory, source: source, destination: destination)
+        let related = inventory.records.contains { record in
+            guard record.phase != .cancelled else { return false }
+            return shouldResume(record, from: source, to: destination)
+                || overlapsUnfinishedTransfer(record, source: source, destination: destination)
+        }
+        guard !related else { return AppMoverError.appIsRunning }
+        return try AppMigrationStartBlock(source: source, destination: destination,
+            applicationPaths: applicationPaths(in: source, folder: app.usesFolderOperation))
+    }
+
     func start(app: AppItem, destination: URL, direction: AppTransferRecord.Direction,
                portalKind: String?, protectDestination: Bool, mayReplaceDestination: Bool,
                replacementChoice: AppMigrationService.ReplacementChoice? = nil,
@@ -107,19 +121,12 @@ final class AppTransferTransaction {
         var inventory = try store.inventory()
         try requireNoDamagedRecordConflict(inventory, source: source, destination: destination)
         for pending in inventory.records where pending.phase != .cancelled {
-            if pending.sourcePath == source.path && pending.destinationPath == destination.path {
-                if !pending.isSwitchComplete
-                    || (pending.successorActivation == nil && (try? observeActivation(pending)) == true) {
-                    // A resume would fail on its first manifest read with a raw
-                    // file error; report the actionable reason instead.
-                    try AppTransferJournalIntegrity.requireVerifiedManifests(for: pending, store: store)
-                    return try await resume(pending.operationID, progress: progress)
-                }
+            if shouldResume(pending, from: source, to: destination) {
+                // Report missing manifests before the first read during recovery.
+                try AppTransferJournalIntegrity.requireVerifiedManifests(for: pending, store: store)
+                return try await resume(pending.operationID, progress: progress)
             }
-            if !pending.isSwitchComplete && [pending.sourcePath, pending.destinationPath].contains(where: {
-                Self.contains(URL(fileURLWithPath: $0), source) || Self.contains(source, URL(fileURLWithPath: $0))
-                    || Self.contains(URL(fileURLWithPath: $0), destination) || Self.contains(destination, URL(fileURLWithPath: $0))
-            }) {
+            if overlapsUnfinishedTransfer(pending, source: source, destination: destination) {
                 throw Self.failure("此位置的上次操作尚未完成。AppPorts 已保留数据并会继续尝试，请根据下面的原因处理后重试。".localized, at: source)
             }
         }
@@ -129,7 +136,11 @@ final class AppTransferTransaction {
         try reconcilePredecessorActivations(at: source, records: inventory.records)
         inventory = try store.inventory()
         try requireNoDamagedRecordConflict(inventory, source: source, destination: destination)
-        try requireNotRunning(source: source, applicationPaths: try applicationPaths(in: source, folder: app.usesFolderOperation))
+        let apps = try applicationPaths(in: source, folder: app.usesFolderOperation)
+        do { try requireNotRunning(source: source, applicationPaths: apps) }
+        catch AppMoverError.appIsRunning where direction == .migrate {
+            throw try AppMigrationStartBlock(source: source, destination: destination, applicationPaths: apps)
+        }
         let sourceParent = source.deletingLastPathComponent()
         let destinationParent = destination.deletingLastPathComponent()
         let sourceIdentity = try DataPathIdentity.capture(source)
@@ -237,6 +248,17 @@ final class AppTransferTransaction {
             try journal.save()
             return try await continueTransfer(journal, progress: progress)
         } catch { return try handle(error, journal: journal) }
+    }
+
+    private func shouldResume(_ record: AppTransferRecord, from source: URL, to destination: URL) -> Bool {
+        guard record.sourcePath == source.path, record.destinationPath == destination.path else { return false }
+        return !record.isSwitchComplete || (record.successorActivation == nil && (try? observeActivation(record)) == true)
+    }
+
+    private func overlapsUnfinishedTransfer(_ record: AppTransferRecord, source: URL, destination: URL) -> Bool {
+        !record.isSwitchComplete && [record.sourcePath, record.destinationPath].contains { path in
+            MigrationResources.pathsOverlap(path, source.path) || MigrationResources.pathsOverlap(path, destination.path)
+        }
     }
 
     private func requireNoDamagedRecordConflict(_ inventory: AppTransferStore.Inventory, source: URL, destination: URL) throws {

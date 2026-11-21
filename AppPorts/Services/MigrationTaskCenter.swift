@@ -129,7 +129,8 @@ final class MigrationJob: ObservableObject, Identifiable {
     var observedResult: ObservedResult?
     var supportsExecutionControls: Bool { observedKey == nil }
     let progress = DataTransferProgress()
-    let control = MigrationTaskControl()
+    let control: MigrationTaskControl
+    var blockedAppStart: AppMigrationStartBlock?
     let createdAt = ProcessInfo.processInfo.systemUptime
     @Published var status: Status = .queued
     @Published var message = ""
@@ -153,7 +154,8 @@ final class MigrationJob: ObservableObject, Identifiable {
     var retryToken: RetryToken { RetryToken(jobID: id, attemptID: attemptID) }
 
     init(id: UUID = UUID(), title: String, category: MigrationCategory, resources: MigrationResources,
-         startedAt: Date? = nil, observedKey: String? = nil) {
+         startedAt: Date? = nil, observedKey: String? = nil, expectedAppStart: AppMigrationStartBlock? = nil) {
+        self.control = MigrationTaskControl(expectedAppStart: expectedAppStart)
         self.id = id
         self.startedAt = startedAt
         self.title = title
@@ -349,7 +351,8 @@ final class MigrationTaskCenter: ObservableObject {
             if presentDetails { openJobDetail(existing) }
             return existing.id
         }
-        let job = MigrationJob(id: retry?.jobID ?? UUID(), title: title, category: category, resources: resources)
+        let job = MigrationJob(id: retry?.jobID ?? UUID(), title: title, category: category, resources: resources,
+                               expectedAppStart: retryIndex.flatMap { jobs[$0].blockedAppStart })
         job.operation = operation
         job.completion = completion
         job.recoveryHandler = recovery
@@ -495,7 +498,15 @@ final class MigrationTaskCenter: ObservableObject {
                               ("resource_paths", job.resources.paths.sorted().joined(separator: "\n"))])
                 job.status = .attention
                 job.message = error.localizedDescription
-                if let recovery = job.recoveryHandler {
+                if let block = error as? AppMigrationStartBlock, let operation = job.operation {
+                    job.blockedAppStart = block
+                    let retry = job.retryToken, title = job.title, resources = job.resources
+                    let completion = job.completion
+                    job.recoveryAction = { [weak self] in
+                        self?.submit(title: title, category: .apps, resources: resources, retrying: retry,
+                                     operation: operation, completion: completion)
+                    }
+                } else if let recovery = job.recoveryHandler {
                     let retry = job.retryToken
                     job.recoveryAction = { recovery(error, retry) }
                 }

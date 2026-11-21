@@ -307,6 +307,9 @@ struct MigrationTaskDetail: View {
                         Button("任务列表".localized) { center.detailID = nil; center.showsList = true }
                         if job.status == .attention, job.observedKey != nil, let action = job.recoveryAction {
                             Button("回退更新".localized) { action() }
+                        } else if job.status == .attention, let block = job.blockedAppStart, let retry = job.recoveryAction {
+                            BlockedAppMigrationButton(block: block, canRetry: { center.canRetry(job.retryToken) }, retry: retry)
+                                .id(ObjectIdentifier(job))
                         } else if job.status == .attention, job.observedKey == nil {
                             Button("处理异常".localized) {
                                 if job.category == .apps { showsAppRecovery = true }
@@ -374,6 +377,35 @@ struct MigrationTaskDetail: View {
             }
         }
         .font(.system(size: 12))
+    }
+}
+
+@MainActor
+private struct BlockedAppMigrationButton: View {
+    let block: AppMigrationStartBlock
+    let canRetry: () -> Bool
+    let retry: () -> Void
+    @State private var waiting = false
+    @State private var running = true
+
+    var body: some View {
+        Button(waiting ? "等待应用退出".localized : (running ? "退出应用并继续".localized : "继续迁移".localized)) {
+            guard canRetry() else { return }
+            if block.runningApplications().isEmpty { retry(); return }
+            waiting = true
+        }
+        .disabled(waiting)
+        .onReceive(NSWorkspace.shared.publisher(for: \.runningApplications)) { _ in
+            running = !block.runningApplications().isEmpty
+        }
+        .task(id: waiting) {
+            guard waiting, canRetry() else { return }
+            do {
+                let didQuit = try await block.quitAndWait()
+                if didQuit, canRetry() { retry() }
+                else { waiting = false }
+            } catch { waiting = false }
+        }
     }
 }
 

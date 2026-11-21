@@ -3,6 +3,12 @@ import Foundation
 /// Only copying/reading checkpoints may wait. Entry switching and independent
 /// recovery retain their existing transaction boundaries and are never suspended.
 final class MigrationTaskControl: @unchecked Sendable {
+    let expectedAppStart: AppMigrationStartBlock?
+
+    init(expectedAppStart: AppMigrationStartBlock? = nil) {
+        self.expectedAppStart = expectedAppStart
+    }
+
     struct State: Sendable {
         var pauseRequested = false
         var paused = false

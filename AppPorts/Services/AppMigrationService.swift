@@ -501,7 +501,10 @@ struct AppMigrationService {
         }
         defer { operationLock.release() }
         try requireExternalMigrationAllowed(for: appToMove)
-        if isRunning { throw AppMoverError.appIsRunning }
+        try MigrationExecution.control?.expectedAppStart?.validate()
+        if isRunning {
+            throw try transferTransaction().runningBeforeStart(app: appToMove, destination: destinationURL)
+        }
         if let restricted = migrationRiskBundles(for: appToMove).first(where: { !acceptedRiskBundles.contains($0) }) {
             throw AppTransferTransaction.failure("应用本体迁移需要确认".localized, at: restricted)
         }
