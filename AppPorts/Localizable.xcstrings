@@ -180164,19 +180164,19 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 也会把新下载的大于 1 GB 的应用安装到这块外盘，并管理这些应用的更新。"
+            "value" : "新下载的应用超过 1 GB 时，App Store 会将它安装到这块外置磁盘，并负责后续更新。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 也會把新下載的大於 1 GB 的 App 安裝到這個外接磁碟，並管理這些 App 的更新。"
+            "value" : "新下載的 App 超過 1 GB 時，App Store 會將它安裝到這顆外接磁碟，並負責後續更新。"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 也會把噺下载の大於 1 GB の應詠安装↘這塊外盤，並管理這些應詠の哽噺。"
+            "value" : "噺下載の應苚超過 1 GB 時，App Store 會將咜安裝菿這塊外置磁盤，並負責後續更新。"
           }
         }
       }
@@ -180301,19 +180301,19 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts 迁移 App Store 应用不受 1 GB 限制，小于 1 GB 的应用也可以迁移到："
+            "value" : "已安装的 App Store 应用可以用 AppPorts 迁到下方目录，大小不限。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts 移轉 App Store App 不受 1 GB 限制，小於 1 GB 的 App 也可以移轉到："
+            "value" : "已安裝的 App Store App 可以用 AppPorts 移到下方目錄，大小不限。"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts 遷迻 App Store 應詠⑧受 1 GB 限制，曉於 1 GB の應詠也可以遷迻↘："
+            "value" : "已安裝の App Store 應苚岢苡苚 AppPorts 遷菿丅方目錄，夶尛吥限。"
           }
         }
       }
@@ -181831,140 +181831,140 @@
         }
       }
     },
-    "Keep watching migrated apps after AppPorts quits. Attempt recovery when a ShipIt update fails and report the result in the task center." : {
+    "退出 AppPorts 后，仍会在后台监测已迁移应用的更新。遇到可处理的更新故障时，守护会尝试自动恢复。你可以在任务中心查看处理结果。" : {
       "comment" : "Chinese and English provided; other languages temporarily use the explicit English fallback.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "مواصلة مراقبة التطبيقات المنقولة بعد إنهاء AppPorts، ومحاولة الاسترداد عند فشل تحديث ShipIt مع عرض النتيجة في مركز المهام."
+            "value" : "تستمر خدمة الحماية في مراقبة تحديثات التطبيقات المنقولة في الخلفية بعد إنهاء AppPorts. وعند اكتشاف فشل في التحديث يمكنها التعامل معه، تحاول استعادة التحديث تلقائيًا. يمكنك الاطلاع على النتيجة في مركز المهام."
           }
         },
         "br" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⠠⠅⠑⠑⠏ ⠺⠁⠞⠉⠓⠊⠝⠛ ⠍⠊⠛⠗⠁⠞⠑⠙ ⠁⠏⠏⠎ ⠁⠋⠞⠑⠗ ⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠟⠥⠊⠞⠎⠲ ⠠⠁⠞⠞⠑⠍⠏⠞ ⠗⠑⠉⠕⠧⠑⠗⠽ ⠺⠓⠑⠝ ⠁ ⠠⠎⠓⠊⠏⠠⠊⠞ ⠥⠏⠙⠁⠞⠑ ⠋⠁⠊⠇⠎ ⠁⠝⠙ ⠗⠑⠏⠕⠗⠞ ⠞⠓⠑ ⠗⠑⠎⠥⠇⠞ ⠊⠝ ⠞⠓⠑ ⠞⠁⠎⠅ ⠉⠑⠝⠞⠑⠗⠲"
+            "value" : "⠠⠞⠓⠑⠀⠛⠥⠁⠗⠙⠊⠁⠝⠀⠍⠕⠝⠊⠞⠕⠗⠎⠀⠥⠏⠙⠁⠞⠑⠎⠀⠞⠕⠀⠍⠊⠛⠗⠁⠞⠑⠙⠀⠁⠏⠏⠎⠀⠊⠝⠀⠞⠓⠑⠀⠃⠁⠉⠅⠛⠗⠕⠥⠝⠙⠂⠀⠑⠧⠑⠝⠀⠁⠋⠞⠑⠗⠀⠽⠕⠥⠀⠟⠥⠊⠞⠀⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠲⠀⠠⠺⠓⠑⠝⠀⠊⠞⠀⠙⠑⠞⠑⠉⠞⠎⠀⠁⠝⠀⠥⠏⠙⠁⠞⠑⠀⠋⠁⠊⠇⠥⠗⠑⠀⠊⠞⠀⠉⠁⠝⠀⠓⠁⠝⠙⠇⠑⠂⠀⠊⠞⠀⠞⠗⠊⠑⠎⠀⠞⠕⠀⠗⠑⠉⠕⠧⠑⠗⠀⠁⠥⠞⠕⠍⠁⠞⠊⠉⠁⠇⠇⠽⠲⠀⠠⠽⠕⠥⠀⠉⠁⠝⠀⠎⠑⠑⠀⠞⠓⠑⠀⠗⠑⠎⠥⠇⠞⠀⠊⠝⠀⠞⠓⠑⠀⠞⠁⠎⠅⠀⠉⠑⠝⠞⠑⠗⠲"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Migrierte Apps auch nach dem Beenden von AppPorts weiter überwachen. Bei fehlgeschlagenen ShipIt-Updates eine Wiederherstellung versuchen und das Ergebnis in der Aufgabenzentrale melden."
+            "value" : "Der Wächter überwacht Updates verschobener Apps im Hintergrund, auch nachdem du AppPorts beendet hast. Bei unterstützten Updatefehlern versucht er automatisch, die Aktualisierung wiederherzustellen. Das Ergebnis findest du in der Aufgabenzentrale."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep watching migrated apps after AppPorts quits. Attempt recovery when a ShipIt update fails and report the result in the task center."
+            "value" : "The guardian monitors updates to migrated apps in the background, even after you quit AppPorts. When it detects an update failure it can handle, it tries to recover automatically. You can see the result in the task center."
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Daŭre observu migritajn apojn post fermo de AppPorts. Provu riparon kiam ĝisdatigo per ShipIt malsukcesas kaj raportu la rezulton en la taskocentro."
+            "value" : "Post la fermo de AppPorts la servo plu kontrolas fone la ĝisdatigojn de movitaj aplikaĵoj. Kiam ĝi detektas ĝisdatigan eraron, kiun ĝi povas trakti, ĝi provas aŭtomate restarigi la ĝisdatigon. La rezulto aperas en la taskocentro."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sigue supervisando las apps migradas después de cerrar AppPorts. Intenta recuperar una actualización de ShipIt si falla e informa del resultado en el centro de tareas."
+            "value" : "La protección sigue supervisando en segundo plano las actualizaciones de las apps trasladadas después de cerrar AppPorts. Si detecta un fallo que puede resolver, intenta recuperar la actualización automáticamente. Puedes consultar el resultado en el centro de tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continuer à surveiller les apps migrées après la fermeture d’AppPorts. Tenter une récupération lorsqu’une mise à jour ShipIt échoue et signaler le résultat dans le centre des tâches."
+            "value" : "La protection continue de surveiller en arrière-plan les mises à jour des apps déplacées après la fermeture d’AppPorts. Si elle détecte un échec qu’elle peut traiter, elle tente une récupération automatique. Le résultat apparaît dans le centre des tâches."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts बंद होने के बाद भी माइग्रेट किए गए ऐप्स की निगरानी जारी रखें। ShipIt अपडेट विफल होने पर रिकवरी का प्रयास करें और परिणाम टास्क सेंटर में दिखाएँ।"
+            "value" : "AppPorts बंद करने के बाद भी सेवा स्थानांतरित ऐप्स के अपडेट पर पृष्ठभूमि में नज़र रखती है। अगर अपडेट में ऐसी गड़बड़ी आती है जिसे सेवा संभाल सकती है, तो वह उसे अपने आप ठीक करने की कोशिश करती है। नतीजा कार्य केंद्र में देख सकते हैं।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tetap pantau aplikasi yang dimigrasikan setelah AppPorts ditutup. Coba pemulihan saat pembaruan ShipIt gagal dan laporkan hasilnya di pusat tugas."
+            "value" : "Setelah AppPorts ditutup, layanan tetap memantau pembaruan aplikasi yang telah dipindahkan di latar belakang. Jika pembaruan gagal dan masalahnya dapat ditangani, layanan mencoba memulihkannya secara otomatis. Hasilnya dapat dilihat di pusat tugas."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continua a monitorare le app migrate dopo la chiusura di AppPorts. Tenta il ripristino se un aggiornamento ShipIt non riesce e segnala il risultato nel centro attività."
+            "value" : "Dopo la chiusura di AppPorts, il servizio continua a monitorare in background gli aggiornamenti delle app spostate. In caso di un errore che può gestire, tenta il ripristino automatico. Puoi vedere il risultato nel centro attività."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts の終了後も移行済みアプリの監視を続けます。ShipIt アップデートが失敗した際に復旧を試み、結果をタスクセンターに報告します。"
+            "value" : "AppPorts の終了後も、移動したアプリの更新をバックグラウンドで監視します。対応可能な更新エラーが発生すると自動復旧を試みます。結果はタスクセンターで確認できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts 종료 후에도 마이그레이션된 앱을 계속 감시합니다. ShipIt 업데이트 실패 시 복구를 시도하고 결과를 작업 센터에 알립니다."
+            "value" : "AppPorts를 종료한 후에도 이동한 앱의 업데이트를 백그라운드에서 모니터링합니다. 처리할 수 있는 업데이트 오류가 발생하면 자동 복구를 시도합니다. 결과는 작업 센터에서 확인할 수 있습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blijf gemigreerde apps volgen nadat AppPorts is afgesloten. Probeer herstel wanneer een ShipIt-update mislukt en meld het resultaat in het taakcentrum."
+            "value" : "Ook nadat je AppPorts afsluit, blijft de bewaking updates van verplaatste apps op de achtergrond volgen. Bij een updatefout die kan worden verholpen, wordt automatisch herstel geprobeerd. Je vindt het resultaat in het takencentrum."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kontynuuj monitorowanie przeniesionych aplikacji po zamknięciu AppPorts. Podejmuj próbę odzyskania po nieudanej aktualizacji ShipIt i zgłaszaj wynik w centrum zadań."
+            "value" : "Po zamknięciu AppPorts usługa nadal monitoruje w tle aktualizacje przeniesionych aplikacji. Gdy wykryje błąd aktualizacji, który potrafi obsłużyć, automatycznie próbuje ją naprawić. Wynik znajdziesz w centrum zadań."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Continue monitorando os apps migrados após encerrar o AppPorts. Tente recuperar quando uma atualização do ShipIt falhar e informe o resultado na central de tarefas."
+            "value" : "A proteção continua a monitorizar em segundo plano as atualizações das aplicações movidas, mesmo depois de sair do AppPorts. Se detetar uma falha que possa tratar, tenta recuperar a atualização automaticamente. Pode consultar o resultado no centro de tarefas."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Продолжать отслеживать перенесённые приложения после выхода из AppPorts. Пытаться выполнить восстановление при сбое обновления ShipIt и сообщать результат в центре задач."
+            "value" : "После выхода из AppPorts служба продолжает отслеживать обновления перенесённых приложений в фоновом режиме. При сбое, с которым она умеет работать, служба автоматически пытается восстановить обновление. Результат можно посмотреть в центре задач."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เฝ้าดูแอปที่ย้ายแล้วต่อไปหลังจากปิด AppPorts พยายามกู้คืนเมื่อการอัปเดต ShipIt ล้มเหลว และรายงานผลในศูนย์งาน"
+            "value" : "หลังจากออกจาก AppPorts แล้ว บริการจะยังคงติดตามการอัปเดตของแอปที่ย้ายไว้ในเบื้องหลัง หากพบปัญหาการอัปเดตที่รองรับ บริการจะลองกู้คืนโดยอัตโนมัติ คุณดูผลได้ในศูนย์งาน"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "AppPorts kapatıldıktan sonra taşınan uygulamaları izlemeye devam eder. Bir ShipIt güncellemesi başarısız olduğunda kurtarmayı dener ve sonucu görev merkezinde bildirir."
+            "value" : "AppPorts kapatıldıktan sonra da koruma hizmeti, taşınan uygulamaların güncellemelerini arka planda izler. İşleyebildiği bir güncelleme hatası algıladığında otomatik kurtarmayı dener. Sonucu görev merkezinde görebilirsiniz."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiếp tục theo dõi các ứng dụng đã di chuyển sau khi thoát AppPorts. Thử khôi phục khi bản cập nhật ShipIt thất bại và báo kết quả trong trung tâm tác vụ."
+            "value" : "Sau khi bạn thoát AppPorts, dịch vụ vẫn theo dõi các bản cập nhật của ứng dụng đã di chuyển trong nền. Khi gặp lỗi cập nhật có thể xử lý, dịch vụ sẽ thử khôi phục tự động. Bạn có thể xem kết quả trong trung tâm tác vụ."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "退出 AppPorts 后继续监听已迁移的应用。ShipIt 更新失败时尝试接手恢复，并将结果同步到任务中心。"
+            "value" : "退出 AppPorts 后，仍会在后台监测已迁移应用的更新。遇到可处理的更新故障时，守护会尝试自动恢复。你可以在任务中心查看处理结果。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "結束 AppPorts 後繼續監聽已遷移的應用程式。ShipIt 更新失敗時嘗試接手復原，並將結果同步至工作中心。"
+            "value" : "退出 AppPorts 後，仍會在背景監測已遷移應用程式的更新。遇到可處理的更新故障時，守護程式會嘗試自動復原。你可以在任務中心查看處理結果。"
           }
         },
         "zh-martian" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "退絀 AppPorts 後繼續监听已遷迻の應詠。ShipIt 哽噺失敗時嘗試啑手恢復，並將結果茼步↘任务㊥心。"
+            "value" : "退絀 AppPorts 後，仍會茬偝景監測已遷迻應苚の更新。遇菿岢處理の更新故障時，垨護會嘗試洎動恢復。伱岢苡茬任務ф杺查勘處理結菓。"
           }
         }
       }

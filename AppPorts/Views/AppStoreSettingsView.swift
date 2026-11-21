@@ -129,7 +129,7 @@ struct AppStoreSettingsView: View {
                 isOn: $diskMaintenanceEnabled)
             Divider()
             AppSettingsToggle(title: "Application update guardian".localized,
-                detail: "Keep watching migrated apps after AppPorts quits. Attempt recovery when a ShipIt update fails and report the result in the task center.".localized,
+                detail: "退出 AppPorts 后，仍会在后台监测已迁移应用的更新。遇到可处理的更新故障时，守护会尝试自动恢复。你可以在任务中心查看处理结果。".localized,
                 isOn: $updateGuardianEnabled)
             if agentSync.isSynchronizing {
                 HStack(spacing: 8) {
