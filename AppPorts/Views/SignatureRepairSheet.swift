@@ -145,17 +145,19 @@ struct SignatureRepairSheet: View {
                 .padding(.leading, 34)
             }
 
-            stepRow(
-                number: 3,
-                title: "可选：用挂载迁移把数据放回外置盘".localized,
-                done: false,
-                detail: "签名检查通过后，请先从 Finder 或 Dock 打开应用并确认数据正常，再到「应用数据」页迁移。".localized
-            ) {
-                Button("前往应用数据".localized) {
-                    onDismiss()
-                    onOpenDataDirs(app)
+            if app.showsAppData {
+                stepRow(
+                    number: 3,
+                    title: "可选：用挂载迁移把数据放回外置盘".localized,
+                    done: false,
+                    detail: "签名检查通过后，请先从 Finder 或 Dock 打开应用并确认数据正常，再到「应用数据」页迁移。".localized
+                ) {
+                    Button("前往应用数据".localized) {
+                        onDismiss()
+                        onOpenDataDirs(app)
+                    }
+                    .disabled(!stepOneDone || !signatureRestored || operationState.isBusy)
                 }
-                .disabled(!stepOneDone || !signatureRestored || operationState.isBusy)
             }
 
             if let errorMessage {

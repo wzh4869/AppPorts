@@ -765,7 +765,7 @@ struct ContentView: View {
                     DataDirsView(
                         isActive: mainTab == .dataDirs,
                         externalDriveURL: externalDriveURL,
-                        localApps: localApps,
+                        localApps: localApps.filter(\.showsAppData),
                         selectedTab: $selectedDataDirsTab,
                         selectedApp: $selectedDataDirsApp,
                         isScanning: $isDataDirsScanning,

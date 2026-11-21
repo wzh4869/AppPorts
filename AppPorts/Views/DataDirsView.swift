@@ -447,7 +447,7 @@ struct DataDirsView: View {
                     }
                 } else {
                     let filteredApps = localApps.filter { app in
-                        !app.isFolder && (appSearchText.isEmpty || app.displayName.localizedCaseInsensitiveContains(appSearchText) || app.name.localizedCaseInsensitiveContains(appSearchText))
+                        appSearchText.isEmpty || app.displayName.localizedCaseInsensitiveContains(appSearchText) || app.name.localizedCaseInsensitiveContains(appSearchText)
                     }
                     let orderedApps = AppDataAppListSorter.ordered(
                         filteredApps,
@@ -500,7 +500,7 @@ struct DataDirsView: View {
                    let refreshed = newApps.first(where: { $0.path == selected.path }) {
                     selectedApp = refreshed
                 }
-                let currentIDs = Set(newApps.filter { !$0.isFolder }.map(\.id))
+                let currentIDs = Set(newApps.map(\.id))
                 if currentIDs != lastBatchSizedAppIDs, isActive, selectedTab == .appDirs {
                     scanAppListSizes(forceSizeRefresh: false)
                 }
@@ -1292,7 +1292,7 @@ struct DataDirsView: View {
                     + inspection.managedLinks.compactMap(\.bundleIdentifier))
                 var migratedIDs: Set<String> = []
                 if !identifiers.isEmpty {
-                    for app in apps where !app.isFolder {
+                    for app in apps {
                         guard !Task.isCancelled else { return }
                         if let identifier = CodeSigner.bundleIdentifier(at: app.displayURL), identifiers.contains(identifier) {
                             migratedIDs.insert(app.id)
@@ -1397,7 +1397,7 @@ struct DataDirsView: View {
         appListSizeTask?.cancel()
         let token = UUID()
         appListSizeScanToken = token
-        let apps = localApps.filter { !$0.isFolder }
+        let apps = localApps
         lastBatchSizedAppIDs = Set(apps.map(\.id))
         guard !apps.isEmpty else {
             appDataSizeSummaries = [:]
