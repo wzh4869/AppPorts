@@ -277,15 +277,17 @@ private struct TappableBadge: View {
     /// 点击后执行的动作，优先级高于 `message`。
     var action: (() -> Void)? = nil
     var actionHelp: String = "查看修复步骤".localized
+    @Environment(\.isEnabled) private var isEnabled
     @State private var isPresented = false
+    @State private var hoverPreview = false
+    @State private var overBadge = false
+    @State private var overMessage = false
+    @State private var pendingHover: Task<Void, Never>?
 
     var body: some View {
         Button {
-            if let action {
-                action()
-            } else {
-                isPresented = true
-            }
+            pendingHover?.cancel()
+            activate(onHover: false)
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: badge.icon)
@@ -306,13 +308,64 @@ private struct TappableBadge: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(localizedStatusBadgeText(badge.text))
-        .help(action == nil ? (message ?? "") : actionHelp)
+        .accessibilityHint(action == nil ? (message ?? "") : actionHelp)
+        .onHover { inside in
+            overBadge = inside
+            updateHover()
+        }
         .popover(isPresented: $isPresented) {
-            Text(message ?? "")
-                .font(.system(size: 12))
-                .padding(12)
-                .frame(maxWidth: 300)
-                .fixedSize(horizontal: false, vertical: true)
+            if let message {
+                Text(message)
+                    .font(.system(size: 12))
+                    .padding(12)
+                    .frame(maxWidth: 300)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onHover { inside in
+                        overMessage = inside
+                        updateHover()
+                    }
+            }
+        }
+        .onChange(of: isPresented) { presented in
+            if !presented {
+                pendingHover?.cancel()
+                hoverPreview = false
+                overMessage = false
+            }
+        }
+        .onDisappear {
+            pendingHover?.cancel()
+            overBadge = false
+            overMessage = false
+            isPresented = false
+        }
+    }
+
+    private func activate(onHover: Bool) {
+        guard isEnabled else { return }
+        if let action {
+            action()
+        } else if message != nil {
+            hoverPreview = onHover
+            isPresented = true
+        }
+    }
+
+    private func updateHover() {
+        pendingHover?.cancel()
+        if overBadge && !isPresented && isEnabled && (message != nil || action != nil) {
+            pendingHover = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                guard !Task.isCancelled else { return }
+                activate(onHover: true)
+            }
+        } else if hoverPreview && isPresented && !overBadge && !overMessage {
+            // Allow the pointer to cross the gap between the capsule and its popover.
+            pendingHover = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                guard !Task.isCancelled else { return }
+                isPresented = false
+            }
         }
     }
 }
