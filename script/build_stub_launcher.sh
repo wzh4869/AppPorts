@@ -15,6 +15,7 @@ for appports_launcher_arch in arm64 x86_64; do
     -module-cache-path "$appports_launcher_work/ModuleCache" \
     -O "$appports_launcher_work/main.swift" "$SRCROOT/AppPorts/Utils/ApplicationLaunchGate.swift" \
     "$SRCROOT/AppPorts/Utils/PortalLocalizedStrings.swift" \
+    "$SRCROOT/AppPorts/Utils/TauriUpdateSupport.swift" \
     -o "$appports_launcher_work/$appports_launcher_arch"
 done
 

@@ -73,6 +73,20 @@ enum AppPortalMaintenance {
         }
     }
 
+    /// Both the badge and an existing Dock pin must describe the same usable launch path.
+    static func preparedTauriIdentifier(localURL: URL, externalURL: URL) -> String? {
+        guard let local = plist(at: localURL), local[TauriUpdateSupport.portalKey] as? Bool == true,
+              let identifier = local["AppPortsTargetBundleIdentifier"] as? String,
+              local["CFBundleIdentifier"] as? String == identifier + ".appports.stub",
+              localURL.resolvingSymlinksInPath().path != externalURL.resolvingSymlinksInPath().path,
+              (try? CodeSigner.resolveAppURL(at: localURL).resolvingSymlinksInPath().path) == externalURL.resolvingSymlinksInPath().path,
+              targetIdentityMatches(localURL: localURL, externalURL: externalURL),
+              let external = plist(at: externalURL),
+              TauriUpdateSupport.requiresExternalTemporaryDirectory(at: externalURL, info: external),
+              TauriUpdateSupport.temporaryDirectory(for: externalURL, identifier: identifier, create: false) != nil else { return nil }
+        return identifier
+    }
+
     /// Stored volume identity remains authoritative after remounting at the same path.
     static func matchesRememberedTarget(_ entry: Entry, store: AppSearchRecordStore = .shared) -> Bool {
         guard let records = try? store.records() else { return false }

@@ -67,6 +67,16 @@ enum AppUpdateRoute: Equatable, Sendable {
         let frameworks = contents.appendingPathComponent("Frameworks")
         if fm.fileExists(atPath: frameworks.appendingPathComponent("Squirrel.framework").path) { return .shipIt }
         if fm.fileExists(atPath: frameworks.appendingPathComponent("Sparkle.framework").path) { return .sparkle }
+        switch TauriUpdateSupport.mode(at: app) {
+        case .native: return .independent
+        case .sameVolumeTemporaryDirectory:
+            if beforeMigration || TauriUpdateSupport.sharesSystemTemporaryVolume(app) == true { return .independent }
+            guard let localEntry,
+                  AppPortalMaintenance.preparedTauriIdentifier(localURL: localEntry, externalURL: app) == identity.bundleIdentifier
+            else { return .unknown }
+            return .independent
+        case nil: break
+        }
         return .unknown
     }
 

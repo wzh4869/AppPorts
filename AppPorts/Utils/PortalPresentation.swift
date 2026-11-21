@@ -15,7 +15,8 @@ enum PortalPresentation {
     /// Source and destination are the respective Contents directories. Returns
     /// recoverable presentation warnings; an invalid plist or write failure throws.
     static func write(from externalContents: URL, to stagedContents: URL,
-                      launchPreparation: PortalImageLaunchPreparation.Metadata? = nil) throws -> [String] {
+                      launchPreparation: PortalImageLaunchPreparation.Metadata? = nil,
+                      tauriTemporaryDirectoryReady: Bool = false) throws -> [String] {
         let fm = FileManager.default
         let data = try Data(contentsOf: externalContents.appendingPathComponent("Info.plist"))
         guard var plist = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
@@ -168,6 +169,7 @@ enum PortalPresentation {
             plist.removeValue(forKey: key)
         }
         plist[versionKey] = formatVersion
+        plist[TauriUpdateSupport.portalKey] = tauriTemporaryDirectoryReady ? true : nil
         plist["AppPortsPresentationResources"] = copiedResources.sorted()
         let output = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
         let target = stagedContents.appendingPathComponent("Info.plist")

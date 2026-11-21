@@ -168,6 +168,11 @@ final class AppDelegate: NSObject {
             }
         }
         let applicationURL = URL(fileURLWithPath: path)
+        if Bundle.main.object(forInfoDictionaryKey: TauriUpdateSupport.portalKey) as? Bool == true,
+           let id = Bundle.main.object(forInfoDictionaryKey: "AppPortsTargetBundleIdentifier") as? String,
+           let temporary = TauriUpdateSupport.temporaryDirectory(for: applicationURL, identifier: id, create: false) {
+            configuration.environment = ["TMPDIR": temporary.path + "/"]
+        }
         if urls.isEmpty {
             NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration,
                                                completionHandler: completion)

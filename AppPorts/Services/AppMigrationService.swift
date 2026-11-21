@@ -1194,7 +1194,7 @@ struct AppMigrationService {
         return defaultDirectory.appendingPathComponent(app.name)
     }
 
-    /// 显式修复既有本地入口对应的固定项；扫描与版本刷新不会改动用户的 Dock。
+    /// 显式修复既有本地入口对应的固定项。
     func repairDockShortcuts(for app: AppItem) throws -> Int {
         try Self.mutationCoordinator.beginSynchronously()
         defer { Self.mutationCoordinator.end() }
@@ -2061,7 +2061,9 @@ struct AppMigrationService {
                 try stage.copyFile(from: resolved, relativePath: "Contents/PkgInfo")
             } else if errno != ENOENT { throw PortalStaging.posixError(pkgInfo) }
 
-            for warning in try PortalPresentation.write(from: externalContents, to: localContents) {
+            let metadata = applicationMetadata(at: externalURL) ?? [:]
+            let temporaryReady = TauriUpdateSupport.preparePortal(for: externalURL, info: metadata)
+            for warning in try PortalPresentation.write(from: externalContents, to: localContents, tauriTemporaryDirectoryReady: temporaryReady) {
                 AppLogger.shared.log(warning, level: "WARN")
             }
             try stage.recordPresentationFiles()
@@ -2101,7 +2103,7 @@ struct AppMigrationService {
               hasRealStubStorage(at: localURL),
               localPortalKind(at: localURL, linkedTo: externalURL) == .stubPortal,
               let resolved = try? CodeSigner.resolveAppURL(at: localURL),
-              resolved.resolvingSymlinksInPath() == externalURL.resolvingSymlinksInPath() else { return false }
+              resolved.resolvingSymlinksInPath().path == externalURL.resolvingSymlinksInPath().path else { return false }
         let localContents = localURL.appendingPathComponent("Contents")
         let externalContents = externalURL.appendingPathComponent("Contents")
         let localInfoPlist = localContents.appendingPathComponent("Info.plist")
@@ -2127,8 +2129,10 @@ struct AppMigrationService {
             AppLogger.shared.logError("无法刷新应用启动准备信息，保留现有入口", error: error)
             return false
         }
+        let temporaryReady = TauriUpdateSupport.preparePortal(for: externalURL, info: extPlist)
         guard force || PortalPresentation.needsRefresh(local: localPlist, external: extPlist)
-            || !preparation.matches(localPlist) else { return false }
+            || !preparation.matches(localPlist)
+            || (localPlist[TauriUpdateSupport.portalKey] as? Bool == true) != temporaryReady else { return false }
         let stageURL = localURL.deletingLastPathComponent()
             .appendingPathComponent(".appports-refresh-\(UUID().uuidString).app")
         do {
@@ -2146,7 +2150,7 @@ struct AppMigrationService {
                                    externalURL: externalURL)
             try stage.recordGeneratedFiles(replacing: ["Contents/MacOS/launcher", "Contents/Resources/real_app_path.txt"])
             for warning in try PortalPresentation.write(from: externalContents, to: stageURL.appendingPathComponent("Contents"),
-                                                        launchPreparation: preparation) {
+                                                        launchPreparation: preparation, tauriTemporaryDirectoryReady: temporaryReady) {
                 AppLogger.shared.log(warning, level: "WARN")
             }
             try stage.recordPresentationFiles()
@@ -2173,7 +2177,14 @@ struct AppMigrationService {
                 } catch { commitError = error }
             }
             if let error = coordinationError ?? commitError as NSError? { throw error }
-            if committed { refreshLaunchServices(for: localURL) }
+            if committed {
+                refreshLaunchServices(for: localURL)
+                // Only this compatibility transition changes which launch target an existing pin needs.
+                if temporaryReady || localPlist[TauriUpdateSupport.portalKey] as? Bool == true {
+                    synchronizeDockShortcuts(from: localURL, to: externalURL,
+                        operationID: AppLogger.shared.makeOperationID(prefix: "tauri-portal"), using: dockShortcutRetryUpdater)
+                }
+            }
             return committed
         } catch {
             AppLogger.shared.logError("入口显示资料修复失败，保留原入口", error: error,

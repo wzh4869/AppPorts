@@ -142,7 +142,7 @@ final class DockShortcutService: @unchecked Sendable {
         for candidate in candidates {
             let data = snapshot[candidate.index]["tile-data"] as! [String: Any]
             let target = candidate.destination.url
-            let identifier = try validatedIdentifier(for: data, at: target, requiringBundleIdentity: requiringBundleIdentity)
+            let identifier = try validatedIdentifier(for: data, candidate: candidate, requiringBundleIdentity: requiringBundleIdentity)
             // Inspect every candidate so an earlier incomplete pin cannot hide an identity conflict.
             if !isCurrent(data, at: target, identifier: identifier) { needsUpdate = true }
         }
@@ -189,7 +189,7 @@ final class DockShortcutService: @unchecked Sendable {
                 var tile = updated[candidate.index]
                 var data = tile["tile-data"] as! [String: Any]
                 var file = data["file-data"] as! [String: Any]
-                let identifier = try validatedIdentifier(for: data, at: target, requiringBundleIdentity: requiringBundleIdentity)
+                let identifier = try validatedIdentifier(for: data, candidate: candidate, requiringBundleIdentity: requiringBundleIdentity)
 
                 if isCurrent(data, at: target, identifier: identifier) {
                     continue
@@ -224,8 +224,15 @@ final class DockShortcutService: @unchecked Sendable {
         throw ShortcutError.concurrentModification
     }
 
-    private func validatedIdentifier(for data: [String: Any], at target: URL, requiringBundleIdentity: Bool) throws -> String {
-        let identifier = try applicationIdentifier(target)
+    private func validatedIdentifier(for data: [String: Any], candidate: Candidate, requiringBundleIdentity: Bool) throws -> String {
+        if let original = candidate.tauriOriginalIdentifier {
+            let previous = data["bundle-identifier"] as? String
+            guard Self.isOriginalIdentifier(original),
+                  previous == original || previous == original + ".appports.stub"
+                    || (previous == nil && !requiringBundleIdentity) else { throw ShortcutError.invalidBundleIdentifier }
+            return original + ".appports.stub"
+        }
+        let identifier = try applicationIdentifier(candidate.destination.url)
         guard Self.isOriginalIdentifier(identifier) else { throw ShortcutError.invalidBundleIdentifier }
         // A retry inferred from storage layout has no authoritative old-path record.
         // Require the existing pin's identity before changing it; a name match is insufficient.
@@ -251,6 +258,7 @@ final class DockShortcutService: @unchecked Sendable {
     private struct Candidate {
         let index: Int
         let destination: LocalPath
+        var tauriOriginalIdentifier: String? = nil
     }
 
     private func readSnapshot() throws -> [[String: Any]] {
@@ -281,11 +289,21 @@ final class DockShortcutService: @unchecked Sendable {
             let path = try Self.path(from: file)
             // Match file-data before resolving bookmarks: a bookmark can already follow the
             // moved file while this URL still identifies the old local Dock entry.
-            if let suffix = path.applicationSuffix(relativeTo: source) {
+            let fromSource = path.applicationSuffix(relativeTo: source)
+            let fromDestination = path.applicationSuffix(relativeTo: destination)
+            if source.components != destination.components, let suffix = fromSource ?? fromDestination {
+                let portal = source.appending(suffix)
+                let app = destination.appending(suffix)
+                if let identifier = AppPortalMaintenance.preparedTauriIdentifier(localURL: portal.url, externalURL: app.url) {
+                    result.append(Candidate(index: index, destination: portal, tauriOriginalIdentifier: identifier))
+                    continue
+                }
+            }
+            if let suffix = fromSource {
                 result.append(Candidate(index: index, destination: destination.appending(suffix)))
             } else if let identifier = data["bundle-identifier"] as? String,
                       identifier.hasSuffix(".appports.stub"),
-                      path.applicationSuffix(relativeTo: destination) != nil {
+                      fromDestination != nil {
                 result.append(Candidate(index: index, destination: path))
             }
         }

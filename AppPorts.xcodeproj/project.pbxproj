@@ -215,6 +215,7 @@
 				"$(SRCROOT)/Tools/StubLauncher/StubLauncherSource.swift",
 				"$(SRCROOT)/AppPorts/Utils/ApplicationLaunchGate.swift",
 				"$(SRCROOT)/AppPorts/Utils/PortalLocalizedStrings.swift",
+				"$(SRCROOT)/AppPorts/Utils/TauriUpdateSupport.swift",
 				"$(SRCROOT)/script/build_stub_launcher.sh",
 			);
 			name = "Build Stub Launcher";
