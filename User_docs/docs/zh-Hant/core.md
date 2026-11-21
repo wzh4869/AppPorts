@@ -4,19 +4,21 @@
 
 ## 遷移前 {#prepare}
 
+Clash Verge、Visual Studio Code（含 Insiders）和 Xcode 的應用程式本體預設保留在本機。確認遷出時，選擇「取消」可保留原位置；混合選取時也可選擇「僅遷移其他應用程式」。「忽略風險並遷移」只適用於這一次。若選取的是包含這些應用程式的資料夾，略過時整個資料夾都會留在本機。遷回本機無需這項確認。
+
 連線外接儲存，在左側邊欄「目的地儲存」選擇外部應用庫資料夾，並透過側欄的「Mac 儲存 / 目的地儲存」確認剩餘空間；若目標是 SMB 網路共享或非 APFS 外接磁碟，可從「目的地儲存」選單建立或開啟 [APFS 應用庫映像](/docs/storage-guide#app-library-image) 來完整保留應用中繼資料。儲存工作並完全結束要遷移的應用，確保 AppPorts 從「應用程式」資料夾執行；重要內容先做好備份。系統應用和受保護的位置不適合直接移動，具體限制以 AppPorts 的提示為準。
 
 ## 遷移到外接磁碟 {#move}
 
 1. 在側欄選擇「應用程式」，在「Mac 本地應用程式」清單選取應用。需要多選時，按住 Command 再逐個選擇。
-2. 點選「遷移到外部」，檢查目標位置。若應用帶有需要確認的自更新器，按使用習慣選擇「非鎖定遷移」（預設）或「鎖定遷移」。
+2. 點選「遷移到外部」，檢查目標位置。若應用帶有需要確認的自更新器，按使用習慣選擇「非鎖定遷移」或「鎖定遷移」。
 3. 若出現同名目標或版本選擇，先核對兩邊內容。不要把不能確認的副本當成垃圾刪除。
 4. 等待 AppPorts 完成複製、檢查和本地入口建立。macOS 27 上下載應用自帶的隔離標記（quarantine）不會中斷遷移，能否首次開啟仍由系統安全策略決定。
 5. 從 Finder 或 Dock 啟動應用，檢查開啟檔案等常用功能。
 
-[![AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+[![舊版 AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
 
-*AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。*
+*舊版 AppPorts 的實際清單（簡體中文介面）。Thunderbird 在本機，TPH 已連結。Trae CN 另有簽署待檢查的標記，可在該列檢查簽署。*
 
 完成後，外部應用庫中能看到真實應用，本地保留[啟動入口](/docs/glossary#local-portal)。進度接近完成時仍可能在核驗或清理，請以最終結果為準。
 
@@ -28,7 +30,7 @@
 
 ## 遷移後如何更新 {#updates}
 
-不同應用的更新方式並不相同。網易雲音樂、WorkBuddy 等已確認按一般方式處理的應用在遷移時不彈出鎖定選擇，未上鎖時直接顯示「已連結」；其他檢測到自更新器的應用會在遷移或接回前提供「非鎖定遷移」（預設醒目提示）和「鎖定遷移」兩種選擇。
+更新徽章顯示遷移後已確認的更新方式。需要選擇模式時，只有顯示「可用」的應用才推薦非鎖定遷移。混合批次中，需要選擇模式的每款應用都可用時才推薦。網易雲音樂和 WorkBuddy 仍可直接遷移。
 
 [![自動更新 App 的遷移確認視窗。範例中的「非鎖定遷移」允許 App 自行更新，「鎖定遷移」則保護外接磁碟上的 App 原件。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hant-fd96aad9b4d68558.png?sign=beqNUQoDEqoKTsA3taYu3dSp6gWsEiZpzWo27NF4qYQ%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hant-fd96aad9b4d68558.png?sign=beqNUQoDEqoKTsA3taYu3dSp6gWsEiZpzWo27NF4qYQ%3D%3A0)
 

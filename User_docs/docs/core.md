@@ -4,19 +4,21 @@
 
 ## 迁移前 {#prepare}
 
+Clash Verge、Visual Studio Code（包括 Insiders）和 Xcode 的应用本体默认保留在本机。选中它们迁出时，点“取消”即可保留原位置；混合选择时也可以点“仅迁移其他应用”。选择“无视风险迁移”只放行这一次。整文件夹迁移遇到这些应用时，会一起保留所在文件夹。迁回本机无需这项确认。
+
 连接外置存储，在左侧边栏“目标存储”选择外部应用库文件夹，并通过侧栏的“本机磁盘 / 目标存储”确认剩余空间；若目标是 SMB 网络共享或非 APFS 外盘，可从“目标存储”菜单创建或打开 [APFS 应用库映像](/docs/storage-guide#app-library-image) 来完整保留应用元数据。保存工作并完全退出要迁移的应用，确保 AppPorts 从“应用程序”文件夹运行；重要内容先做好备份。系统应用和受保护的位置不适合直接移动，具体限制以 AppPorts 的提示为准。
 
 ## 迁移到外置盘 {#move}
 
 1. 在侧栏选择“应用”，在“Mac 本地应用”列表选中应用。需要多选时，按住 Command 再逐个选择。
-2. 点击“迁移到外部”，检查目标位置。若应用带有需要确认的自更新器，按使用习惯选择“非锁定迁移”（默认）或“锁定迁移”。
+2. 点击“迁移到外部”，检查目标位置。若应用带有需要确认的自更新器，按使用习惯选择“非锁定迁移”或“锁定迁移”。
 3. 若出现同名目标或版本选择，先核对两边内容。不要把不能确认的副本当成垃圾删除。
 4. 等待 AppPorts 完成复制、检查和本地入口创建。macOS 27 上下载应用自带的隔离标记（quarantine）不会中断迁移，能否首次打开仍由系统安全策略决定。
 5. 从 Finder 或 Dock 启动应用，检查打开文件等常用功能。
 
-[![AppPorts 实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+[![旧版 AppPorts 的实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
 
-*AppPorts 实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。*
+*旧版 AppPorts 的实机列表。Thunderbird 名下是「本地」，TPH 名下是「已链接」。Trae CN 还显示「签名待检查」，可以从这一行检查签名。*
 
 完成后，外部应用库中能看到真实应用，本地保留[启动入口](/docs/glossary#local-portal)。进度接近完成时仍可能在核验或清理，请以最终结果为准。
 
@@ -28,7 +30,7 @@
 
 ## 迁移后如何更新 {#updates}
 
-不同应用的更新方式并不相同。网易云音乐、WorkBuddy 等已确认按普通方式处理的应用在迁移时不弹锁定选择，未上锁时直接显示“已链接”；其他检测到自更新器的应用会在迁移或接回前提供“非锁定迁移”（默认高亮）和“锁定迁移”两种选择。
+更新徽章显示迁移后已确认的更新方式。需要选择模式时，只有显示“可用”的应用才推荐非锁定迁移。混合批次中，需要选择模式的每款应用都可用时才推荐。网易云音乐和 WorkBuddy 仍可直接迁移。
 
 [![自更新应用的迁移确认框。示例中的「非锁定迁移」允许应用更新自身，「锁定迁移」保护外部应用原件。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hans-45724eb40fcfd193.png?sign=CXsmN9zgy6N5e8QpPmkFxUUcJsrEM9clrEOBUAOPW-M%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-zh-hans-45724eb40fcfd193.png?sign=CXsmN9zgy6N5e8QpPmkFxUUcJsrEM9clrEOBUAOPW-M%3D%3A0)
 

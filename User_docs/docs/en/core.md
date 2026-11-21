@@ -4,19 +4,21 @@ Application migration moves the app itself. Messages, projects, models and cache
 
 ## Before moving {#prepare}
 
+Clash Verge, Visual Studio Code (including Insiders), and Xcode stay on this Mac by default. When asked to confirm a move, choose Cancel to keep everything in place, or **Migrate other apps only** for a mixed selection. **Migrate despite risk** applies only to this move. If you selected a folder containing one of these apps, skipping it keeps the whole folder on the Mac. You can move an app back without this confirmation.
+
 Connect external storage, select an external application library under Destination Storage in the sidebar, and check free space under Mac Storage / Destination Storage. If the destination is an SMB network share or a non-APFS drive, you can create or open an [APFS app library image](/docs/storage-guide#app-library-image) from the Destination Storage menu to preserve full app metadata. Save your work, quit the app completely, and make sure AppPorts is running from Applications; back up important content first. System apps and protected locations are not suitable for direct moves. Follow the restrictions AppPorts shows.
 
 ## Move to an external drive {#move}
 
 1. Select Apps in the sidebar, then select the app under Local Apps. Hold Command to select several apps.
-2. Choose Move to External and check the destination. If the app includes a self-updater that requires confirmation, choose Unlocked Migration (default) or Locked Migration.
+2. Choose Move to External and check the destination. If the app includes a self-updater that requires confirmation, choose Unlocked Migration or Locked Migration.
 3. If a same-named destination or version choice appears, compare both sides. Do not delete an uncertain copy as though it were junk.
 4. Wait for copying, verification and creation of the local entry. Download quarantine markers on macOS 27 do not abort migration; whether an app may open for the first time is still governed by macOS security checks.
 5. Launch the app from Finder or the Dock and test everyday actions such as opening files.
 
-[![The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
+[![The Mac Local Apps list in an earlier AppPorts build (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-apps-live-panel-936ddc72877c892e.png?sign=337FzYmLfLNxE05XeK_eS8pW4fZP8Ir-IsHrdZn9PIs%3D%3A0)
 
-*The Mac Local Apps list in AppPorts (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
+*The Mac Local Apps list in an earlier AppPorts build (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
 
 The external library contains the real app; a [launch entry](/docs/glossary#local-portal) remains locally. Verification or cleanup may still be running near the end of the progress display. Wait for the final result.
 
@@ -28,7 +30,7 @@ If a destination capability warning appears before migration, read [what the des
 
 ## Updates after migration {#updates}
 
-Update behavior differs by app. Apps confirmed to update cleanly as ordinary apps (such as NetEase Music and WorkBuddy) migrate without a lock prompt and show Linked when unlocked; other apps with detected self-updaters offer Unlocked Migration (highlighted by default) and Locked Migration before moving or relinking.
+The update badge shows how you can update the app after moving it. When you need to choose a mode, AppPorts recommends Unlocked Migration if every app requiring a choice shows Available. NetEase Music and WorkBuddy still migrate without a prompt.
 
 [![Migration choices for a self-updating app. In this example, Unlocked Migration allows the app to update itself. Locked Migration protects the external app bundle.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-en-2430999364260faa.png?sign=yD158qQRZmytzF-NIp4l4PJPVeUPqp5WKBfcvlQO3iY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-update-choice-en-2430999364260faa.png?sign=yD158qQRZmytzF-NIp4l4PJPVeUPqp5WKBfcvlQO3iY%3D%3A0)
 
