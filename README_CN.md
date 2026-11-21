@@ -128,9 +128,15 @@ AppPorts 根据应用类型、更新行为与数据目录类型选择迁移方�
 
 ### 下载安装
 
-请前往 [官方网站](https://appports.shimoko.com/) 或 [Releases](https://github.com/wzh4869/AppPorts/releases) 页面下载最新版本的 `AppPorts.dmg`。
+从[官方网站](https://appports.shimoko.com/)或 [Releases](https://github.com/wzh4869/AppPorts/releases) 下载最新的 `AppPorts.dmg`，将 AppPorts 拖入**应用程序**文件夹。也可以使用 Homebrew 安装。
 
-将 AppPorts 放入 **应用程序** 文件夹后打开，按引导完成准备，连接外置盘并选择外部应用库。退出要迁移的应用后，即可在应用列表或数据目录中开始迁移。挂载迁移需要稳定的程序路径，请勿直接从 DMG 或临时路径运行。
+```sh
+brew install --cask wzh4869/tap/appports
+```
+
+通过 Homebrew 升级或卸载的命令见 [AppPorts 的 Homebrew 安装说明](https://github.com/wzh4869/homebrew-tap#readme)。
+
+打开 AppPorts，按引导完成准备，连接外置盘并选择外部应用库。退出要迁移的应用后，即可在应用列表或数据目录中开始迁移。挂载迁移需要稳定的程序路径，请勿直接从 DMG 或临时路径运行。
 
 迁移后使用应用时保持外置盘连接；容器数据首次访问可移动宗卷时，按系统提示授权。拔盘前先退出相关应用并完成卸载或推出。重要数据建议提前备份，更多步骤见[快速入门](https://docs-appports.shimoko.com/docs/faststart)。
 
