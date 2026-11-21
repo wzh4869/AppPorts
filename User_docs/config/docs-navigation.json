@@ -71,6 +71,11 @@
           "icon": "Newspaper"
         },
         {
+          "slug": "blog/how-updates-work",
+          "name": "AppPorts 怎么判断应用迁移后能否更新",
+          "icon": "RefreshCw"
+        },
+        {
           "slug": "blog/why-mount-and-apfs",
           "name": "为什么 AppPorts 选择挂载迁移，又为什么是 APFS",
           "icon": "HardDrive"

@@ -2,6 +2,12 @@
 
 Some AppPorts decisions came from problems discovered after migrations that appeared successful. These articles connect experiments, failures, and later improvements to explain how those decisions developed.
 
+## How AppPorts decides whether a migrated app can update {#updates}
+
+Why did IINA finish updating on its own while a failed DeepSeek installation appeared in Task Center? The article also explains how AppPorts checks its own version.
+
+[Read the article](/docs/blog/how-updates-work)
+
 ## Why mount migration, and why APFS? {#mount-and-apfs}
 
 Why can an app fail to read data when its symbolic link still exists? Disk images seem more flexible, so why are they not the default? Follow the tradeoffs from the first access experiments through unplugging, restarting, and validation on real external drives.
@@ -18,7 +24,7 @@ A WeCom startup crash led an investigation from the `tmp` directory into system 
 
 Articles identify dates, OS and app versions, and distinguish real-app tests, isolated samples, and code inspection. A past success or failure establishes only what happened under those conditions. Current behavior is tied to the code baseline named in each article.
 
-For practical instructions, start with [quick start](/docs/faststart). The six formerly separate experiments are now incorporated into these two articles; use the topic links below to find them. Unfamiliar terms are explained in the [glossary](/docs/glossary).
+For practical instructions, start with [quick start](/docs/faststart). The six formerly separate experiments are now incorporated into the articles on mounting and data directories; use the topic links below to find them. Unfamiliar terms are explained in the [glossary](/docs/glossary).
 
 ## Find an experiment by topic {#experiments}
 
