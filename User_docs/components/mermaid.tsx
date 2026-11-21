@@ -12,7 +12,13 @@ export function Mermaid({ chart }: { chart: string }) {
     let cancelled = false;
     setSvg(''); setFailed(false);
     import('mermaid').then(async ({ default: mermaid }) => {
-      mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: resolvedTheme === 'dark' ? 'dark' : 'default', fontFamily: 'system-ui' });
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: resolvedTheme === 'dark' ? 'dark' : 'default',
+        fontFamily: 'system-ui',
+        flowchart: { wrappingWidth: 130, padding: 8, nodeSpacing: 16, rankSpacing: 28 },
+      });
       const { svg } = await mermaid.render(`diagram-${id}`, chart);
       if (!cancelled) setSvg(svg);
     }).catch(() => { if (!cancelled) setFailed(true); });

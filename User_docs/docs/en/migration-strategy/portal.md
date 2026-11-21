@@ -7,7 +7,7 @@ After moving an app externally, AppPorts retains a suitable local entry. The rea
 Ordinary apps use a lightweight **Stub Portal** by default. Clicking the local entry launches the real app on the external drive. It is neither another complete app nor a backup. Without the drive, the entry cannot substitute for the real app.
 
 ```mermaid
-flowchart LR
+flowchart TB
   A[Click the local app entry] --> B[Locate the real app on external storage]
   B --> C[Launch the app]
   C --> D[Access app data at its existing location]
