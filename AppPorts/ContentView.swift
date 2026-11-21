@@ -90,7 +90,7 @@ struct ContentView: View {
     @State private var degradedRestoreRequest: WarningSheetRequest?
 
     // 自更新应用迁移确认（Sparkle/Electron，锁定模式保护）
-    @State private var selfUpdaterRequest: WarningSheetRequest?
+    @State private var updateProtectionSelection: UpdateProtectionSelection?
     @State private var appReplacementRequest: WarningSheetRequest?
 
     
@@ -103,6 +103,8 @@ struct ContentView: View {
     
     // App Store 外部安装引导
     @State private var masGuidanceRequest: WarningSheetRequest?
+    @ObservedObject private var guardianSync = AppLibraryAgentSync.shared
+    @AppStorage(BackgroundAgentPreferences.updateGuardianKey) private var guardianEnabled = true
     @ObservedObject private var appStoreInstall = AppStoreExternalInstallSettings.shared
 
     @State private var showSearchExclusion = false
@@ -391,7 +393,9 @@ struct ContentView: View {
         // 要还原的外部副本可能已经降级
         .warningSheet($degradedRestoreRequest)
         // 自更新应用迁移确认弹窗
-        .warningSheet($selfUpdaterRequest)
+        .sheet(item: $updateProtectionSelection) { selection in
+            UpdateProtectionDialog(selection: selection) { updateProtectionSelection = nil }
+        }
         .warningSheet($appReplacementRequest)
         // App Store 外部安装引导弹窗
         .warningSheet($masGuidanceRequest)
@@ -442,6 +446,8 @@ struct ContentView: View {
                 }
             }
         }
+        .environment(\.updateRecommendation, UpdateRecommendationContext(enabled: guardianEnabled,
+            ready: guardianSync.guardianReady, store: appStoreInstall))
     }
     
     // MARK: - 过滤逻辑
@@ -2331,31 +2337,73 @@ struct ContentView: View {
 
     /// 组装「自更新应用迁移」确认弹窗的内容快照。
     private func confirmUpdateProtection(for apps: [AppItem], onChoice: @escaping (Bool) -> Void) {
-        guard let request = Self.updateProtectionRequest(for: apps, service: AppMigrationService(), onChoice: onChoice) else {
+        guard let selection = UpdateProtectionSelection(apps: apps, service: AppMigrationService(), onChoice: onChoice) else {
             onChoice(false)
             return
         }
-        selfUpdaterRequest = request
+        updateProtectionSelection = selection
     }
 
-    static func updateProtectionRequest(for apps: [AppItem], service: AppMigrationService,
-                                        onChoice: @escaping (Bool) -> Void) -> WarningSheetRequest? {
-        let updatingApps = service.applicationsRequiringUpdateProtectionConfirmation(in: apps)
-        guard !updatingApps.isEmpty else { return nil }
-        let names = updatingApps.map { $0.displayName }.joined(separator: "、")
-        let introduction = updateMigrationIntroduction(names: names)
+    struct UpdateProtectionSelection: Identifiable {
+        let id = UUID()
+        let names: String
+        let routes: [(route: AppUpdateRoute, beforeStoreMigration: Bool)]
+        let onChoice: (Bool) -> Void
+
+        init?(apps: [AppItem], service: AppMigrationService, onChoice: @escaping (Bool) -> Void) {
+            var names: [String] = []
+            var routes: [(AppUpdateRoute, Bool)] = []
+            for app in apps {
+                let bundles = service.updateConfirmationBundles(for: app)
+                if bundles.isEmpty { continue }
+                names.append(app.displayName)
+                for url in bundles {
+                    let route: AppUpdateRoute
+                    if case .success(let identity) = AppIdentityResolver.resolve(at: url), identity.bundleIsLocked == false {
+                        route = AppUpdateRoute.inspect(identity)
+                    } else {
+                        route = .unknown
+                    }
+                    routes.append((route, app.willMigrateToStoreDirectory))
+                }
+            }
+            guard !routes.isEmpty else { return nil }
+            self.names = names.joined(separator: "、")
+            self.routes = routes
+            self.onChoice = onChoice
+        }
+    }
+
+    private struct UpdateProtectionDialog: View {
+        let selection: UpdateProtectionSelection
+        let dismiss: () -> Void
+        @Environment(\.updateRecommendation) private var context
+
+        var body: some View {
+            WarningSheet(ContentView.updateProtectionRequest(for: selection, context: context), onResolve: dismiss)
+        }
+    }
+
+    static func updateProtectionRequest(for selection: UpdateProtectionSelection,
+                                        context: UpdateRecommendationContext) -> WarningSheetRequest {
+        let recommended = selection.routes.allSatisfy {
+            $0.route.availability(in: context, beforeStoreMigration: $0.beforeStoreMigration).isAvailable
+        }
+        let introduction = updateMigrationIntroduction(names: selection.names)
         return WarningSheetRequest(
             title: "自更新应用迁移".localized,
             icon: "arrow.triangle.2.circlepath",
             tint: .orange,
             intro: introduction.plain,
             introText: introduction.text,
+            documentationURL: DocumentationLink.url(page: "blog/how-updates-work", anchor: "migration"),
             actions: [
                 WarningAction("锁定迁移".localized) {
-                    onChoice(true)
+                    selection.onChoice(true)
                 },
-                WarningAction("非锁定迁移".localized, style: .preferred, isDefault: true) {
-                    onChoice(false)
+                WarningAction(recommended ? "非锁定迁移（推荐）".localized : "非锁定迁移".localized,
+                              style: recommended ? .preferred : .normal, isDefault: recommended) {
+                    selection.onChoice(false)
                 }
             ]
         )

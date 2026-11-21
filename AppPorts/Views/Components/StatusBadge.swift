@@ -18,7 +18,6 @@ import SwiftUI
 /// - 📱 非原生（粉色）：iOS/iPadOS 应用（通过 Apple Silicon 运行）
 /// - 🏪 商店（蓝色）：Mac App Store 应用
 /// - 📀 未链接（橙色）：应用在外部存储但未链接回本地
-/// - 💻 本地（次要色）：普通本地应用
 ///
 /// ## 设计特点
 /// - 使用 SF Symbols 图标增强视觉识别
@@ -37,8 +36,12 @@ private struct BadgeConfig: Identifiable {
 
 private func localizedStatusBadgeText(_ text: String) -> String {
     switch text {
-    case AppStatus.local, AppStatus.linked, AppStatus.unlinked, AppStatus.partialLinked, AppStatus.orphanedLink, AppStatus.external, AppStatus.pendingMoveOut:
+    case AppStatus.linked, AppStatus.unlinked, AppStatus.partialLinked, AppStatus.orphanedLink, AppStatus.external, AppStatus.pendingMoveOut:
         return AppStatus.localized(text)
+    case "自有": return "自有".localized
+    case "可用": return "可用".localized
+    case "检测中": return "检测中".localized
+    case "未知": return "未知".localized
     case "锁定迁移":
         return "锁定迁移".localized
     case "非锁定迁移":
@@ -68,6 +71,17 @@ private func localizedStatusBadgeText(_ text: String) -> String {
     }
 }
 
+private struct UpdateRecommendationKey: EnvironmentKey {
+    static let defaultValue = UpdateRecommendationContext(guardian: .unavailable)
+}
+
+extension EnvironmentValues {
+    var updateRecommendation: UpdateRecommendationContext {
+        get { self[UpdateRecommendationKey.self] }
+        set { self[UpdateRecommendationKey.self] = newValue }
+    }
+}
+
 struct StatusBadge: View {
     /// 应用项目数据
     let app: AppItem
@@ -75,23 +89,22 @@ struct StatusBadge: View {
     var onRepairSignature: ((AppItem) -> Void)? = nil
     var activeTaskStatus: String? = nil
     var onViewTask: (() -> Void)? = nil
-    @State private var externalAppLocked: Bool?
+    @Environment(\.updateRecommendation) private var updateContext
 
-    private struct LockRequest: Hashable {
-        let path: URL
-        let status: String
-        let needsLock: Bool
-        let hasSelfUpdater: Bool
-        let version: String?
+    private var updateAvailability: UpdateAvailability {
+        if app.updateRoute == .appPorts { return .appPorts }
+        guard app.bundleIsLocked == false else { return .unknown }
+        return app.updateRoute.availability(in: updateContext,
+            beforeStoreMigration: app.willMigrateToStoreDirectory)
     }
 
     /// 所有适用的标签列表
-    private var badges: [BadgeConfig] {
+    private var badges: (update: BadgeConfig?, status: [BadgeConfig]) {
         var result: [BadgeConfig] = []
 
         // 1. 链接状态标签
         if app.status == AppStatus.linked {
-            if let locked = externalAppLocked, locked || app.needsLock {
+            if let locked = app.bundleIsLocked, locked || app.needsLock {
                 result.append(BadgeConfig(
                     text: locked ? "锁定迁移" : "非锁定迁移",
                     icon: locked ? "lock.fill" : "lock.open",
@@ -111,7 +124,7 @@ struct StatusBadge: View {
         } else if app.status == AppStatus.external {
             result.append(BadgeConfig(text: AppStatus.external, icon: "externaldrive", color: .orange, isTappable: false))
         } else if app.status == AppStatus.pendingMoveOut {
-            result.append(BadgeConfig(text: AppStatus.pendingMoveOut, icon: "arrow.up.right.circle", color: .cyan, isTappable: false))
+            result.append(BadgeConfig(text: AppStatus.pendingMoveOut, icon: "arrow.up.right.circle", color: .cyan, isTappable: true))
         }
 
         // 2. 类型标签
@@ -125,102 +138,38 @@ struct StatusBadge: View {
             result.append(BadgeConfig(text: "商店", icon: "applelogo", color: .blue, isTappable: AppMigrationService.isMASExternalInstallSupported))
         }
 
-        // 3. MAS 外部安装标签（复用商店标签，附加外部安装说明）
-        if app.isMASExternal && !app.isAppStoreApp {
-            result.append(BadgeConfig(text: "商店", icon: "applelogo", color: .blue, isTappable: true))
+        if app.updateRoute == .appPorts {
+            return (BadgeConfig(text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
+                                color: .blue, isTappable: true), result)
         }
 
-        // 4. 如果没有任何标签，显示"本地"
-        if result.isEmpty {
-            result.append(BadgeConfig(text: AppStatus.local, icon: "macmini", color: .secondary, isTappable: false))
+        if !app.isSystemApp && !app.isIOSApp && !app.isFolder &&
+            app.status != AppStatus.orphanedLink && app.status != AppStatus.pendingMoveOut {
+            if app.bundleIsLocked == true && [AppStatus.external, AppStatus.unlinked].contains(app.status) {
+                result.append(BadgeConfig(text: "锁定迁移", icon: "lock.fill", color: .green, isTappable: true))
+            } else if app.bodyMigrationPolicy == .standard && (app.bundleIsLocked != true || app.status == AppStatus.local) {
+                let available = updateAvailability.isAvailable
+                if available && updateContext.guardian != .disabled {
+                    result.removeAll { $0.text == "非锁定迁移" }
+                }
+                let update = BadgeConfig(text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
+                                         color: available ? .blue : .secondary, isTappable: true)
+                return (update, result)
+            }
         }
-
-        return result
-    }
-    
-    /// 检查外部 app 是否被 uchg 锁定
-    nonisolated private static func isExternalAppLocked(app: AppItem) -> Bool {
-        let externalPath: String
-
-        // 外部 app：直接检查自身
-        if app.path.path.hasPrefix("/Volumes/") {
-            externalPath = app.path.path
-        }
-        // wholeAppSymlink：整个 .app 是符号链接，解析目标
-        else if let resolved = resolveExternalPath(from: app.path) {
-            externalPath = resolved
-        }
-        // stub portal：从 launcher 脚本提取外部路径
-        else if let resolved = resolveExternalPathFromLauncher(app: app) {
-            externalPath = resolved
-        }
-        // deepContentsWrapper：解析 Contents/ 符号链接目标
-        else if let resolved = resolveExternalPathFromContents(app: app) {
-            externalPath = resolved
-        }
-        else {
-            return false
-        }
-
-        // 检查 uchg 标志
-        var statBuf = stat()
-        guard stat(externalPath, &statBuf) == 0 else { return false }
-        return (statBuf.st_flags & UInt32(UF_IMMUTABLE)) != 0
-    }
-
-    /// wholeAppSymlink：解析符号链接目标
-    nonisolated private static func resolveExternalPath(from url: URL) -> String? {
-        guard let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey]),
-              values.isSymbolicLink == true,
-              let dest = try? FileManager.default.destinationOfSymbolicLink(atPath: url.path) else {
-            return nil
-        }
-        let resolved = URL(fileURLWithPath: dest, relativeTo: url.deletingLastPathComponent()).standardizedFileURL
-        return resolved.path.hasPrefix("/Volumes/") ? resolved.path : nil
-    }
-
-    /// stub portal：从原生 launcher 的 real_app_path.txt 或旧版 bash 脚本提取外部路径
-    nonisolated private static func resolveExternalPathFromLauncher(app: AppItem) -> String? {
-        // 新版原生 launcher：从 real_app_path.txt 读取
-        let pathFile = app.path.appendingPathComponent("Contents/Resources/real_app_path.txt")
-        if let raw = try? String(contentsOf: pathFile, encoding: .utf8),
-           !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            let path = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-            return path.hasPrefix("/Volumes/") ? path : nil
-        }
-
-        // 旧版 bash launcher：从脚本中提取 REAL_APP='...'
-        let launcher = app.path.appendingPathComponent("Contents/MacOS/launcher")
-        guard let script = try? String(contentsOf: launcher, encoding: .utf8),
-              let range = script.range(of: "REAL_APP='") else { return nil }
-        let afterQuote = script[range.upperBound...]
-        guard let endQuote = afterQuote.range(of: "'") else { return nil }
-        let path = String(afterQuote[..<endQuote.lowerBound])
-        return path.hasPrefix("/Volumes/") ? path : nil
-    }
-
-    /// deepContentsWrapper：解析 Contents/ 符号链接目标
-    nonisolated private static func resolveExternalPathFromContents(app: AppItem) -> String? {
-        let contents = app.path.appendingPathComponent("Contents")
-        guard let values = try? contents.resourceValues(forKeys: [.isSymbolicLinkKey]),
-              values.isSymbolicLink == true,
-              let dest = try? FileManager.default.destinationOfSymbolicLink(atPath: contents.path) else {
-            return nil
-        }
-        let resolved = URL(fileURLWithPath: dest, relativeTo: contents.deletingLastPathComponent()).standardizedFileURL
-        // Contents/ 指向外部 app 的 Contents/，需要上跳一级
-        let externalApp = resolved.deletingLastPathComponent()
-        return externalApp.path.hasPrefix("/Volumes/") ? externalApp.path : nil
+        return (nil, result)
     }
 
     /// 点击标签时显示的说明文字
     private func badgeInfoMessage(for badge: BadgeConfig) -> String? {
         switch badge.text {
+        case "待迁出":
+            return UpdateAvailability.moveOut.explanation
         case "锁定迁移":
             return "此应用已被迁移到外部存储并锁定。锁定状态可防止应用内更新破坏外部应用。如需更新，请通过 AppPorts 迁回本地后再更新。".localized
         case "非锁定迁移":
             return "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。".localized
-        case "商店" where app.isMASExternal:
+        case "商店" where updateAvailability == .store && !app.willMigrateToStoreDirectory:
             return "此应用位于外部磁盘的 Applications 目录，由 macOS 原生管理（macOS 15.1+ 功能）。App Store 可直接在此目录进行增量更新，无需通过 AppPorts 迁回。".localized
         default:
             return nil
@@ -257,20 +206,6 @@ struct StatusBadge: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .task(id: LockRequest(path: app.path, status: app.status, needsLock: app.needsLock,
-                              hasSelfUpdater: app.hasSelfUpdater, version: app.version)) {
-            externalAppLocked = nil
-            guard app.needsLock || app.hasSelfUpdater, app.status == AppStatus.linked else { return }
-            let inspectedApp = app
-            let worker = Task.detached(priority: .utility) {
-                Self.isExternalAppLocked(app: inspectedApp)
-            }
-            let locked = await withTaskCancellationHandler {
-                await worker.value
-            } onCancel: { worker.cancel() }
-            guard !Task.isCancelled else { return }
-            externalAppLocked = locked
-        }
     }
 
     private var signatureAccessibilityLabel: String {
@@ -294,7 +229,12 @@ struct StatusBadge: View {
     }
 
     private var badgeContent: some View {
-        Group {
+        let badges = self.badges
+        return Group {
+            if let updateBadge = badges.update {
+                TappableBadge(badge: updateBadge, message: updateAvailability.explanation)
+            }
+
             if let taskBadge = activeTaskBadgeConfig {
                 if let onViewTask {
                     TappableBadge(badge: taskBadge, action: onViewTask, actionHelp: "查看进度".localized)
@@ -303,7 +243,7 @@ struct StatusBadge: View {
                 }
             }
 
-            ForEach(badges) { badge in
+            ForEach(badges.status) { badge in
                 if badge.isTappable, let message = badgeInfoMessage(for: badge) {
                     TappableBadge(badge: badge, message: message)
                 } else {

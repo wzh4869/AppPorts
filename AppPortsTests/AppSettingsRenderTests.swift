@@ -24,6 +24,52 @@ final class AppSettingsRenderTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdateBadgesRespectScannedMigrationPolicy() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("AppPortsPolicyRows-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let ids = ["com.shimoko.AppPorts", "com.apple.dt.Xcode", "com.microsoft.VSCode", "com.microsoft.VSCodeInsiders",
+                   "io.github.clash-verge-rev.clash-verge-rev", "example.ordinary"]
+        for id in ids {
+            let contents = root.appendingPathComponent(id + ".app/Contents")
+            try FileManager.default.createDirectory(at: contents.appendingPathComponent("Frameworks/Sparkle.framework"), withIntermediateDirectories: true)
+            try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": id], format: .xml, options: 0)
+                .write(to: contents.appendingPathComponent("Info.plist"))
+        }
+        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("Signatures"), adHocProbe: { _ in false })
+        let apps = await scanner.scanLocalApps(at: root, runningAppURLs: [])
+        XCTAssertEqual(apps.count, ids.count)
+        XCTAssertEqual(Set(apps.filter(\.showsAppData).map(\.name)), Set(ids.dropFirst().map { $0 + ".app" }))
+        for app in apps {
+            for guardian in [UpdateRecommendationContext.Guardian.ready, .disabled, .unavailable] {
+                let context = UpdateRecommendationContext(guardian: guardian)
+                let view = NSHostingView(rootView: StatusBadge(app: app).environment(\.updateRecommendation, context))
+                switch app.name {
+                case "com.shimoko.AppPorts.app":
+                    XCTAssertEqual(app.updateRoute.availability(in: context).badgeTitle, "自有")
+                    XCTAssertGreaterThan(view.fittingSize.height, 0)
+                case "example.ordinary.app":
+                    XCTAssertEqual(app.updateRoute, .sparkle)
+                    XCTAssertGreaterThan(view.fittingSize.height, 0)
+                default:
+                    XCTAssertEqual(app.bodyMigrationPolicy, .requiresConfirmation)
+                    XCTAssertEqual(view.fittingSize.height, 0, app.name)
+                    var running = app
+                    running.isRunning = true
+                    XCTAssertGreaterThan(NSHostingView(rootView: StatusBadge(app: running)).fittingSize.height, 0)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func testLocalFolderWithoutStatusHasNoBadge() {
+        var folder = AppItem(name: "Utilities", path: URL(fileURLWithPath: "/Applications/Utilities"), status: AppStatus.local)
+        folder.isFolder = true
+        let badges = NSHostingView(rootView: StatusBadge(app: folder))
+        XCTAssertEqual(badges.fittingSize.height, 0)
+    }
+
+    @MainActor
     func testOrdinaryMigratedBadgesAndExistingLocks() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/Volumes/") else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT on an external volume for lock badge review")
@@ -49,26 +95,22 @@ final class AppSettingsRenderTests: XCTestCase {
                 .write(to: app.appendingPathComponent("Contents/Info.plist"))
             apps.append(app)
         }
-        let scanned = await scanner.scanLocalApps(at: root.appendingPathComponent("External"), runningAppURLs: [])
-        XCTAssertEqual(scanned.count, 3)
         for code in ["zh-Hans", "en"] {
             LanguageManager.shared.language = code
             for dark in [false, true] {
                 NSApp.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
                 for locked in [false, true] {
                     for url in apps { XCTAssertEqual(chflags(url.path, locked ? UInt32(UF_IMMUTABLE) : 0), 0) }
-                    try await render(VStack(alignment: .leading, spacing: 16) {
+                    let scanned = await scanner.scanLocalApps(at: root.appendingPathComponent("External"), runningAppURLs: [])
+                    XCTAssertEqual(scanned.count, 3)
+                    try await render(VStack(alignment: .leading, spacing: 0) {
                         ForEach(scanned) { original in
                             var app = original
                             app.status = AppStatus.linked
-                            return HStack {
-                                Text(app.displayName).frame(width: 160, alignment: .leading)
-                                StatusBadge(app: app)
-                                Spacer()
-                            }
+                            return Self.listRow(app, local: false)
                         }
-                    }.padding(16).environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, dark ? .dark : .light),
-                        size: NSSize(width: 480, height: 140),
+                    }.environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, dark ? .dark : .light),
+                        size: NSSize(width: 480, height: 180),
                         destination: output.appendingPathComponent("migrated-badges-\(code)-\(dark ? "dark" : "light")-\(locked ? "locked" : "unlocked").png"))
                 }
             }
@@ -95,27 +137,52 @@ final class AppSettingsRenderTests: XCTestCase {
         let appearance = NSApp.appearance
         defer { try? FileManager.default.removeItem(at: root); LanguageManager.shared.language = language; NSApp.appearance = appearance }
         var app = AppItem(name: source.lastPathComponent, path: source, status: AppStatus.local)
-        app.isSparkleApp = true
-        app.isElectronApp = true
+        app.updateRoute = .shipIt
+        app.bundleIsLocked = false
+        app.size = "912 kB"
+        var migrated = app
+        migrated.status = AppStatus.linked
+        migrated.needsLock = true
+        migrated.isRunning = true
         for code in ["zh-Hans", "en", "fr"] {
             LanguageManager.shared.language = code
             for dark in [false, true] {
                 NSApp.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
                 let scheme: ColorScheme = dark ? .dark : .light
                 let suffix = "\(code)-\(dark ? "dark" : "light")"
-                let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [app], service: service) { _ in })
+                let selection = try XCTUnwrap(ContentView.UpdateProtectionSelection(apps: [app], service: service) { _ in })
+                let request = ContentView.updateProtectionRequest(for: selection, context: .init(guardian: .ready))
                 try await render(WarningSheet(request).environment(\.locale, Locale(identifier: code))
                     .environment(\.colorScheme, scheme).environment(\.controlActiveState, .key),
                     size: NSSize(width: 520, height: 380), destination: output.appendingPathComponent("update-choice-\(suffix).png"),
                     activateWindow: true)
-                try await render(HStack(spacing: 12) {
-                    Text(app.displayName)
-                    StatusBadge(app: app)
-                    Spacer()
-                }.padding(16).environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, scheme),
-                    size: NSSize(width: 520, height: 64), destination: output.appendingPathComponent("update-badges-\(suffix).png"))
+                try await render(HStack(alignment: .top, spacing: 0) {
+                    ForEach([true, false], id: \.self) { local in
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach([UpdateRecommendationContext.Guardian.ready, .disabled], id: \.self) { guardian in
+                                Self.listRow(local ? app : migrated, local: local)
+                                    .environment(\.updateRecommendation, .init(guardian: guardian))
+                            }
+                        }
+                        if local { Divider() }
+                    }
+                }.environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, scheme),
+                    size: NSSize(width: 800, height: 158), destination: output.appendingPathComponent("update-badges-\(suffix).png"))
+                try await render(VStack(alignment: .leading, spacing: 0) {
+                    ForEach([UpdateRecommendationContext.Guardian.unavailable, .ready, .disabled], id: \.self) { guardian in
+                        Self.listRow(migrated, local: true)
+                            .environment(\.updateRecommendation, .init(guardian: guardian))
+                    }
+                }.environment(\.locale, Locale(identifier: code)).environment(\.colorScheme, scheme),
+                    size: NSSize(width: 480, height: 192), destination: output.appendingPathComponent("guardian-badges-\(suffix).png"))
             }
         }
+    }
+
+    @MainActor
+    private static func listRow(_ app: AppItem, local: Bool) -> some View {
+        AppRowView(app: app, showDeleteLinkButton: local, onDeleteLink: { _ in },
+                   onResign: nil, onRestoreSignature: nil)
     }
 
     @MainActor

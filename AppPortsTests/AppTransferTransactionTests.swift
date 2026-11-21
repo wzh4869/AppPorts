@@ -54,6 +54,14 @@ final class AppTransferTransactionTests: XCTestCase {
     }
 
     @MainActor
+    private func updateProtectionRequest(for apps: [AppItem], service: AppMigrationService,
+                                         guardian: UpdateRecommendationContext.Guardian = .ready,
+                                         onChoice: @escaping (Bool) -> Void) -> WarningSheetRequest? {
+        guard let selection = ContentView.UpdateProtectionSelection(apps: apps, service: service, onChoice: onChoice) else { return nil }
+        return ContentView.updateProtectionRequest(for: selection, context: .init(guardian: guardian))
+    }
+
+    @MainActor
     func testAppPortsCannotMigrateEvenWhenRenamedInsideASuiteOrExplicitlyApproved() async throws {
         let w = try Workspace(); defer { w.cleanup() }
         let service = w.service()
@@ -160,21 +168,55 @@ final class AppTransferTransactionTests: XCTestCase {
         let app = item(source)
         XCTAssertFalse(app.hasSelfUpdater)
         var choices: [Bool] = []
-        let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [app], service: w.service()) { choices.append($0) })
-        XCTAssertEqual(request.actions.map(\.title), ["锁定迁移".localized, "非锁定迁移".localized])
+        let request = try XCTUnwrap(updateProtectionRequest(for: [app], service: w.service()) { choices.append($0) })
+        XCTAssertEqual(request.actions.map(\.title), ["锁定迁移".localized, "非锁定迁移（推荐）".localized])
         XCTAssertEqual(request.actions[0].style, .normal)
         XCTAssertEqual(request.actions[1].style, .preferred)
         XCTAssertFalse(request.actions[0].isDefault)
         XCTAssertTrue(request.actions[1].isDefault)
         XCTAssertNotNil(request.introText)
+        for state in [UpdateRecommendationContext.Guardian.disabled, .unavailable] {
+            let unknown = try XCTUnwrap(updateProtectionRequest(for: [app], service: w.service(), guardian: state) { _ in })
+            XCTAssertFalse(unknown.actions.contains(where: \.isDefault))
+            XCTAssertEqual(unknown.actions.last?.title, "非锁定迁移".localized)
+        }
+        let custom = w.local.appendingPathComponent("Custom.app")
+        try makeApp(custom, identifier: "example.custom")
+        try Data().write(to: custom.appendingPathComponent("Contents/MacOS/updater"))
+        let mixed = try XCTUnwrap(updateProtectionRequest(for: [app, item(custom)], service: w.service()) { _ in })
+        XCTAssertFalse(mixed.actions.contains(where: \.isDefault))
         XCTAssertTrue(choices.isEmpty)
         request.onCancel()
         XCTAssertTrue(choices.isEmpty)
         request.actions[0].handler()
         request.actions[1].handler()
         XCTAssertEqual(choices, [true, false])
+        XCTAssertEqual(chflags(source.path, UInt32(UF_IMMUTABLE)), 0)
+        let locked = try XCTUnwrap(updateProtectionRequest(for: [app], service: w.service()) { _ in })
+        XCTAssertFalse(locked.actions.contains(where: \.isDefault))
+        XCTAssertEqual(chflags(source.path, 0), 0)
         try FileManager.default.removeItem(at: source.appendingPathComponent("Contents/Frameworks/Squirrel.framework"))
-        XCTAssertNil(ContentView.updateProtectionRequest(for: [app], service: w.service()) { _ in XCTFail("No automatic choice") })
+        XCTAssertNil(updateProtectionRequest(for: [app], service: w.service()) { _ in XCTFail("No automatic choice") })
+    }
+
+    @MainActor
+    func testNativeShipItRecommendsUnlockedWithGuardianOffOnlyWhenEntireSelectionQualifies() throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let qoder = w.local.appendingPathComponent("Editor.app")
+        let deepSeek = w.local.appendingPathComponent("Harness.app")
+        for (app, id) in [(qoder, "com.qoder.app"), (deepSeek, "com.deepseek.dsh")] {
+            try makeApp(app, identifier: id)
+            let installer = app.appendingPathComponent("Contents/Frameworks/Squirrel.framework/Resources/ShipIt")
+            try FileManager.default.createDirectory(at: installer.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data([1]).write(to: installer)
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: installer.path)
+        }
+        let service = w.service()
+        let native = try XCTUnwrap(updateProtectionRequest(for: [item(qoder)], service: service, guardian: .disabled) { _ in })
+        XCTAssertEqual(native.actions.last?.title, "非锁定迁移（推荐）".localized)
+        XCTAssertEqual(native.actions.last?.isDefault, true)
+        let mixed = try XCTUnwrap(updateProtectionRequest(for: [item(qoder), item(deepSeek)], service: service, guardian: .disabled) { _ in })
+        XCTAssertFalse(mixed.actions.contains(where: \.isDefault))
     }
 
     @MainActor
@@ -197,8 +239,10 @@ final class AppTransferTransactionTests: XCTestCase {
         ]
         for (code, expectedPrefix, expectedSettingsPhrase) in expectations {
             LanguageManager.shared.language = code
-            let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: [item(source)], service: w.service()) { _ in })
+            let request = try XCTUnwrap(updateProtectionRequest(for: [item(source)], service: w.service()) { _ in })
             let intro = try XCTUnwrap(request.intro)
+            XCTAssertEqual(request.documentationURL,
+                           DocumentationLink.url(page: "blog/how-updates-work", anchor: "migration", language: code))
             XCTAssertTrue(intro.hasPrefix(expectedPrefix), "[\(code)] \(intro)")
             XCTAssertTrue(intro.contains(expectedSettingsPhrase), "[\(code)] \(intro)")
             XCTAssertNotNil(request.introText)
@@ -241,12 +285,12 @@ final class AppTransferTransactionTests: XCTestCase {
             let app = item(source)
             ordinary.append(app)
             XCTAssertTrue(service.hasSelfUpdater(at: source))
-            XCTAssertNil(ContentView.updateProtectionRequest(for: [app], service: service) { _ in XCTFail("Unexpected confirmation") })
+            XCTAssertNil(updateProtectionRequest(for: [app], service: service) { _ in XCTFail("Unexpected confirmation") })
             XCTAssertFalse(service.needsUpdateProtection(app))
         }
         let other = w.local.appendingPathComponent("WorkBuddy.app")
         try makeApp(other, identifier: "example.unrelated", sparkle: true)
-        let request = try XCTUnwrap(ContentView.updateProtectionRequest(for: ordinary + [item(other)], service: service) { _ in })
+        let request = try XCTUnwrap(updateProtectionRequest(for: ordinary + [item(other)], service: service) { _ in })
         XCTAssertEqual(service.applicationsRequiringUpdateProtectionConfirmation(in: ordinary + [item(other)]).map(\.path), [other])
         XCTAssertTrue(try XCTUnwrap(request.intro).contains(item(other).displayName))
         for app in ordinary {
@@ -270,9 +314,9 @@ final class AppTransferTransactionTests: XCTestCase {
         try makeApp(folder.appendingPathComponent("Music.app"), identifier: "com.netease.163music", sparkle: true)
         var suite = item(folder)
         suite.isFolder = true
-        XCTAssertNil(ContentView.updateProtectionRequest(for: [suite], service: w.service()) { _ in XCTFail("Unexpected confirmation") })
+        XCTAssertNil(updateProtectionRequest(for: [suite], service: w.service()) { _ in XCTFail("Unexpected confirmation") })
         try makeApp(folder.appendingPathComponent("Other.app"), sparkle: true)
-        XCTAssertNotNil(ContentView.updateProtectionRequest(for: [suite], service: w.service()) { _ in })
+        XCTAssertNotNil(updateProtectionRequest(for: [suite], service: w.service()) { _ in })
     }
 
     func testSparkleCacheLocksAreRemovedByRestoreBeforeNonLockedMigration() async throws {
