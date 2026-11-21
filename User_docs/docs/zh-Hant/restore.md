@@ -64,7 +64,7 @@ flowchart TB
 
 ## 處理未完成操作與保留副本 {#recovery}
 
-在「任務中心」開啟需要處理的任務，點擊「處理異常」，先看目前遷移記錄。面板會分開列出「目前資料」與「保留的舊副本」路徑，幫助判斷哪一份正在使用。結束關聯應用，接好並解鎖原磁碟；權限不足時使用「檢查權限」，再重試。重試範圍以面板列出的項目為準，「重試所有待處理項」可能涉及多筆記錄。
+在「任務中心」開啟需要處理的任務，點擊「處理異常」，先看目前遷移記錄。面板會分開列出「目前資料」與「保留的舊副本」路徑，幫助判斷哪一份正在使用。結束關聯應用，接好並解鎖原磁碟；權限不足時使用「檢查權限」，再重試。單一任務只顯示可確認屬於它的記錄。要檢查其他任務或無法歸屬的舊記錄，請點選「查看所有待處理項目」。在此畫面重試所有待處理項目會同時處理多個項目。
 
 [![異常處理範例。先核對「目前資料」與「保留的舊副本」兩條路徑，再決定是否重試、打開舊副本或稍後處理。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-zh-hant-b62d5a0f7221227f.png?sign=1pqsFa4cvBnNMSKz34QzkB-bj8Dza7Ijdhw3iCUYbkE%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-zh-hant-b62d5a0f7221227f.png?sign=1pqsFa4cvBnNMSKz34QzkB-bj8Dza7Ijdhw3iCUYbkE%3D%3A0)
 

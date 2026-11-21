@@ -64,7 +64,7 @@ Before removing AppPorts, restore container data it still manages. Otherwise the
 
 ## Resolve unfinished work and retained copies {#recovery}
 
-Open a task needing attention in Task Center and choose Resolve Issues. Read the current migration records first; the panel displays the Current data location separately from the Retained old copy path so you can tell which copy is active. Quit the associated app and connect and unlock the original drive. Use Check Permissions if needed, then retry. Check the items shown in the panel: Retry All Pending Items can affect several records.
+Open a task needing attention in Task Center and choose Resolve Issues. Read the current migration records first; the panel displays the Current data location separately from the Retained old copy path so you can tell which copy is active. Quit the associated app and connect and unlock the original drive. Use Check Permissions if needed, then retry. A task shows only records that can be linked to it. Choose View All Pending Items to inspect other tasks or older records that cannot be matched. Retry All Pending Items in that view can affect multiple tasks.
 
 [![Recovery example. Compare the current data path with the retained copy before choosing Retry, Open Old Copy, or Decide Later.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-en-d9a52652047127a6.png?sign=sIwyVu4T51_Do5djyWlhD3XVxLu3ttPNeA4irVW_Qow%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-en-d9a52652047127a6.png?sign=sIwyVu4T51_Do5djyWlhD3XVxLu3ttPNeA4irVW_Qow%3D%3A0)
 

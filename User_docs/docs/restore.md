@@ -64,7 +64,7 @@ flowchart TB
 
 ## 处理未完成操作与保留副本 {#recovery}
 
-在“任务中心”打开需要处理的任务，点击“处理异常”，先看当前迁移记录。面板会分开列出“当前数据”与“保留的旧副本”路径，帮助判断哪一份正在使用。退出关联应用，接好并解锁原盘；权限不足时使用“检查权限”，再重试。重试范围以面板列出的项目为准，“重试所有待处理项”可能涉及多条记录。
+在“任务中心”打开需要处理的任务，点击“处理异常”，先看当前迁移记录。面板会分开列出“当前数据”与“保留的旧副本”路径，帮助判断哪一份正在使用。退出关联应用，接好并解锁原盘；权限不足时使用“检查权限”，再重试。单条任务只显示能确认属于它的记录。要检查其他任务或无法归属的旧记录，点“查看全部待处理项”。全局面板里的“重试所有待处理项”会同时处理多个项目。
 
 [![处理异常的示例。先核对「当前数据」与「保留的旧副本」两条路径，再决定重试、打开旧副本或稍后处理。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-zh-hans-1ee23dbc590c55f3.png?sign=1xt-47lcrygGLvU-CAB9xkpuJzAoLBav5w4IT3qUeao%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-recovery-code-zh-hans-1ee23dbc590c55f3.png?sign=1xt-47lcrygGLvU-CAB9xkpuJzAoLBav5w4IT3qUeao%3D%3A0)
 
