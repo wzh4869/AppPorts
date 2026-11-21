@@ -54,6 +54,103 @@ final class AppTransferTransactionTests: XCTestCase {
     }
 
     @MainActor
+    func testAppPortsCannotMigrateEvenWhenRenamedInsideASuiteOrExplicitlyApproved() async throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let service = w.service()
+        let suiteRoot = w.local.appendingPathComponent("Tools")
+        let renamed = suiteRoot.appendingPathComponent("Renamed.app")
+        try makeApp(renamed, identifier: "com.shimoko.AppPorts")
+        let ordinary = item(w.local.appendingPathComponent("AppPorts.app"))
+        try makeApp(ordinary.path, identifier: "example.unrelated")
+        var suite = item(suiteRoot)
+        suite.isFolder = true
+        for selected in [item(renamed), suite] {
+            let notice = try XCTUnwrap(ContentView.appPortsMigrationNotice(for: [selected], service: service, hasDestination: true) { _ in XCTFail() })
+            XCTAssertEqual(notice.intro, UpdateAvailability.appPorts.explanation)
+            XCTAssertTrue(notice.actions.isEmpty)
+            XCTAssertEqual(notice.cancelTitle, "好".localized)
+            let dest = w.external.appendingPathComponent(selected.name)
+            for running in [true, false] {
+                do {
+                    _ = try await service.moveAndLink(appToMove: selected, destinationURL: dest,
+                        isRunning: running, acceptedRiskBundles: [renamed], progressHandler: nil)
+                    XCTFail("AppPorts moved to external storage")
+                } catch {
+                    XCTAssertTrue(error.localizedDescription.contains(UpdateAvailability.appPorts.explanation))
+                }
+                XCTAssertEqual(try payload(renamed), "payload")
+                XCTAssertFalse(FileManager.default.fileExists(atPath: dest.path))
+                XCTAssertTrue(try service.pendingTransfers().isEmpty)
+            }
+        }
+        var remaining: [AppItem] = []
+        let mixed = try XCTUnwrap(ContentView.appPortsMigrationNotice(for: [suite, ordinary], service: service, hasDestination: true) { remaining = $0 })
+        XCTAssertEqual(mixed.actions.count, 1)
+        mixed.onCancel()
+        XCTAssertTrue(remaining.isEmpty)
+        mixed.actions[0].handler()
+        XCTAssertEqual(remaining, [ordinary])
+        XCTAssertNil(ContentView.appPortsMigrationNotice(for: remaining, service: service, hasDestination: true) { _ in XCTFail() })
+    }
+
+    @MainActor
+    func testRiskyAppMigrationOffersOnlyExplicitOverrideAndCanSkipWholeSuite() throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let service = w.service()
+        let suiteURL = w.local.appendingPathComponent("Editors")
+        let nested = suiteURL.appendingPathComponent("Renamed.app")
+        try makeApp(nested, identifier: "com.microsoft.VSCodeInsiders")
+        var suite = item(suiteURL)
+        suite.isFolder = true
+        let ordinary = item(w.local.appendingPathComponent("Xcode.app"))
+        try makeApp(ordinary.path, identifier: "example.unrelated")
+        var selected: [AppItem] = []
+        var approvals: Set<URL> = []
+        let request = try XCTUnwrap(ContentView.migrationRiskRequest(for: [suite, ordinary], service: service) {
+            selected = $0; approvals = $1
+        })
+        XCTAssertTrue(try XCTUnwrap(request.intro).contains("Renamed.app"))
+        request.onCancel()
+        XCTAssertTrue(selected.isEmpty)
+        let safe = try XCTUnwrap(request.actions.first(where: \.isDefault))
+        safe.handler()
+        XCTAssertEqual(selected.map(\.id), [ordinary.id])
+        XCTAssertTrue(approvals.isEmpty)
+        let override = try XCTUnwrap(request.actions.first { $0.title == "无视风险迁移".localized })
+        XCTAssertFalse(override.isDefault)
+        override.handler()
+        XCTAssertEqual(selected.map(\.id), [suite.id, ordinary.id])
+        XCTAssertEqual(approvals.map { $0.resolvingSymlinksInPath().path }, [nested.resolvingSymlinksInPath().path])
+        XCTAssertNil(ContentView.migrationRiskRequest(for: [ordinary], service: service) { _, _ in XCTFail() })
+    }
+
+    func testRiskyBundlesRequireApprovalForMoveOutAndCanBeRestoredNormally() async throws {
+        let w = try Workspace(); defer { w.cleanup() }
+        let service = w.service()
+        for identifier in ["io.github.clash-verge-rev.clash-verge-rev", "com.microsoft.VSCode", "com.apple.dt.Xcode"] {
+            let source = w.local.appendingPathComponent(identifier + ".app")
+            let destination = w.external.appendingPathComponent(source.lastPathComponent)
+            try makeApp(source, identifier: identifier)
+            do {
+                _ = try await service.moveAndLink(appToMove: item(source), destinationURL: destination,
+                    isRunning: false, progressHandler: nil)
+                XCTFail("Moved a restricted app without approval")
+            } catch {
+                XCTAssertEqual((error as NSError).userInfo[NSFilePathErrorKey] as? String, source.path)
+            }
+            XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+            XCTAssertEqual(try payload(source), "payload")
+            let moved = try await service.moveAndLink(appToMove: item(source), destinationURL: destination,
+                isRunning: false, lockExternal: false, acceptedRiskBundles: [source], progressHandler: nil)
+            XCTAssertTrue(moved.isComplete)
+            XCTAssertEqual(try payload(destination), "payload")
+            let restored = try await service.moveBack(app: item(destination), localDestinationURL: source, progressHandler: nil)
+            XCTAssertTrue(restored.transferResult.isComplete)
+            XCTAssertEqual(try payload(source), "payload")
+        }
+    }
+
+    @MainActor
     func testUpdaterConfirmationUsesTheApplicationInsteadOfCachedScanFlags() throws {
         let w = try Workspace(); defer { w.cleanup() }
         let source = w.local.appendingPathComponent("App.app")

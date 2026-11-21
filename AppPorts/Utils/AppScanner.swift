@@ -396,6 +396,7 @@ actor AppScanner {
                             status: baseStatus,
                             isSystemApp: false,
                             isRunning: hasRunning,
+                            bodyMigrationPolicy: appsInFolder.contains(where: AppMigrationService.isAppPortsBundle) ? .localOnly : .standard,
                             isFolder: true,
                             containerKind: .appSuiteFolder,
                             appCount: appCount

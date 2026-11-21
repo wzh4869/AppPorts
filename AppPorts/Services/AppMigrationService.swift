@@ -486,6 +486,7 @@ struct AppMigrationService {
         destinationURL: URL,
         isRunning: Bool,
         lockExternal: Bool = true,
+        acceptedRiskBundles: Set<URL> = [],
         replaceExistingSameApplication: Bool = false,
         replacementChoice: ReplacementChoice? = nil,
         deleteSourceFallback: FinderRemover? = nil,
@@ -499,7 +500,11 @@ struct AppMigrationService {
                 ?? "其他操作正在使用应用记录，请稍后重试。".localized, at: appToMove.path)
         }
         defer { operationLock.release() }
+        try requireExternalMigrationAllowed(for: appToMove)
         if isRunning { throw AppMoverError.appIsRunning }
+        if let restricted = migrationRiskBundles(for: appToMove).first(where: { !acceptedRiskBundles.contains($0) }) {
+            throw AppTransferTransaction.failure("应用本体迁移需要确认".localized, at: restricted)
+        }
         if AppSearchExclusionService.isExcluded(destinationURL) {
             if let reason = AppSearchExclusionService.unsupportedReason(for: appToMove) {
                 throw AppSearchExclusionService.failure(reason)
@@ -586,6 +591,11 @@ struct AppMigrationService {
         }
         defer { operationLock.release() }
         let record = try transferStore.record(operationID)
+        if record.direction == .migrate && !record.isSwitchComplete {
+            let source = AppItem(name: record.appName, path: URL(fileURLWithPath: record.sourcePath),
+                                 status: AppStatus.local, isFolder: record.usesFolderOperation)
+            try requireExternalMigrationAllowed(for: source)
+        }
         let ejection = try DiskEjectionPauseStore(directory: transferStore.operationLockURL.deletingLastPathComponent()).snapshot()
         guard !ejection.blocks(volumeUUIDs: [record.sourceIdentity.volumeUUID,
             record.sourceParentIdentity.volumeUUID, record.destinationParentIdentity.volumeUUID],
@@ -1318,13 +1328,43 @@ struct AppMigrationService {
 
     /// Confirmation uses on-disk detection, with exceptions for verified ordinary migration.
     func applicationsRequiringUpdateProtectionConfirmation(in apps: [AppItem]) -> [AppItem] {
-        apps.filter { app in
-            guard app.usesFolderOperation else { return requiresUpdateProtectionConfirmation(at: app.path) }
-            let children = (try? fileManager.contentsOfDirectory(at: app.path,
-                includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
-            return children.filter { $0.pathExtension.lowercased() == "app" }
-                .contains { requiresUpdateProtectionConfirmation(at: $0) }
+        apps.filter { !updateConfirmationBundles(for: $0).isEmpty }
+    }
+
+    func updateConfirmationBundles(for app: AppItem) -> [URL] {
+        migrationBundles(for: app).filter(requiresUpdateProtectionConfirmation)
+    }
+
+    private func requireExternalMigrationAllowed(for app: AppItem) throws {
+        if let bundle = appPortsBundle(in: app) {
+            throw AppTransferTransaction.failure(UpdateAvailability.appPorts.explanation, at: bundle)
         }
+    }
+
+    func appPortsBundle(in app: AppItem) -> URL? {
+        if app.usesFolderOperation && Bundle.main.bundleURL.standardizedFileURL.path.hasPrefix(app.path.standardizedFileURL.path + "/") {
+            return Bundle.main.bundleURL
+        }
+        return migrationBundles(for: app).first(where: Self.isAppPortsBundle)
+    }
+
+    static func isAppPortsBundle(_ url: URL) -> Bool {
+        guard case .success(let identity) = AppIdentityResolver.resolve(at: url) else { return false }
+        return identity.bodyMigrationPolicy == .localOnly
+    }
+
+    func migrationRiskBundles(for app: AppItem) -> [URL] {
+        migrationBundles(for: app).filter { url in
+            guard case .success(let identity) = AppIdentityResolver.resolve(at: url) else { return false }
+            return identity.bodyMigrationPolicy == .requiresConfirmation
+        }
+    }
+
+    private func migrationBundles(for app: AppItem) -> [URL] {
+        guard app.usesFolderOperation else { return [app.path] }
+        let children = (try? fileManager.contentsOfDirectory(at: app.path,
+            includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
+        return children.filter { $0.pathExtension.lowercased() == "app" }
     }
 
     private func requiresUpdateProtectionConfirmation(at appURL: URL) -> Bool {

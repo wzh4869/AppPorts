@@ -138,6 +138,143 @@
         }
       }
     },
+    "AppPorts 需要保留在本机" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أبقِ AppPorts على جهاز Mac هذا"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠅⠑⠑⠏⠀⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠀⠕⠝⠀⠞⠓⠊⠎⠀⠠⠍⠁⠉"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts muss auf diesem Mac bleiben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep AppPorts on this Mac"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenu AppPorts sur ĉi tiu Mac"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén AppPorts en este Mac"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gardez AppPorts sur ce Mac"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts को इसी Mac पर रखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan AppPorts di Mac ini"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantieni AppPorts su questo Mac"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts はこの Mac に残してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts를 이 Mac에 유지하세요"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Houd AppPorts op deze Mac"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowaj AppPorts na tym Macu"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantenha o AppPorts neste Mac"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оставьте AppPorts на этом Mac"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เก็บ AppPorts ไว้บน Mac เครื่องนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts bu Mac’te kalmalı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giữ AppPorts trên máy Mac này"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 需要保留在本机"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 需要保留在這部 Mac 上"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 需偠保畱茬夲僟"
+          }
+        }
+      }
+    },
     "AppPorts 使用自有更新机制，不支持迁移到外部存储。请将它保留在本机的“应用程序”文件夹中。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -271,6 +408,554 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AppPorts 使苚洎洧更新機制，吥支援遷迻菿外蔀儲存。請將咜保畱茬夲僟の「應苚程式」資料夾ф。"
+          }
+        }
+      }
+    },
+    "应用本体迁移需要确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تأكيد نقل التطبيقات"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠕⠝⠋⠊⠗⠍⠀⠁⠏⠏⠀⠍⠊⠛⠗⠁⠞⠊⠕⠝"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Migration bestätigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm app migration"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfirmu la movon de aplikaĵoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar la migración de apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmer la migration des apps"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप स्थानांतरण की पुष्टि करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfirmasi pemindahan aplikasi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma la migrazione delle app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ本体の移行を確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 이동 확인"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appmigratie bevestigen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potwierdź przeniesienie aplikacji"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar migração de apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтвердите перенос приложений"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยืนยันการย้ายแอป"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama taşımayı onayla"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xác nhận di chuyển ứng dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用本体迁移需要确认"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移應用程式本體需要確認"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應甪夲躰遷迻需崾確認"
+          }
+        }
+      }
+    },
+    "无视风险迁移" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النقل رغم المخاطر"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑⠀⠙⠑⠎⠏⠊⠞⠑⠀⠗⠊⠎⠅"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trotz Risiko migrieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate despite risk"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movi malgraŭ la risko"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar pese al riesgo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrer malgré le risque"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जोखिम के बावजूद ले जाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pindahkan meski berisiko"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra nonostante il rischio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リスクを承知で移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위험을 감수하고 이동"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migreren ondanks risico"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenieś mimo ryzyka"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar apesar do risco"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перенести, несмотря на риск"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้ายแม้จะมีความเสี่ยง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riske rağmen taşı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vẫn di chuyển dù có rủi ro"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无视风险迁移"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忽略風險並遷移"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無視闏險遷迻"
+          }
+        }
+      }
+    },
+    "仅迁移其他应用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نقل التطبيقات الأخرى فقط"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑⠀⠕⠞⠓⠑⠗⠀⠁⠏⠏⠎⠀⠕⠝⠇⠽"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur andere Apps migrieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate other apps only"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movi nur la aliajn aplikaĵojn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar solo las demás apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrer les autres apps uniquement"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिर्फ़ अन्य ऐप ले जाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pindahkan aplikasi lain saja"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra solo le altre app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほかのアプリだけを移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 앱만 이동"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen andere apps migreren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenieś tylko inne aplikacje"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar apenas os outros apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перенести только остальные"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้ายเฉพาะแอปอื่น"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca diğer uygulamaları taşı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ di chuyển ứng dụng khác"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅迁移其他应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅遷移其他應用程式"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅遷迻萁咜應甪"
+          }
+        }
+      }
+    },
+    "以下应用默认保留在本机。迁出后，应用或依赖它的工具可能无法正常工作。\n\n%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبقى هذه التطبيقات على جهاز Mac هذا افتراضيًا. قد تتعطل التطبيقات أو الأدوات التي تعتمد عليها عند نقلها.\n\n%@"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑⠎⠑⠀⠁⠏⠏⠎⠀⠎⠞⠁⠽⠀⠕⠝⠀⠞⠓⠊⠎⠀⠠⠍⠁⠉⠀⠃⠽⠀⠙⠑⠋⠁⠥⠇⠞⠲⠀⠠⠍⠕⠧⠊⠝⠛⠀⠞⠓⠑⠍⠀⠍⠁⠽⠀⠏⠗⠑⠧⠑⠝⠞⠀⠞⠓⠑⠀⠁⠏⠏⠎⠀⠕⠗⠀⠞⠕⠕⠇⠎⠀⠞⠓⠁⠞⠀⠙⠑⠏⠑⠝⠙⠀⠕⠝⠀⠞⠓⠑⠍⠀⠋⠗⠕⠍⠀⠺⠕⠗⠅⠊⠝⠛⠀⠏⠗⠕⠏⠑⠗⠇⠽⠲\n\n%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Apps bleiben standardmäßig auf diesem Mac. Nach dem Verschieben funktionieren die Apps oder darauf angewiesene Werkzeuge möglicherweise nicht mehr richtig.\n\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These apps stay on this Mac by default. Moving them may prevent the apps or tools that depend on them from working properly.\n\n%@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Defaŭlte ĉi tiuj aplikaĵoj restas sur ĉi tiu Mac. Post la movo ili aŭ iloj dependantaj de ili eble ne funkcios ĝuste.\n\n%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas apps se quedan en este Mac de forma predeterminada. Si las mueves, es posible que ellas o las herramientas que dependen de ellas dejen de funcionar correctamente.\n\n%@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par défaut, ces apps restent sur ce Mac. Si vous les déplacez, elles ou les outils qui en dépendent risquent de mal fonctionner.\n\n%@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डिफ़ॉल्ट रूप से ये ऐप इसी Mac पर रहते हैं। इन्हें ले जाने पर ये ऐप या इन पर निर्भर टूल ठीक से काम करना बंद कर सकते हैं।\n\n%@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secara default, aplikasi berikut tetap berada di Mac ini. Setelah dipindahkan, aplikasi atau alat yang bergantung padanya mungkin tidak berfungsi dengan baik.\n\n%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di norma queste app rimangono sul Mac. Se le sposti, le app o gli strumenti che ne dipendono potrebbero non funzionare correttamente.\n\n%@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下のアプリは既定ではこのMacに残ります。移行すると、アプリやそれに依存するツールが正常に動作しなくなる可能性があります。\n\n%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 앱은 기본적으로 이 Mac에 남습니다. 이동하면 앱이나 해당 앱을 사용하는 도구가 제대로 작동하지 않을 수 있습니다.\n\n%@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze apps blijven standaard op deze Mac. Als je ze verplaatst, werken de apps of de hulpmiddelen die ervan afhankelijk zijn mogelijk niet meer goed.\n\n%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te aplikacje domyślnie pozostają na tym Macu. Po przeniesieniu one lub powiązane z nimi narzędzia mogą przestać działać prawidłowo.\n\n%@"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por padrão, estes apps ficam neste Mac. Se forem movidos, eles ou as ferramentas que dependem deles poderão deixar de funcionar corretamente.\n\n%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "По умолчанию эти приложения остаются на этом Mac. После переноса сами приложения или зависящие от них инструменты могут работать неправильно.\n\n%@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตามค่าเริ่มต้น แอปเหล่านี้จะอยู่บน Mac เครื่องนี้ หากย้ายแอป ตัวแอปหรือเครื่องมือที่ต้องใช้แอปเหล่านี้อาจทำงานผิดปกติ\n\n%@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu uygulamalar varsayılan olarak bu Mac üzerinde kalır. Taşınmaları hâlinde uygulamalar veya onlara bağlı araçlar düzgün çalışmayabilir.\n\n%@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo mặc định, các ứng dụng sau ở lại trên máy Mac này. Nếu di chuyển chúng, ứng dụng hoặc công cụ phụ thuộc vào chúng có thể hoạt động không đúng cách.\n\n%@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下应用默认保留在本机。迁出后，应用或依赖它的工具可能无法正常工作。\n\n%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以下應用程式預設保留在本機。遷出後，應用程式或依賴它的工具可能無法正常運作。\n\n%@"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "苡芐應甪默認保留茬夲機。遷絀後，應甪戓依賴咜哋笁具岢能無琺囸瑺笁莋。\n\n%@"
           }
         }
       }

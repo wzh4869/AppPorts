@@ -74,6 +74,7 @@ struct ContentView: View {
     
     // 受保护应用迁移预警（App Store / root 拥有，自动迁移可能因权限失败）
     @State private var protectedAppsRequest: WarningSheetRequest?
+    @State private var appMigrationRiskRequest: WarningSheetRequest?
     // 经典模式下重签名沙盒应用前的二次确认
     @State private var manualResignRequest: WarningSheetRequest?
     @State private var pendingManualResignApp: AppItem? = nil
@@ -384,6 +385,7 @@ struct ContentView: View {
         .modifier(AppUpdatePresentation(update: $availableUpdate))
         // 受保护应用（App Store / root）迁移预警
         .warningSheet($protectedAppsRequest)
+        .warningSheet($appMigrationRiskRequest)
         // 目标存储无法保存部分应用信息
         .warningSheet($storageLimitationRequest)
         // 要还原的外部副本可能已经降级
@@ -1288,7 +1290,12 @@ struct ContentView: View {
         migrationTasks.activeJob(overlappingAllPaths: [app.path, app.displayURL], includeObserved: true)
     }
 
+    private var localMoveSelection: [AppItem] {
+        localApps.filter { selectedLocalApps.contains($0.id) }
+    }
+
     func getMoveButtonTitle() -> String {
+        if localMoveSelection.contains(where: { $0.bodyMigrationPolicy == .localOnly }) { return "迁移到外部".localized }
         // 获取所有选中且可迁移的应用
         let validApps = selectedLocalApps.compactMap { id in
             localApps.first { $0.id == id }
@@ -1316,6 +1323,7 @@ struct ContentView: View {
     }
     
     var canMoveOut: Bool {
+        if localMoveSelection.contains(where: { $0.bodyMigrationPolicy == .localOnly }) { return true }
         guard externalDriveURL != nil else { return false }
         
         // 至少有一个可迁移的应用
@@ -1938,6 +1946,7 @@ struct ContentView: View {
 
     private func enqueueAppTransfer(_ app: AppItem, destination: URL, restoring: Bool = false,
                                     wholeSymlink: Bool = false, lockExternal: Bool = false,
+                                    acceptedRiskBundles: Set<URL> = [],
                                     replacementChoice: AppMigrationService.ReplacementChoice? = nil,
                                     presentDetails: Bool = true) {
         let title = (restoring ? "正在还原应用".localized : "正在迁移应用".localized) + " · " + app.displayName
@@ -1967,7 +1976,8 @@ struct ContentView: View {
                     })
                 } else { service = AppMigrationService() }
                 let result = try await service.moveAndLink(appToMove: app, destinationURL: destination,
-                    isRunning: running, lockExternal: lockExternal, replacementChoice: replacementChoice,
+                    isRunning: running, lockExternal: lockExternal, acceptedRiskBundles: acceptedRiskBundles,
+                    replacementChoice: replacementChoice,
                     deleteSourceFallback: AppMigrationService.removeItemViaFinder(at:),
                     progressHandler: { progress.update($0) })
                 await MainActor.run {
@@ -1979,21 +1989,10 @@ struct ContentView: View {
     }
 
     func performMoveOutWholeSymlink(_ app: AppItem) {
+        if presentAppPortsMigrationNotice(for: [app], onContinue: { _ in }) { return }
         if let job = activeJob(for: app) { migrationTasks.openJobDetail(job); return }
         guard let dest = externalDriveURL else { return }
-        confirmUpdateProtection(for: [app]) { lockExternal in
-            confirmUnrecognizedAppReplacements(apps: [app], destination: dest) { choices in
-                executeMoveOutWholeSymlink(app, destination: dest, lockExternal: lockExternal,
-                                           replacementChoice: choices[app.id])
-            }
-        }
-    }
-
-    private func executeMoveOutWholeSymlink(_ app: AppItem, destination: URL,
-                                            lockExternal: Bool,
-                                            replacementChoice: AppMigrationService.ReplacementChoice?) {
-        enqueueAppTransfer(app, destination: AppSearchExclusionService.destination(for: app, in: destination),
-                           wholeSymlink: true, lockExternal: lockExternal, replacementChoice: replacementChoice)
+        prepareAppTransfers([app], destination: dest, wholeSymlink: true)
     }
 
     func deleteLink(app: AppItem) throws {
@@ -2005,7 +2004,32 @@ struct ContentView: View {
         catch { AppLogger.shared.logError("保存入口删除后的搜索状态失败", error: error) }
     }
 
+    private func presentAppPortsMigrationNotice(for apps: [AppItem], onContinue: @escaping ([AppItem]) -> Void) -> Bool {
+        guard let notice = Self.appPortsMigrationNotice(for: apps, service: AppMigrationService(), hasDestination: externalDriveURL != nil, onContinue: onContinue) else { return false }
+        appMigrationRiskRequest = notice
+        return true
+    }
+
+    static func appPortsMigrationNotice(for apps: [AppItem], service: AppMigrationService, hasDestination: Bool,
+                                        onContinue: @escaping ([AppItem]) -> Void) -> WarningSheetRequest? {
+        let others = apps.filter { service.appPortsBundle(in: $0) == nil }
+        guard others.count < apps.count else { return nil }
+        let actions = others.isEmpty || !hasDestination ? [] : [WarningAction("仅迁移其他应用".localized, style: .preferred, isDefault: true) {
+            onContinue(others)
+        }]
+        return WarningSheetRequest(title: "AppPorts 需要保留在本机".localized, icon: "internaldrive", tint: .accentColor,
+            intro: UpdateAvailability.appPorts.explanation, cancelTitle: actions.isEmpty ? "好".localized : "取消".localized, actions: actions)
+    }
+
     func performMoveOut() {
+        let selected = localMoveSelection
+        if presentAppPortsMigrationNotice(for: selected, onContinue: { others in
+            DispatchQueue.main.async { performMoveOut(selectedApps: others) }
+        }) { return }
+        performMoveOut(selectedApps: selected)
+    }
+
+    private func performMoveOut(selectedApps: [AppItem]) {
         guard let dest = externalDriveURL else { return }
         
         // 读取用户设置（macOS 15.1+ 自动启用）
@@ -2014,9 +2038,7 @@ struct ContentView: View {
         let allowIOSAppMigration = masSupported || UserDefaults.standard.bool(forKey: "allowIOSAppMigration")
         
         // 获取所有选中且可迁移的应用
-        let validApps = selectedLocalApps.compactMap { id in
-            localApps.first { $0.id == id }
-        }.filter { app in
+        let validApps = selectedApps.filter { app in
             // 基本过滤条件
             guard !app.isSystemApp && !app.isRunning && app.status != AppStatus.linked && activeJob(for: app) == nil else { return false }
             
@@ -2035,9 +2057,7 @@ struct ContentView: View {
         }
         
         // 检查是否有应用被跳过
-        let skippedApps = selectedLocalApps.compactMap { id in
-            localApps.first { $0.id == id }
-        }.filter { app in
+        let skippedApps = selectedApps.filter { app in
             guard !app.isSystemApp && app.status != AppStatus.linked else { return false }
             
             if app.isIOSApp && !allowIOSAppMigration {
@@ -2049,9 +2069,6 @@ struct ContentView: View {
             return false
         }
         
-        let selectedApps = selectedLocalApps.compactMap { id in
-            localApps.first { $0.id == id }
-        }
         let skippedDetails = selectedApps.compactMap { app -> String? in
             guard let reason = migrationSkipReason(
                 for: app,
@@ -2125,9 +2142,7 @@ struct ContentView: View {
             return
         }
 
-        confirmUpdateProtection(for: validApps) { lockExternal in
-            executeBatchMove(apps: validApps, destination: dest, lockExternal: lockExternal)
-        }
+        prepareAppTransfers(validApps, destination: dest)
     }
 
     /// 组装「App Store 应用外部安装」引导弹窗的内容快照。
@@ -2411,21 +2426,48 @@ struct ContentView: View {
         }
     }
 
-    /// 批量迁移应用
-    func executeBatchMove(apps: [AppItem], destination: URL, lockExternal: Bool,
-                          replacementChoices: [String: AppMigrationService.ReplacementChoice]? = nil) {
-        guard !apps.isEmpty else { return }
-        guard let replacementChoices else {
-            confirmUnrecognizedAppReplacements(apps: apps, destination: destination) { choices in
-                executeBatchMove(apps: apps, destination: destination, lockExternal: lockExternal, replacementChoices: choices)
+    private func prepareAppTransfers(_ apps: [AppItem], destination: URL, wholeSymlink: Bool = false) {
+        func proceed(_ selected: [AppItem], _ accepted: Set<URL>) {
+            confirmUpdateProtection(for: selected) { lockExternal in
+                confirmUnrecognizedAppReplacements(apps: selected, destination: destination) { choices in
+                    for (index, app) in selected.enumerated() {
+                        enqueueAppTransfer(app, destination: AppSearchExclusionService.destination(for: app, in: destination),
+                            wholeSymlink: wholeSymlink, lockExternal: lockExternal, acceptedRiskBundles: accepted,
+                            replacementChoice: choices[app.id], presentDetails: index == 0)
+                    }
+                    if !wholeSymlink { selectedLocalApps.removeAll() }
+                }
             }
-            return
         }
-        for (index, app) in apps.enumerated() {
-            enqueueAppTransfer(app, destination: AppSearchExclusionService.destination(for: app, in: destination),
-                lockExternal: lockExternal, replacementChoice: replacementChoices[app.id], presentDetails: index == 0)
+        if let request = Self.migrationRiskRequest(for: apps, service: AppMigrationService(), onChoice: { selected, accepted in
+            DispatchQueue.main.async { proceed(selected, accepted) }
+        }) {
+            appMigrationRiskRequest = request
+        } else {
+            proceed(apps, [])
         }
-        selectedLocalApps.removeAll()
+    }
+
+    static func migrationRiskRequest(for apps: [AppItem], service: AppMigrationService,
+                                     onChoice: @escaping ([AppItem], Set<URL>) -> Void) -> WarningSheetRequest? {
+        var restricted: [URL] = []
+        var ordinary: [AppItem] = []
+        for app in apps {
+            let bundles = service.migrationRiskBundles(for: app)
+            if bundles.isEmpty { ordinary.append(app) }
+            else { restricted.append(contentsOf: bundles) }
+        }
+        guard !restricted.isEmpty else { return nil }
+        let names = restricted.map(\.lastPathComponent).sorted().joined(separator: "\n")
+        var actions = [WarningAction("无视风险迁移".localized) { onChoice(apps, Set(restricted)) }]
+        if !ordinary.isEmpty {
+            actions.append(WarningAction("仅迁移其他应用".localized, style: .preferred, isDefault: true) {
+                onChoice(ordinary, [])
+            })
+        }
+        return WarningSheetRequest(title: "应用本体迁移需要确认".localized, tint: .orange,
+            intro: String(format: "以下应用默认保留在本机。迁出后，应用或依赖它的工具可能无法正常工作。\n\n%@".localized, names),
+            actions: actions)
     }
 
     func performLinkIn() {
