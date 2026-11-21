@@ -1100,7 +1100,7 @@ actor AppScanner {
                     needsLock: needsLock,
                     containerKind: .standaloneApp
                 )
-                candidates.append(makeCandidate(for: app, bundleURL: itemURL, priority: 10))
+                candidates.append(makeCandidate(for: app, bundleURL: itemURL, priority: 10, localEntry: localAppURL))
             }
             // 2. 处理包含 .app 的文件夹（如 Microsoft Office、Adobe Creative Cloud 等套件）
             else {
@@ -1140,7 +1140,7 @@ actor AppScanner {
                             containerKind: .singleAppContainer,
                             appCount: 1
                         )
-                        candidates.append(makeCandidate(for: app, bundleURL: bundleURL, priority: 30))
+                        candidates.append(makeCandidate(for: app, bundleURL: bundleURL, priority: 30, localEntry: localFolderURL.appendingPathComponent(bundleURL.lastPathComponent)))
                     } else {
                         let status: String
                         if let folderStatus = localFolderLinkStatus(localFolderURL, linkedTo: itemURL, externalApps: appsInFolder) {
@@ -1200,7 +1200,7 @@ actor AppScanner {
                     signatureCheckUnavailable: signing.signatureCheckUnavailable,
                     containerKind: .standaloneApp
                 )
-                candidates.append(makeCandidate(for: app, bundleURL: externalTargetURL, priority: 40))
+                candidates.append(makeCandidate(for: app, bundleURL: externalTargetURL, priority: 40, localEntry: localItemURL))
                 continue
             }
 
@@ -1232,7 +1232,7 @@ actor AppScanner {
                     containerKind: .singleAppContainer,
                     appCount: 1
                 )
-                candidates.append(makeCandidate(for: app, bundleURL: bundleURL, priority: 40))
+                candidates.append(makeCandidate(for: app, bundleURL: bundleURL, priority: 40, localEntry: localItemURL.appendingPathComponent(bundleURL.lastPathComponent)))
             } else {
                 let app = AppItem(
                     name: externalTargetURL.lastPathComponent,
@@ -1244,7 +1244,7 @@ actor AppScanner {
                     containerKind: .appSuiteFolder,
                     appCount: appsInFolder.count
                 )
-                candidates.append(makeCandidate(for: app, bundleURL: externalTargetURL, priority: 40))
+                candidates.append(makeCandidate(for: app, bundleURL: externalTargetURL, priority: 40, localEntry: localItemURL))
             }
         }
 
@@ -1316,12 +1316,20 @@ actor AppScanner {
         }
     }
 
-    private func makeCandidate(for app: AppItem, bundleURL: URL, priority: Int) -> ScanCandidate {
+    private func makeCandidate(for app: AppItem, bundleURL: URL, priority: Int, localEntry: URL? = nil) -> ScanCandidate {
         var app = app
-        if app.needsLock,
-           case .success(let identity) = AppIdentityResolver.resolve(at: bundleURL),
-           AppMigrationService.usesOrdinaryUpdateMigration(bundleIdentifier: identity.bundleIdentifier) {
-            app.needsLock = false
+        if !app.isFolder, case .success(let identity) = AppIdentityResolver.resolve(at: bundleURL) {
+            let beforeMigration = localEntry == nil && app.status == AppStatus.local
+                && (try? bundleURL.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == false
+                && bundleURL.resolvingSymlinksInPath() == identity.realAppURL
+            app.updateRoute = AppUpdateRoute.inspect(identity, localEntry: localEntry ?? bundleURL, beforeMigration: beforeMigration)
+            app.bodyMigrationPolicy = identity.bodyMigrationPolicy
+            app.bundleIsLocked = identity.bundleIsLocked
+            if AppMigrationService.usesOrdinaryUpdateMigration(bundleIdentifier: identity.bundleIdentifier) {
+                app.needsLock = false
+            } else if app.updateRoute == .sparkle || app.updateRoute == .shipIt || app.updateRoute == .nativeShipIt {
+                app.needsLock = true
+            }
         }
         return ScanCandidate(
             app: app,

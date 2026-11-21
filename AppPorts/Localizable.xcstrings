@@ -1,6 +1,1102 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "自有" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "محدّث خاص"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠥⠎⠞⠕⠍"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eigener Updater"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propra"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour interne"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "निजी अपडेटर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bawaan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proprio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "独自"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자체"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eigen updater"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Własny"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próprio"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Свой"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวอัปเดตเฉพาะ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Özel"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình riêng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自有"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自有"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "洎洧"
+          }
+        }
+      }
+    },
+    "AppPorts 使用自有更新机制，不支持迁移到外部存储。请将它保留在本机的“应用程序”文件夹中。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم AppPorts آلية تحديث خاصة به ولا يدعم النقل إلى وحدة تخزين خارجية. أبقه في مجلد التطبيقات على جهاز Mac هذا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎⠀⠥⠎⠑⠎⠀⠊⠞⠎⠀⠕⠺⠝⠀⠥⠏⠙⠁⠞⠑⠗⠀⠁⠝⠙⠀⠉⠁⠝⠝⠕⠞⠀⠃⠑⠀⠍⠕⠧⠑⠙⠀⠞⠕⠀⠑⠭⠞⠑⠗⠝⠁⠇⠀⠎⠞⠕⠗⠁⠛⠑⠲⠀⠠⠅⠑⠑⠏⠀⠊⠞⠀⠊⠝⠀⠞⠓⠑⠀⠠⠁⠏⠏⠇⠊⠉⠁⠞⠊⠕⠝⠎⠀⠋⠕⠇⠙⠑⠗⠀⠕⠝⠀⠞⠓⠊⠎⠀⠠⠍⠁⠉⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts verwendet einen eigenen Updater und kann nicht auf einen externen Datenträger verschoben werden. Behalte es im Ordner „Programme“ auf diesem Mac."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts uses its own updater and cannot be moved to external storage. Keep it in the Applications folder on this Mac."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts uzas propran ĝisdatigilon kaj ne povas esti movita al ekstera disko. Lasu ĝin en la dosierujo Aplikaĵoj sur ĉi tiu Mac."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts usa su propio sistema de actualización y no se puede trasladar a un dispositivo externo. Déjalo en la carpeta Aplicaciones de este Mac."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts utilise son propre système de mise à jour et ne peut pas être déplacé vers un support externe. Gardez-le dans le dossier Applications de ce Mac."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts अपना अपडेटर इस्तेमाल करता है और इसे बाहरी स्टोरेज पर नहीं ले जाया जा सकता। इसे इसी Mac के ऐप्लिकेशन फ़ोल्डर में रखें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts menggunakan pemutakhir sendiri dan tidak dapat dipindahkan ke penyimpanan eksternal. Simpan di folder Aplikasi pada Mac ini."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts usa un proprio sistema di aggiornamento e non può essere spostata su un dispositivo esterno. Lasciala nella cartella Applicazioni di questo Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts は独自の更新機構を使用しており、外部ストレージへの移動には対応していません。この Mac の「アプリケーション」フォルダに残してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts는 자체 업데이트 방식을 사용하며 외장 저장 장치로 이동할 수 없습니다. 이 Mac의 응용 프로그램 폴더에 두세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts gebruikt een eigen updater en kan niet naar externe opslag worden verplaatst. Laat de app in de map Apps op deze Mac staan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ma własny mechanizm aktualizacji i nie można przenieść go na dysk zewnętrzny. Pozostaw aplikację w folderze Aplikacje na tym Macu."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O AppPorts usa um sistema próprio de atualização e não pode ser movido para um dispositivo externo. Mantenha-o na pasta Aplicações deste Mac."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts использует собственный механизм обновления и не поддерживает перенос на внешний накопитель. Оставьте приложение в папке «Программы» на этом Mac."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ใช้ระบบอัปเดตของตัวเองและไม่รองรับการย้ายไปยังที่จัดเก็บข้อมูลภายนอก โปรดเก็บแอปไว้ในโฟลเดอร์แอปพลิเคชันบน Mac เครื่องนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts kendi güncelleme sistemini kullanır ve harici depolama alanına taşınamaz. Uygulamayı bu Mac’teki Uygulamalar klasöründe tutun."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts dùng trình cập nhật riêng và không hỗ trợ di chuyển sang bộ nhớ ngoài. Hãy giữ ứng dụng trong thư mục Ứng dụng trên máy Mac này."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 使用自有更新机制，不支持迁移到外部存储。请将它保留在本机的“应用程序”文件夹中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 使用自有更新機制，不支援移至外接儲存裝置。請將它保留在這部 Mac 的「應用程式」資料夾中。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 使苚洎洧更新機制，吥支援遷迻菿外蔀儲存。請將咜保畱茬夲僟の「應苚程式」資料夾ф。"
+          }
+        }
+      }
+    },
+    "可用" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متاح"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠧⠁⠊⠇⠁⠃⠇⠑"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponebla"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उपलब्ध"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tersedia"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用可能"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용 가능"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschikbaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dostępne"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponível"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доступно"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kullanılabilir"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khả dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "岢苚"
+          }
+        }
+      }
+    },
+    "可在应用内更新外盘副本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يمكنك تحديث النسخة الخارجية من داخل التطبيق."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠽⠕⠥ ⠉⠁⠝ ⠥⠏⠙⠁⠞⠑ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠉⠕⠏⠽ ⠊⠝ ⠞⠓⠑ ⠁⠏⠏⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die externe Kopie lässt sich in der App aktualisieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can update the external copy in the app."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vi povas ĝisdatigi la eksteran kopion en la aplikaĵo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes actualizar la copia externa desde la app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La copie externe peut être mise à jour depuis l’app."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप से बाहरी ड्राइव वाली कॉपी अपडेट कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salinan di drive eksternal dapat diperbarui dari aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi aggiornare la copia esterna dall’app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ内から外付けドライブ上のコピーを更新できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱에서 외장 드라이브의 사본을 업데이트할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je kunt de externe kopie vanuit de app bijwerken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopię na dysku zewnętrznym można uaktualnić w aplikacji."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pode atualizar a cópia externa na aplicação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Внешнюю копию можно обновить из приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คุณอัปเดตสำเนาบนไดรฟ์ภายนอกจากในแอปได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici kopyayı uygulama içinden güncelleyebilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có thể cập nhật bản trên ổ ngoài ngay trong ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可在应用内更新外盘副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可在 App 內更新外接磁碟上的副本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "岢茬應苚內浭噺外盤副夲。"
+          }
+        }
+      }
+    },
+    "可在应用内更新。安装失败时，守护可尝试接手。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدّث من داخل التطبيق. إذا فشل التثبيت، يمكن لحارس التحديث محاولة إكماله."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠊⠝ ⠞⠓⠑ ⠁⠏⠏⠲ ⠠⠊⠋ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝ ⠋⠁⠊⠇⠎⠂ ⠞⠓⠑ ⠛⠥⠁⠗⠙⠊⠁⠝ ⠉⠁⠝ ⠞⠗⠽ ⠞⠕ ⠋⠊⠝⠊⠎⠓ ⠊⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In der App aktualisieren. Bei einem Installationsfehler kann der Update-Wächter die Installation übernehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update in the app. If installation fails, the guardian can try to finish it."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĝisdatigu en la aplikaĵo. Se la instalado malsukcesas, la ĝisdatiga gardilo povas provi fini ĝin."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiza desde la app. Si falla la instalación, el guardián puede intentar completarla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancez la mise à jour depuis l’app. En cas d’échec, le gardien peut tenter de terminer l’installation."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऐप में अपडेट करें। इंस्टॉलेशन विफल होने पर अपडेट गार्ड उसे पूरा करने का प्रयास कर सकता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perbarui dari aplikasi. Jika pemasangan gagal, penjaga pembaruan dapat mencoba menyelesaikannya."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna dall’app. Se l’installazione fallisce, il servizio di aggiornamento può provare a completarla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリ内で更新できます。インストールに失敗した場合は更新ガーディアンが引き継ぎを試みます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱에서 업데이트하세요. 설치에 실패하면 업데이트 보호기가 설치 완료를 시도합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werk bij vanuit de app. Als de installatie mislukt, kan de updatebewaker proberen deze te voltooien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uaktualnij w aplikacji. Jeśli instalacja się nie powiedzie, usługa aktualizacji może spróbować ją dokończyć."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualize na aplicação. Se a instalação falhar, o serviço de atualização pode tentar concluí-la."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновите из приложения. Если установка не удастся, служба обновлений попробует её завершить."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปเดตในแอป หากติดตั้งไม่สำเร็จ ตัวช่วยอัปเดตจะลองติดตั้งต่อให้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama içinden güncelleyin. Kurulum başarısız olursa güncelleme koruyucusu tamamlamayı deneyebilir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật trong ứng dụng. Nếu cài đặt thất bại, trình bảo vệ cập nhật có thể thử hoàn tất."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可在应用内更新。安装失败时，守护可尝试接手。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可在 App 內更新。若安裝失敗，守護程式可嘗試接手。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "岢茬應苚內浭噺。侒裝矢敗時，垨護岢嘗試接掱。"
+          }
+        }
+      }
+    },
+    "通过 App Store 更新外盘副本。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدّث النسخة الخارجية من App Store."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠥⠏⠙⠁⠞⠑ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠉⠕⠏⠽ ⠊⠝ ⠞⠓⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die externe Kopie im App Store aktualisieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update the external copy in the App Store."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ĝisdatigu la eksteran kopion per App Store."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiza la copia externa desde el App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettez à jour la copie externe dans l’App Store."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बाहरी ड्राइव वाली कॉपी को App Store से अपडेट करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perbarui salinan di drive eksternal melalui App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna la copia esterna dall’App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store から外付けドライブ上のコピーを更新します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store에서 외장 드라이브의 사본을 업데이트하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werk de externe kopie bij via de App Store."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uaktualnij kopię na dysku zewnętrznym w App Store."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualize a cópia externa na App Store."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновите внешнюю копию через App Store."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปเดตสำเนาบนไดรฟ์ภายนอกผ่าน App Store"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici kopyayı App Store üzerinden güncelleyin."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cập nhật bản trên ổ ngoài qua App Store."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过 App Store 更新外盘副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 App Store 更新外接磁碟上的副本。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透濄 App Store 浭噺外盤副夲。"
+          }
+        }
+      }
+    },
+    "更新到本机后，请将新版再次迁出。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بعد التحديث محليًا، انقل الإصدار الجديد إلى القرص الخارجي."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠋⠞⠑⠗ ⠥⠏⠙⠁⠞⠊⠝⠛ ⠇⠕⠉⠁⠇⠇⠽⠂ ⠍⠊⠛⠗⠁⠞⠑ ⠞⠓⠑ ⠝⠑⠺ ⠧⠑⠗⠎⠊⠕⠝ ⠞⠕ ⠞⠓⠑ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach dem lokalen Update die neue Version auf das externe Laufwerk verschieben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After updating locally, migrate the new version to the external drive."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post loka ĝisdatigo, remigrigu la novan version al la ekstera disko."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras actualizar en el Mac, migra la nueva versión al disco externo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après la mise à jour locale, migrez la nouvelle version vers le disque externe."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac पर अपडेट करने के बाद नया संस्करण फिर से बाहरी ड्राइव पर ले जाएँ।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setelah memperbarui di Mac, pindahkan versi baru ke drive eksternal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo l’aggiornamento locale, migra la nuova versione sul disco esterno."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac 上で更新した後、新しいバージョンを外付けドライブに再度移行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mac에서 업데이트한 후 새 버전을 외장 드라이브로 다시 이동하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaats de nieuwe versie na de lokale update naar de externe schijf."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po lokalnym uaktualnieniu przenieś nową wersję na dysk zewnętrzny."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Após a atualização local, migre a nova versão para o disco externo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "После локального обновления перенесите новую версию на внешний диск."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หลังอัปเดตบน Mac ให้ย้ายเวอร์ชันใหม่ไปยังไดรฟ์ภายนอกอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yerel güncellemeden sonra yeni sürümü harici diske taşıyın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau khi cập nhật trên máy, hãy chuyển bản mới ra ổ ngoài."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新到本机后，请将新版再次迁出。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在本機更新後，請將新版再次遷移到外接磁碟。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夲機浭噺後，請將噺版洅佽遷詘。"
+          }
+        }
+      }
+    },
+    "更新守护已关闭，仍可尝试应用内更新。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حارس التحديث متوقف. لا يزال بإمكانك تجربة التحديث من داخل التطبيق."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠛⠥⠁⠗⠙⠊⠁⠝ ⠊⠎ ⠕⠋⠋⠲ ⠠⠽⠕⠥ ⠉⠁⠝ ⠎⠞⠊⠇⠇ ⠞⠗⠽ ⠥⠏⠙⠁⠞⠊⠝⠛ ⠊⠝ ⠞⠓⠑ ⠁⠏⠏⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Update-Wächter ist aus. Ein Update in der App ist weiterhin möglich."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update guardian is off. You can still try updating in the app."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatiga gardilo estas malŝaltita. Vi ankoraŭ povas provi ĝisdatigi en la aplikaĵo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El guardián está desactivado. Aún puedes intentar actualizar desde la app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le gardien des mises à jour est désactivé. Vous pouvez essayer depuis l’app."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपडेट गार्ड बंद है। फिर भी आप ऐप में अपडेट करने की कोशिश कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penjaga pembaruan nonaktif. Anda masih dapat mencoba memperbarui dari aplikasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il servizio di aggiornamento è disattivato. Puoi ancora provare ad aggiornare dall’app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新ガーディアンはオフです。アプリ内から更新を試すことはできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 보호기가 꺼져 있습니다. 앱에서 업데이트를 시도할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De updatebewaker staat uit. Je kunt nog steeds proberen bij te werken vanuit de app."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usługa aktualizacji jest wyłączona. Nadal możesz spróbować uaktualnić aplikację z jej poziomu."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O serviço de atualização está desligado. Pode tentar atualizar na aplicação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Служба обновлений отключена. Можно попробовать обновление из приложения."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวช่วยอัปเดตปิดอยู่ คุณยังลองอัปเดตในแอปได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncelleme koruyucusu kapalı. Yine de uygulama içinden güncellemeyi deneyebilirsiniz."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình bảo vệ cập nhật đang tắt. Bạn vẫn có thể thử cập nhật trong ứng dụng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新守护已关闭，仍可尝试应用内更新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新守護程式已關閉，仍可嘗試在 App 內更新。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浭噺垨護巳關閉，仍岢嘗試應苚內浭噺。"
+          }
+        }
+      }
+    },
     "更新守护尚未就绪，正在重试…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -134,6 +1230,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更新垨護尙未僦緒，㊣茬偅試…"
+          }
+        }
+      }
+    },
+    "检测中" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ التحقق"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠉⠓⠑⠉⠅⠊⠝⠛"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird geprüft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrolado"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जाँच जारी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memeriksa"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인 중"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdzanie"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังตรวจสอบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denetleniyor"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang kiểm tra"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检测中"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測中"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢測ф"
           }
         }
       }
@@ -408,6 +1641,280 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新版簽洺校驗夨敗，已洎動囙退至 %@。"
+          }
+        }
+      }
+    },
+    "当前版本的更新守护尚未就绪。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حارس التحديث لهذا الإصدار غير جاهز بعد."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠛⠥⠁⠗⠙⠊⠁⠝ ⠋⠕⠗ ⠞⠓⠊⠎ ⠃⠥⠊⠇⠙ ⠊⠎ ⠝⠕⠞ ⠗⠑⠁⠙⠽⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Update-Wächter dieser Version ist noch nicht bereit."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update guardian for this build is not ready."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatiga gardilo de ĉi tiu versio ankoraŭ ne estas preta."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El guardián de actualizaciones de esta versión aún no está listo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le gardien des mises à jour de cette version n’est pas prêt."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस बिल्ड का अपडेट गार्ड अभी तैयार नहीं है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penjaga pembaruan untuk build ini belum siap."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il servizio di aggiornamento di questa versione non è ancora pronto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このビルドの更新ガーディアンはまだ準備できていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 빌드의 업데이트 보호기가 아직 준비되지 않았습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De updatebewaker van deze build is nog niet gereed."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usługa aktualizacji tej kompilacji nie jest jeszcze gotowa."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O serviço de atualização desta versão ainda não está pronto."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Служба обновлений этой сборки ещё не готова."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวช่วยอัปเดตของบิลด์นี้ยังไม่พร้อม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu derlemenin güncelleme koruyucusu henüz hazır değil."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trình bảo vệ cập nhật của bản dựng này chưa sẵn sàng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前版本的更新守护尚未就绪。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前版本的更新守護程式尚未就緒。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當偂版夲の浭噺垨護尚未僦緒。"
+          }
+        }
+      }
+    },
+    "尚未确认此应用迁移后的更新方式。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم تتأكد بعد طريقة تحديث التطبيق بعد نقله."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠞⠓⠑ ⠥⠏⠙⠁⠞⠑ ⠍⠑⠞⠓⠕⠙ ⠁⠋⠞⠑⠗ ⠍⠊⠛⠗⠁⠞⠊⠕⠝ ⠓⠁⠎ ⠝⠕⠞ ⠃⠑⠑⠝ ⠉⠕⠝⠋⠊⠗⠍⠑⠙⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Updateweg nach dem Verschieben ist noch unbestätigt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The update method after migration has not been confirmed."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ĝisdatiga metodo post migrigo ankoraŭ ne estas konfirmita."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no se ha confirmado cómo se actualiza esta app tras la migración."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La méthode de mise à jour après migration reste à confirmer."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्थानांतरण के बाद इस ऐप की अपडेट विधि की पुष्टि अभी नहीं हुई है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cara memperbarui aplikasi setelah dipindahkan belum dikonfirmasi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La modalità di aggiornamento dopo la migrazione non è ancora confermata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行後の更新方法はまだ確認されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이동 후의 업데이트 방법이 아직 확인되지 않았습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De manier van bijwerken na verplaatsing is nog niet bevestigd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposób uaktualniania po przeniesieniu nie został jeszcze potwierdzony."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O método de atualização após a migração ainda não foi confirmado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Способ обновления после переноса пока не подтверждён."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังไม่ยืนยันวิธีอัปเดตแอปนี้หลังการย้าย"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taşıma sonrası güncelleme yöntemi henüz doğrulanmadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa xác nhận được cách cập nhật ứng dụng sau khi di chuyển."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未确认此应用迁移后的更新方式。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未確認此 App 遷移後的更新方式。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未確涊佌應苚遷迻後の浭噺方鉽。"
           }
         }
       }

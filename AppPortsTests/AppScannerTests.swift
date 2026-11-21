@@ -48,6 +48,129 @@ final class AppScannerTests: XCTestCase {
         }
     }
 
+    func testUpdateRoutesUseRealBundleAndStoreDestination() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let disk = w.externalRootURL
+        let app = disk.appendingPathComponent("Sample.app")
+        let stub = w.localAppsURL.appendingPathComponent("Sample.app")
+        try createAppBundle(at: app, payloadSize: 16, bundleID: "example.updates")
+        try createScannerStub(at: stub, pointingTo: app, bundleID: "example.updates")
+        let scanner = AppScanner(backupDirectoryURL: w.rootURL.appendingPathComponent("Signatures"), adHocProbe: { _ in false })
+        let ready = UpdateRecommendationContext(guardian: .ready)
+        let starting = UpdateRecommendationContext(guardian: .unavailable)
+        for route in [AppUpdateRoute.shipIt, .sparkle] {
+            XCTAssertEqual(route.availability(in: starting).badgeTitle, "检测中")
+            XCTAssertFalse(route.availability(in: starting).isAvailable)
+            XCTAssertEqual(route.availability(in: ready).badgeTitle, "可用")
+            XCTAssertEqual(route.availability(in: .init(guardian: .disabled)).badgeTitle, "未知")
+        }
+        XCTAssertEqual(AppUpdateRoute.unknown.availability(in: starting).badgeTitle, "未知")
+        XCTAssertEqual(AppUpdateRoute.independent.availability(in: starting).badgeTitle, "可用")
+        let off = UpdateRecommendationContext(guardian: .disabled)
+        func scan() async throws -> AppItem {
+            let items = await scanner.scanLocalApps(at: w.localAppsURL, runningAppURLs: [])
+            return try XCTUnwrap(items.first)
+        }
+        let fx = app.appendingPathComponent("Contents/Frameworks")
+        try fileManager.createDirectory(at: fx.appendingPathComponent("Electron Framework.framework"), withIntermediateDirectories: true)
+        try Data().write(to: app.appendingPathComponent("Contents/MacOS/Updater"))
+        var row = try await scan()
+        XCTAssertEqual(row.updateRoute, .unknown)
+        try fileManager.createDirectory(at: fx.appendingPathComponent("Squirrel.framework"), withIntermediateDirectories: true)
+        row = try await scan()
+        XCTAssertEqual(row.updateRoute.availability(in: ready), .shipIt)
+        XCTAssertEqual(row.updateRoute.availability(in: off), .guardianDisabled)
+        let receipts = app.appendingPathComponent("Contents/_MASReceipt")
+        try fileManager.createDirectory(at: receipts, withIntermediateDirectories: true)
+        try Data([1]).write(to: receipts.appendingPathComponent("receipt"))
+        row = try await scan()
+        XCTAssertEqual(row.updateRoute.availability(in: off), .unknown)
+        XCTAssertEqual(row.updateRoute.availability(in: .init(guardian: .disabled, storeDirectory: disk)), .store)
+        XCTAssertEqual(row.updateRoute.availability(in: .init(guardian: .ready, storeDirectory: w.localAppsURL)), .unknown)
+        XCTAssertEqual(AppUpdateRoute.independent.availability(in: off), .inApp)
+        XCTAssertEqual(AppUpdateRoute.moveOut.availability(in: off), .moveOut)
+    }
+
+    func testIndependentUpdatesRequireVerifiedAppAndItsExecutable() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let scanner = AppScanner(backupDirectoryURL: workspace.rootURL.appendingPathComponent("Signatures"), adHocProbe: { _ in false })
+        let installer = "Contents/Frameworks/AraeliumUpdate.framework/Resources/AGUpdateInstaller.app/Contents/MacOS/AGUpdateInstaller"
+        let mozilla = "Contents/MacOS/updater.app/Contents/MacOS/org.mozilla.updater"
+        let google = "Contents/Frameworks/Google Chrome Framework.framework/Versions/Current/Helpers/GoogleUpdater.app/Contents/MacOS/GoogleUpdater"
+        let samples = [
+            ("com.araelium.dmgcanvas", installer, true),
+            ("com.araeliumgroup.querious", installer, true),
+            ("com.araeliumgroup.screenflick", installer, true),
+            ("org.mozilla.firefox", mozilla, true),
+            ("org.mozilla.thunderbird", mozilla, true),
+            ("com.google.Chrome", google, true),
+            ("dev.zed.Zed", "Contents/MacOS/zed", true),
+            ("com.jetbrains.toolbox", "Contents/MacOS/jetbrains-toolbox", true),
+            ("example.unverified", installer, false),
+            ("com.ccswitch.desktop", "Contents/MacOS/cc-switch", false)
+        ]
+        for (identifier, executable, verified) in samples {
+            let app = workspace.externalRootURL.appendingPathComponent(identifier + ".app")
+            let portal = workspace.localAppsURL.appendingPathComponent(app.lastPathComponent)
+            try createAppBundle(at: app, payloadSize: 16, bundleID: identifier)
+            try createScannerStub(at: portal, pointingTo: app, bundleID: identifier)
+            func route() async throws -> AppUpdateRoute {
+                let apps = await scanner.scanLocalApps(at: workspace.localAppsURL, runningAppURLs: [])
+                return try XCTUnwrap(apps.first { $0.path.lastPathComponent == portal.lastPathComponent }).updateRoute
+            }
+            let before = try await route()
+            XCTAssertEqual(before, .unknown, identifier)
+            let binary = app.appendingPathComponent(executable)
+            try fileManager.createDirectory(at: binary.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data([1]).write(to: binary)
+            try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+            let after = try await route()
+            XCTAssertEqual(after, verified ? .independent : .unknown, identifier)
+            XCTAssertEqual(after.availability(in: .init(guardian: .disabled)).isAvailable, verified, identifier)
+        }
+    }
+
+    func testNativeInstallEvidenceSurvivesGuardianChangesAndRequiresMatchingHelper() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let scanner = AppScanner(backupDirectoryURL: w.rootURL.appendingPathComponent("Signatures"), adHocProbe: { _ in false })
+        let sparkle1 = "Sparkle.framework/Versions/Current/Resources/Autoupdate.app/Contents/MacOS/Autoupdate"
+        let sparkle2 = "Sparkle.framework/Versions/Current/Autoupdate"
+        let shipIt = "Squirrel.framework/Resources/ShipIt"
+        let samples: [(String, String, Bool)] = [
+            ("com.netease.163music", sparkle1, true), ("org.m0k.transmission", sparkle1, true),
+            ("com.coteditor.CotEditor", sparkle2, true), ("com.colliderli.iina", sparkle2, true),
+            ("com.aone.keka", sparkle2, true), ("uk.co.bzwrd.macperfmonitor", sparkle2, true),
+            ("com.portkiller.app", sparkle2, true), ("com.qoder.app", shipIt, true),
+            ("ai.opencode.desktop", shipIt, true), ("com.deepseek.dsh", shipIt, false),
+            ("com.tencent.workbuddy.mac", shipIt, false), ("com.github.GitHubClient", shipIt, false),
+            ("example.unverified", sparkle2, false)
+        ]
+        for (id, helper, _) in samples {
+            let app = w.externalRootURL.appendingPathComponent(id + ".app")
+            try createAppBundle(at: app, payloadSize: 16, bundleID: id)
+            let executable = app.appendingPathComponent("Contents/Frameworks").appendingPathComponent(helper)
+            try fileManager.createDirectory(at: executable.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data([1]).write(to: executable)
+            try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+            try createScannerStub(at: w.localAppsURL.appendingPathComponent(app.lastPathComponent), pointingTo: app, bundleID: id)
+        }
+        let rows = await scanner.scanLocalApps(at: w.localAppsURL, runningAppURLs: [])
+        for (id, helper, native) in samples {
+            let row = try XCTUnwrap(rows.first { $0.path.lastPathComponent == id + ".app" })
+            XCTAssertEqual(row.updateRoute.availability(in: .init(guardian: .disabled)), native ? .inApp : .guardianDisabled, id)
+            XCTAssertEqual(row.updateRoute.availability(in: .init(guardian: .unavailable)), native ? .inApp : .guardianUnavailable, id)
+            XCTAssertEqual(row.updateRoute.availability(in: .init(guardian: .ready)), helper == shipIt ? .shipIt : .inApp, id)
+        }
+        let helper = w.externalRootURL.appendingPathComponent("com.colliderli.iina.app/Contents/Frameworks/" + sparkle2)
+        try fileManager.setAttributes([.posixPermissions: 0o644], ofItemAtPath: helper.path)
+        let rescanned = await scanner.scanLocalApps(at: w.localAppsURL, runningAppURLs: [])
+        let changed = try XCTUnwrap(rescanned.first { $0.path.lastPathComponent == "com.colliderli.iina.app" })
+        XCTAssertEqual(changed.updateRoute.availability(in: .init(guardian: .disabled)), .guardianDisabled)
+    }
+
     func testDisplayedSizeForWholeAppSymlinkUsesLocalPortalFootprint() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

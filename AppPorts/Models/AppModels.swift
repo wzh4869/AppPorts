@@ -15,6 +15,19 @@ enum AppContainerKind: String, Sendable {
     case appSuiteFolder
 }
 
+enum AppBodyMigrationPolicy: Equatable, Sendable {
+    case standard, requiresConfirmation, localOnly
+
+    init(bundleIdentifier: String) {
+        switch bundleIdentifier {
+        case "com.shimoko.AppPorts": self = .localOnly
+        case "io.github.clash-verge-rev.clash-verge-rev", "com.microsoft.VSCode",
+             "com.microsoft.VSCodeInsiders", "com.apple.dt.Xcode": self = .requiresConfirmation
+        default: self = .standard
+        }
+    }
+}
+
 enum AppStatus {
     static let local = "本地"
     static let linked = "已链接"
@@ -139,6 +152,11 @@ struct AppItem: Identifiable, Equatable, Sendable {
     /// 是否需要 uchg 锁定（仅 Sparkle/Electron 有更新器的应用）
     var needsLock: Bool = false
 
+    var updateRoute: AppUpdateRoute = .unknown
+    var bodyMigrationPolicy: AppBodyMigrationPolicy = .standard
+    var showsAppData: Bool { !isFolder && bodyMigrationPolicy != .localOnly }
+    var bundleIsLocked: Bool?
+
     /// 应用版本号（CFBundleShortVersionString）
     var version: String? = nil
 
@@ -189,6 +207,10 @@ struct AppItem: Identifiable, Equatable, Sendable {
         isFolder || containerKind == .singleAppContainer
     }
 
+    nonisolated var willMigrateToStoreDirectory: Bool {
+        status == AppStatus.local && isAppStoreApp && !usesFolderOperation
+    }
+
     // MARK: - Equatable 实现
     
     /// 自定义相等性比较
@@ -210,6 +232,9 @@ struct AppItem: Identifiable, Equatable, Sendable {
         lhs.isSparkleApp == rhs.isSparkleApp &&
         lhs.hasSelfUpdater == rhs.hasSelfUpdater &&
         lhs.needsLock == rhs.needsLock &&
+        lhs.updateRoute == rhs.updateRoute &&
+        lhs.bodyMigrationPolicy == rhs.bodyMigrationPolicy &&
+        lhs.bundleIsLocked == rhs.bundleIsLocked &&
         lhs.bundleURL == rhs.bundleURL &&
         lhs.containerKind == rhs.containerKind &&
         lhs.isSystemApp == rhs.isSystemApp &&
