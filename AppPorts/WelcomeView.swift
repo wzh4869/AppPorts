@@ -63,7 +63,7 @@ struct WelcomeView: View {
 
             actionBar
         }
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(AppSurfaceColors.content)
         .frame(
             minWidth: 560,
             idealWidth: 680,

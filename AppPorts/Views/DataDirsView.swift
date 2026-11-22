@@ -396,7 +396,7 @@ struct DataDirsView: View {
 
             // 列表
             ZStack {
-                Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+                AppSurfaceColors.content.ignoresSafeArea()
 
                 if isScanning && dotFolderItems.isEmpty {
                     loadingView
@@ -565,7 +565,7 @@ struct DataDirsView: View {
                 }
 
                 ZStack {
-                    Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+                    AppSurfaceColors.content.ignoresSafeArea()
 
                     if selectedApp == nil {
                         if isScanningApps {
@@ -610,7 +610,7 @@ struct DataDirsView: View {
             .ignoresSafeArea(.container, edges: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .background(AppSurfaceColors.content)
     }
 
     // MARK: - 辅助子视图

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppSettingsStyle {
-    static let background = Color(nsColor: .textBackgroundColor)
+    static let background = AppSurfaceColors.content
     static let border = Color(nsColor: .separatorColor).opacity(0.7)
     static let success = Color.green
     static let warning = Color.orange

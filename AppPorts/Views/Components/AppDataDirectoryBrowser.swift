@@ -63,7 +63,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
             .coordinateSpace(name: "directoryInformationResize")
         }
         .frame(minHeight: DirectoryPanelLayout.minimumOutlineHeight + DirectoryPanelLayout.minimumInformationHeight + DirectoryPanelLayout.handleHeight)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .background(AppSurfaceColors.content)
         .onChange(of: isFiltering) { isFiltering in
             if isFiltering { expandAll() }
         }
@@ -163,6 +163,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
                     }
                 }
                 .listStyle(.inset)
+                .modifier(ContentView.TransparentListBackground())
                 .focused($isOutlineFocused)
                 .modifier(DirectoryOutlineKeyboardNavigation { direction in
                     moveSelection(direction)

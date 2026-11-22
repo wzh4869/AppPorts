@@ -721,7 +721,6 @@ struct ContentView: View {
             if tab == .dataDirs { hasOpenedDataDirs = true }
             if tab == .customDirs { hasOpenedCustomDirs = true }
         }
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 
     private var mainPageContent: some View {
@@ -806,7 +805,7 @@ struct ContentView: View {
             }
             .clipped()
         }
-        .background(Color(nsColor: .controlBackgroundColor))
+        .background(AppSurfaceColors.content)
     }
 
     // MARK: - 侧边栏
@@ -868,7 +867,6 @@ struct ContentView: View {
         .padding(.vertical, 12)
         .padding(.top, 32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppListColors.sidebar)
     }
 
     private var appearanceTitle: String {
@@ -996,7 +994,7 @@ struct ContentView: View {
                     ProgressView().controlSize(.small)
                 } else {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 14))
+                        .font(.system(size: 13))
                 }
             }
             .frame(width: 32, height: 30)
@@ -1039,7 +1037,7 @@ struct ContentView: View {
             appListColumnHeader(sorting: $localAppSort, columnTrailingInset: columnTrailingInset)
 
             ZStack {
-                Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+                AppSurfaceColors.content.ignoresSafeArea()
 
                 if entries.isEmpty {
                     if localScanState.isScanning && localApps.isEmpty {
@@ -1120,7 +1118,7 @@ struct ContentView: View {
         appListColumnHeader(sorting: $externalAppSort, columnTrailingInset: columnTrailingInset)
 
         ZStack {
-            Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+            AppSurfaceColors.content.ignoresSafeArea()
 
             if externalDriveURL == nil {
                 VStack(spacing: 12) {

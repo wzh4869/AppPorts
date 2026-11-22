@@ -196,7 +196,7 @@ struct CustomDirsView: View {
             directoryColumnHeader
 
             ZStack {
-                Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+                AppSurfaceColors.content.ignoresSafeArea()
 
                 if isScanning && localEntries.isEmpty {
                     ContentView.EmptyStateView(icon: "magnifyingglass", text: "正在扫描...".localized)
@@ -256,7 +256,7 @@ struct CustomDirsView: View {
             directoryColumnHeader
 
             ZStack {
-                Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
+                AppSurfaceColors.content.ignoresSafeArea()
 
                 if externalEntries.isEmpty {
                     ContentView.EmptyStateView(icon: "externaldrive.badge.plus", text: "未添加目录迁移".localized)

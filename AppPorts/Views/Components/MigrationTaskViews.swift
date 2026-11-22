@@ -58,7 +58,6 @@ private struct MigrationTaskListHeightKey: PreferenceKey {
 
 @MainActor
 struct MigrationTaskList: View {
-    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var center: MigrationTaskCenter
     @State private var selection: Set<UUID> = []
     @State private var contentHeight: CGFloat = 90
@@ -130,7 +129,7 @@ struct MigrationTaskList: View {
         .controlSize(.small)
         .frame(width: isEmbedded ? nil : 420)
         .frame(maxWidth: isEmbedded ? .infinity : nil, maxHeight: isEmbedded ? .infinity : nil)
-        .background(colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : Color.white)
+        .background(AppSurfaceColors.content)
     }
 }
 

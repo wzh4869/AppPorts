@@ -1,15 +1,6 @@
 import SwiftUI
 import AppKit
 
-
-/// Neutral sidebar surface for light and dark appearances.
-enum AppListColors {
-    static let sidebar = Color(nsColor: NSColor(name: nil) { appearance in
-        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            ? NSColor(white: 0.14, alpha: 1) : NSColor(white: 0.95, alpha: 1)
-    })
-}
-
 /// Capture the existing path identity once; List reads IDs repeatedly while scrolling.
 struct AppListEntry: Identifiable {
     let id: String
@@ -73,7 +64,7 @@ struct AppLibraryPane<Content: View>: View {
 struct AppListPanelStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(Color(nsColor: .controlBackgroundColor))
+            .background(AppSurfaceColors.content)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -102,17 +93,12 @@ struct AppListFooterStyle: ViewModifier {
 struct AppListRowAppearance: ViewModifier {
     let isSelected: Bool
     let index: Int
-    @Environment(\.colorScheme) private var colorScheme
     @State private var isHovered = false
-
-    private var surface: Color {
-        colorScheme == .light ? .white : Color(nsColor: .controlBackgroundColor)
-    }
 
     private var background: Color {
         if isSelected { return Color.accentColor.opacity(0.20) }
         if isHovered { return Color.primary.opacity(0.08) }
-        return surface
+        return AppSurfaceColors.content
     }
 
     func body(content: Content) -> some View {
@@ -122,7 +108,7 @@ struct AppListRowAppearance: ViewModifier {
                     if index > 0 {
                         Divider()
                             .padding(.horizontal, 16)
-                            .background(surface)
+                            .background(AppSurfaceColors.content)
                             .allowsHitTesting(false)
                     }
                 }

@@ -6,6 +6,8 @@ import SwiftUI
 struct SidebarSplitView<Sidebar: View, Content: View>: View {
     private let sidebar: Sidebar
     private let content: Content
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var sidebarWidth: CGFloat = 205
     @State private var dragStartWidth: CGFloat?
 
@@ -18,6 +20,16 @@ struct SidebarSplitView<Sidebar: View, Content: View>: View {
         HStack(spacing: 0) {
             sidebar
                 .frame(width: sidebarWidth)
+                .background {
+                    if reduceTransparency {
+                        AppSurfaceColors.opaqueSidebar
+                    } else {
+                        SidebarMaterial()
+                            .overlay(AppSurfaceColors.sidebarTint(for: colorScheme))
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+                }
             Divider()
                 .overlay {
                     Color.clear
@@ -52,4 +64,16 @@ struct SidebarSplitView<Sidebar: View, Content: View>: View {
         }
         .coordinateSpace(name: "sidebarSplit")
     }
+}
+
+private struct SidebarMaterial: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = .sidebar
+        view.blendingMode = .behindWindow
+        view.state = .active
+        return view
+    }
+
+    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }
