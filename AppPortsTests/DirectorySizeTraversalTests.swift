@@ -142,6 +142,94 @@ final class DirectorySizeTraversalTests: XCTestCase {
         }
     }
 
+    func testDetailGroupsOnlyPendingLocalTreesAndReusesTheMemoryCache() throws {
+        let root = try workspace()
+        defer { try? manager.removeItem(at: root) }
+        let dirs = ["Foo", "Foo/Data", "Foo/Data/Library", "Foo-Bar"].map { root.appendingPathComponent($0) }
+        for (index, dir) in dirs.enumerated() {
+            try manager.createDirectory(at: dir, withIntermediateDirectories: true)
+            try Data(repeating: 1, count: index + 1).write(to: dir.appendingPathComponent("file"))
+        }
+        let items = dirs.map(detailItem)
+        let forced = AppDataDetailSizing(items: items, policy: .empty, paused: [], forceRefresh: true)
+        XCTAssertEqual(Set(forced.groups(for: [2, 3, 1, 0])), Set([[0, 1, 2], [3]]))
+        XCTAssertEqual(forced.groups(for: [2]), [[2]])
+        let rows = forced.measure([0, 1, 2])
+        XCTAssertEqual(rows.map { $0.1.bytes }, [6, 5, 3])
+        XCTAssertTrue(rows.allSatisfy { $0.1.isComplete && $0.3?.bytes == $0.1.bytes })
+
+        let cached = AppDataDetailSizing(items: items, policy: .empty, paused: [], forceRefresh: false)
+        try Data(count: 12).write(to: dirs[2].appendingPathComponent("new"))
+        XCTAssertEqual(Set(cached.groups(for: [0, 1, 2])), Set([[0], [1], [2]]))
+        XCTAssertEqual(cached.measure([2]).first?.1.bytes, 3)
+        XCTAssertEqual(forced.measure([0, 1, 2]).map { $0.1.bytes }, [18, 17, 15])
+    }
+
+    func testDetailMeasuresUnvisitedChildrenAtTheirOwnRoots() throws {
+        let root = try workspace()
+        defer { try? manager.removeItem(at: root) }
+        let container = root.appendingPathComponent("container")
+        let real = root.appendingPathComponent("actual/Data")
+        try manager.createDirectory(at: container, withIntermediateDirectories: true)
+        try manager.createDirectory(at: real, withIntermediateDirectories: true)
+        try Data(count: 17).write(to: real.appendingPathComponent("payload"))
+        let link = container.appendingPathComponent("shortcut")
+        try manager.createSymbolicLink(at: link, withDestinationURL: real.deletingLastPathComponent())
+        let child = link.appendingPathComponent("Data")
+        let missing = container.appendingPathComponent("missing")
+        let items = [container, child, missing].map(detailItem)
+        let sizing = AppDataDetailSizing(items: items, policy: .empty, paused: [], forceRefresh: true)
+        let rows = sizing.measure([0, 1, 2])
+        XCTAssertEqual(rows.map { $0.1.bytes }, [0, 17, 0])
+        XCTAssertTrue(rows[1].1.isComplete)
+        XCTAssertFalse(rows[2].1.isComplete)
+        XCTAssertNil(rows[2].3)
+    }
+
+    func testDetailReportsReadErrorsOnlyForAffectedRows() throws {
+        guard geteuid() != 0 else { throw XCTSkip("Requires an unprivileged process") }
+        let root = try workspace()
+        let denied = root.appendingPathComponent("child/private")
+        let sibling = root.appendingPathComponent("readable")
+        defer {
+            _ = chmod(denied.path, 0o700)
+            try? manager.removeItem(at: root)
+        }
+        try manager.createDirectory(at: denied, withIntermediateDirectories: true)
+        try manager.createDirectory(at: sibling, withIntermediateDirectories: true)
+        try Data(count: 7).write(to: sibling.appendingPathComponent("file"))
+        XCTAssertEqual(chmod(denied.path, 0), 0)
+        let items = [root, denied.deletingLastPathComponent(), denied, sibling].map(detailItem)
+        let sizing = AppDataDetailSizing(items: items, policy: .empty, paused: [], forceRefresh: true)
+        for (index, value, _, entry) in sizing.measure([0, 1, 2, 3]) {
+            let expected = measureDirectorySize(at: items[index].path, useCache: false)
+            XCTAssertEqual(value.bytes, expected.bytes)
+            XCTAssertEqual(value.readIssues.map(\.url), expected.readIssues.map(\.url))
+            XCTAssertEqual(entry != nil, index == 3)
+        }
+    }
+
+    func testDetailSchedulesMountLinkSplitAndPausedRowsIndependently() throws {
+        let root = try workspace()
+        defer { try? manager.removeItem(at: root) }
+        let dirs = ["parent", "parent/mount", "parent/link", "parent/split", "parent/paused"].map {
+            root.appendingPathComponent($0)
+        }
+        for dir in dirs { try manager.createDirectory(at: dir, withIntermediateDirectories: true) }
+        var items = dirs.map(detailItem)
+        items[1].status = DataDirStatus.mounted
+        items[2].linkedDestination = dirs[1]
+        items[3].weChatSplitMembers = [items[1], items[2]]
+        let ordinary = AppDataDetailSizing(items: items, policy: .empty, paused: [], forceRefresh: true)
+        XCTAssertEqual(Set(ordinary.groups(for: [0, 1, 2, 3, 4])), Set([[0, 4], [1], [2], [3]]))
+        let paused = AppDataDetailSizing(items: items, policy: .empty, paused: [dirs[4]], forceRefresh: true)
+        XCTAssertEqual(Set(paused.groups(for: [0, 4])), Set([[0], [4]]))
+    }
+
+    private func detailItem(_ url: URL) -> DataDirItem {
+        DataDirItem(name: url.lastPathComponent, path: url, type: .containers, priority: .recommended, description: "")
+    }
+
     private func workspace() throws -> URL {
         let root = manager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try manager.createDirectory(at: root, withIntermediateDirectories: true)

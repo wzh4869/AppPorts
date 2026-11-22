@@ -1664,70 +1664,20 @@ struct DataDirsView: View {
                 self.applyAppDataSnapshot(discoveredSnapshot)
             }
             // Ordinary visits can reuse measured sizes; explicit refresh/migration cannot.
-            let sizedItems = await withTaskGroup(of: (Int, DirectorySizeResult, [DirectorySizeResult], ToolDirectorySizeCacheStore.Entry?).self) { group in
-                var results: [(Int, DirectorySizeResult, [DirectorySizeResult], ToolDirectorySizeCacheStore.Entry?)] = []
-                var iterator = pendingIndices.makeIterator()
-
-                func enqueue(_ i: Int) {
-                    let targetItem = items[i]
-                    group.addTask {
-                        if !targetItem.weChatSplitMembers.isEmpty {
-                            var combined = DirectorySizeResult()
-                            var memberResults: [DirectorySizeResult] = []
-                            memberResults.reserveCapacity(targetItem.weChatSplitMembers.count)
-                            for member in targetItem.weChatSplitMembers {
-                                let cacheable = sizeCachePolicy.isCacheable(item: member)
-                                let measuredMember = measureDataDirectorySize(
-                                    for: member,
-                                    useCache: !forceSizeRefresh && cacheable,
-                                    pausedMountDirectories: pausedMountDirectories,
-                                    allowWriteToCache: cacheable
-                                )
-                                combined.bytes += measuredMember.bytes
-                                combined.readIssues += measuredMember.readIssues
-                                memberResults.append(measuredMember)
-                            }
-                            return (i, combined, memberResults, nil)
-                        }
-
-                        let preIdentity = sizeCachePolicy.cacheIdentity(for: targetItem)
-                        let cacheable = preIdentity != nil
-                        let measured = measureDataDirectorySize(
-                            for: targetItem,
-                            useCache: !forceSizeRefresh && cacheable,
-                            pausedMountDirectories: pausedMountDirectories,
-                            allowWriteToCache: cacheable
-                        )
-                        let entry: ToolDirectorySizeCacheStore.Entry?
-                        if let preIdentity,
-                           let measurementURL = targetItem.sizeMeasurementURL,
-                           !directoryIncludesPausedMount(at: measurementURL, pausedMountDirectories: pausedMountDirectories),
-                           measured.isComplete,
-                           let postIdentity = sizeCachePolicy.cacheIdentity(for: targetItem),
-                           postIdentity == preIdentity {
-                            let sourceKey = targetItem.path.standardizedFileURL.path
-                            entry = .init(
-                                identity: postIdentity,
-                                sourcePath: sourceKey,
-                                targetPath: measurementURL.resolvingSymlinksInPath().standardizedFileURL.path,
-                                bytes: measured.bytes,
-                                measuredAt: Date()
-                            )
-                        } else {
-                            entry = nil
-                        }
-                        return (i, measured, [], entry)
-                    }
+            let sizing = AppDataDetailSizing(items: items, policy: sizeCachePolicy, paused: pausedMountDirectories,
+                                             forceRefresh: forceSizeRefresh)
+            let work = sizing.groups(for: pendingIndices)
+            let sizedItems = await withTaskGroup(of: [AppDataDetailSizing.Row].self) { group in
+                var results: [AppDataDetailSizing.Row] = []
+                var iterator = work.makeIterator()
+                for _ in 0..<min(4, work.count) {
+                    guard !Task.isCancelled, let indices = iterator.next() else { break }
+                    group.addTask { sizing.measure(indices) }
                 }
-
-                for _ in 0..<min(4, pendingIndices.count) {
-                    guard !Task.isCancelled, let i = iterator.next() else { break }
-                    enqueue(i)
-                }
-                for await result in group {
-                    results.append(result)
-                    if !Task.isCancelled, let i = iterator.next() {
-                        enqueue(i)
+                for await batch in group {
+                    results.append(contentsOf: batch)
+                    if !Task.isCancelled, let indices = iterator.next() {
+                        group.addTask { sizing.measure(indices) }
                     }
                 }
                 return results

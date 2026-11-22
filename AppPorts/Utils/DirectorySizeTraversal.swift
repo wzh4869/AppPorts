@@ -11,7 +11,8 @@ enum DirectorySizeTraversal {
     static func measure(
         at root: URL,
         skippingDirectories: Set<URL> = [],
-        subtrees: Set<URL> = []
+        subtrees: Set<URL> = [],
+        onSubtreeFinished: ((URL, DirectorySizeResult) -> Void)? = nil
     ) -> (root: DirectorySizeResult, subtrees: [URL: DirectorySizeResult]) {
         let rootURL = root.standardizedFileURL
         var result = DirectorySizeResult()
@@ -23,7 +24,15 @@ enum DirectorySizeTraversal {
         }
         let skippedPaths = Set(skippingDirectories.map { $0.standardizedFileURL.path })
 
-        func appendIssue(_ issue: DataDirReadIssue, activeSubtrees: [(url: URL, level: Int16)], exactSubtree: URL? = nil) {
+        typealias Subtree = (url: URL, level: Int16, startBytes: Int64)
+        var activeSubtrees: [Subtree] = []
+
+        // In a depth-first walk each subtree occupies one contiguous range of the root total.
+        func finish(_ subtree: Subtree) {
+            subtreeResults[subtree.url, default: DirectorySizeResult()].bytes = result.bytes - subtree.startBytes
+        }
+
+        func appendIssue(_ issue: DataDirReadIssue, exactSubtree: URL? = nil) {
             result.readIssues.append(issue)
             var targets = Set(activeSubtrees.map(\.url))
             if let exactSubtree { targets.insert(exactSubtree) }
@@ -55,10 +64,11 @@ enum DirectorySizeTraversal {
             return propagateFailure(POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO))
         }
         defer { fts_close(traversal) }
-        var activeSubtrees: [(url: URL, level: Int16)] = []
+        var rootDevice: dev_t?
         while true {
             guard !Task.isCancelled else {
-                appendIssue(.init(url: rootURL, error: CancellationError()), activeSubtrees: activeSubtrees)
+                appendIssue(.init(url: rootURL, error: CancellationError()))
+                activeSubtrees.forEach(finish)
                 return (result, subtreeResults)
             }
             // fts_read reports terminal traversal failures through errno.
@@ -66,13 +76,23 @@ enum DirectorySizeTraversal {
             errno = 0
             guard let node = fts_read(traversal) else {
                 if errno != 0 {
-                    appendIssue(.init(url: rootURL, error: POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)),
-                                activeSubtrees: activeSubtrees)
+                    appendIssue(.init(url: rootURL, error: POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)))
                 }
+                activeSubtrees.forEach(finish)
                 return (result, subtreeResults)
             }
             let entry = node.pointee
+            if entry.fts_level == 0, entry.fts_info == FTS_D, onSubtreeFinished != nil {
+                rootDevice = entry.fts_statp?.pointee.st_dev
+            }
             while let last = activeSubtrees.last, last.level >= entry.fts_level {
+                finish(last)
+                // XDEV also emits a postorder directory for a mount it never entered.
+                if let onSubtreeFinished, entry.fts_info == FTS_DP, last.level == entry.fts_level,
+                   let rootDevice, entry.fts_statp?.pointee.st_dev == rootDevice,
+                   let finished = subtreeResults[last.url] {
+                    onSubtreeFinished(last.url, finished)
+                }
                 activeSubtrees.removeLast()
             }
             switch Int32(entry.fts_info) {
@@ -88,20 +108,16 @@ enum DirectorySizeTraversal {
                     let code = entry.fts_errno == 0 ? EIO : entry.fts_errno
                     if entry.fts_level > 0 && code == ENOENT { continue }
                     appendIssue(.init(url: url, error: POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)),
-                                activeSubtrees: activeSubtrees, exactSubtree: matchedSubtree)
+                                exactSubtree: matchedSubtree)
                 } else if let matchedSubtree {
-                    activeSubtrees.append((matchedSubtree, entry.fts_level))
+                    activeSubtrees.append((matchedSubtree, entry.fts_level, result.bytes))
                 }
             case FTS_F:
                 guard let info = entry.fts_statp else {
-                    appendIssue(.init(url: rootURL, error: POSIXError(.EIO)), activeSubtrees: activeSubtrees)
+                    appendIssue(.init(url: rootURL, error: POSIXError(.EIO)))
                     continue
                 }
-                let size = info.pointee.st_size
-                result.bytes += size
-                for active in activeSubtrees {
-                    subtreeResults[active.url, default: DirectorySizeResult()].bytes += size
-                }
+                result.bytes += info.pointee.st_size
             case FTS_ERR, FTS_NS, FTS_DC:
                 let code = entry.fts_errno == 0 ? EIO : entry.fts_errno
                 // Active apps can remove a temporary child during discovery.
@@ -109,7 +125,7 @@ enum DirectorySizeTraversal {
                 let url = URL(fileURLWithFileSystemRepresentation: entry.fts_path,
                     isDirectory: entry.fts_info == FTS_DNR, relativeTo: nil).standardizedFileURL
                 appendIssue(.init(url: url, error: POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)),
-                            activeSubtrees: activeSubtrees, exactSubtree: subtreeMap[url.path])
+                            exactSubtree: subtreeMap[url.path])
             default:
                 // Directories have no content bytes of their own. PHYSICAL
                 // reports symlinks without following them, including cycles.

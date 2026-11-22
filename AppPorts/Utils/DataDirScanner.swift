@@ -46,6 +46,104 @@ private struct AppDataSearchConfig {
     let description: String
 }
 
+/// Measurement groups belong to one detail refresh. Persistent cache hits have already been applied.
+struct AppDataDetailSizing {
+    typealias Row = (Int, DirectorySizeResult, [DirectorySizeResult], ToolDirectorySizeCacheStore.Entry?)
+
+    let items: [DataDirItem]
+    let policy: AppDataSizeCachePolicy
+    let paused: Set<URL>
+    let forceRefresh: Bool
+
+    func groups(for pending: [Int]) -> [[Int]] {
+        guard pending.count > 1, policy.allowCaching else { return pending.map { [$0] } }
+        var separate: [[Int]] = []
+        var ordinary: [(index: Int, path: String)] = []
+        for index in pending {
+            let item = items[index]
+            guard item.status == DataDirStatus.local, item.linkedDestination == nil, !item.hasManagedLinkRecord,
+                  item.weChatSplitMembers.isEmpty, !item.hasMountTransferRecord, item.recoveryOperationID == nil,
+                  !directoryIncludesPausedMount(at: item.path, pausedMountDirectories: paused),
+                  policy.uncacheablePaths.isEmpty || policy.isCacheable(item: item) else {
+                separate.append([index])
+                continue
+            }
+            let path = item.id
+            // A possible memory hit stays independent. The actual lookup verifies its current mount state.
+            if !forceRefresh, MemoryDirectorySizeCache.shared.hasEntry(for: path) {
+                separate.append([index])
+                continue
+            }
+            ordinary.append((index, path + "/"))
+        }
+        // The trailing slash keeps all descendants contiguous, including names such as Foo and Foo-Bar.
+        var parent: String?
+        for row in ordinary.sorted(by: { $0.path.utf8.lexicographicallyPrecedes($1.path.utf8) }) {
+            if let parent, row.path.utf8.starts(with: parent.utf8) {
+                separate[separate.count - 1].append(row.index)
+            } else {
+                parent = row.path
+                separate.append([row.index])
+            }
+        }
+        return separate
+    }
+
+    func measure(_ indices: [Int]) -> [Row] {
+        guard let first = indices.first else { return [] }
+        let members = items[first].weChatSplitMembers
+        if !members.isEmpty {
+            let results = members.map { member in
+                let cacheable = policy.isCacheable(item: member)
+                return measureDataDirectorySize(for: member, useCache: !forceRefresh && cacheable,
+                    pausedMountDirectories: paused, allowWriteToCache: cacheable)
+            }
+            var total = DirectorySizeResult()
+            for result in results {
+                total.bytes += result.bytes
+                total.readIssues += result.readIssues
+            }
+            return [(first, total, results, nil)]
+        }
+
+        let children = Set(indices.dropFirst().map { items[$0].path })
+        let identities = indices.map { policy.cacheIdentity(for: items[$0]) }
+        let epoch = MemoryDirectorySizeCache.shared.currentEpoch()
+        var finished: [URL: DirectorySizeResult] = [:]
+        var rows: [Row] = []
+        for (index, identity) in zip(indices, identities) {
+            guard !Task.isCancelled else { break }
+            let item = items[index]
+            guard let url = item.sizeMeasurementURL else {
+                rows.append((index, DirectorySizeResult(), [], nil))
+                continue
+            }
+            let measured = measureDirectorySize(at: url, useCache: !forceRefresh && identity != nil,
+                pausedMountDirectories: paused, allowWriteToCache: identity != nil, startedAtEpoch: epoch) { root, skipped in
+                if index == first, !children.isEmpty {
+                    return DirectorySizeTraversal.measure(at: root, skippingDirectories: skipped, subtrees: children) {
+                        finished[$0] = $1
+                    }.root
+                }
+                if skipped.isEmpty, let value = finished[url], let identity, policy.cacheIdentity(for: item) == identity {
+                    return value
+                }
+                // Unvisited children (mounts, intermediate links, unreadable or missing parents)
+                // must be measured as roots to preserve their own bytes and errors.
+                return DirectorySizeTraversal.measure(at: root, skippingDirectories: skipped)
+            }
+            var entry: ToolDirectorySizeCacheStore.Entry?
+            if let identity, measured.isComplete, !directoryIncludesPausedMount(at: url, pausedMountDirectories: paused),
+               policy.cacheIdentity(for: item) == identity {
+                entry = .init(identity: identity, sourcePath: item.id, targetPath: url.resolvingSymlinksInPath().standardizedFileURL.path,
+                              bytes: measured.bytes, measuredAt: Date())
+            }
+            rows.append((index, measured, [], entry))
+        }
+        return rows
+    }
+}
+
 // MARK: - 数据目录扫描器
 
 /// 扫描应用关联数据目录和已知工具 dotFolder
@@ -88,6 +186,11 @@ private final class MemoryDirectorySizeCache: @unchecked Sendable {
 
     func removeObject(forKey key: NSString) {
         lock.withLock { cache.removeObject(forKey: key) }
+    }
+
+    func hasEntry(for path: String) -> Bool {
+        object(forKey: sizeCacheKey(for: path, isMountPoint: false)) != nil
+            || object(forKey: sizeCacheKey(for: path, isMountPoint: true)) != nil
     }
 
     func currentEpoch() -> UInt64 {
@@ -249,7 +352,9 @@ func measureDirectorySize(
     useCache: Bool = true,
     pausedMountDirectories: Set<URL> = [],
     isMountPoint: @escaping (URL) -> Bool = { DiskUtility.isMountPoint($0) },
-    allowWriteToCache: Bool = true
+    allowWriteToCache: Bool = true,
+    startedAtEpoch: UInt64? = nil,
+    traverse: (URL, Set<URL>) -> DirectorySizeResult = { DirectorySizeTraversal.measure(at: $0, skippingDirectories: $1) }
 ) -> DirectorySizeResult {
     func readIssue(at failedURL: URL, error: Error) -> DataDirReadIssue {
         DataDirReadIssue(url: failedURL, error: error, pausedMountDirectories: pausedMountDirectories,
@@ -267,7 +372,7 @@ func measureDirectorySize(
         return DirectorySizeResult(bytes: cached.int64Value)
     }
     MemoryDirectorySizeCache.shared.removeObject(forKey: cacheKey)
-    let startEpoch = MemoryDirectorySizeCache.shared.currentEpoch()
+    let startEpoch = startedAtEpoch ?? MemoryDirectorySizeCache.shared.currentEpoch()
     let pausedIssues = relevantPausedMounts.compactMap {
         DataDirReadIssue.pausedMountIssue(at: $0, pausedMountDirectories: pausedMountDirectories,
                                          isMountPoint: isMountPoint)
@@ -304,7 +409,7 @@ func measureDirectorySize(
     // Native traversal retains the offline guard issues; readable placeholders
     // must never make an ancestor's partial size complete or cacheable.
     let skipped = Set(pausedIssues.map(\.url))
-    var result = DirectorySizeTraversal.measure(at: url, skippingDirectories: skipped)
+    var result = traverse(url, skipped)
     result.readIssues += pausedIssues
     // 0 不写缓存：未挂载的挂载点就是一个空目录，算出来同样是 0；缓存下来会让卷挂好之后
     // 一直显示「0 字节」。空目录重新遍历的代价可以忽略，所以每次重算更安全。
