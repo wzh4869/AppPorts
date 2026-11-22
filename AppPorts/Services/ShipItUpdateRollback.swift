@@ -42,7 +42,7 @@ extension ShipItUpdateRecovery {
     func requestRollback(_ candidate: Candidate) throws {
         try operationLock.recheckWriterAdmission()
         guard try records.records().contains(candidate.record),
-              try hasRollbackRequest(candidate) || self.candidate(for: candidate.record) == candidate else { throw RollbackError.changed }
+              try hasRollbackRequest(candidate) || canStartRollback(candidate) else { throw RollbackError.changed }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try DurableFileIO.write(try JSONEncoder().encode(candidate), to: rollbackIntentURL(candidate))
     }
@@ -114,7 +114,7 @@ extension ShipItUpdateRecovery {
                try await busy(candidate.request.bundleIdentifier, saved.source.url) != .idle { throw RollbackError.busy }
             try checkRejectedDownload(saved)
         }
-        try await stopInstaller(candidate.request.bundleIdentifier)
+        try stopInstaller(candidate)
         if saved.rejectedUpdate == nil {
             await quit(candidate.request.bundleIdentifier, candidate.request.targetBundleURL)
             if saved.source.url != candidate.request.targetBundleURL {
@@ -157,7 +157,7 @@ extension ShipItUpdateRecovery {
             else { try requireSavedSource(saved) }
             return saved
         }
-        guard try self.candidate(for: candidate.record) == candidate else { throw RollbackError.changed }
+        guard try canStartRollback(candidate) else { throw RollbackError.changed }
         let old = try previousApplication(candidate)
         try validate(old, candidate.request.bundleIdentifier)
         let version = try SignatureAppVersion.read(at: old)
@@ -175,6 +175,16 @@ extension ShipItUpdateRecovery {
             targetBefore: targetBefore, rejectedUpdate: rejected)
         try saveRollback(saved)
         return saved
+    }
+
+    private func canStartRollback(_ candidate: Candidate) throws -> Bool {
+        if try SignatureSnapshot.entryExists(candidate.stateURL) {
+            return try self.candidate(for: candidate.record) == candidate
+        }
+        // Once the native request is retired, a completed receipt still identifies our installed copy.
+        try requireRollbackLocation(candidate)
+        guard let saved = try installationReceipt(candidate), saved.complete, saved.installerStateCleaned == true else { return false }
+        return try ownsInstalledTarget(candidate)
     }
 
     private func checkRejectedDownload(_ saved: Rollback) throws {
@@ -435,15 +445,20 @@ extension ShipItUpdateRecovery {
         try DurableFileIO.write(try JSONEncoder().encode(value), to: rollbackURL(value.candidate))
     }
 
-    static func stopInstallerJob(_ identifier: String) async throws {
-        let runner = ProcessCommandRunner()
-        let service = "gui/\(getuid())/\(identifier).ShipIt"
-        let current = try await runner.run(executable: "/bin/launchctl", arguments: ["print", service], timeout: 5)
+    static func stopInstallerJob(_ candidate: Candidate) throws {
+        let service = "gui/\(getuid())/\(candidate.request.bundleIdentifier).ShipIt"
+        let current = try ProcessCommandRunner.runSynchronously(executable: "/bin/launchctl", arguments: ["print", service], timeout: 5)
         guard !current.timedOut else { throw RollbackError.busy }
-        if current.status == 0 {
-            let stopped = try await runner.run(executable: "/bin/launchctl", arguments: ["bootout", service], timeout: 5)
-            guard stopped.status == 0, !stopped.timedOut else { throw RollbackError.busy }
+        if current.status == 113 { return } // launchctl: service not found in this domain.
+        guard current.status == 0, !current.outputWasTruncated else { throw RollbackError.busy }
+        let lines = current.stdoutText.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }
+        guard let start = lines.firstIndex(of: "arguments = {"),
+              lines.dropFirst(start + 1).prefix(while: { $0 != "}" }).contains(candidate.stateURL.path) else {
+            throw RollbackError.changed
         }
+        guard !lines.contains(where: { $0.hasPrefix("pid = ") }) else { throw RollbackError.busy }
+        let stopped = try ProcessCommandRunner.runSynchronously(executable: "/bin/launchctl", arguments: ["bootout", service], timeout: 5)
+        guard !stopped.timedOut, stopped.status == 0 || stopped.status == 113 else { throw RollbackError.busy }
     }
 
     enum RollbackError: LocalizedError {

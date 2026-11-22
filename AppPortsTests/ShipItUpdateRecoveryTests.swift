@@ -93,7 +93,14 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
             try (Data(history.utf8) + latest).write(to: log)
         }
 
+        // Older guardians left these exact request bytes in ShipIt's cache after success.
+        func restoreLegacyRequest(_ candidate: ShipItUpdateRecovery.Candidate) throws {
+            try candidate.requestBytes.write(to: state)
+            try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: 1)], ofItemAtPath: state.path)
+        }
+
         func backdateLegacyReceipt(_ candidate: ShipItUpdateRecovery.Candidate, to completion: Date) throws {
+            try restoreLegacyRequest(candidate)
             let url = root.appendingPathComponent("Receipts/" + candidate.key + ".json")
             var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
             json.removeValue(forKey: "handledInstallStart")
@@ -118,6 +125,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
                       validate: @escaping @Sendable (URL, String) throws -> Void = { try Fixture.validate($0, $1) },
                       sameDeveloper: @escaping @Sendable (URL, URL) throws -> Void = { _, _ in },
                       quit: @escaping @Sendable (String, URL) async -> Void = { _, _ in },
+                      stopInstaller: @escaping @Sendable (ShipItUpdateRecovery.Candidate) throws -> Void = { _ in },
                       clearState: (@Sendable (ShipItUpdateRecovery.Candidate) throws -> Void)? = nil) -> ShipItUpdateRecovery {
             let domain = stateDomain
             return ShipItUpdateRecovery(records: store, caches: caches, directory: root.appendingPathComponent("Receipts"),
@@ -126,7 +134,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
                 validate: validate, busy: busy, refresh: refresh, launch: launch,
                 sameDeveloper: sameDeveloper, quit: quit,
                 clearInstallerState: clearState ?? { try ShipItInstallerState.clear(for: $0, domain: domain) },
-                stopInstaller: { _ in })
+                stopInstaller: stopInstaller)
         }
 
         static func refreshPortal(_ record: AppSearchRecord, in root: URL) throws {
@@ -196,6 +204,112 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertEqual(launches.value, 1)
     }
 
+    func testCompletedLegacyRequestRetiresWithoutReinstallingOrRelaunching() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let worker = fixture.recovery()
+        let candidate = try XCTUnwrap(worker.candidates().first)
+        let installed = try await worker.recover(candidate)
+        XCTAssertTrue(installed)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.state.path))
+        try fixture.restoreLegacyRequest(candidate)
+        let identity = try DataPathIdentity.capture(fixture.target)
+        let stops = Calls()
+        let upgraded = fixture.recovery(refresh: { _ in XCTFail("Already refreshed") },
+            launch: { _ in XCTFail("Already launched") }, stopInstaller: { _ in _ = stops.next() })
+        let pending = try XCTUnwrap(upgraded.candidates().first)
+        XCTAssertEqual(pending.key, candidate.key)
+        let retired = try await upgraded.recover(pending)
+        XCTAssertTrue(retired)
+        XCTAssertEqual(stops.value, 1)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.state.path))
+        XCTAssertTrue(identity.matchesFilesystemObject(try .capture(fixture.target)))
+        try Fixture.validate(fixture.source, fixture.identifier)
+        XCTAssertTrue(try upgraded.candidates().isEmpty)
+    }
+
+    func testRetiresOnlyMatchingLaunchdRegistrationAndAllowsNextSubmission() async throws {
+        guard ProcessInfo.processInfo.environment["APPPORTS_SHIPIT_VALIDATION_ROOT"] != nil else {
+            throw XCTSkip("Opt-in temporary launchd registration")
+        }
+        let fixture = try Fixture(identifier: "org.appports.retirement." + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let label = fixture.identifier + ".ShipIt"
+        let domain = "gui/\(getuid())"
+        let job = domain + "/" + label
+        let definition = fixture.root.appendingPathComponent("fixture.plist")
+        func launchctl(_ args: [String]) throws -> ShellCommandResult {
+            try ProcessCommandRunner.runSynchronously(executable: "/bin/launchctl", arguments: args, timeout: 5)
+        }
+        func register(request: URL, retryFailure: Bool = false) throws {
+            var plist: [String: Any] = ["Label": label, "ProgramArguments": [retryFailure ? "/usr/bin/false" : "/usr/bin/true", label, request.path]]
+            if retryFailure {
+                plist["KeepAlive"] = ["SuccessfulExit": false]
+                plist["RunAtLoad"] = true
+                plist["ThrottleInterval"] = 60
+            }
+            try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: definition)
+            let bootstrap = try launchctl(["bootstrap", domain, definition.path])
+            XCTAssertEqual(bootstrap.status, 0, bootstrap.combinedText)
+        }
+        let worker = fixture.recovery(stopInstaller: { try ShipItUpdateRecovery.stopInstallerJob($0) })
+        let candidate = try XCTUnwrap(worker.candidates().first)
+        try fixture.seedInstallerState()
+        try register(request: fixture.root.appendingPathComponent("unrelated.plist"))
+        defer { _ = try? launchctl(["bootout", job]) }
+        do {
+            _ = try await worker.recover(candidate)
+            XCTFail("A job for another request must remain registered")
+        } catch ShipItUpdateRecovery.RollbackError.changed {}
+        XCTAssertEqual(try launchctl(["print", job]).status, 0)
+        XCTAssertEqual(try Data(contentsOf: fixture.state), candidate.requestBytes)
+        XCTAssertNotNil(fixture.state(ShipItInstallerState.ownedBundleKey))
+        XCTAssertEqual(try launchctl(["bootout", job]).status, 0)
+
+        try register(request: fixture.state, retryFailure: true)
+        let deadline = Date().addingTimeInterval(5)
+        while try !launchctl(["print", job]).stdoutText.contains("last exit code = 1"), Date() < deadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        XCTAssertTrue(try launchctl(["print", job]).stdoutText.contains("last exit code = 1"))
+        let finished = try await worker.recover(candidate)
+        XCTAssertTrue(finished)
+        XCTAssertEqual(try launchctl(["print", job]).status, 113)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.state.path))
+        try fixture.writeRequest(relaunch: false, failure: false)
+        try register(request: fixture.state)
+        XCTAssertTrue(try worker.candidates().isEmpty)
+        XCTAssertEqual(try launchctl(["print", job]).status, 0)
+    }
+
+    func testRelaunchPreparingNextUpdateKeepsItsRequestAndCanInstallIt() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let next = fixture.source.deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("update.next/Fixture.app")
+        try Fixture.bundle(at: next, identifier: fixture.identifier, executable: "Fixture")
+        let plist = next.appendingPathComponent("Contents/Info.plist")
+        var info = try XCTUnwrap(NSDictionary(contentsOf: plist) as? [String: String])
+        info["CFBundleShortVersionString"] = "3.0"
+        try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0).write(to: plist)
+        let firstWorker = fixture.recovery(launch: { _ in
+            var request = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: fixture.state)) as? [String: Any])
+            request["updateBundleURL"] = next.absoluteString
+            request["launchAfterInstallation"] = false
+            try JSONSerialization.data(withJSONObject: request).write(to: fixture.state, options: .atomic)
+            try fixture.writeRepeatedFailure(startedAt: Date())
+        })
+        let first = try XCTUnwrap(firstWorker.candidates().first)
+        let finished = try await firstWorker.recover(first)
+        XCTAssertTrue(finished)
+        let secondWorker = fixture.recovery()
+        let second = try XCTUnwrap(secondWorker.candidates().first)
+        XCTAssertNotEqual(first.key, second.key)
+        XCTAssertEqual(second.request.updateBundleURL, next)
+        let updated = try await secondWorker.recover(second)
+        XCTAssertTrue(updated)
+        XCTAssertEqual(try SignatureAppVersion.read(at: fixture.target).shortVersion, "3.0")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.state.path))
+    }
+
     @MainActor
     func testSecondFailedInstallOfUnchangedRequestGetsANewRecoveryAndTask() async throws {
         let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
@@ -228,7 +342,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         try fixture.writeRepeatedFailure(startedAt: nextStart)
         try fixture.prependOldLog()
         try FileManager.default.moveItem(at: owned, to: fixture.target)
-        XCTAssertTrue(try recovery.candidates().isEmpty, "A healthy copy of the same version needs no reinstall")
+        XCTAssertEqual(try recovery.candidates().map(\.key), [first.key], "A healthy copy only needs its existing receipt retired")
         try FileManager.default.moveItem(at: fixture.target, to: owned)
         let second = try XCTUnwrap(fixture.recovery().candidates().first)
         XCTAssertEqual(first.requestBytes, second.requestBytes)
@@ -955,6 +1069,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         let receipt = fixture.root.appendingPathComponent("Receipts/" + candidate.key + ".json")
         var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: receipt)) as? [String: Any])
         json.removeValue(forKey: "installerStateCleaned")
+        try fixture.restoreLegacyRequest(candidate)
         try JSONSerialization.data(withJSONObject: json).write(to: receipt)
         try fixture.seedInstallerState()
         let second = fixture.recovery(launch: { _ in _ = launches.next() })
@@ -1075,6 +1190,7 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         // The real install switches versions; its original inode becomes the recorded backup.
         let recoveredBeforeRollback = try await recovery.recover(candidate)
         XCTAssertTrue(recoveredBeforeRollback)
+        try fixture.restoreLegacyRequest(candidate)
         let failedCleanup = fixture.recovery(clearState: { _ in throw CocoaError(.fileWriteUnknown) })
         do { _ = try await failedCleanup.rollback(candidate); XCTFail("Preference failure must not report a clean rollback") }
         catch { }
@@ -1087,6 +1203,24 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         XCTAssertEqual(version, "1")
         XCTAssertFalse(FileManager.default.fileExists(atPath: recovery.rollbackURL(candidate).path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.source.path))
+    }
+
+    func testRollbackAfterRequestRetirementPreservesNextUpdateAndCanRestoreOldApp() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        try fixture.makeOldTarget(version: "1")
+        let worker = fixture.recovery()
+        let candidate = try XCTUnwrap(worker.candidates().first)
+        let recovered = try await worker.recover(candidate)
+        XCTAssertTrue(recovered)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fixture.state.path))
+        try fixture.writeRequest(relaunch: false, failure: false)
+        let newRequest = try Data(contentsOf: fixture.state)
+        XCTAssertThrowsError(try worker.requestRollback(candidate))
+        XCTAssertEqual(try Data(contentsOf: fixture.state), newRequest)
+        try FileManager.default.removeItem(at: fixture.state)
+        let restored = try await fixture.recovery().rollback(candidate)
+        XCTAssertEqual(restored, "1")
+        XCTAssertEqual(try SignatureAppVersion.read(at: fixture.target).shortVersion, "1")
     }
 
     func testRollbackWithoutACompleteOldAppPreservesUpdateCache() async throws {

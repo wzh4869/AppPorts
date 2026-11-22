@@ -77,7 +77,7 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
     let sameDeveloper: @Sendable (URL, URL) throws -> Void
     let quit: @Sendable (String, URL) async -> Void
     let clearInstallerState: @Sendable (Candidate) throws -> Void
-    let stopInstaller: @Sendable (String) async throws -> Void
+    let stopInstaller: @Sendable (Candidate) throws -> Void
 
     init(records: AppSearchRecordStore = .shared,
          caches: URL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0],
@@ -91,7 +91,7 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
          sameDeveloper: @escaping @Sendable (URL, URL) throws -> Void = { try ShipItUpdateRecovery.requireSameDeveloper(old: $0, new: $1) },
          quit: @escaping @Sendable (String, URL) async -> Void = { await ShipItUpdateRecovery.requestQuit(identifier: $0, target: $1) },
          clearInstallerState: @escaping @Sendable (Candidate) throws -> Void = { try ShipItInstallerState.clear(for: $0) },
-         stopInstaller: @escaping @Sendable (String) async throws -> Void = { try await ShipItUpdateRecovery.stopInstallerJob($0) }) {
+         stopInstaller: @escaping @Sendable (Candidate) throws -> Void = { try ShipItUpdateRecovery.stopInstallerJob($0) }) {
         self.records = records; self.caches = caches; self.directory = directory
         self.launchLocks = launchLocks; self.operationLock = operationLock
         self.validate = validate; self.busy = busy; self.refresh = refresh; self.launch = launch
@@ -113,7 +113,7 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
                 guard let (candidate, saved, _) = try installation(for: record) else { continue }
                 if hasRollbackRequest(candidate) { continue }
                 if let saved {
-                    if saved.complete && saved.installerStateCleaned == true { continue }
+                    if saved.complete, try !ownsCompletedUpdate(candidate) { continue }
                 } else if try SignatureSnapshot.entryExists(candidate.request.targetBundleURL), !Self.isNewer(candidate) { continue }
                 result.append(candidate)
             } catch {
@@ -172,8 +172,14 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
                   try installation.isLater(than: saved, at: url) else { return (candidate, saved, installation.timestamp) }
             // Only a later ShipIt run can advance past a completed transaction.
             // An interrupted install or rollback must keep its original stage and key.
-            candidate.recoveryNumber = (candidate.recoveryNumber ?? 1) + 1
-            url = receiptURL(candidate)
+            var next = candidate
+            next.recoveryNumber = (candidate.recoveryNumber ?? 1) + 1
+            url = receiptURL(next)
+            if try !SignatureSnapshot.entryExists(url), !hasRollbackRequest(next), try ownsCompletedUpdate(candidate) {
+                // A later failed run left our installed copy intact. Only the old request needs retiring.
+                return (candidate, saved, installation.timestamp)
+            }
+            candidate = next
         }
         return (candidate, nil, installation.timestamp)
     }
@@ -196,12 +202,17 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
             var saved = try JSONDecoder().decode(Receipt.self, from: Self.smallFile(receiptURL(candidate)))
             if saved.quitRequested == true, activity == .applicationRunning, try !ownsInstalledTarget(candidate) { return false }
             if saved.complete {
-                guard saved.installerStateCleaned != true, try ownsInstalledTarget(candidate) else { return false }
+                guard try ownsInstalledTarget(candidate) else { return false }
                 try validate(candidate.request.targetBundleURL, candidate.request.bundleIdentifier)
-                try clearInstallerState(candidate)
-                saved.installerStateCleaned = true
-                try save(saved)
-                return true
+                return try withCurrentRequest(candidate, options: .forDeleting) {
+                    try stopInstaller(candidate)
+                    try clearInstallerState(candidate)
+                    if saved.installerStateCleaned != true {
+                        saved.installerStateCleaned = true
+                        try save(saved)
+                    }
+                    try FileManager.default.removeItem(at: candidate.stateURL)
+                }
             }
         }
         let result: Bool
@@ -225,7 +236,10 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
               try ownsInstalledTarget(candidate) else { return false }
         guard try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL) != .updaterRunning else { return false }
         await report(.finishing)
-        try clearInstallerState(candidate)
+        guard try withCurrentRequest(candidate, perform: {
+            try stopInstaller(candidate)
+            try clearInstallerState(candidate)
+        }) else { return false }
         // A reused request has already consumed its relaunch. Opening again can start ShipIt again.
         if candidate.request.launchAfterInstallation, candidate.recoveryNumber == nil {
             switch try await busy(candidate.request.bundleIdentifier, candidate.request.targetBundleURL) {
@@ -235,6 +249,11 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
             }
         }
         try finish(candidate, handledStart: handled.start)
+        // Relaunch may already have prepared a different update. A durable receipt also lets
+        // an older or interrupted installation retire its request without relaunching again.
+        _ = try withCurrentRequest(candidate, options: .forDeleting) {
+            try FileManager.default.removeItem(at: candidate.stateURL)
+        }
         AppLogger.shared.logContext("已自动完成 ShipIt 更新恢复", details: [("bundle_id", candidate.request.bundleIdentifier)])
         return true
     }
@@ -408,6 +427,31 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
         guard !hasRollbackRequest(candidate), try records.records().contains(candidate.record),
               let current = try installation(for: candidate.record), current.candidate == candidate else { return nil }
         return current
+    }
+
+    private func ownsCompletedUpdate(_ candidate: Candidate) throws -> Bool {
+        guard try ownsInstalledTarget(candidate) else { return false }
+        let request = candidate.request
+        guard try SignatureSnapshot.entryExists(request.updateBundleURL) else { return true }
+        return try SignatureAppVersion.read(at: request.targetBundleURL) == SignatureAppVersion.read(at: request.updateBundleURL)
+    }
+
+    /// Squirrel coordinates writes to this shared filename before submitting its next job.
+    private func withCurrentRequest(_ candidate: Candidate, options: NSFileCoordinator.WritingOptions = [],
+                                    perform: () throws -> Void) throws -> Bool {
+        var coordinationError: NSError?
+        var result: Result<Bool, Error> = .success(false)
+        NSFileCoordinator().coordinate(writingItemAt: candidate.stateURL, options: options, error: &coordinationError) { url in
+            result = Result {
+                guard url.standardizedFileURL == candidate.stateURL.standardizedFileURL,
+                      try matchingInstallation(candidate) != nil, try ownsCompletedUpdate(candidate) else { return false }
+                try operationLock.recheckWriterAdmission()
+                try perform()
+                return true
+            }
+        }
+        if let coordinationError { throw coordinationError }
+        return try result.get()
     }
 
     private func receiptURL(_ candidate: Candidate) -> URL { directory.appendingPathComponent(candidate.key + ".json") }
