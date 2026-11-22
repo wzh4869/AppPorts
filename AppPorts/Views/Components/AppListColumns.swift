@@ -38,6 +38,37 @@ struct AppListColumns<Name: View, Size: View, Actions: View>: View {
     }
 }
 
+/// A visible row supplies the native List's content bounds, including the current scroller gutter.
+struct AppListRowColumnsAnchor: PreferenceKey {
+    static let defaultValue: Anchor<CGRect>? = nil
+
+    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
+        if value == nil { value = nextValue() }
+    }
+}
+
+struct AppLibraryPane<Content: View>: View {
+    @Environment(\.layoutDirection) private var layoutDirection
+    @State private var columnTrailingInset: CGFloat?
+    @ViewBuilder let content: (_ columnTrailingInset: CGFloat, _ nameLineLimit: Int) -> Content
+
+    var body: some View {
+        GeometryReader { pane in
+            content(columnTrailingInset ?? 24, pane.size.width < 420 ? 2 : 1)
+                .backgroundPreferenceValue(AppListRowColumnsAnchor.self) { anchor in
+                    let inset = anchor.map { bounds in
+                        let row = pane[bounds]
+                        return layoutDirection == .rightToLeft ? row.minX : pane.size.width - row.maxX
+                    }
+                    Color.clear
+                        .onAppear { columnTrailingInset = inset }
+                        .onChange(of: inset) { columnTrailingInset = $0 }
+                }
+        }
+        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
 /// The two application libraries share the same panel appearance.
 struct AppListPanelStyle: ViewModifier {
     func body(content: Content) -> some View {
@@ -52,13 +83,17 @@ struct AppListPanelStyle: ViewModifier {
 }
 
 struct AppListFooterStyle: ViewModifier {
+    var columnTrailingInset: CGFloat?
+
     func body(content: Content) -> some View {
         content
             .font(.system(size: 13, weight: .medium))
             .controlSize(.regular)
             .lineLimit(1)
             .minimumScaleFactor(0.85)
-            .padding(.horizontal, 12)
+            .padding(.leading, 12)
+            // The native ellipsis ends just inside its action column.
+            .padding(.trailing, columnTrailingInset.map { $0 + 4 } ?? 12)
             .padding(.vertical, 10)
     }
 }

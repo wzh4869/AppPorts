@@ -490,7 +490,7 @@ struct ContentView: View {
         }
     }
 
-    private func appListColumnHeader(sorting: Binding<AppListSort>) -> some View {
+    private func appListColumnHeader(sorting: Binding<AppListSort>, columnTrailingInset: CGFloat) -> some View {
         AppListColumns {
             sortColumnButton("名称".localized, option: .name, sorting: sorting)
         } size: {
@@ -508,7 +508,8 @@ struct ContentView: View {
         }
         .font(.system(size: 11, weight: .medium))
         .foregroundColor(.secondary)
-        .padding(.horizontal, 12)
+        .padding(.leading, 12)
+        .padding(.trailing, max(0, columnTrailingInset - 12))
         .frame(height: 30)
         .background(Color.primary.opacity(0.03))
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -649,6 +650,7 @@ struct ContentView: View {
         let title: String
         let icon: String
         let isEnabled: Bool
+        var columnTrailingInset: CGFloat? = nil
         let action: () -> Void
 
         var body: some View {
@@ -662,7 +664,7 @@ struct ContentView: View {
                 .buttonStyle(AppListPrimaryButtonStyle())
                 .disabled(!isEnabled)
 
-            .modifier(AppListFooterStyle())
+            .modifier(AppListFooterStyle(columnTrailingInset: columnTrailingInset))
         }
     }
 
@@ -795,8 +797,8 @@ struct ContentView: View {
                         .modifier(AppPageVisibility(isActive: mainTab == .customDirs))
                 }
                 HStack(spacing: 8) {
-                    localAppsPane
-                    externalAppsPane
+                    AppLibraryPane(content: localAppsPane)
+                    AppLibraryPane(content: externalAppsPane)
                 }
                 .padding(6)
                 .disabled(operationState.blocksInteraction)
@@ -1014,7 +1016,7 @@ struct ContentView: View {
 
     // MARK: - 应用页两个面板（拆出以减轻 body 的类型推断负担）
 
-    private var localAppsPane: some View {
+    private func localAppsPane(columnTrailingInset: CGFloat, nameLineLimit: Int) -> some View {
         let entries = filteredLocalApps.enumerated().map { AppListEntry(app: $0.element, index: $0.offset) }
         return VStack(spacing: 0) {
             HeaderView(
@@ -1034,7 +1036,7 @@ struct ContentView: View {
                 signatureReplacedFilterBanner
             }
 
-            appListColumnHeader(sorting: $localAppSort)
+            appListColumnHeader(sorting: $localAppSort, columnTrailingInset: columnTrailingInset)
 
             ZStack {
                 Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
@@ -1052,6 +1054,7 @@ struct ContentView: View {
                         let activeJob = activeJob(for: app)
                         AppRowView(
                             app: app,
+                            nameLineLimit: nameLineLimit,
                             showDeleteLinkButton: true,
                             onDeleteLink: performDeleteLink,
                             onResign: { performSingleResign(app: $0) },
@@ -1083,12 +1086,13 @@ struct ContentView: View {
 
 
         }
-        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottomTrailing) {
             ActionFooter(
                 title: getMoveButtonTitle(),
                 icon: "arrow.right",
                 isEnabled: canMoveOut,
+                columnTrailingInset: columnTrailingInset,
                 action: performMoveOut
             )
         }
@@ -1096,7 +1100,7 @@ struct ContentView: View {
 
     }
 
-    private var externalAppsPane: some View {
+    private func externalAppsPane(columnTrailingInset: CGFloat, nameLineLimit: Int) -> some View {
         let filteredApps = filteredExternalApps
         let entries = filteredApps.enumerated().map { AppListEntry(app: $0.element, index: $0.offset) }
         let sizeSummary: String? = AppListDisplaySizeSummary(apps: filteredApps).headerText
@@ -1113,7 +1117,7 @@ struct ContentView: View {
                 isRefreshing: externalScanState.isScanning
             )
 
-        appListColumnHeader(sorting: $externalAppSort)
+        appListColumnHeader(sorting: $externalAppSort, columnTrailingInset: columnTrailingInset)
 
         ZStack {
             Color(nsColor: .controlBackgroundColor).ignoresSafeArea()
@@ -1147,6 +1151,7 @@ struct ContentView: View {
                     let activeJob = activeJob(for: app)
                     AppRowView(
                         app: app,
+                        nameLineLimit: nameLineLimit,
                         showDeleteLinkButton: false,
                         onDeleteLink: performDeleteLink,
                         onResign: { performSingleResign(app: $0) },
@@ -1176,7 +1181,7 @@ struct ContentView: View {
 
 
     }
-    .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .overlay(alignment: .bottomTrailing) {
         HStack(spacing: 8) {
             Button(action: performBatchMoveBack) {
@@ -1193,7 +1198,7 @@ struct ContentView: View {
             .buttonStyle(AppListPrimaryButtonStyle())
             .disabled(!canLinkIn)
         }
-        .modifier(AppListFooterStyle())
+        .modifier(AppListFooterStyle(columnTrailingInset: columnTrailingInset))
     }
     .modifier(AppListPanelStyle())
     }

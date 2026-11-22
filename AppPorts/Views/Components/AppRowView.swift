@@ -11,6 +11,7 @@ import AppKit
 /// 列表行视图
 struct AppRowView: View {
     let app: AppItem
+    var nameLineLimit = 1
     let showDeleteLinkButton: Bool
     let onDeleteLink: (AppItem) -> Void
     let onResign: ((AppItem) -> Void)?
@@ -32,7 +33,8 @@ struct AppRowView: View {
                     Text(app.displayName)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
-                        .lineLimit(1)
+                        .lineLimit(nameLineLimit)
+                        .fixedSize(horizontal: false, vertical: true)
                         .truncationMode(.tail)
                         .help(app.displayName)
                     StatusBadge(
@@ -59,6 +61,7 @@ struct AppRowView: View {
             rowActions
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .anchorPreference(key: AppListRowColumnsAnchor.self, value: .bounds) { $0 }
         .padding(.vertical, 6)
         .padding(.horizontal, 12)
         .background(AppListSelectionAppearance())
