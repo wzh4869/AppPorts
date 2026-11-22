@@ -216,6 +216,24 @@ final class AppScannerTests: XCTestCase {
         XCTAssertLessThan(displayedSize, logicalSize)
     }
 
+    func testAppSizeSkipsDotAndFinderHiddenTreesAndCountsOnlyPortalLinkBytes() throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        let root = workspace.localAppsURL
+        for name in [".dot", "hidden", "visible"] {
+            let directory = root.appendingPathComponent(name)
+            try fileManager.createDirectory(at: directory, withIntermediateDirectories: false)
+            try Data(count: 19).write(to: directory.appendingPathComponent("file"))
+        }
+        XCTAssertEqual(chflags(root.appendingPathComponent("hidden").path, UInt32(UF_HIDDEN)), 0)
+        try fileManager.createSymbolicLink(atPath: root.appendingPathComponent("link").path, withDestinationPath: "visible")
+        try fileManager.createSymbolicLink(atPath: root.appendingPathComponent("dangling").path, withDestinationPath: "absent")
+        let scanner = AppScanner()
+        XCTAssertEqual(scanner.calculateDirectorySize(at: root), 19)
+        XCTAssertEqual(scanner.calculateDirectorySize(at: root, mode: .localPortal), 19 + 7 + 6)
+        XCTAssertEqual(scanner.calculateDirectorySize(at: root.appendingPathComponent("dangling"), mode: .localPortal), 0)
+    }
+
     func testDisplayedSizeForExternalEntryKeepsLogicalContentSize() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

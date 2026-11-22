@@ -192,7 +192,6 @@ actor AppScanner {
     nonisolated func calculateDirectorySize(at url: URL, mode: AppSizeMode = .logicalContent) -> Int64 {
         guard !Task.isCancelled else { return 0 }
         let fileManager = FileManager.default
-        var size: Int64 = 0
         let scanURL: URL
         let countsSymlinkEntries: Bool
 
@@ -220,20 +219,25 @@ actor AppScanner {
             }
         }
         
-        // 创建目录枚举器（深度优先遍历）
-        guard let enumerator = fileManager.enumerator(
-            at: scanURL,
-            includingPropertiesForKeys: resourceKeys,
-            options: [.skipsHiddenFiles], // 跳过隐藏文件提升性能
-            errorHandler: nil
-        ) else { return 0 }
+        guard let path = scanURL.withUnsafeFileSystemRepresentation({ $0.flatMap { strdup($0) } }) else { return 0 }
+        defer { free(path) }
+        var paths: [UnsafeMutablePointer<CChar>?] = [path, nil]
+        guard let tree = fts_open(&paths, FTS_PHYSICAL | FTS_NOCHDIR | FTS_XDEV, nil) else { return 0 }
+        defer { fts_close(tree) }
 
-        var fileCount = 0
         let maxFileCount = 500_000
-
-        // 累加所有文件大小
-        for case let fileURL as URL in enumerator {
-            guard !Task.isCancelled else { return size }
+        var fileCount = 0
+        var size: Int64 = 0
+        while !Task.isCancelled, let node = fts_read(tree) {
+            let entry = node.pointee
+            let kind = Int32(entry.fts_info)
+            guard entry.fts_level > 0, kind != FTS_DP, kind != FTS_DNR, kind != FTS_ERR,
+                  kind != FTS_NS, let metadata = entry.fts_statp else { continue }
+            // skipsHiddenFiles includes Finder-hidden items as well as dot files.
+            if entry.fts_name == 0x2e || metadata.pointee.st_flags & UInt32(UF_HIDDEN) != 0 {
+                if kind == FTS_D { fts_set(tree, node, FTS_SKIP) }
+                continue
+            }
             fileCount += 1
             if fileCount > maxFileCount {
                 AppLogger.shared.logContext(
@@ -243,14 +247,9 @@ actor AppScanner {
                 )
                 break
             }
-            let resourceValues = try? fileURL.resourceValues(forKeys: Set(resourceKeys))
-            if resourceValues?.isSymbolicLink == true {
-                if countsSymlinkEntries {
-                    size += Int64(resourceValues?.fileSize ?? 0)
-                }
-                continue
+            if kind == FTS_F || (countsSymlinkEntries && (kind == FTS_SL || kind == FTS_SLNONE)) {
+                size += metadata.pointee.st_size
             }
-            if let fileSize = resourceValues?.fileSize { size += Int64(fileSize) }
         }
         return size
     }
