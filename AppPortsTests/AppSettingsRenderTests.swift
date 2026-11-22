@@ -62,6 +62,83 @@ final class AppSettingsRenderTests: XCTestCase {
     }
 
     @MainActor
+    func testUpdateBadgeReservesItsRowHeightBeforeDiscovery() {
+        let name = "Adobe Premiere Pro 2026.app"
+        let url = URL(fileURLWithPath: "/Applications/" + name)
+        let local = AppItem(name: name, path: url, status: AppStatus.local, updateRoute: .independent, bundleIsLocked: false)
+        var linked = local
+        linked.status = AppStatus.linked
+        var running = linked
+        running.isRunning = true
+        var folder = local
+        folder.isFolder = true
+        let apps = [local, linked, running, folder]
+        for language in ["zh-Hans", "en"] {
+            LanguageManager.shared.language = language
+            for app in apps {
+                let cached = AppListCacheStore.Row(app, context: .init(guardian: .ready)).preview(size: nil, pane: .local)
+                for width: CGFloat in [320, 380, 500] {
+                    func height(_ item: AppItem, showsStatus: Bool) -> CGFloat {
+                        let row = AppRowView(app: item, nameLineLimit: width < 420 ? 2 : 1,
+                            showsStatus: showsStatus, showDeleteLinkButton: true,
+                            onDeleteLink: { _ in }, onResign: nil, onRestoreSignature: nil)
+                            .environment(\.updateRecommendation, .init(guardian: .ready))
+                            .frame(width: width)
+                        return NSHostingView(rootView: row).fittingSize.height
+                    }
+                    let pending = height(cached, showsStatus: false)
+                    let confirmed = height(app, showsStatus: true)
+                    XCTAssertEqual(pending, confirmed, accuracy: 0.01,
+                                   "\(language), \(app.status), running \(app.isRunning), width \(width)")
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func testFirstFrameUsesTheSameBadgeColorsAsInteractiveRows() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let live = AppItem(name: "Reader.app", path: URL(fileURLWithPath: "/Applications/Reader.app"),
+            status: AppStatus.linked, isRunning: true, signatureReplaced: true, updateRoute: .independent, bundleIsLocked: false)
+        let ready = UpdateRecommendationContext(guardian: .ready)
+        let cached = AppListCacheStore.Row(live, context: ready).preview(size: nil, pane: .local)
+        XCTAssertEqual(AppBadgeLayout(previewing: cached, context: .init(guardian: .unavailable)),
+                       AppBadgeLayout(app: live, context: ready))
+        XCTAssertNil(cached.bundleIsLocked)
+        XCTAssertFalse(cached.isRunning || cached.signatureReplaced)
+
+        for scheme in [ColorScheme.light, .dark] {
+            var strengths: [CGFloat] = []
+            for (stage, item) in [("cached", cached), ("discovered", live), ("interactive", live)] {
+                let file = root.appendingPathComponent("\(scheme)-\(stage).png")
+                let badges = StatusBadge(app: item, showsCachedBadges: stage == "cached")
+                    .disabled(stage != "interactive")
+                    .environment(\.colorScheme, scheme)
+                    .environment(\.updateRecommendation, ready)
+                    .frame(width: 440, height: 36, alignment: .leading)
+                    .background(scheme == .light ? Color.white : .black)
+                try await render(badges, size: NSSize(width: 440, height: 36), destination: file)
+                let bitmap = try XCTUnwrap(NSBitmapImageRep(data: Data(contentsOf: file)))
+                // The blue update badge is first. Its foreground must keep its normal contrast in all three phases.
+                var strongestBlue: CGFloat = 0
+                for x in 0..<min(100, bitmap.pixelsWide) {
+                    for y in 0..<bitmap.pixelsHigh {
+                        if let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB) {
+                            strongestBlue = max(strongestBlue, color.blueComponent - color.redComponent)
+                        }
+                    }
+                }
+                strengths.append(strongestBlue)
+            }
+            XCTAssertGreaterThan(strengths[2], 0.25) // Exclude a blank or background-only reference.
+            XCTAssertEqual(strengths[0], strengths[2], accuracy: 0.04)
+            XCTAssertEqual(strengths[1], strengths[2], accuracy: 0.04)
+        }
+    }
+
+    @MainActor
     func testLocalFolderWithoutStatusHasNoBadge() {
         var folder = AppItem(name: "Utilities", path: URL(fileURLWithPath: "/Applications/Utilities"), status: AppStatus.local)
         folder.isFolder = true

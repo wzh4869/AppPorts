@@ -4,6 +4,53 @@ import XCTest
 final class AppScannerTests: XCTestCase {
     private let fileManager = FileManager.default
 
+    func testHomeUpdateCacheReopensWithLiveLockAndGuardianAndManualRefreshRedetects() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let app = w.localAppsURL.appendingPathComponent("Reader.app")
+        let sparkle = app.appendingPathComponent("Contents/Frameworks/Sparkle.framework")
+        try createAppBundle(at: app, payloadSize: 16, version: "1.0")
+        try fileManager.createDirectory(at: sparkle, withIntermediateDirectories: true)
+        func scan(records: [String: AppUpdateInspection]) async throws -> AppItem {
+            let scanner = AppScanner(backupDirectoryURL: w.rootURL.appendingPathComponent("Signatures"), cachedUpdates: records)
+            let rows = await scanner.scanLocalApps(at: w.localAppsURL, runningAppURLs: [])
+            return try XCTUnwrap(rows.first)
+        }
+        let cold = try await scan(records: [:])
+        XCTAssertEqual(cold.updateRoute, .sparkle)
+        let store = AppListCacheStore(directory: w.rootURL)
+        let source = AppListCacheStore.Source([w.localAppsURL])
+        store.save([cold], pane: .local, source: source, context: .init(guardian: .ready))
+        XCTAssertEqual(store.load(.local, source: source, sizes: [:]).count, 1)
+        let reopened = AppListCacheStore(directory: w.rootURL)
+        let row = try XCTUnwrap(reopened.load(.local, source: source, sizes: [:]).first)
+        let record = try XCTUnwrap(row.updateInspection)
+        XCTAssertFalse(row.hasVerifiedUpdateInspection)
+        XCTAssertEqual(chflags(app.path, UInt32(UF_IMMUTABLE)), 0)
+        defer { _ = chflags(app.path, 0) }
+        let locked = try XCTUnwrap(record.verifiedPreview(row))
+        XCTAssertEqual(locked.bundleIsLocked, true)
+        XCTAssertEqual(AppBadgeLayout(app: locked, context: .init(guardian: .ready)).update?.text, "未知")
+        XCTAssertEqual(chflags(app.path, 0), 0)
+        let unlocked = try XCTUnwrap(record.verifiedPreview(row))
+        XCTAssertTrue(unlocked.hasVerifiedUpdateInspection)
+        XCTAssertEqual(AppBadgeLayout(app: unlocked, context: .init(guardian: .ready)).update?.text, "可用")
+        XCTAssertEqual(AppBadgeLayout(app: unlocked, context: .init(guardian: .unavailable)).update?.text, "检测中")
+        XCTAssertEqual(AppBadgeLayout(app: unlocked, context: .init(guardian: .disabled)).update?.text, "未知")
+
+        try fileManager.removeItem(at: sparkle)
+        let warm = try await scan(records: [row.id: record])
+        XCTAssertEqual(warm.updateRoute, .sparkle)
+        XCTAssertTrue(warm.isSparkleApp)
+        let refreshed = try await scan(records: [:])
+        XCTAssertEqual(refreshed.updateRoute, .unknown)
+        XCTAssertFalse(refreshed.isSparkleApp)
+        try fileManager.createDirectory(at: sparkle, withIntermediateDirectories: true)
+        let cachedUnknown = try await scan(records: [row.id: try XCTUnwrap(refreshed.updateInspection)])
+        XCTAssertEqual(cachedUnknown.updateRoute, .unknown)
+        XCTAssertFalse(cachedUnknown.isSparkleApp)
+    }
+
     func testRestoredPortalUpdateInvalidatesOnVersionBuildReinstallAndRetarget() async throws {
         let w = try makeWorkspace()
         defer { cleanupWorkspace(w.rootURL) }

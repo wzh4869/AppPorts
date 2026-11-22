@@ -144,6 +144,27 @@ struct AppSizeRefreshTests {
 struct AppListScanStateTests {
     private let external = URL(fileURLWithPath: "/Volumes/Test/Apps")
 
+    @Test func supersededFinishedAndHiddenPanesIgnoreLatePreviewBatches() throws {
+        var state = AppListScanState()
+        let firstResult = state.begin(externalDirectory: external, customPaths: [])
+        let first = try #require(firstResult)
+        let row = AppItem(name: "Sample.app", path: external.appendingPathComponent("Sample.app"), status: AppStatus.local)
+        state.publishPreview([row], for: first)
+        #expect(state.preview == [row])
+        let secondResult = state.begin(externalDirectory: nil, customPaths: [])
+        let second = try #require(secondResult)
+        state.publishPreview([row], for: first)
+        #expect(state.preview.isEmpty)
+        state.finish(second)
+        state.publishPreview([row], for: second)
+        #expect(state.preview.isEmpty)
+        let thirdResult = state.begin(externalDirectory: external, customPaths: [])
+        let third = try #require(thirdResult)
+        state.invalidate()
+        state.publishPreview([row], for: third)
+        #expect(state.preview.isEmpty)
+    }
+
     @Test func repeatedManualRefreshDoesNotStartCompetingScan() throws {
         var state = AppListScanState()
         let firstResult = state.begin(externalDirectory: external, customPaths: [], isManual: true)
@@ -204,5 +225,104 @@ struct AppListScanStateTests {
         local.finish(localRequest)
         #expect(!local.isScanning)
         #expect(local.request == localRequest) // Completion must not look like missing initialization.
+    }
+}
+
+@MainActor
+struct AppListRestoreTests {
+    @Test func reopenUsesOnlyDisplayFieldsAndTheMatchingDirectoryAndVolume() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = AppListCacheStore.Source([root])
+        #expect(source.isIdentified)
+        let store = AppListCacheStore(directory: root)
+        let path = root.appendingPathComponent("Container")
+        let bundle = path.appendingPathComponent("Utility.app")
+        let app = AppItem(name: "Container", path: path, bundleURL: bundle, status: AppStatus.linked,
+                          isRunning: true, signatureReplaced: true, updateRoute: .independent)
+        let sizes = [app.id: AppSizeCacheStore.Entry(size: "24 KB", bytes: 24000, mtime: nil, isLocalPortal: true)]
+        #expect(store.load(.local, source: source, sizes: sizes).isEmpty)
+        store.save([app], pane: .local, source: source, context: .init(guardian: .ready))
+        store.save([app], pane: .external, source: source, context: .init(guardian: .ready))
+        // The serial read also waits for both preceding writes.
+        #expect(store.load(.external, source: source, sizes: sizes).first?.size == nil)
+
+        let reopened = AppListCacheStore(directory: root)
+        let restored = try #require(reopened.load(.local, source: source, sizes: sizes).first)
+        #expect(restored.displayName == "Utility.app" && restored.id == app.id)
+        #expect(restored.sizeBytes == 24000 && restored.size == "24 KB")
+        #expect(!restored.isRunning && !restored.signatureReplaced && restored.updateRoute == .unknown)
+        #expect(restored.cachedBadgeLayout == AppBadgeLayout(app: app, context: .init(guardian: .ready)))
+        let changedPaths = AppListCacheStore.Source([root, root.deletingLastPathComponent()])
+        #expect(reopened.load(.local, source: changedPaths, sizes: sizes).isEmpty)
+
+        let file = root.appendingPathComponent("app-list-local.json")
+        let data = try Data(contentsOf: file)
+        // Version 1 files written before badge layout was added still restore names and sizes.
+        var oldSnapshot = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var oldRows = try #require(oldSnapshot["rows"] as? [[String: Any]])
+        oldRows[0].removeValue(forKey: "badgeLayout")
+        oldSnapshot["rows"] = oldRows
+        try JSONSerialization.data(withJSONObject: oldSnapshot).write(to: file)
+        let legacy = try #require(AppListCacheStore(directory: root).load(.local, source: source, sizes: sizes).first)
+        #expect(legacy.cachedBadgeLayout == nil && legacy.displayName == restored.displayName && legacy.sizeBytes == 24000)
+
+        let uuid = try #require(source.directories.first?.volumeUUID)
+        let otherVolume = String(decoding: data, as: UTF8.self).replacingOccurrences(of: uuid, with: UUID().uuidString)
+        try Data(otherVolume.utf8).write(to: file)
+        #expect(AppListCacheStore(directory: root).load(.local, source: source, sizes: sizes).isEmpty)
+        try Data("incomplete".utf8).write(to: file)
+        #expect(AppListCacheStore(directory: root).load(.local, source: source, sizes: sizes).isEmpty)
+    }
+
+    @Test func discoveryMergesNewRowsAndKeepsMissingRowsUntilThePaneIsConfirmed() throws {
+        let root = FileManager.default.temporaryDirectory
+        let source = AppListCacheStore.Source([root])
+        func row(_ name: String) -> AppItem {
+            AppItem(name: name, path: root.appendingPathComponent(name), status: AppStatus.local)
+        }
+        let a = row("A.app"), b = row("B.app"), c = row("C.app")
+        var state = AppListScanState()
+        state.changeSource(to: source) { [a, b] }
+        let requestResult = state.begin(externalDirectory: nil, customPaths: [])
+        let request = try #require(requestResult)
+        #expect(state.preview == [a, b] && state.pendingIDs == [a.id, b.id])
+        var liveB = b
+        liveB.isRunning = true
+        state.publishPreview([liveB, c], for: request)
+        var verifiedA = a
+        verifiedA.bundleIsLocked = true
+        state.publishCachedUpdates([a.id: verifiedA, b.id: b], for: request)
+        #expect(state.preview.contains(verifiedA) && state.preview.contains(liveB))
+        state.publishPreview([liveB, c], for: request)
+        #expect(state.preview.contains(verifiedA))
+        #expect(Set(state.preview.map(\.id)) == [a.id, b.id, c.id])
+        #expect(state.pendingIDs == [a.id] && state.preview.contains(liveB))
+        state.finish(request)
+        #expect(state.preview.isEmpty && state.pendingIDs.isEmpty)
+
+        let staleResult = state.begin(externalDirectory: nil, customPaths: [])
+        let stale = try #require(staleResult)
+        state.changeSource(to: AppListCacheStore.Source([root.deletingLastPathComponent()])) { [a] }
+        state.publishPreview([b], for: stale)
+        #expect(state.preview.isEmpty && state.pendingIDs.isEmpty)
+    }
+
+    @Test func persistedSortModesPreserveDirectionAndColumnDefaults() throws {
+        let view = ContentView()
+        let a = AppItem(name: "A.app", path: URL(fileURLWithPath: "/A.app"), status: AppStatus.local, sizeBytes: 2)
+        let z = AppItem(name: "Z.app", path: URL(fileURLWithPath: "/Z.app"), status: AppStatus.local, sizeBytes: 5)
+        var sort = ContentView.AppListSort.nameAscending
+        sort.select(.size)
+        #expect(sort == .sizeDescending)
+        let restored = try #require(ContentView.AppListSort(rawValue: sort.rawValue))
+        #expect(view.sortApps([a, z], sorting: restored) == [z, a])
+        sort.select(.size)
+        #expect(sort == .sizeAscending)
+        sort.select(.name)
+        #expect(sort == .nameAscending)
+        sort.select(.name)
+        #expect(sort == .nameDescending)
     }
 }

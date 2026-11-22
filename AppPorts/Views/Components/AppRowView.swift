@@ -12,6 +12,7 @@ import AppKit
 struct AppRowView: View {
     let app: AppItem
     var nameLineLimit = 1
+    var showsStatus = true
     let showDeleteLinkButton: Bool
     let onDeleteLink: (AppItem) -> Void
     let onResign: ((AppItem) -> Void)?
@@ -40,13 +41,19 @@ struct AppRowView: View {
                     StatusBadge(
                         app: app,
                         onRepairSignature: onRepairSignature,
+                        showsCachedBadges: !showsStatus,
                         activeTaskStatus: activeTaskStatus,
                         onViewTask: onViewTask
                     )
-                    if onViewTask == nil {
+                    .allowsHitTesting(showsStatus)
+                    if showsStatus && onViewTask == nil {
                         signatureRepairButton
                     }
-                    viewTaskButton
+                    if showsStatus {
+                        viewTaskButton
+                    } else {
+                        viewTaskButton.hidden()
+                    }
                 }
                 .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             }
@@ -68,7 +75,7 @@ struct AppRowView: View {
         .contentShape(Rectangle())
         // 保留行内按钮，VoiceOver 可以分别选择应用信息和操作。
         .accessibilityElement(children: .contain)
-        .contextMenu { appMenuItems }
+        .contextMenu { if showsStatus { appMenuItems } }
         .alert("删除本地入口".localized, isPresented: $showDeleteConfirmation) {
             Button("取消".localized, role: .cancel) { }
             Button("直接删除".localized, role: .destructive) { onDeleteLink(app) }

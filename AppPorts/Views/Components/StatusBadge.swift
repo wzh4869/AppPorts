@@ -9,73 +9,107 @@ import SwiftUI
 
 // MARK: - 状态徽章组件
 
-/// 应用状态徽章视图
-///
-/// 以胶囊形状的徽章显示应用的当前状态，包括：
-/// - ✅ 已链接（绿色）：应用已迁移到外部存储并创建了符号链接
-/// - ▶️ 运行中（紫色）：应用当前正在运行
-/// - 🔒 系统（灰色）：macOS 系统应用
-/// - 📱 非原生（粉色）：iOS/iPadOS 应用（通过 Apple Silicon 运行）
-/// - 🏪 商店（蓝色）：Mac App Store 应用
-/// - 📀 未链接（橙色）：应用在外部存储但未链接回本地
-///
-/// ## 设计特点
-/// - 使用 SF Symbols 图标增强视觉识别
-/// - 颜色编码快速传达状态信息
-/// - 圆角胶囊形状现代简洁
-/// - 半透明背景和边框提升层次感
-///
-/// - Note: 自动支持无障碍功能（Accessibility）
+/// 用未翻译的标签内容在当前语言和栏宽下还原上次扫描的徽章。
+struct AppBadgeLayout: Codable, Equatable, Sendable {
+    struct Label: Codable, Equatable, Sendable {
+        let prefix: String?
+        let text: String
+        let icon: String
+
+        var color: Color {
+            switch text {
+            case "未知", "检测中": return .secondary
+            case AppStatus.linked, "锁定迁移": return .green
+            case AppStatus.unlinked, AppStatus.external, "非锁定迁移", "签名待检查", "已暂停": return .orange
+            case AppStatus.partialLinked, "等待中": return .yellow
+            case AppStatus.orphanedLink, "签名已替换": return .red
+            case AppStatus.pendingMoveOut: return .cyan
+            case "运行中": return .purple
+            case "系统": return .gray
+            case "非原生": return .pink
+            case "已重签名": return .teal
+            default: return .blue
+            }
+        }
+
+        var accessibilityTitle: String {
+            if let prefix { return "\(localizedStatusBadgeText(prefix)): \(localizedStatusBadgeText(text))" }
+            return localizedStatusBadgeText(text)
+        }
+    }
+
+    let update: Label?
+    let status: [Label]
+    let signature: Label?
+}
+
+extension AppBadgeLayout {
+    init(app: AppItem, context: UpdateRecommendationContext) {
+        let presentation = AppBadgePresentation(app: app, updateContext: context)
+        let badges = presentation.badges
+        update = badges.update?.label
+        status = badges.status.map(\.label)
+        signature = presentation.signature?.label
+    }
+
+    init(previewing app: AppItem, context: UpdateRecommendationContext) {
+        guard let cached = app.cachedBadgeLayout else {
+            self.init(app: app, context: context)
+            return
+        }
+        guard app.hasVerifiedUpdateInspection else { self = cached; return }
+        // 更新组件的核对也会读取锁和应用类型。运行及签名仍要等目录扫描返回。
+        var preview = app
+        preview.isRunning = cached.status.contains { $0.text == "运行中" }
+        let current = AppBadgePresentation(app: preview, updateContext: context).badges
+        self.init(update: current.update?.label, status: current.status.map(\.label), signature: cached.signature)
+    }
+}
+
 private struct BadgeConfig: Identifiable {
     var id: String { prefix.map { "\($0)|\(text)" } ?? text }
     let prefix: String?
     let text: String
     let icon: String
-    let color: Color
     let isTappable: Bool
 
-    init(prefix: String? = nil, text: String, icon: String, color: Color, isTappable: Bool) {
+    init(prefix: String? = nil, text: String, icon: String, isTappable: Bool) {
         self.prefix = prefix
         self.text = text
         self.icon = icon
-        self.color = color
         self.isTappable = isTappable
     }
 
-    var accessibilityTitle: String {
-        if let prefix {
-            return "\(localizedStatusBadgeText(prefix)): \(localizedStatusBadgeText(text))"
-        }
-        return localizedStatusBadgeText(text)
-    }
+    var label: AppBadgeLayout.Label { .init(prefix: prefix, text: text, icon: icon) }
 }
 
 private struct BadgeCapsuleLabel: View {
-    let badge: BadgeConfig
+    let label: AppBadgeLayout.Label
+    private var color: Color { label.color }
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: badge.icon)
+            Image(systemName: label.icon)
                 .font(.system(size: 9, weight: .bold))
-            if let prefix = badge.prefix {
+            if let prefix = label.prefix {
                 Text(localizedStatusBadgeText(prefix))
                     .font(.system(size: 10, weight: .medium, design: .rounded))
                     .lineLimit(1)
                 Rectangle()
-                    .fill(badge.color.opacity(0.35))
+                    .fill(color.opacity(0.35))
                     .frame(width: 0.75, height: 9)
             }
-            Text(localizedStatusBadgeText(badge.text))
+            Text(localizedStatusBadgeText(label.text))
                 .font(.system(size: 10, weight: .medium, design: .rounded))
                 .lineLimit(1)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
-        .foregroundColor(badge.color)
-        .background(badge.color.opacity(0.1))
+        .foregroundColor(color)
+        .background(color.opacity(0.1))
         .clipShape(Capsule())
         .overlay(
-            Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
+            Capsule().stroke(color.opacity(0.2), lineWidth: 0.5)
         )
     }
 }
@@ -129,16 +163,11 @@ extension EnvironmentValues {
     }
 }
 
-struct StatusBadge: View {
-    /// 应用项目数据
+private struct AppBadgePresentation {
     let app: AppItem
-    /// 签名被替换时的修复入口：给了回调就点开修复面板，没给就只是个静态徽章。
-    var onRepairSignature: ((AppItem) -> Void)? = nil
-    var activeTaskStatus: String? = nil
-    var onViewTask: (() -> Void)? = nil
-    @Environment(\.updateRecommendation) private var updateContext
+    let updateContext: UpdateRecommendationContext
 
-    private var updateAvailability: UpdateAvailability {
+    var updateAvailability: UpdateAvailability {
         if app.updateRoute == .appPorts { return .appPorts }
         guard app.bundleIsLocked == false else { return .unknown }
         return app.updateRoute.availability(in: updateContext,
@@ -146,7 +175,7 @@ struct StatusBadge: View {
     }
 
     /// 所有适用的标签列表
-    private var badges: (update: BadgeConfig?, status: [BadgeConfig]) {
+    var badges: (update: BadgeConfig?, status: [BadgeConfig]) {
         var result: [BadgeConfig] = []
 
         // 1. 链接状态标签
@@ -155,56 +184,102 @@ struct StatusBadge: View {
                 result.append(BadgeConfig(
                     text: locked ? "锁定迁移" : "非锁定迁移",
                     icon: locked ? "lock.fill" : "lock.open",
-                    color: locked ? .green : .orange,
                     isTappable: true
                 ))
             } else {
                 // 原生自更新 app（Chrome、Edge 等）不加锁，显示"已链接"
-                result.append(BadgeConfig(text: AppStatus.linked, icon: "link", color: .green, isTappable: false))
+                result.append(BadgeConfig(text: AppStatus.linked, icon: "link", isTappable: false))
             }
         } else if app.status == AppStatus.partialLinked {
-            result.append(BadgeConfig(text: AppStatus.partialLinked, icon: "link.badge.plus", color: .yellow, isTappable: false))
+            result.append(BadgeConfig(text: AppStatus.partialLinked, icon: "link.badge.plus", isTappable: false))
         } else if app.status == AppStatus.orphanedLink {
-            result.append(BadgeConfig(text: AppStatus.orphanedLink, icon: "exclamationmark.triangle", color: .red, isTappable: false))
+            result.append(BadgeConfig(text: AppStatus.orphanedLink, icon: "exclamationmark.triangle", isTappable: false))
         } else if app.status == AppStatus.unlinked {
-            result.append(BadgeConfig(text: AppStatus.unlinked, icon: "externaldrive.badge.xmark", color: .orange, isTappable: false))
+            result.append(BadgeConfig(text: AppStatus.unlinked, icon: "externaldrive.badge.xmark", isTappable: false))
         } else if app.status == AppStatus.external {
-            result.append(BadgeConfig(text: AppStatus.external, icon: "externaldrive", color: .orange, isTappable: false))
+            result.append(BadgeConfig(text: AppStatus.external, icon: "externaldrive", isTappable: false))
         } else if app.status == AppStatus.pendingMoveOut {
-            result.append(BadgeConfig(text: AppStatus.pendingMoveOut, icon: "arrow.up.right.circle", color: .cyan, isTappable: true))
+            result.append(BadgeConfig(text: AppStatus.pendingMoveOut, icon: "arrow.up.right.circle", isTappable: true))
         }
 
         // 2. 类型标签
         if app.isRunning {
-            result.append(BadgeConfig(text: "运行中", icon: "play.fill", color: .purple, isTappable: false))
+            result.append(BadgeConfig(text: "运行中", icon: "play.fill", isTappable: false))
         } else if app.isSystemApp {
-            result.append(BadgeConfig(text: "系统", icon: "lock.fill", color: .gray, isTappable: false))
+            result.append(BadgeConfig(text: "系统", icon: "lock.fill", isTappable: false))
         } else if app.isIOSApp {
-            result.append(BadgeConfig(text: "非原生", icon: "iphone", color: .pink, isTappable: false))
+            result.append(BadgeConfig(text: "非原生", icon: "iphone", isTappable: false))
         } else if app.isAppStoreApp {
-            result.append(BadgeConfig(text: "商店", icon: "applelogo", color: .blue, isTappable: AppMigrationService.isMASExternalInstallSupported))
+            result.append(BadgeConfig(text: "商店", icon: "applelogo", isTappable: AppMigrationService.isMASExternalInstallSupported))
         }
 
         if app.updateRoute == .appPorts {
             return (BadgeConfig(prefix: "更新", text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
-                                color: .blue, isTappable: true), result)
+                                isTappable: true), result)
         }
 
         if !app.isSystemApp && !app.isIOSApp && !app.isFolder &&
             app.status != AppStatus.orphanedLink && app.status != AppStatus.pendingMoveOut {
             if app.bundleIsLocked == true && [AppStatus.external, AppStatus.unlinked].contains(app.status) {
-                result.append(BadgeConfig(text: "锁定迁移", icon: "lock.fill", color: .green, isTappable: true))
+                result.append(BadgeConfig(text: "锁定迁移", icon: "lock.fill", isTappable: true))
             } else if app.bodyMigrationPolicy == .standard && (app.bundleIsLocked != true || app.status == AppStatus.local) {
                 let available = updateAvailability.isAvailable
                 if available && updateContext.guardian != .disabled {
                     result.removeAll { $0.text == "非锁定迁移" }
                 }
                 let update = BadgeConfig(prefix: "更新", text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
-                                         color: available ? .blue : .secondary, isTappable: true)
+                                         isTappable: true)
                 return (update, result)
             }
         }
         return (nil, result)
+    }
+
+    var signature: BadgeConfig? {
+        if app.signatureReplaced {
+            return BadgeConfig(text: "签名已替换", icon: "exclamationmark.triangle", isTappable: true)
+        }
+        if app.signatureCheckUnavailable {
+            return BadgeConfig(text: "签名待检查", icon: "questionmark.circle", isTappable: true)
+        }
+        if app.isResigned {
+            return BadgeConfig(text: "已重签名", icon: "seal.fill", isTappable: false)
+        }
+        return nil
+    }
+}
+
+/// 应用状态徽章视图
+///
+/// 以胶囊形状的徽章显示应用的当前状态，包括：
+/// - ✅ 已链接（绿色）：应用已迁移到外部存储并创建了符号链接
+/// - ▶️ 运行中（紫色）：应用当前正在运行
+/// - 🔒 系统（灰色）：macOS 系统应用
+/// - 📱 非原生（粉色）：iOS/iPadOS 应用（通过 Apple Silicon 运行）
+/// - 🏪 商店（蓝色）：Mac App Store 应用
+/// - 📀 未链接（橙色）：应用在外部存储但未链接回本地
+///
+/// ## 设计特点
+/// - 使用 SF Symbols 图标增强视觉识别
+/// - 颜色编码快速传达状态信息
+/// - 圆角胶囊形状现代简洁
+/// - 半透明背景和边框提升层次感
+///
+/// - Note: 自动支持无障碍功能（Accessibility）
+struct StatusBadge: View {
+    /// 应用项目数据
+    let app: AppItem
+    /// 签名被替换时的修复入口：给了回调就点开修复面板，没给就只是个静态徽章。
+    var onRepairSignature: ((AppItem) -> Void)? = nil
+    var showsCachedBadges = false
+    var activeTaskStatus: String? = nil
+    var onViewTask: (() -> Void)? = nil
+    @Environment(\.updateRecommendation) private var updateContext
+
+    @Environment(\.isEnabled) private var isEnabled
+
+    private var presentation: AppBadgePresentation {
+        AppBadgePresentation(app: app, updateContext: updateContext)
     }
 
     /// 点击标签时显示的说明文字
@@ -216,63 +291,77 @@ struct StatusBadge: View {
             return "此应用已被迁移到外部存储并锁定。锁定状态可防止应用内更新破坏外部应用。如需更新，请通过 AppPorts 迁回本地后再更新。".localized
         case "非锁定迁移":
             return "此应用已迁移到外部存储且未加锁，可尝试继续使用应用内更新。在设置中开启“应用更新守护”后，AppPorts 可协助处理更新异常，但无法保证所有应用都能处理成功。".localized
-        case "商店" where updateAvailability == .store && !app.willMigrateToStoreDirectory:
+        case "商店" where presentation.updateAvailability == .store && !app.willMigrateToStoreDirectory:
             return "此应用位于外部磁盘的 Applications 目录，由 macOS 原生管理（macOS 15.1+ 功能）。App Store 可直接在此目录进行增量更新，无需通过 AppPorts 迁回。".localized
         default:
             return nil
         }
     }
 
-    /// 单个标签胶囊
-    private func badgeView(for badge: BadgeConfig) -> some View {
-        BadgeCapsuleLabel(badge: badge)
+    private func readOnlyBadge(_ label: AppBadgeLayout.Label) -> some View {
+        BadgeCapsuleLabel(label: label)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(badge.accessibilityTitle)
+            .accessibilityLabel(label.accessibilityTitle)
     }
 
     var body: some View {
         Group {
             if #available(macOS 13.0, *) {
-                BadgeFlowLayout(spacing: 6) { badgeContent }
+                BadgeFlowLayout(spacing: 6) { content }
             } else {
-                VStack(alignment: .leading, spacing: 6) { badgeContent }
+                VStack(alignment: .leading, spacing: 6) { content }
             }
         }
         .accessibilityElement(children: .contain)
     }
 
-    private var signatureAccessibilityLabel: String {
-        var prefix = activeTaskStatus.map { localizedStatusBadgeText($0) + ", " } ?? ""
-        if app.signatureReplaced { prefix += "签名已替换".localized + ", " }
-        else if app.signatureCheckUnavailable { prefix += "签名待检查".localized + ", " }
-        else if app.isResigned { prefix += "已重签名".localized + ", " }
-        return prefix
+    @ViewBuilder private var content: some View {
+        if showsCachedBadges {
+            let layout = AppBadgeLayout(previewing: app, context: updateContext)
+            if app.cachedBadgeLayout != nil || app.hasVerifiedUpdateInspection {
+                readOnlyBadges(layout)
+            } else {
+                // 早期清单没有徽章快照，只用估算的布局占位。
+                readOnlyBadges(layout).hidden()
+            }
+        } else if !isEnabled {
+            readOnlyBadges(AppBadgeLayout(app: app, context: updateContext))
+        } else {
+            badgeContent
+        }
+    }
+
+    @ViewBuilder private func readOnlyBadges(_ layout: AppBadgeLayout) -> some View {
+        if let update = layout.update { readOnlyBadge(update) }
+        if let task = activeTaskBadgeConfig { readOnlyBadge(task.label) }
+        ForEach(layout.status.indices, id: \.self) { readOnlyBadge(layout.status[$0]) }
+        if let signature = layout.signature { readOnlyBadge(signature) }
     }
 
     private var activeTaskBadgeConfig: BadgeConfig? {
         guard let activeTaskStatus else { return nil }
         switch activeTaskStatus {
         case "已暂停":
-            return BadgeConfig(text: activeTaskStatus, icon: "pause.circle", color: .orange, isTappable: true)
+            return BadgeConfig(text: activeTaskStatus, icon: "pause.circle", isTappable: true)
         case "等待中":
-            return BadgeConfig(text: activeTaskStatus, icon: "clock", color: .secondary, isTappable: true)
+            return BadgeConfig(text: activeTaskStatus, icon: "clock", isTappable: true)
         default:
-            return BadgeConfig(text: activeTaskStatus, icon: "arrow.triangle.2.circlepath", color: .blue, isTappable: true)
+            return BadgeConfig(text: activeTaskStatus, icon: "arrow.triangle.2.circlepath", isTappable: true)
         }
     }
 
     private var badgeContent: some View {
-        let badges = self.badges
+        let badges = presentation.badges
         return Group {
             if let updateBadge = badges.update {
-                TappableBadge(badge: updateBadge, message: updateAvailability.explanation)
+                TappableBadge(badge: updateBadge, message: presentation.updateAvailability.explanation)
             }
 
             if let taskBadge = activeTaskBadgeConfig {
                 if let onViewTask {
                     TappableBadge(badge: taskBadge, action: onViewTask, actionHelp: "查看进度".localized)
                 } else {
-                    badgeView(for: taskBadge)
+                    readOnlyBadge(taskBadge.label)
                 }
             }
 
@@ -280,23 +369,17 @@ struct StatusBadge: View {
                 if badge.isTappable, let message = badgeInfoMessage(for: badge) {
                     TappableBadge(badge: badge, message: message)
                 } else {
-                    badgeView(for: badge)
+                    readOnlyBadge(badge.label)
                 }
             }
 
-            if app.signatureReplaced {
-                // 徽章本身就是入口：点它直接打开修复面板，不用去右键菜单里翻。
-                TappableBadge(
-                    badge: BadgeConfig(text: "签名已替换", icon: "exclamationmark.shield.fill", color: .red, isTappable: true),
-                    action: onRepairSignature.map { handler in { handler(app) } }
-                )
-            } else if app.signatureCheckUnavailable {
-                TappableBadge(
-                    badge: BadgeConfig(text: "签名待检查", icon: "questionmark.circle", color: .orange, isTappable: true),
-                    action: onRepairSignature.map { handler in { handler(app) } }
-                )
-            } else if app.isResigned {
-                badgeView(for: BadgeConfig(text: "已重签名", icon: "seal.fill", color: .teal, isTappable: false))
+            if let signature = presentation.signature {
+                if signature.isTappable {
+                    TappableBadge(badge: signature, action: onRepairSignature.map { handler in { handler(app) } },
+                                  actionHelp: app.signatureReplaced ? "查看修复步骤".localized : "检查签名".localized)
+                } else {
+                    readOnlyBadge(signature.label)
+                }
             }
         }
     }
@@ -322,11 +405,11 @@ private struct TappableBadge: View {
             pendingHover?.cancel()
             activate(onHover: false)
         } label: {
-            BadgeCapsuleLabel(badge: badge)
+            BadgeCapsuleLabel(label: badge.label)
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(badge.accessibilityTitle)
+        .accessibilityLabel(badge.label.accessibilityTitle)
         .accessibilityHint(action == nil ? (message ?? "") : actionHelp)
         .onHover { inside in
             overBadge = inside

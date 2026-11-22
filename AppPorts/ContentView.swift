@@ -129,22 +129,28 @@ struct ContentView: View {
         case name, size
     }
 
-    struct AppListSort {
-        var option: SortOption = .name
-        var ascending = true
+    enum AppListSort: String {
+        case nameAscending, nameDescending, sizeAscending, sizeDescending
+
+        var option: SortOption {
+            switch self {
+            case .nameAscending, .nameDescending: return .name
+            case .sizeAscending, .sizeDescending: return .size
+            }
+        }
+
+        var ascending: Bool { self == .nameAscending || self == .sizeAscending }
 
         mutating func select(_ option: SortOption) {
-            if self.option == option {
-                ascending.toggle()
-            } else {
-                self.option = option
-                ascending = option != .size
+            switch option {
+            case .name: self = self == .nameAscending ? .nameDescending : .nameAscending
+            case .size: self = self == .sizeDescending ? .sizeAscending : .sizeDescending
             }
         }
     }
 
-    @State private var localAppSort = AppListSort()
-    @State private var externalAppSort = AppListSort()
+    @AppStorage("homeLocalAppSort") private var localAppSort = AppListSort.nameAscending
+    @AppStorage("homeExternalAppSort") private var externalAppSort = AppListSort.nameAscending
 
     // MARK: - Tab
     enum MainTab { case apps, dataDirs, customDirs, tasks, settings }
@@ -181,6 +187,7 @@ struct ContentView: View {
     }
 
     var body: some View {
+        let updateContext = updateRecommendationContext
         mainContent
         .ignoresSafeArea(.container, edges: .top)
         .frame(minWidth: 930, minHeight: 620)
@@ -206,6 +213,7 @@ struct ContentView: View {
                 sizeCache = snapshot.entries
                 hasRestoredSizeCache = true
             }
+            let previousDrive = externalDriveURL
             // Restore persistence
             if let savedPath = UserDefaults.standard.string(forKey: "ExternalDrivePath") {
                 let url = URL(fileURLWithPath: savedPath)
@@ -227,7 +235,12 @@ struct ContentView: View {
             }
             
             AppLogger.shared.log("主界面已出现，开始初始化扫描与监控")
-            scanBothAppsAtomic()
+            // Restoring a different drive already schedules the initial scan in onChange.
+            if previousDrive == externalDriveURL {
+                scanBothApps()
+            } else {
+                prepareAppListSources(local: true, external: true)
+            }
 
             // 「签名已被替换」提醒只需要签名备份目录和每个应用的签名状态，
             // 不依赖体积扫描，所以单独查一次：首次完整扫描可能要十几分钟，不能把提醒压在它后面。
@@ -271,7 +284,7 @@ struct ContentView: View {
             guard isVisible, latest != customLocalScanPaths else { return }
             customLocalScanPaths = latest
             startMonitoringLocal()
-            scanBothAppsAtomic()
+            scanBothApps()
         }
         .onDisappear {
             monitorRescanDebouncer.cancel()
@@ -332,10 +345,20 @@ struct ContentView: View {
                 job.recoveryAction?()
             }
         }
+        .onChange(of: updateContext) { context in
+            // 守护可能在目录发现结束后才就绪，缓存应反映此时用户看到的徽章。
+            guard isVisible else { return }
+            if !localApps.isEmpty, let source = localScanState.source {
+                AppListCacheStore.shared.save(localApps, pane: .local, source: source, context: context)
+            }
+            if !externalApps.isEmpty, let source = externalScanState.source {
+                AppListCacheStore.shared.save(externalApps, pane: .external, source: source, context: context)
+            }
+        }
         .onChange(of: operationState.recordsRevision) { _ in
             AppLibraryAgentSync.shared.selectionDidChange()
             guard isVisible else { return }
-            scanBothAppsAtomic()
+            scanBothApps()
         }
         .onChange(of: operationState.isBusy) { isBusy in
             if isBusy {
@@ -347,7 +370,7 @@ struct ContentView: View {
             }
             // 补上操作期间延后的监控刷新，也初始化操作期间新打开的窗口。
             if !isBusy, needsAppRescan || localScanState.request == nil || externalScanState.request == nil {
-                scanBothAppsAtomic()
+                scanBothApps()
             }
         }
         .onChange(of: externalDriveURL) { newValue in
@@ -368,7 +391,7 @@ struct ContentView: View {
                 stopMonitoringExternal()
             }
             AppLibraryAgentSync.shared.selectionDidChange()
-            scanBothAppsAtomic()
+            scanBothApps()
 
             refreshMASGuidance()
         }
@@ -446,19 +469,24 @@ struct ContentView: View {
                 }
             }
         }
-        .environment(\.updateRecommendation, UpdateRecommendationContext(enabled: guardianEnabled,
-            ready: guardianSync.guardianReady, store: appStoreInstall))
+        .environment(\.updateRecommendation, updateContext)
+    }
+
+    private var updateRecommendationContext: UpdateRecommendationContext {
+        UpdateRecommendationContext(enabled: guardianEnabled, ready: guardianSync.guardianReady, store: appStoreInstall)
     }
     
     // MARK: - 过滤逻辑
     
     var filteredLocalApps: [AppItem] {
-        let apps = localAppFilter == .signatureReplaced ? localApps.filter(\.signatureReplaced) : localApps
+        let rows = localApps.isEmpty ? localScanState.preview : localApps
+        let apps = localAppFilter == .signatureReplaced ? rows.filter(\.signatureReplaced) : rows
         return sortApps(apps.filter(matchesAppListFilters), sorting: localAppSort)
     }
 
     var filteredExternalApps: [AppItem] {
-        sortApps(externalApps.filter(matchesAppListFilters), sorting: externalAppSort)
+        let rows = externalApps.isEmpty ? externalScanState.preview : externalApps
+        return sortApps(rows.filter(matchesAppListFilters), sorting: externalAppSort)
     }
 
     private func matchesAppListFilters(_ app: AppItem) -> Bool {
@@ -983,7 +1011,7 @@ struct ContentView: View {
     private var cacheRefreshButton: some View {
         Button {
             switch mainTab {
-            case .apps: scanBothAppsAtomic(forceSizeRefresh: true)
+            case .apps: scanBothApps(forceSizeRefresh: true)
             case .dataDirs: dataDirsRefreshTrigger += 1
             case .customDirs: customDirsRefreshTrigger += 1
             case .tasks, .settings: break
@@ -1053,6 +1081,7 @@ struct ContentView: View {
                         AppRowView(
                             app: app,
                             nameLineLimit: nameLineLimit,
+                            showsStatus: !localScanState.pendingIDs.contains(entry.id),
                             showDeleteLinkButton: true,
                             onDeleteLink: performDeleteLink,
                             onResign: { performSingleResign(app: $0) },
@@ -1063,6 +1092,7 @@ struct ContentView: View {
                             activeTaskStatus: activeJob?.badgeStatus,
                             onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                         )
+                        .disabled(localApps.isEmpty)
                         .tag(entry.id)
                         .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                         .modifier(AppListRowAppearance(
@@ -1150,6 +1180,7 @@ struct ContentView: View {
                     AppRowView(
                         app: app,
                         nameLineLimit: nameLineLimit,
+                        showsStatus: !externalScanState.pendingIDs.contains(entry.id),
                         showDeleteLinkButton: false,
                         onDeleteLink: performDeleteLink,
                         onResign: { performSingleResign(app: $0) },
@@ -1158,6 +1189,7 @@ struct ContentView: View {
                         activeTaskStatus: activeJob?.badgeStatus,
                         onViewTask: activeJob.map { job in { migrationTasks.openJobDetail(job) } }
                     )
+                    .disabled(externalApps.isEmpty)
                     .tag(entry.id)
                     .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
                     .modifier(AppListRowAppearance(
@@ -1374,12 +1406,6 @@ struct ContentView: View {
         return String(format: "链接 %lld 个应用".localized, Int64(validApps.count))
     }
     
-    func getRunningAppURLs() -> Set<URL> {
-        let runningApps = NSWorkspace.shared.runningApplications
-        let urls = runningApps.compactMap { $0.bundleURL }
-        return Set(urls)
-    }
-
     func getRunningApplications() -> [AppRunningState.RunningApplication] {
         NSWorkspace.shared.runningApplications.map {
             AppRunningState.RunningApplication(bundleURL: $0.bundleURL, bundleIdentifier: $0.bundleIdentifier)
@@ -1424,146 +1450,230 @@ struct ContentView: View {
     
     @MainActor
     func scanLocalApps(forceSizeRefresh: Bool = false) {
-        guard isVisible else { return }
-        guard let request = localScanState.begin(externalDirectory: externalDriveURL,
-                                                customPaths: customLocalScanPaths,
-                                                isManual: forceSizeRefresh) else { return }
-        let scanID = AppLogger.shared.makeOperationID(prefix: "scan-local-apps")
-        AppLogger.shared.logContext(
-            "开始扫描本地应用",
-            details: [("scan_id", scanID), ("directory", localAppsURL.path)]
-        )
-        // Run on background task to avoid blocking Main Thread
-        let maintenanceGeneration = AppMigrationService.maintenanceGeneration
-        Task.detached(priority: .userInitiated) {
-            // Gather data needed for scanning
-            let (runningAppURLs, runningApplications) = await MainActor.run {
-                (self.getRunningAppURLs(), self.getRunningApplications())
-            }
-            let externalAppsDir = request.externalDirectory
-            let customPaths = request.customPaths
-
-            // Use Actor
-            let scanner = AppScanner()
-            var allApps = await scanner.scanLocalApps(
-                at: self.localAppsURL,
-                runningAppURLs: runningAppURLs,
-                externalAppsDir: externalAppsDir,
-                runningApplications: runningApplications
-            )
-
-            // 扫描自定义目录
-            for path in customPaths {
-                let customApps = await scanner.scanLocalApps(
-                    at: URL(fileURLWithPath: path),
-                    runningAppURLs: runningAppURLs,
-                    externalAppsDir: externalAppsDir,
-                    runningApplications: runningApplications
-                )
-                let existingPaths = Set(allApps.map { $0.path.path })
-                for app in customApps where !existingPaths.contains(app.path.path) {
-                    allApps.append(app)
-                }
-            }
-
-            let finalApps = allApps
-
-            guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: true) }) else { return }
-
-            // Follow each surviving portal's recorded target, not a same-named app.
-            for localApp in finalApps {
-                guard await MainActor.run(body: {
-                    self.isCurrentScan(request, isLocal: true) && !self.operationState.isBusy
-                }) else { break }
-                _ = AppPortalMaintenance.refreshEntries(at: localApp.path, expectedGeneration: maintenanceGeneration)
-            }
-            do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
-            catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
-
-            AppLogger.shared.logContext(
-                "本地应用扫描完成",
-                details: [
-                    ("scan_id", scanID),
-                    ("count", String(finalApps.count)),
-                    ("custom_dirs", String(customPaths.count)),
-                    ("status_summary", self.summarizeStatuses(for: finalApps))
-                ]
-            )
-
-            // 会话缓存填充 + 后台计算缺失项（命中项瞬时显示，无“计算中”闪烁）
-            await self.applySizes(for: finalApps, isLocal: true, scanner: scanner, request: request)
-        }
+        scanAppLists(local: true, external: false, forceSizeRefresh: forceSizeRefresh)
     }
-
 
     @MainActor
     func scanExternalApps(forceSizeRefresh: Bool = false) {
-        guard isVisible else { return }
-        guard let request = externalScanState.begin(externalDirectory: externalDriveURL,
-                                                   customPaths: customLocalScanPaths,
-                                                   isManual: forceSizeRefresh) else { return }
-        guard let dir = externalDriveURL else {
-            AppLogger.shared.log("未选择外部路径，清空外部应用列表", level: "TRACE")
-            self.externalApps = []
-            self.selectedExternalApps.removeAll()
-            externalScanState.finish(request)
+        scanAppLists(local: false, external: true, forceSizeRefresh: forceSizeRefresh)
+    }
+
+    @MainActor
+    private func scanBothApps(forceSizeRefresh: Bool = false) {
+        guard !operationState.isBusy else {
+            prepareAppListSources(local: true, external: true)
+            needsAppRescan = true
             return
         }
-        
-        let scanID = AppLogger.shared.makeOperationID(prefix: "scan-external-apps")
-        AppLogger.shared.logContext(
-            "开始扫描外部应用",
-            details: [
-                ("scan_id", scanID),
-                ("directory", dir.path),
-                ("local_directory", "/Applications")
-            ]
-        )
-        
-        Task.detached(priority: .userInitiated) {
-            let scanDir = dir
-            let customPaths = request.customPaths
-            let localDirs = [URL(fileURLWithPath: "/Applications")]
-                + customPaths.map { URL(fileURLWithPath: $0) }
-            let (runningAppURLs, runningApplications) = await MainActor.run {
-                (self.getRunningAppURLs(), self.getRunningApplications())
-            }
+        needsAppRescan = false
+        scanAppLists(local: true, external: true, forceSizeRefresh: forceSizeRefresh)
+    }
 
-            let scanner = AppScanner()
-            var newApps: [AppItem] = []
-            for localDir in localDirs {
-                let scannedApps = await scanner.scanExternalApps(
-                    at: scanDir,
-                    localAppsDir: localDir,
-                    runningAppURLs: runningAppURLs,
-                    runningApplications: runningApplications
-                )
-                newApps = self.mergeExternalApps(newApps, with: scannedApps)
+    @MainActor
+    private func prepareAppListSources(local: Bool, external: Bool) {
+        func restore(_ pane: AppListCacheStore.Pane, from source: AppListCacheStore.Source) -> [AppItem] {
+            let rows = AppListCacheStore.shared.load(pane, source: source, sizes: sizeCache)
+            if !rows.isEmpty {
+                AppLogger.shared.logContext("恢复首页应用清单", details: [("pane", pane.rawValue), ("count", String(rows.count))], level: "TRACE")
             }
-            
-            AppLogger.shared.logContext(
-                "外部应用扫描完成",
-                details: [
-                    ("scan_id", scanID),
-                    ("count", String(newApps.count)),
-                    ("status_summary", self.summarizeStatuses(for: newApps))
-                ]
-            )
-            // 会话缓存填充 + 后台计算缺失项（命中项瞬时显示，无“计算中”闪烁）
-            await self.applySizes(for: newApps, isLocal: false, scanner: scanner, request: request)
+            return rows
         }
+        if local {
+            let source = AppListCacheStore.Source([localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) })
+            if localScanState.source != source {
+                localApps.removeAll()
+                selectedLocalApps.removeAll()
+                localScanState.changeSource(to: source) { restore(.local, from: source) }
+            }
+        }
+        if external {
+            let source = AppListCacheStore.Source(externalDriveURL.map { [$0] } ?? [])
+            if externalScanState.source != source {
+                externalApps.removeAll()
+                selectedExternalApps.removeAll()
+                externalScanState.changeSource(to: source) { restore(.external, from: source) }
+            }
+        }
+    }
+
+    private struct PaneSizeWork {
+        let isLocal: Bool
+        let request: ScanRequest
+        let misses: [(app: AppItem, mtime: Date?)]
+    }
+
+    @MainActor
+    private func scanAppLists(local: Bool, external: Bool, forceSizeRefresh: Bool) {
+        guard isVisible else { return }
+        prepareAppListSources(local: local, external: external)
+        let localRequest = local ? localScanState.begin(externalDirectory: externalDriveURL,
+            customPaths: customLocalScanPaths, isManual: forceSizeRefresh) : nil
+        let externalRequest = external ? externalScanState.begin(externalDirectory: externalDriveURL,
+            customPaths: customLocalScanPaths, isManual: forceSizeRefresh) : nil
+        guard localRequest != nil || externalRequest != nil else { return }
+        let localPreviewCache = localApps.isEmpty ? sizeCache : nil
+        let externalPreviewCache = externalApps.isEmpty ? sizeCache : nil
+        let localRows = localApps.isEmpty ? localScanState.preview : localApps
+        let externalRows = externalApps.isEmpty ? externalScanState.preview : externalApps
+        let generation = AppMigrationService.maintenanceGeneration
+        Task.detached(priority: .userInitiated) {
+            let runningApplications = await MainActor.run { self.getRunningApplications() }
+            let runningURLs = Set(runningApplications.compactMap(\.bundleURL))
+            await withTaskGroup(of: PaneSizeWork?.self) { group in
+                if let request = localRequest {
+                    if localPreviewCache != nil && !request.forceSizeRefresh {
+                        group.addTask {
+                            await self.verifyRestoredUpdates(localRows, request: request, isLocal: true)
+                            return nil
+                        }
+                    }
+                    group.addTask {
+                        let apps = await self.discoverLocalApps(request: request, previous: localRows, runningURLs: runningURLs,
+                            runningApplications: runningApplications, previewCache: localPreviewCache,
+                            maintenanceGeneration: generation)
+                        return await self.publishDiscoveredApps(apps, isLocal: true, request: request)
+                    }
+                }
+                if let request = externalRequest {
+                    if externalPreviewCache != nil && !request.forceSizeRefresh {
+                        group.addTask {
+                            await self.verifyRestoredUpdates(externalRows, request: request, isLocal: false)
+                            return nil
+                        }
+                    }
+                    group.addTask {
+                        let apps = await self.discoverExternalApps(request: request, previous: externalRows, runningURLs: runningURLs,
+                            runningApplications: runningApplications, previewCache: externalPreviewCache)
+                        return await self.publishDiscoveredApps(apps, isLocal: false, request: request)
+                    }
+                }
+                // Discovery publishes independently. Size misses share the existing four-worker budget.
+                let scanner = AppScanner()
+                for await work in group {
+                    if let work {
+                        await self.computeAndStoreSizes(misses: work.misses, isLocal: work.isLocal,
+                            scanner: scanner, request: work.request)
+                    }
+                }
+            }
+        }
+    }
+
+    nonisolated private func verifyRestoredUpdates(_ rows: [AppItem], request: ScanRequest, isLocal: Bool) async {
+        var verified: [String: AppItem] = [:]
+        for row in rows {
+            if let cached = row.updateInspection, let current = cached.verifiedPreview(row) {
+                verified[row.id] = current
+            }
+        }
+        guard !verified.isEmpty else { return }
+        let updates = verified
+        await MainActor.run {
+            guard isCurrentScan(request, isLocal: isLocal) else { return }
+            let pending = isLocal ? localScanState.pendingIDs : externalScanState.pendingIDs
+            let count = updates.keys.filter(pending.contains).count
+            guard count > 0 else { return }
+            if isLocal { localScanState.publishCachedUpdates(updates, for: request) }
+            else { externalScanState.publishCachedUpdates(updates, for: request) }
+            AppLogger.shared.logContext("首页预览复用更新方式",
+                details: [("pane", isLocal ? "local" : "external"), ("count", String(count))], level: "TRACE")
+        }
+    }
+
+    nonisolated private func homeScanner(previous: [AppItem], request: ScanRequest) -> AppScanner {
+        var records: [String: AppUpdateInspection] = [:]
+        if !request.forceSizeRefresh {
+            for row in previous { records[row.id] = row.updateInspection }
+        }
+        return AppScanner(cachedUpdates: records)
+    }
+
+    nonisolated private func discoverLocalApps(request: ScanRequest, previous: [AppItem], runningURLs: Set<URL>,
+                                   runningApplications: [AppRunningState.RunningApplication],
+                                   previewCache: [String: CachedAppSize]?, maintenanceGeneration: UInt64) async -> [AppItem] {
+        let scanner = homeScanner(previous: previous, request: request)
+        var apps: [AppItem] = []
+        for root in [localAppsURL] + request.customPaths.map({ URL(fileURLWithPath: $0) }) {
+            guard await MainActor.run(body: { isCurrentScan(request, isLocal: true) }) else { return [] }
+            let batch = await scanner.scanLocalApps(at: root, runningAppURLs: runningURLs,
+                externalAppsDir: request.externalDirectory, runningApplications: runningApplications,
+                onProgress: previewPublisher(for: request, isLocal: true, completed: apps, cache: previewCache))
+            apps = mergeLocalApps(apps, with: batch)
+        }
+
+        for app in apps {
+            guard await MainActor.run(body: { isCurrentScan(request, isLocal: true) && !operationState.isBusy }) else { break }
+            _ = AppPortalMaintenance.refreshEntries(at: app.path, expectedGeneration: maintenanceGeneration)
+        }
+        guard await MainActor.run(body: { isCurrentScan(request, isLocal: true) }) else { return [] }
+        do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
+        catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
+        return apps
+    }
+
+    nonisolated private func discoverExternalApps(request: ScanRequest, previous: [AppItem], runningURLs: Set<URL>,
+                                      runningApplications: [AppRunningState.RunningApplication],
+                                      previewCache: [String: CachedAppSize]?) async -> [AppItem] {
+        guard let root = request.externalDirectory else { return [] }
+        let scanner = homeScanner(previous: previous, request: request)
+        var apps: [AppItem] = []
+        for localDir in [localAppsURL] + request.customPaths.map({ URL(fileURLWithPath: $0) }) {
+            guard await MainActor.run(body: { isCurrentScan(request, isLocal: false) }) else { return [] }
+            let batch = await scanner.scanExternalApps(at: root, localAppsDir: localDir,
+                runningAppURLs: runningURLs, runningApplications: runningApplications,
+                onProgress: previewPublisher(for: request, isLocal: false, completed: apps, cache: previewCache))
+            apps = mergeExternalApps(apps, with: batch)
+        }
+        return apps
+    }
+
+    nonisolated private func previewPublisher(for request: ScanRequest, isLocal: Bool, completed: [AppItem],
+                                  cache: [String: CachedAppSize]?) -> (([String: AppItem]) -> Void)? {
+        guard let cache else { return nil }
+        let previous = fillCachedSizes(into: completed, cache: cache, isLocal: isLocal).filled
+        var directory: [String: AppItem] = [:]
+        return { changes in
+            for (key, var app) in changes {
+                if let entry = cache[app.id] {
+                    let mtime = self.bundleModificationDate(for: app)
+                    _ = self.applyCachedSize(entry, to: &app, mtime: mtime, isLocal: isLocal)
+                }
+                directory[key] = app
+            }
+            let current = Array(directory.values)
+            let rows = previous.isEmpty ? current : (isLocal
+                ? self.mergeLocalApps(previous, with: current) : self.mergeExternalApps(previous, with: current))
+            DispatchQueue.main.async {
+                guard self.isCurrentScan(request, isLocal: isLocal) else { return }
+                if isLocal {
+                    self.localScanState.publishPreview(rows, for: request)
+                } else {
+                    self.externalScanState.publishPreview(rows, for: request)
+                }
+            }
+        }
+    }
+
+    nonisolated private func mergeLocalApps(_ existing: [AppItem], with scanned: [AppItem]) -> [AppItem] {
+        guard !existing.isEmpty else { return scanned }
+        let paths = Set(existing.map(\.id))
+        return existing + scanned.filter { !paths.contains($0.id) }
     }
 
     nonisolated func mergeExternalApps(_ existingApps: [AppItem], with scannedApps: [AppItem]) -> [AppItem] {
         var mergedApps = existingApps
+        var indexByPath: [String: Int] = [:]
+        for (index, app) in existingApps.enumerated() { indexByPath[app.id] = index }
         for app in scannedApps {
-            if let index = mergedApps.firstIndex(where: { $0.path.standardizedFileURL == app.path.standardizedFileURL }) {
+            let path = app.id
+            if let index = indexByPath[path] {
                 let isRunning = mergedApps[index].isRunning || app.isRunning
                 if shouldPreferExternalApp(app, over: mergedApps[index]) {
                     mergedApps[index] = app
                 }
                 mergedApps[index].isRunning = isRunning
             } else {
+                indexByPath[path] = mergedApps.count
                 mergedApps.append(app)
             }
         }
@@ -1605,14 +1715,7 @@ struct ContentView: View {
         var misses: [(app: AppItem, mtime: Date?)] = []
         for i in filled.indices {
             let currentMtime = bundleModificationDate(for: filled[i])
-            let isLocalPortal = isLocal && filled[i].status == AppStatus.linked
-            let entry = cache[filled[i].id]
-            let valid = currentMtime != nil && entry?.mtime == currentMtime
-                && entry?.isLocalPortal == isLocalPortal
-            if let entry, valid {
-                filled[i].size = entry.size
-                filled[i].sizeBytes = entry.bytes
-            }
+            let valid = applyCachedSize(cache[filled[i].id], to: &filled[i], mtime: currentMtime, isLocal: isLocal)
             if forceRefresh || !valid {
                 misses.append((filled[i], currentMtime))
             }
@@ -1620,8 +1723,16 @@ struct ContentView: View {
         return (filled, misses)
     }
 
+    nonisolated private func applyCachedSize(_ entry: CachedAppSize?, to app: inout AppItem, mtime: Date?, isLocal: Bool) -> Bool {
+        guard let entry, let mtime, entry.mtime == mtime,
+              entry.isLocalPortal == (isLocal && app.status == AppStatus.linked) else { return false }
+        app.size = entry.size
+        app.sizeBytes = entry.bytes
+        return true
+    }
+
     /// Bound independent size reads; publish each completed row immediately.
-    private func computeAndStoreSizes(
+    nonisolated private func computeAndStoreSizes(
         misses: [(app: AppItem, mtime: Date?)],
         isLocal: Bool,
         scanner: AppScanner,
@@ -1692,14 +1803,23 @@ struct ContentView: View {
             && customLocalScanPaths == request.customPaths
     }
 
-    private func applySizes(for apps: [AppItem], isLocal: Bool, scanner: AppScanner, request: ScanRequest) async {
-        guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return }
+    nonisolated private func publishDiscoveredApps(_ apps: [AppItem], isLocal: Bool, request: ScanRequest) async -> PaneSizeWork? {
+        guard await MainActor.run(body: { self.isCurrentScan(request, isLocal: isLocal) }) else { return nil }
         let cache = await MainActor.run { self.sizeCache }
         let (filled, misses) = fillCachedSizes(into: apps, cache: cache, isLocal: isLocal,
                                              forceRefresh: request.forceSizeRefresh)
+        AppLogger.shared.logContext(isLocal ? "本地应用扫描完成" : "外部应用扫描完成", details: [
+            ("count", String(apps.count)), ("size_remeasure_count", String(misses.count)),
+            ("status_summary", summarizeStatuses(for: apps))
+        ], level: "TRACE")
         let committed = await MainActor.run {
             guard self.isCurrentScan(request, isLocal: isLocal) else { return false }
+            if let source = (isLocal ? self.localScanState : self.externalScanState).source {
+                AppListCacheStore.shared.save(filled, pane: isLocal ? .local : .external, source: source,
+                                              context: self.updateRecommendationContext)
+            }
             if isLocal {
+                self.localScanState.clearPreview()
                 self.localApps = filled
                 self.selectedLocalApps.formIntersection(Set(self.filteredLocalApps.map(\.id)))
                 // 兜底路径：启动快检之后本会话新签名的应用，仍然会在扫描完成时提醒一次。
@@ -1707,14 +1827,18 @@ struct ContentView: View {
                     apps: filled.filter(\.signatureReplaced).map(\.signatureRepairEntry)
                 )
             } else {
+                self.externalScanState.clearPreview()
                 self.externalApps = filled
                 self.selectedExternalApps.formIntersection(Set(self.filteredExternalApps.map(\.id)))
+            }
+            if misses.isEmpty {
+                if isLocal { self.localScanState.finish(request) } else { self.externalScanState.finish(request) }
             }
             self.scheduleRunningAppsRefresh()
             return true
         }
-        guard committed else { return }
-        await computeAndStoreSizes(misses: misses, isLocal: isLocal, scanner: scanner, request: request)
+        guard committed, !misses.isEmpty || request.forceSizeRefresh else { return nil }
+        return PaneSizeWork(isLocal: isLocal, request: request, misses: misses)
     }
 
     @discardableResult
@@ -1795,7 +1919,7 @@ struct ContentView: View {
         customLocalScanPaths.append(path)
         UserDefaults.standard.set(customLocalScanPaths, forKey: "customLocalScanPaths")
         startMonitoringLocal()
-        scanBothAppsAtomic()
+        scanBothApps()
     }
 
     func removeCustomLocalScanPath(_ path: String) {
@@ -1803,7 +1927,7 @@ struct ContentView: View {
         customLocalScanPaths.removeAll { $0 == path }
         UserDefaults.standard.set(customLocalScanPaths, forKey: "customLocalScanPaths")
         startMonitoringLocal()
-        scanBothAppsAtomic()
+        scanBothApps()
     }
 
     func showError(title: String, message: String) {
@@ -1896,7 +2020,7 @@ struct ContentView: View {
         defer {
             operationState.finish(token)
             startMonitoringExternal(url: root)
-            scanBothAppsAtomic()
+            scanBothApps()
         }
         let directories = [localAppsURL] + customLocalScanPaths.map { URL(fileURLWithPath: $0) }
         let task = Task.detached(priority: .userInitiated) {
@@ -1994,7 +2118,7 @@ struct ContentView: View {
                         isMASExternal: !wholeSymlink && app.isAppStoreApp && AppMigrationService.isMASExternalInstallSupported))
                 }
                 return result.pendingMessage
-            }, completion: { scanBothAppsAtomic() })
+            }, completion: { scanBothApps() })
     }
 
     func performMoveOutWholeSymlink(_ app: AppItem) {
@@ -2548,7 +2672,7 @@ struct ContentView: View {
                     if lockExternal && service.needsUpdateProtection(app) { service.lockExternalApp(at: app.path) }
                     await MainActor.run { recordCompletedTransfer(.linkedIn(app, localDestination: destination)) }
                     return nil
-                }, completion: { scanBothAppsAtomic() })
+                }, completion: { scanBothApps() })
         }
         selectedExternalApps.removeAll()
     }
@@ -2880,7 +3004,7 @@ struct ContentView: View {
         if let warning = result.cleanupWarning {
             showError(title: "签名已完成，正在完成收尾".localized, message: warning)
         }
-        scanBothAppsAtomic()
+        scanBothApps()
     }
 
     // MARK: - Monitoring Helpers
@@ -2935,119 +3059,11 @@ struct ContentView: View {
                 guard self.isVisible else { return }
                 AppLogger.shared.logContext("Monitor 防抖触发扫描", details: [("trigger", local ? "local" : "external")], level: "TRACE")
                 if let root = self.externalDriveURL { self.startMonitoringExternal(url: root) }
-                self.scanBothAppsAtomic()
+                self.scanBothApps()
             }
         }
     }
 
-    /// 同轮扫描本地和外部应用，一次性更新仍有效的结果，避免列表跳两下。
-    @MainActor
-    private func scanBothAppsAtomic(forceSizeRefresh: Bool = false) {
-        guard isVisible else { return }
-        guard !operationState.isBusy else {
-            needsAppRescan = true
-            return
-        }
-        needsAppRescan = false
-        guard let localRequest = localScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths,
-                                                     isManual: forceSizeRefresh),
-              let externalRequest = externalScanState.begin(externalDirectory: externalDriveURL, customPaths: customLocalScanPaths,
-                                                            isManual: forceSizeRefresh) else { return }
-        let externalDir = localRequest.externalDirectory
-        let maintenanceGeneration = AppMigrationService.maintenanceGeneration
-        Task.detached(priority: .userInitiated) {
-            let scanner = AppScanner()
-            let (runningAppURLs, runningApplications) = await MainActor.run {
-                (self.getRunningAppURLs(), self.getRunningApplications())
-            }
-            let localDir = self.localAppsURL
-            let customPaths = localRequest.customPaths
-
-            // 扫描默认目录和自定义目录
-            var newLocalApps = await scanner.scanLocalApps(
-                at: localDir,
-                runningAppURLs: runningAppURLs,
-                externalAppsDir: externalDir,
-                runningApplications: runningApplications
-            )
-
-            // 扫描自定义目录
-            for path in customPaths {
-                let customApps = await scanner.scanLocalApps(
-                    at: URL(fileURLWithPath: path),
-                    runningAppURLs: runningAppURLs,
-                    externalAppsDir: externalDir,
-                    runningApplications: runningApplications
-                )
-                let existingPaths = Set(newLocalApps.map { $0.path.path })
-                for app in customApps where !existingPaths.contains(app.path.path) {
-                    newLocalApps.append(app)
-                }
-            }
-
-            var newExternalApps: [AppItem] = []
-            if let externalDir {
-                let localDirs = [localDir] + customPaths.map { URL(fileURLWithPath: $0) }
-                for directory in localDirs {
-                    let scannedApps = await scanner.scanExternalApps(
-                        at: externalDir,
-                        localAppsDir: directory,
-                        runningAppURLs: runningAppURLs,
-                        runningApplications: runningApplications
-                    )
-                    newExternalApps = self.mergeExternalApps(newExternalApps, with: scannedApps)
-                }
-            }
-
-            guard await MainActor.run(body: {
-                self.isCurrentScan(localRequest, isLocal: true) || self.isCurrentScan(externalRequest, isLocal: false)
-            }) else { return }
-
-            for localApp in newLocalApps {
-                guard await MainActor.run(body: {
-                    self.isCurrentScan(localRequest, isLocal: true) && !self.operationState.isBusy
-                }) else { break }
-                _ = AppPortalMaintenance.refreshEntries(at: localApp.path, expectedGeneration: maintenanceGeneration)
-            }
-            do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
-            catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
-
-            // 会话缓存填充后一次性原子赋值，避免列表跳动与“计算中”闪烁；缺失项后台计算
-            let cache = await MainActor.run { self.sizeCache }
-            let (filledLocal, missesLocal) = self.fillCachedSizes(into: newLocalApps, cache: cache, isLocal: true,
-                                                                  forceRefresh: localRequest.forceSizeRefresh)
-            let (filledExternal, missesExternal) = self.fillCachedSizes(into: newExternalApps, cache: cache, isLocal: false,
-                                                                        forceRefresh: externalRequest.forceSizeRefresh)
-            let committed = await MainActor.run {
-                let localIsCurrent = self.isCurrentScan(localRequest, isLocal: true)
-                let externalIsCurrent = self.isCurrentScan(externalRequest, isLocal: false)
-                // 单侧手动刷新可能已取代本轮请求，另一侧仍应完成更新。
-                if localIsCurrent {
-                    self.localApps = filledLocal
-                    self.selectedLocalApps.formIntersection(Set(self.filteredLocalApps.map(\.id)))
-                    if missesLocal.isEmpty {
-                        self.localScanState.finish(localRequest)
-                    }
-                }
-                if externalIsCurrent {
-                    self.externalApps = filledExternal
-                    self.selectedExternalApps.formIntersection(Set(self.filteredExternalApps.map(\.id)))
-                    // 此侧已经完成时立即恢复按钮，不等待另一侧的目录体积计算。
-                    if missesExternal.isEmpty {
-                        self.externalScanState.finish(externalRequest)
-                    }
-                }
-                if localIsCurrent || externalIsCurrent {
-                    self.scheduleRunningAppsRefresh()
-                }
-                return localIsCurrent || externalIsCurrent
-            }
-            guard committed else { return }
-            await self.computeAndStoreSizes(misses: missesLocal, isLocal: true, scanner: scanner, request: localRequest)
-            await self.computeAndStoreSizes(misses: missesExternal, isLocal: false, scanner: scanner, request: externalRequest)
-        }
-    }
-    
     func stopMonitoringExternal() {
         AppLogger.shared.log("停止外部目录监控", level: "TRACE")
         externalMonitor?.stopMonitoring()

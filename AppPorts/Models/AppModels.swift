@@ -152,6 +152,8 @@ struct AppItem: Identifiable, Equatable, Sendable {
     /// 是否需要 uchg 锁定（仅 Sparkle/Electron 有更新器的应用）
     var needsLock: Bool = false
 
+    /// 首页恢复清单时显示的只读徽章快照。
+    var cachedBadgeLayout: AppBadgeLayout?
     var updateInspection: AppUpdateInspection?
     var updateRoute: AppUpdateRoute = .unknown
     var bodyMigrationPolicy: AppBodyMigrationPolicy = .standard
@@ -234,6 +236,7 @@ struct AppItem: Identifiable, Equatable, Sendable {
         lhs.isSparkleApp == rhs.isSparkleApp &&
         lhs.hasSelfUpdater == rhs.hasSelfUpdater &&
         lhs.needsLock == rhs.needsLock &&
+        lhs.cachedBadgeLayout == rhs.cachedBadgeLayout &&
         lhs.updateInspection == rhs.updateInspection &&
         lhs.updateRoute == rhs.updateRoute &&
         lhs.bodyMigrationPolicy == rhs.bodyMigrationPolicy &&
