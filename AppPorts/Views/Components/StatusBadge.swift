@@ -27,17 +27,64 @@ import SwiftUI
 ///
 /// - Note: 自动支持无障碍功能（Accessibility）
 private struct BadgeConfig: Identifiable {
-    var id: String { text }
+    var id: String { prefix.map { "\($0)|\(text)" } ?? text }
+    let prefix: String?
     let text: String
     let icon: String
     let color: Color
     let isTappable: Bool
+
+    init(prefix: String? = nil, text: String, icon: String, color: Color, isTappable: Bool) {
+        self.prefix = prefix
+        self.text = text
+        self.icon = icon
+        self.color = color
+        self.isTappable = isTappable
+    }
+
+    var accessibilityTitle: String {
+        if let prefix {
+            return "\(localizedStatusBadgeText(prefix)): \(localizedStatusBadgeText(text))"
+        }
+        return localizedStatusBadgeText(text)
+    }
+}
+
+private struct BadgeCapsuleLabel: View {
+    let badge: BadgeConfig
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: badge.icon)
+                .font(.system(size: 9, weight: .bold))
+            if let prefix = badge.prefix {
+                Text(localizedStatusBadgeText(prefix))
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .lineLimit(1)
+                Rectangle()
+                    .fill(badge.color.opacity(0.35))
+                    .frame(width: 0.75, height: 9)
+            }
+            Text(localizedStatusBadgeText(badge.text))
+                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .foregroundColor(badge.color)
+        .background(badge.color.opacity(0.1))
+        .clipShape(Capsule())
+        .overlay(
+            Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
+        )
+    }
 }
 
 private func localizedStatusBadgeText(_ text: String) -> String {
     switch text {
     case AppStatus.linked, AppStatus.unlinked, AppStatus.partialLinked, AppStatus.orphanedLink, AppStatus.external, AppStatus.pendingMoveOut:
         return AppStatus.localized(text)
+    case "更新": return "更新".localized
     case "自有": return "自有".localized
     case "可用": return "可用".localized
     case "检测中": return "检测中".localized
@@ -139,7 +186,7 @@ struct StatusBadge: View {
         }
 
         if app.updateRoute == .appPorts {
-            return (BadgeConfig(text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
+            return (BadgeConfig(prefix: "更新", text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
                                 color: .blue, isTappable: true), result)
         }
 
@@ -152,7 +199,7 @@ struct StatusBadge: View {
                 if available && updateContext.guardian != .disabled {
                     result.removeAll { $0.text == "非锁定迁移" }
                 }
-                let update = BadgeConfig(text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
+                let update = BadgeConfig(prefix: "更新", text: updateAvailability.badgeTitle, icon: "arrow.triangle.2.circlepath",
                                          color: available ? .blue : .secondary, isTappable: true)
                 return (update, result)
             }
@@ -178,23 +225,9 @@ struct StatusBadge: View {
 
     /// 单个标签胶囊
     private func badgeView(for badge: BadgeConfig) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: badge.icon)
-                .font(.system(size: 9, weight: .bold))
-            Text(localizedStatusBadgeText(badge.text))
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .lineLimit(1)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .foregroundColor(badge.color)
-        .background(badge.color.opacity(0.1))
-        .clipShape(Capsule())
-        .overlay(
-            Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
-        )
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(localizedStatusBadgeText(badge.text))
+        BadgeCapsuleLabel(badge: badge)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(badge.accessibilityTitle)
     }
 
     var body: some View {
@@ -289,25 +322,11 @@ private struct TappableBadge: View {
             pendingHover?.cancel()
             activate(onHover: false)
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: badge.icon)
-                    .font(.system(size: 9, weight: .bold))
-                Text(localizedStatusBadgeText(badge.text))
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .foregroundColor(badge.color)
-            .background(badge.color.opacity(0.1))
-            .clipShape(Capsule())
-            .overlay(
-                Capsule().stroke(badge.color.opacity(0.2), lineWidth: 0.5)
-            )
-            .contentShape(Capsule())
+            BadgeCapsuleLabel(badge: badge)
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(localizedStatusBadgeText(badge.text))
+        .accessibilityLabel(badge.accessibilityTitle)
         .accessibilityHint(action == nil ? (message ?? "") : actionHelp)
         .onHover { inside in
             overBadge = inside
