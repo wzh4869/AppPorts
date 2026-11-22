@@ -40,12 +40,16 @@ actor AppScanner {
     /// ad-hoc 签名探测。返回 `nil` 表示**没查出来**（codesign 超时/启动失败），测试可注入。
     private let adHocProbe: @Sendable (URL) -> Bool?
 
+    private var cachedUpdates: [String: AppUpdateInspection]?
+
     init(
         backupDirectoryURL: URL? = nil,
+        cachedUpdates: [String: AppUpdateInspection]? = nil,
         adHocProbe: @escaping @Sendable (URL) -> Bool? = { AppScanner.probeAdHocSignature(at: $0) }
     ) {
         self.backupDirectoryURL = backupDirectoryURL ?? Self.defaultBackupDirectoryURL
         self.adHocProbe = adHocProbe
+        self.cachedUpdates = cachedUpdates
     }
 
     private func readInfoPlist(for appURL: URL) -> [String: Any]? {
@@ -324,9 +328,6 @@ actor AppScanner {
                 // 检测是否为 App Store 应用和 iOS 应用
                 let (isAppStore, isIOS) = detectAppStoreAndIOSApp(at: itemURL)
                 let signing = checkSigningStatus(bundleURL: itemURL)
-                let (isElectron, isSparkle) = detectElectronAndSparkle(at: itemURL)
-                let hasUpdater = isSparkle || (isElectron && hasElectronUpdater(at: itemURL)) || hasCustomUpdater(at: itemURL)
-                let needsLock = isSparkle || (isElectron && hasElectronUpdater(at: itemURL))
                 let app = AppItem(
                     name: appName,
                     path: itemURL,
@@ -339,14 +340,10 @@ actor AppScanner {
                     isResigned: signing.isResigned,
                     signatureReplaced: signing.signatureReplaced,
                     signatureCheckUnavailable: signing.signatureCheckUnavailable,
-                    isElectronApp: isElectron,
-                    isSparkleApp: isSparkle,
-                    hasSelfUpdater: hasUpdater,
-                    needsLock: needsLock,
                     version: version,
                     containerKind: .standaloneApp
                 )
-                candidates.append(makeCandidate(for: app, bundleURL: itemURL, priority: 10))
+                candidates.append(makeCandidate(for: app, bundleURL: itemURL, priority: 10, checkFrameworks: true))
             }
             // 处理包含 .app 的文件夹（包括迁移后的“文件夹 symlink -> 外部单应用容器”）
             else {
@@ -1081,9 +1078,6 @@ actor AppScanner {
                 }
                 let (isAppStore, isIOS) = detectAppStoreAndIOSApp(at: itemURL)
                 let signing = checkSigningStatus(bundleURL: itemURL)
-                let (isElectron, isSparkle) = detectElectronAndSparkle(at: itemURL)
-                let hasUpdater = isSparkle || (isElectron && hasElectronUpdater(at: itemURL)) || hasCustomUpdater(at: itemURL)
-                let needsLock = isSparkle || (isElectron && hasElectronUpdater(at: itemURL))
                 let app = AppItem(
                     name: appName,
                     path: itemURL,
@@ -1096,13 +1090,9 @@ actor AppScanner {
                     isResigned: signing.isResigned,
                     signatureReplaced: signing.signatureReplaced,
                     signatureCheckUnavailable: signing.signatureCheckUnavailable,
-                    isElectronApp: isElectron,
-                    isSparkleApp: isSparkle,
-                    hasSelfUpdater: hasUpdater,
-                    needsLock: needsLock,
                     containerKind: .standaloneApp
                 )
-                candidates.append(makeCandidate(for: app, bundleURL: itemURL, priority: 10, localEntry: localAppURL))
+                candidates.append(makeCandidate(for: app, bundleURL: itemURL, priority: 10, localEntry: localAppURL, checkFrameworks: true))
             }
             // 2. 处理包含 .app 的文件夹（如 Microsoft Office、Adobe Creative Cloud 等套件）
             else {
@@ -1318,21 +1308,48 @@ actor AppScanner {
         }
     }
 
-    private func makeCandidate(for app: AppItem, bundleURL: URL, priority: Int, localEntry: URL? = nil) -> ScanCandidate {
-        var app = app
-        if !app.isFolder, case .success(let identity) = AppIdentityResolver.resolve(at: bundleURL) {
-            let beforeMigration = localEntry == nil && app.status == AppStatus.local
-                && (try? bundleURL.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == false
-                && bundleURL.resolvingSymlinksInPath() == identity.realAppURL
-            app.updateRoute = AppUpdateRoute.inspect(identity, localEntry: localEntry ?? bundleURL, beforeMigration: beforeMigration)
-            app.bodyMigrationPolicy = identity.bodyMigrationPolicy
-            app.bundleIsLocked = identity.bundleIsLocked
-            if AppMigrationService.usesOrdinaryUpdateMigration(bundleIdentifier: identity.bundleIdentifier) {
-                app.needsLock = false
-            } else if app.updateRoute == .sparkle || app.updateRoute == .shipIt || app.updateRoute == .nativeShipIt {
-                app.needsLock = true
+    private func inspectedFrameworks(at url: URL) -> AppUpdateInspection.Frameworks {
+        let (electron, sparkle) = detectElectronAndSparkle(at: url)
+        let needsLock = sparkle || (electron && hasElectronUpdater(at: url))
+        return AppUpdateInspection.Frameworks(electron: electron, sparkle: sparkle,
+            selfUpdater: needsLock || hasCustomUpdater(at: url), needsLock: needsLock)
+    }
+
+    private func inspectUpdate(for app: inout AppItem, bundleURL: URL, localEntry: URL?, checkFrameworks: Bool) {
+        guard !app.isFolder else { return }
+        guard case .success(let identity) = AppIdentityResolver.resolve(at: bundleURL) else {
+            if checkFrameworks { inspectedFrameworks(at: bundleURL).apply(to: &app) }
+            return
+        }
+        let info = try? SignatureSnapshot.info(at: identity.realAppURL)
+        let key = AppUpdateInspection.Key(identity, info: info)
+        let previous = cachedUpdates?[app.id]
+        let hit = previous?.key == key ? previous : nil
+        let mechanism = hit?.mechanism ?? AppUpdateRoute.detectMechanism(identity)
+        var frameworks = hit?.frameworks
+        if checkFrameworks {
+            // Portal bundles have their own frameworks, independent of the version of their target.
+            if bundleURL.resolvingSymlinksInPath() == identity.realAppURL {
+                frameworks = frameworks ?? inspectedFrameworks(at: bundleURL)
+                frameworks?.apply(to: &app)
+            } else {
+                inspectedFrameworks(at: bundleURL).apply(to: &app)
             }
         }
+        AppUpdateInspection.apply(mechanism, to: &app, identity: identity, info: info,
+                                  bundleURL: bundleURL, localEntry: localEntry)
+        if cachedUpdates != nil, let key {
+            let record = AppUpdateInspection(key: key, mechanism: mechanism, frameworks: frameworks,
+                localEntry: localEntry, isAppStoreApp: app.isAppStoreApp, isIOSApp: app.isIOSApp, isSystemApp: app.isSystemApp)
+            cachedUpdates?[app.id] = record
+            app.updateInspection = record
+        }
+    }
+
+    private func makeCandidate(for app: AppItem, bundleURL: URL, priority: Int,
+                               localEntry: URL? = nil, checkFrameworks: Bool = false) -> ScanCandidate {
+        var app = app
+        inspectUpdate(for: &app, bundleURL: bundleURL, localEntry: localEntry, checkFrameworks: checkFrameworks)
         return ScanCandidate(
             app: app,
             dedupeKey: dedupeKey(for: bundleURL, fallbackName: app.displayName),

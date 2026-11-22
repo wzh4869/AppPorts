@@ -10,6 +10,8 @@ struct ResolvedAppIdentity: Sendable {
     let realAppURL: URL
     let identityBundleURL: URL
     let bundleIdentifier: String
+    let shortVersion: String?
+    let buildVersion: String?
     let source: AppIdentitySource
 }
 
@@ -71,9 +73,10 @@ enum AppIdentityResolver {
                     throw AppIdentityIssue(url: plistURL, reason: .outsideWrapper)
                 }
                 // A broken or invalid higher-priority plist must not select a different identity.
-                let identifier = try readIdentifier(at: plistURL)
+                let metadata = try readMetadata(at: plistURL)
                 return ResolvedAppIdentity(realAppURL: realAppURL, identityBundleURL: bundleURL,
-                                           bundleIdentifier: identifier, source: source ?? defaultSource)
+                                           bundleIdentifier: metadata.identifier, shortVersion: metadata.version,
+                                           buildVersion: metadata.build, source: source ?? defaultSource)
             }
         }
 
@@ -120,7 +123,7 @@ enum AppIdentityResolver {
                               depth: depth + 1, visited: &visited)
     }
 
-    private static func readIdentifier(at url: URL) throws -> String {
+    private static func readMetadata(at url: URL) throws -> (identifier: String, version: String?, build: String?) {
         let data: Data
         do { data = try Data(contentsOf: url) }
         catch { throw AppIdentityIssue(url: url, reason: .unreadableInfoPlist) }
@@ -138,7 +141,8 @@ enum AppIdentityResolver {
         guard !identifier.isEmpty, !identifier.lowercased().hasSuffix(".appports.stub") else {
             throw AppIdentityIssue(url: url, reason: .invalidIdentifier)
         }
-        return identifier
+        let build = plist["CFBundleVersion"] as? String ?? (plist["CFBundleVersion"] as? NSNumber)?.stringValue
+        return (identifier, plist["CFBundleShortVersionString"] as? String, build)
     }
 
     /// lstat-like existence also notices dangling links; access errors are not treated as absence.

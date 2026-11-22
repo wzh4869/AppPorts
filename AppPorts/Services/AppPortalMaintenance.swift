@@ -74,15 +74,15 @@ enum AppPortalMaintenance {
     }
 
     /// Both the badge and an existing Dock pin must describe the same usable launch path.
-    static func preparedTauriIdentifier(localURL: URL, externalURL: URL) -> String? {
+    static func preparedTauriIdentifier(localURL: URL, externalURL: URL, knownUpdaterMode: TauriUpdateSupport.Mode? = nil) -> String? {
         guard let local = plist(at: localURL), local[TauriUpdateSupport.portalKey] as? Bool == true,
               let identifier = local["AppPortsTargetBundleIdentifier"] as? String,
               local["CFBundleIdentifier"] as? String == identifier + ".appports.stub",
               localURL.resolvingSymlinksInPath().path != externalURL.resolvingSymlinksInPath().path,
               (try? CodeSigner.resolveAppURL(at: localURL).resolvingSymlinksInPath().path) == externalURL.resolvingSymlinksInPath().path,
               targetIdentityMatches(localURL: localURL, externalURL: externalURL),
-              let external = plist(at: externalURL),
-              TauriUpdateSupport.requiresExternalTemporaryDirectory(at: externalURL, info: external),
+              TauriUpdateSupport.sharesSystemTemporaryVolume(externalURL) == false,
+              (knownUpdaterMode ?? TauriUpdateSupport.mode(at: externalURL.resolvingSymlinksInPath())) == .sameVolumeTemporaryDirectory,
               TauriUpdateSupport.temporaryDirectory(for: externalURL, identifier: identifier, create: false) != nil else { return nil }
         return identifier
     }

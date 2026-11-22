@@ -4,6 +4,54 @@ import XCTest
 final class AppScannerTests: XCTestCase {
     private let fileManager = FileManager.default
 
+    func testRestoredPortalUpdateInvalidatesOnVersionBuildReinstallAndRetarget() async throws {
+        let w = try makeWorkspace()
+        defer { cleanupWorkspace(w.rootURL) }
+        let app = w.externalRootURL.appendingPathComponent("Reader.app")
+        let portal = w.localAppsURL.appendingPathComponent("Reader.app")
+        let id = "example.reader"
+        try createAppBundle(at: app, payloadSize: 16, bundleID: id, version: "1.0")
+        try createScannerStub(at: portal, pointingTo: app, bundleID: id)
+        let sparkle = app.appendingPathComponent("Contents/Frameworks/Sparkle.framework")
+        try fileManager.createDirectory(at: sparkle, withIntermediateDirectories: true)
+        func metadata(_ version: String, _ build: String) throws {
+            let data = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": id,
+                "CFBundleShortVersionString": version, "CFBundleVersion": build], format: .xml, options: 0)
+            try data.write(to: app.appendingPathComponent("Contents/Info.plist"), options: .atomic)
+        }
+        try metadata("1.0", "10")
+        let scanner = AppScanner(cachedUpdates: [:])
+        let local = await scanner.scanLocalApps(at: w.localAppsURL, runningAppURLs: [])
+        let external = await scanner.scanExternalApps(at: w.externalRootURL, localAppsDir: w.localAppsURL)
+        let rows = try [XCTUnwrap(local.first), XCTUnwrap(external.first { $0.name == "Reader.app" })]
+        let records = try rows.map { try XCTUnwrap($0.updateInspection) }
+        XCTAssertEqual(records[0].key, records[1].key)
+        func previewsMatch(_ expected: Bool, line: UInt = #line) {
+            for (row, record) in zip(rows, records) {
+                XCTAssertEqual(record.verifiedPreview(row) != nil, expected, line: line)
+            }
+        }
+        previewsMatch(true)
+        try metadata("1.1", "10")
+        previewsMatch(false)
+        try metadata("1.0", "11")
+        previewsMatch(false)
+        try fileManager.removeItem(at: sparkle)
+        let newScanner = AppScanner(cachedUpdates: [rows[0].id: records[0]])
+        let changed = await newScanner.scanLocalApps(at: w.localAppsURL, runningAppURLs: [])
+        XCTAssertEqual(changed.first?.updateRoute, .unknown)
+        try metadata("1.0", "10")
+        previewsMatch(true)
+        let original = w.rootURL.appendingPathComponent("Backup.app")
+        try fileManager.moveItem(at: app, to: original)
+        previewsMatch(false)
+        try fileManager.copyItem(at: original, to: app)
+        previewsMatch(false)
+        try fileManager.removeItem(at: portal)
+        try createScannerStub(at: portal, pointingTo: original, bundleID: id)
+        XCTAssertNil(records[0].verifiedPreview(rows[0]))
+    }
+
     func testOrdinaryUpdatePolicyMatchesLocalExternalAndStubScanning() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }

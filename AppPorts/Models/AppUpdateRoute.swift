@@ -9,7 +9,7 @@ extension ResolvedAppIdentity {
 }
 
 /// Evidence about the real bundle. Update recommendations never authorize a write or a lock.
-enum AppUpdateRoute: Equatable, Sendable {
+enum AppUpdateRoute: Codable, Equatable, Sendable {
     case appPorts, sparkle, shipIt, nativeShipIt, independent, moveOut, unknown
     case appStore(directory: URL)
 
@@ -48,13 +48,36 @@ enum AppUpdateRoute: Equatable, Sendable {
         "com.tencent.QQMusicMac": "MacOS/QQMusic"
     ]
 
+    enum Mechanism: Codable, Equatable, Sendable {
+        case known(AppUpdateRoute)
+        case tauriSameVolume
+
+        func route(for identity: ResolvedAppIdentity, localEntry: URL?, beforeMigration: Bool) -> AppUpdateRoute {
+            switch self {
+            case .known(let route): return route
+            case .tauriSameVolume:
+                let app = identity.realAppURL
+                if beforeMigration || TauriUpdateSupport.sharesSystemTemporaryVolume(app) == true { return .independent }
+                guard let localEntry,
+                      AppPortalMaintenance.preparedTauriIdentifier(localURL: localEntry, externalURL: app,
+                          knownUpdaterMode: .sameVolumeTemporaryDirectory) == identity.bundleIdentifier
+                else { return .unknown }
+                return .independent
+            }
+        }
+    }
+
     static func inspect(_ identity: ResolvedAppIdentity, localEntry: URL? = nil, beforeMigration: Bool = true) -> Self {
-        if identity.bodyMigrationPolicy == .localOnly { return .appPorts }
+        detectMechanism(identity).route(for: identity, localEntry: localEntry, beforeMigration: beforeMigration)
+    }
+
+    static func detectMechanism(_ identity: ResolvedAppIdentity) -> Mechanism {
+        if identity.bodyMigrationPolicy == .localOnly { return .known(.appPorts) }
         let app = identity.realAppURL
         let contents = app.appendingPathComponent("Contents")
         let fm = FileManager.default
         if fm.fileExists(atPath: contents.appendingPathComponent("_MASReceipt/receipt").path) {
-            return .appStore(directory: app.deletingLastPathComponent().standardizedFileURL)
+            return .known(.appStore(directory: app.deletingLastPathComponent().standardizedFileURL))
         }
         // An observed native install is stronger evidence than a bundled framework name.
         if let executable = independentUpdateExecutables[identity.bundleIdentifier] {
@@ -62,24 +85,18 @@ enum AppUpdateRoute: Equatable, Sendable {
             if installer.path.hasPrefix(contents.resolvingSymlinksInPath().path + "/"),
                (try? installer.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true,
                fm.isExecutableFile(atPath: installer.path) {
-                return executable == shipItInstaller ? .nativeShipIt : .independent
+                return .known(executable == shipItInstaller ? .nativeShipIt : .independent)
             }
         }
-        if let verified = verifiedApplications[identity.bundleIdentifier] { return verified }
+        if let verified = verifiedApplications[identity.bundleIdentifier] { return .known(verified) }
         let frameworks = contents.appendingPathComponent("Frameworks")
-        if fm.fileExists(atPath: frameworks.appendingPathComponent("Squirrel.framework").path) { return .shipIt }
-        if fm.fileExists(atPath: frameworks.appendingPathComponent("Sparkle.framework").path) { return .sparkle }
+        if fm.fileExists(atPath: frameworks.appendingPathComponent("Squirrel.framework").path) { return .known(.shipIt) }
+        if fm.fileExists(atPath: frameworks.appendingPathComponent("Sparkle.framework").path) { return .known(.sparkle) }
         switch TauriUpdateSupport.mode(at: app) {
-        case .native: return .independent
-        case .sameVolumeTemporaryDirectory:
-            if beforeMigration || TauriUpdateSupport.sharesSystemTemporaryVolume(app) == true { return .independent }
-            guard let localEntry,
-                  AppPortalMaintenance.preparedTauriIdentifier(localURL: localEntry, externalURL: app) == identity.bundleIdentifier
-            else { return .unknown }
-            return .independent
-        case nil: break
+        case .native: return .known(.independent)
+        case .sameVolumeTemporaryDirectory: return .tauriSameVolume
+        case nil: return .known(.unknown)
         }
-        return .unknown
     }
 
     func availability(in context: UpdateRecommendationContext, beforeStoreMigration: Bool = false) -> UpdateAvailability {

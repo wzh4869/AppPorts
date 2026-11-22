@@ -152,10 +152,12 @@ struct AppItem: Identifiable, Equatable, Sendable {
     /// 是否需要 uchg 锁定（仅 Sparkle/Electron 有更新器的应用）
     var needsLock: Bool = false
 
+    var updateInspection: AppUpdateInspection?
     var updateRoute: AppUpdateRoute = .unknown
     var bodyMigrationPolicy: AppBodyMigrationPolicy = .standard
     var showsAppData: Bool { !isFolder && bodyMigrationPolicy != .localOnly }
     var bundleIsLocked: Bool?
+    var hasVerifiedUpdateInspection: Bool { updateInspection != nil && bundleIsLocked != nil }
 
     /// 应用版本号（CFBundleShortVersionString）
     var version: String? = nil
@@ -232,6 +234,7 @@ struct AppItem: Identifiable, Equatable, Sendable {
         lhs.isSparkleApp == rhs.isSparkleApp &&
         lhs.hasSelfUpdater == rhs.hasSelfUpdater &&
         lhs.needsLock == rhs.needsLock &&
+        lhs.updateInspection == rhs.updateInspection &&
         lhs.updateRoute == rhs.updateRoute &&
         lhs.bodyMigrationPolicy == rhs.bodyMigrationPolicy &&
         lhs.bundleIsLocked == rhs.bundleIsLocked &&

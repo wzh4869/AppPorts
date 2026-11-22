@@ -100,7 +100,7 @@ final class TauriUpdateSupportTests: XCTestCase {
         default: return XCTFail("Missing expected launch behavior for fixture version " + version)
         }
         XCTAssertEqual(TauriUpdateSupport.mode(at: app), legacy ? .sameVolumeTemporaryDirectory : .native)
-        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("SignatureFacts"), adHocProbe: { _ in false })
+        let scanner = AppScanner(backupDirectoryURL: root.appendingPathComponent("SignatureFacts"), cachedUpdates: [:], adHocProbe: { _ in false })
         let localApps = await scanner.scanLocalApps(at: localRoot, runningAppURLs: [])
         let item = try XCTUnwrap(localApps.first { $0.path.lastPathComponent == app.lastPathComponent })
         let guardianOff = UpdateRecommendationContext(guardian: .disabled)
@@ -119,6 +119,10 @@ final class TauriUpdateSupportTests: XCTestCase {
         if legacy {
             // Users migrated by an older build have a pin pointing directly to the external app.
             pins.pin(target)
+            let preparedRows = await scanner.scanLocalApps(at: localRoot, runningAppURLs: [])
+            let prepared = try XCTUnwrap(preparedRows.first)
+            let record = try XCTUnwrap(prepared.updateInspection)
+            XCTAssertEqual(record.verifiedPreview(prepared)?.updateRoute, .independent)
             // Simulate an entry made by a previous build, without changing the target or its version.
             let url = app.appendingPathComponent("Contents/Info.plist")
             var oldEntry = try plist(app)
@@ -130,6 +134,7 @@ final class TauriUpdateSupportTests: XCTestCase {
             try signing.run()
             signing.waitUntilExit()
             XCTAssertEqual(signing.terminationStatus, 0)
+            XCTAssertEqual(record.verifiedPreview(prepared)?.updateRoute, .unknown)
             let before = await scanner.scanLocalApps(at: localRoot, runningAppURLs: [])
             XCTAssertEqual(before.first?.updateRoute, .unknown)
             XCTAssertTrue(service.refreshStubPortal(at: app, from: target))
