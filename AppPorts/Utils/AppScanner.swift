@@ -281,7 +281,8 @@ actor AppScanner {
         at dir: URL,
         runningAppURLs: Set<URL>,
         externalAppsDir: URL? = nil,
-        runningApplications: [AppRunningState.RunningApplication] = []
+        runningApplications: [AppRunningState.RunningApplication] = [],
+        onProgress: (([String: AppItem]) -> Void)? = nil
     ) -> [AppItem] {
         let scanID = AppLogger.shared.makeOperationID(prefix: "app-scanner-local")
         AppLogger.shared.logContext(
@@ -296,7 +297,7 @@ actor AppScanner {
         )
         infoPlistCache.removeAll()
         let fileManager = FileManager.default
-        var candidates: [ScanCandidate] = []
+        var candidates = ScanCandidates(grouping: .applicationIdentity, onProgress: onProgress)
         let externalComparisonIndex = makeExternalComparisonIndex(for: externalAppsDir)
         let runningSnapshot = makeRunningSnapshot(runningAppURLs: runningAppURLs, runningApplications: runningApplications)
 
@@ -405,7 +406,7 @@ actor AppScanner {
                 }
             }
         }
-        let sortedApps = sortApps(deduplicate(candidates))
+        let sortedApps = sortApps(candidates.finish())
         AppLogger.shared.logContext(
             "AppScanner 完成本地应用扫描",
             details: [
@@ -1047,7 +1048,8 @@ actor AppScanner {
         localAppsDir: URL,
         grouping: ExternalGrouping = .applicationIdentity,
         runningAppURLs: Set<URL> = [],
-        runningApplications: [AppRunningState.RunningApplication] = []
+        runningApplications: [AppRunningState.RunningApplication] = [],
+        onProgress: (([String: AppItem]) -> Void)? = nil
     ) -> [AppItem] {
         let scanID = AppLogger.shared.makeOperationID(prefix: "app-scanner-external")
         AppLogger.shared.logContext(
@@ -1061,7 +1063,7 @@ actor AppScanner {
         )
         infoPlistCache.removeAll()
         let fileManager = FileManager.default
-        var candidates: [ScanCandidate] = []
+        var candidates = ScanCandidates(grouping: grouping, onProgress: onProgress)
         let keys: [URLResourceKey] = [.isSymbolicLinkKey, .isDirectoryKey]
         let items = AppSearchExclusionService.applicationItems(in: dir)
         let runningSnapshot = makeRunningSnapshot(runningAppURLs: runningAppURLs, runningApplications: runningApplications)
@@ -1281,7 +1283,7 @@ actor AppScanner {
             }
         }
 
-        let sortedApps = sortApps(deduplicate(candidates, grouping: grouping))
+        let sortedApps = sortApps(candidates.finish())
         AppLogger.shared.logContext(
             "AppScanner 完成外部应用扫描",
             details: [
@@ -1338,31 +1340,50 @@ actor AppScanner {
         )
     }
 
-    private func deduplicate(_ candidates: [ScanCandidate], grouping: ExternalGrouping = .applicationIdentity) -> [AppItem] {
-        var selectedByKey: [String: ScanCandidate] = [:]
-        var orderedKeys: [String] = []
+    /// Keep the same winner for intermediate batches and the final list.
+    private struct ScanCandidates {
+        let grouping: ExternalGrouping
+        let onProgress: (([String: AppItem]) -> Void)?
+        private var selected: [String: ScanCandidate] = [:]
+        private var orderedKeys: [String] = []
+        private var changed: [String: AppItem] = [:]
+        private var nextPublication: TimeInterval = 0
 
-        for candidate in candidates {
-            let key: String
-            switch grouping {
-            case .applicationIdentity: key = candidate.dedupeKey
-            case .filePath: key = candidate.app.path.standardizedFileURL.path
-            }
-            if let existing = selectedByKey[key] {
-                if shouldReplace(existing: existing, with: candidate) {
-                    selectedByKey[key] = candidate
-                }
-                continue
-            }
-
-            selectedByKey[key] = candidate
-            orderedKeys.append(key)
+        init(grouping: ExternalGrouping, onProgress: (([String: AppItem]) -> Void)?) {
+            self.grouping = grouping
+            self.onProgress = onProgress
         }
 
-        return orderedKeys.compactMap { selectedByKey[$0]?.app }
+        mutating func append(_ candidate: ScanCandidate) {
+            let key = grouping == .filePath ? candidate.app.id : candidate.dedupeKey
+            if let existing = selected[key] {
+                guard AppScanner.shouldReplace(existing: existing, with: candidate) else { return }
+            } else {
+                orderedKeys.append(key)
+            }
+            selected[key] = candidate
+            guard onProgress != nil else { return }
+            changed[key] = candidate.app
+            let now = ProcessInfo.processInfo.systemUptime
+            if now >= nextPublication {
+                publish()
+                nextPublication = now + 0.15
+            }
+        }
+
+        mutating func finish() -> [AppItem] {
+            publish()
+            return orderedKeys.compactMap { selected[$0]?.app }
+        }
+
+        private mutating func publish() {
+            guard let onProgress, !changed.isEmpty else { return }
+            onProgress(changed)
+            changed.removeAll(keepingCapacity: true)
+        }
     }
 
-    private func shouldReplace(existing: ScanCandidate, with candidate: ScanCandidate) -> Bool {
+    private static func shouldReplace(existing: ScanCandidate, with candidate: ScanCandidate) -> Bool {
         let existingStatusRank = statusRank(for: existing.app.status)
         let candidateStatusRank = statusRank(for: candidate.app.status)
 
@@ -1373,7 +1394,7 @@ actor AppScanner {
         return candidate.priority > existing.priority
     }
 
-    private func statusRank(for status: String) -> Int {
+    private static func statusRank(for status: String) -> Int {
         switch status {
         case AppStatus.linked:
             return 3

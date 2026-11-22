@@ -250,6 +250,21 @@ final class AppScannerTests: XCTestCase {
         XCTAssertEqual(displayedSize, logicalSize)
     }
 
+    func testFirstDiscoveredRowIsPublishedBeforeRemainingAppsAndBatchesMatchTheFinalList() async throws {
+        let workspace = try makeWorkspace()
+        defer { cleanupWorkspace(workspace.rootURL) }
+        for name in ["First", "Second", "Third"] {
+            try createAppBundle(at: workspace.localAppsURL.appendingPathComponent(name + ".app"), payloadSize: 8)
+        }
+        let scanner = AppScanner()
+        var batches: [[String: AppItem]] = []
+        let apps = await scanner.scanLocalApps(at: workspace.localAppsURL, runningAppURLs: []) { batches.append($0) }
+        XCTAssertEqual(batches.first?.count, 1)
+        let rows = batches.reduce(into: [String: AppItem]()) { $0.merge($1) { _, latest in latest } }
+        XCTAssertEqual(apps.count, 3)
+        XCTAssertEqual(rows.values.sorted { $0.id < $1.id }, apps.sorted { $0.id < $1.id })
+    }
+
     func testLocalScanPrefersSingleAppContainerOverStandaloneDuplicate() async throws {
         let workspace = try makeWorkspace()
         defer { cleanupWorkspace(workspace.rootURL) }
@@ -287,7 +302,11 @@ final class AppScannerTests: XCTestCase {
             withDestinationURL: containerURL
         )
 
-        let items = await AppScanner().scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL)
+        var discovered: [String: AppItem] = [:]
+        let items = await AppScanner().scanExternalApps(at: workspace.externalRootURL, localAppsDir: workspace.localAppsURL) {
+            discovered.merge($0) { _, latest in latest }
+        }
+        XCTAssertEqual(Array(discovered.values), items)
 
         XCTAssertEqual(items.count, 1)
         let item = try XCTUnwrap(items.first)
