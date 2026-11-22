@@ -108,6 +108,8 @@ final class AppScannerTests: XCTestCase {
             ("com.google.Chrome", google, true),
             ("dev.zed.Zed", "Contents/MacOS/zed", true),
             ("com.jetbrains.toolbox", "Contents/MacOS/jetbrains-toolbox", true),
+            ("com.tencent.qq", "Contents/MacOS/QQ", true),
+            ("com.tencent.QQMusicMac", "Contents/MacOS/QQMusic", true),
             ("example.unverified", installer, false),
             ("com.ccswitch.desktop", "Contents/MacOS/cc-switch", false)
         ]

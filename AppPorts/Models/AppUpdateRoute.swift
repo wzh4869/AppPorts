@@ -43,7 +43,9 @@ enum AppUpdateRoute: Equatable, Sendable {
         "org.mozilla.thunderbird": mozillaInstaller,
         "com.google.Chrome": googleUpdater,
         "dev.zed.Zed": "MacOS/zed",
-        "com.jetbrains.toolbox": "MacOS/jetbrains-toolbox"
+        "com.jetbrains.toolbox": "MacOS/jetbrains-toolbox",
+        "com.tencent.qq": "MacOS/QQ",
+        "com.tencent.QQMusicMac": "MacOS/QQMusic"
     ]
 
     static func inspect(_ identity: ResolvedAppIdentity, localEntry: URL? = nil, beforeMigration: Bool = true) -> Self {
