@@ -230,6 +230,20 @@ final class DirectorySizeTraversalTests: XCTestCase {
         DataDirItem(name: url.lastPathComponent, path: url, type: .containers, priority: .recommended, description: "")
     }
 
+    func testSkippedDirectoryStillAppliesWithoutRequestedSubtreeTotals() throws {
+        let root = try workspace()
+        defer { try? manager.removeItem(at: root) }
+        let nested = root.appendingPathComponent("skip")
+        try manager.createDirectory(at: nested, withIntermediateDirectories: true)
+        try Data(count: 10).write(to: nested.appendingPathComponent("file"))
+        try Data(count: 3).write(to: root.appendingPathComponent("keep"))
+        let plain = DirectorySizeTraversal.measure(at: root)
+        let scoped = DirectorySizeTraversal.measure(at: root, skippingDirectories: [nested])
+        XCTAssertTrue(plain.isComplete && scoped.isComplete)
+        XCTAssertEqual(plain.bytes, 13)
+        XCTAssertEqual(scoped.bytes, 3)
+    }
+
     private func workspace() throws -> URL {
         let root = manager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try manager.createDirectory(at: root, withIntermediateDirectories: true)

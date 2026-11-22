@@ -24,6 +24,7 @@ enum DirectorySizeTraversal {
         }
         let skippedPaths = Set(skippingDirectories.map { $0.standardizedFileURL.path })
 
+        let needsDirectoryPaths = !skippedPaths.isEmpty || !subtreeMap.isEmpty
         typealias Subtree = (url: URL, level: Int16, startBytes: Int64)
         var activeSubtrees: [Subtree] = []
 
@@ -97,6 +98,7 @@ enum DirectorySizeTraversal {
             }
             switch Int32(entry.fts_info) {
             case FTS_D, FTS_DNR:
+                if entry.fts_info == FTS_D, !needsDirectoryPaths { continue }
                 let url = URL(fileURLWithFileSystemRepresentation: entry.fts_path,
                     isDirectory: true, relativeTo: nil).standardizedFileURL
                 if skippedPaths.contains(url.path) {
