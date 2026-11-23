@@ -19,7 +19,17 @@ struct WeChatAccountMigrationService: Sendable {
     enum Mode: String, CaseIterable, Sendable {
         case whole
         case split
-        var isSplit: Bool { self == .split }
+        case filesAndVideos
+
+        var splitGroup: PartialWeChatMigrationPolicy.SplitGroup? {
+            switch self {
+            case .whole: return nil
+            case .split: return .media
+            case .filesAndVideos: return .filesAndVideos
+            }
+        }
+
+        var isSplit: Bool { splitGroup != nil }
     }
 
     enum State: Equatable { case local, whole, split, filesAndVideos, conflict }
@@ -27,18 +37,22 @@ struct WeChatAccountMigrationService: Sendable {
     struct Sizing: Sendable {
         let total: DirectorySizeResult
         let media: DirectorySizeResult
+        let filesAndVideos: DirectorySizeResult
+        let filesAndVideosCount: Int
         var retainedBytes: Int64 { max(0, total.bytes - media.bytes) }
         var isComplete: Bool { total.isComplete && media.isComplete }
+        var isFilesAndVideosComplete: Bool { total.isComplete && filesAndVideos.isComplete && filesAndVideosCount > 0 }
     }
 
     enum Failure: LocalizedError {
-        case invalidAccount, disabled, restoreFirst, missingMembers, incompleteSize
+        case invalidAccount, disabled, restoreFirst, missingMembers, missingFilesAndVideos, incompleteSize
         var errorDescription: String? {
             switch self {
             case .invalidAccount: return "无法确认微信账号目录，未改动数据。".localized
             case .disabled: return "请先开启“微信账号拆分迁移”。".localized
             case .restoreFirst: return "请先完整还原这个账号已迁移的数据，再切换迁移方式。".localized
             case .missingMembers: return "账号下的 msg 和 business 必须都是可读取的真实目录，才能拆分迁移。".localized
+            case .missingFilesAndVideos: return "未在账号下找到可迁移的 msg/file 或 msg/video 目录。".localized
             case .incompleteSize: return "目录大小未能完整读取，请检查访问权限后重试。".localized
             }
         }
@@ -87,9 +101,11 @@ struct WeChatAccountMigrationService: Sendable {
         try requireAccount(account)
         let accountDevice = try SignatureSnapshot.info(at: account).st_dev
         let mediaMembers = policy.members(of: account, group: .media)
+        let existingCold = policy.existingDirectoryMembers(of: account, group: .filesAndVideos)
 
         var singlePassSubtrees: Set<URL> = []
         var standaloneMedia: [URL] = []
+        var standaloneCold: [URL] = []
         var media = DirectorySizeResult()
 
         for member in mediaMembers {
@@ -100,6 +116,15 @@ struct WeChatAccountMigrationService: Sendable {
                 singlePassSubtrees.insert(member.standardizedFileURL)
             } else {
                 standaloneMedia.append(member)
+            }
+        }
+
+        for member in existingCold {
+            var info = stat()
+            if lstat(member.path, &info) == 0 && (info.st_mode & S_IFMT) == S_IFDIR && info.st_dev == accountDevice {
+                singlePassSubtrees.insert(member.standardizedFileURL)
+            } else {
+                standaloneCold.append(member)
             }
         }
 
@@ -119,7 +144,41 @@ struct WeChatAccountMigrationService: Sendable {
             media.readIssues += result.readIssues
         }
 
-        return Sizing(total: total, media: media)
+        var cold = DirectorySizeResult()
+        for member in existingCold {
+            let key = member.standardizedFileURL
+            if singlePassSubtrees.contains(key), let result = singlePass.subtrees[key] {
+                cold.bytes += result.bytes
+                cold.readIssues += result.readIssues
+            }
+        }
+        for member in standaloneCold {
+            let result = measureDirectorySize(at: member, useCache: false)
+            cold.bytes += result.bytes
+            cold.readIssues += result.readIssues
+        }
+        return Sizing(total: total, media: media, filesAndVideos: cold, filesAndVideosCount: existingCold.count)
+    }
+
+    func plannedMembers(of account: URL, for mode: Mode) throws -> [URL] {
+        guard let group = mode.splitGroup else { return [account] }
+        switch group {
+        case .media:
+            return policy.members(of: account, group: .media)
+        case .filesAndVideos:
+            let records = (try? store.recordsStrict()) ?? []
+            let transfers = (try? store.transfers()) ?? []
+            let recordedPaths = Set(
+                records.map(\.mountPointPath)
+                    + transfers.filter { $0.rollbackCompletedAt == nil }.map(\.originalPath)
+            )
+            let candidates = policy.members(of: account, group: .filesAndVideos).filter { url in
+                if recordedPaths.contains(url.path) { return true }
+                var info = stat()
+                return lstat(url.path, &info) == 0 && (info.st_mode & S_IFMT) == S_IFDIR
+            }
+            return candidates
+        }
     }
 
     /// The caller owns the application operation and cross-process locks for the whole group.
@@ -138,11 +197,15 @@ struct WeChatAccountMigrationService: Sendable {
             switch mode {
             case .whole: return current == .local
             case .split: return current == .local || current == .split
+            case .filesAndVideos: return current == .local || current == .filesAndVideos
             }
         }()
         guard current != .conflict, allowedCurrentState else { throw Failure.restoreFirst }
         if mode.isSplit, !enabled { throw Failure.disabled }
-        let members = mode.isSplit ? policy.members(of: account) : [account]
+        let members = try plannedMembers(of: account, for: mode)
+        if mode == .filesAndVideos, members.isEmpty {
+            throw Failure.missingFilesAndVideos
+        }
         // Validate all target members before moving any of them. Existing mount records
         // belong to an interrupted split and are resumed rather than migrated again.
         let records = try store.recordsStrict()
@@ -158,7 +221,7 @@ struct WeChatAccountMigrationService: Sendable {
             if hasRecord { continue }
             let info = try SignatureSnapshot.info(at: source)
             guard info.st_mode & S_IFMT == S_IFDIR else {
-                throw Failure.missingMembers
+                throw mode == .filesAndVideos ? Failure.missingFilesAndVideos : Failure.missingMembers
             }
             let safety = DataOperationSafety(homeDirectory: policy.homeDirectory, store: store,
                                             partialWeChatMigrationEnabled: enabled, weChatContainerIdentifier: policy.containerIdentifier)
@@ -286,6 +349,7 @@ struct WeChatAccountMigrationService: Sendable {
     /// never independent checkboxes/buttons for split members.
     static func groupedItems(_ items: [DataDirItem], homeDirectory: URL = URL(fileURLWithPath: NSHomeDirectory()),
                              splitMode: Bool = false,
+                             preferredSplitGroup: PartialWeChatMigrationPolicy.SplitGroup? = nil,
                              containerIdentifier: String = PartialWeChatMigrationPolicy.bundleIdentifier) -> [DataDirItem] {
         let policy = PartialWeChatMigrationPolicy(homeDirectory: homeDirectory, containerIdentifier: containerIdentifier)
         let members = Dictionary(grouping: items.filter {
@@ -307,15 +371,24 @@ struct WeChatAccountMigrationService: Sendable {
             // Never mix overlapping `msg` and `msg/{file,video}` members on the same account row.
             if hasRecordedMedia && hasRecordedCold { continue }
 
-            let targetGroup: PartialWeChatMigrationPolicy.SplitGroup = hasRecordedCold ? .filesAndVideos : .media
+            let targetGroup: PartialWeChatMigrationPolicy.SplitGroup = hasRecordedCold ? .filesAndVideos
+                : hasRecordedMedia ? .media
+                : (preferredSplitGroup ?? .media)
             let groupChildren = targetGroup == .filesAndVideos ? coldChildren : mediaChildren
-            let active = groupChildren.filter {
-                (targetGroup == .media && splitMode && $0.status == DataDirStatus.local && $0.isMigratable)
-                    || $0.canRestore || $0.recoveryOperationID != nil
-            }
+            let active = groupChildren.filter { (splitMode && $0.status == DataDirStatus.local && $0.isMigratable)
+                || $0.canRestore || $0.recoveryOperationID != nil }
             guard !active.isEmpty else { continue }
 
-            let expectedCount = targetGroup == .media ? PartialWeChatMigrationPolicy.memberNames.count : active.count
+            let expectedCount: Int = {
+                switch targetGroup {
+                case .media:
+                    return PartialWeChatMigrationPolicy.memberNames.count
+                case .filesAndVideos:
+                    let existingPaths = Set(policy.existingDirectoryMembers(of: account, group: .filesAndVideos).map(\.path))
+                    let recordedPaths = Set(active.map { $0.path.standardizedFileURL.path })
+                    return max(1, existingPaths.union(recordedPaths).count)
+                }
+            }()
 
             let index = result.firstIndex { $0.path.standardizedFileURL.path == account.path }
             var item = index.map { result[$0] } ?? DataDirItem(name: account.lastPathComponent, path: account,

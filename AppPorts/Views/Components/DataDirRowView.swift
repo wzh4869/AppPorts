@@ -196,22 +196,22 @@ struct DataDirOperationButtons: View {
                 onViewTask()
             }
         } else if !item.weChatSplitMembers.isEmpty {
-            let canContinueMigration = !item.isWeChatFilesAndVideosSplit && (
-                item.weChatSplitMembers.count < item.weChatExpectedMemberCount
-                    || item.weChatSplitMembers.contains { $0.status != DataDirStatus.mounted }
-            )
             HStack(spacing: 6) {
                 if item.autoMountPaused, let onMount {
                     migrationButton(title: item.status == DataDirStatus.mounted ? "恢复自动挂载".localized : "挂载".localized, icon: "externaldrive.fill.badge.checkmark", compact: inline) { onMount(item) }
                 } else if item.status == DataDirStatus.waitingForUnlock, let onMount {
                     migrationButton(title: "解锁".localized, icon: "lock.open") { onMount(item) }
-                } else if canContinueMigration {
+                } else if item.weChatSplitMembers.count < item.weChatExpectedMemberCount
+                    || item.weChatSplitMembers.contains(where: { $0.status != DataDirStatus.mounted }) {
                     migrationButton(title: (item.status == DataDirStatus.local ? "迁移" : "继续").localized,
                                     icon: "externaldrive.fill.badge.plus") { onMigrate(item) }
                 }
                 if item.weChatSplitMembers.contains(where: { $0.canRestore || $0.recoveryOperationID != nil }),
                    let onMountRestore {
-                    mountRestoreButton(action: onMountRestore, compact: inline && canContinueMigration)
+                    mountRestoreButton(action: onMountRestore, compact: inline && (
+                        item.weChatSplitMembers.count < item.weChatExpectedMemberCount
+                            || item.weChatSplitMembers.contains { $0.status != DataDirStatus.mounted }
+                    ))
                 }
             }
         } else if DataDirStatus.mountStatuses.contains(item.status) {

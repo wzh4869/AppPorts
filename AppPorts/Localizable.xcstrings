@@ -28362,6 +28362,279 @@
         }
       }
     },
+    "聊天附件和数据库留在本地。与聊天附件共享的文件会在外盘另存一份，仍占用原来的内盘空间。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبقى مرفقات المحادثات وقواعد البيانات على هذا الجهاز. تُحفظ نسخة خارجية من الملفات المشتركة مع مرفقات المحادثات، وتبقى مساحتها الأصلية مستخدمة محليًا."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chom a ra stagadennoù ar flapañ hag an diazoù roadennoù war ar Mac-mañ. Enrollañ a reer un eilad diavaez eus ar restroù rannet gant ar stagadennoù, hag e chom o flas orin dalc’het war ar Mac-mañ."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chat-Anhänge und Datenbanken bleiben auf diesem Mac. Dateien, die mit Chat-Anhängen geteilt werden, erhalten eine separate externe Kopie und belegen weiterhin ihren bisherigen lokalen Speicherplatz."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chat attachments and databases stay on this Mac. Files shared with chat attachments also get an external copy and keep using their original space on this Mac."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Babilaj aldonaĵoj kaj datumbazoj restas sur ĉi tiu Mac. Dosieroj kunhavigitaj kun babilaj aldonaĵoj ricevas apartan eksteran kopion kaj daŭre okupas sian originan lokan spacon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los archivos adjuntos de los chats y las bases de datos permanecen en este Mac. Los archivos compartidos con los adjuntos tendrán una copia independiente en el disco externo y seguirán ocupando el espacio local original."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pièces jointes des discussions et les bases de données restent sur ce Mac. Les fichiers partagés avec ces pièces jointes sont copiés séparément sur le disque externe et continuent d’occuper leur espace d’origine sur le Mac."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चैट अटैचमेंट और डेटाबेस इस Mac पर रहते हैं। चैट अटैचमेंट के साथ साझा फ़ाइलों की अलग कॉपी बाहरी ड्राइव पर बनती है और वे इस Mac पर अपनी मूल जगह घेरती रहती हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lampiran obrolan dan basis data tetap di Mac ini. File yang digunakan bersama lampiran obrolan disalin secara terpisah ke drive eksternal dan tetap memakai ruang asalnya di Mac ini."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli allegati delle chat e i database restano su questo Mac. I file condivisi con gli allegati vengono copiati separatamente sul disco esterno e continuano a occupare lo spazio locale originale."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャットの添付ファイルとデータベースはこのMacに残ります。添付ファイルと共有されているファイルは外付けドライブにも別のコピーが作られ、Mac上の元の容量を引き続き使用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "채팅 첨부 파일과 데이터베이스는 이 Mac에 남습니다. 채팅 첨부 파일과 공유되는 파일은 외장 드라이브에 별도로 복사되며, Mac에서 기존 저장 공간을 계속 사용합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chatbijlagen en databases blijven op deze Mac staan. Bestanden die met chatbijlagen worden gedeeld krijgen een aparte externe kopie en blijven hun oorspronkelijke lokale ruimte gebruiken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Załączniki czatów i bazy danych pozostają na tym Macu. Pliki współdzielone z załącznikami czatów są osobno kopiowane na dysk zewnętrzny i nadal zajmują pierwotne miejsce na Macu."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os anexos das conversas e as bases de dados ficam neste Mac. Os ficheiros partilhados com anexos recebem uma cópia separada no disco externo e continuam a ocupar o espaço local original."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вложения чатов и базы данных остаются на этом Mac. Файлы, общие с вложениями чатов, сохраняются отдельными копиями на внешнем диске и продолжают занимать прежнее место на Mac."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไฟล์แนบในแชทและฐานข้อมูลจะอยู่บน Mac เครื่องนี้ ไฟล์ที่ใช้ร่วมกับไฟล์แนบจะถูกคัดลอกแยกไปยังไดรฟ์ภายนอกและยังคงใช้พื้นที่เดิมบน Mac"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sohbet ekleri ve veritabanları bu Mac’te kalır. Sohbet ekleriyle paylaşılan dosyaların harici sürücüde ayrı bir kopyası oluşturulur ve bu Mac’teki mevcut alanları kullanılmaya devam eder."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tệp đính kèm trò chuyện và cơ sở dữ liệu vẫn ở trên máy Mac này. Tệp dùng chung với tệp đính kèm được sao chép riêng ra ổ ngoài và vẫn chiếm dung lượng ban đầu trên máy Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聊天附件和数据库留在本地。与聊天附件共享的文件会在外盘另存一份，仍占用原来的内盘空间。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聊天附件與資料庫會留在本機。與聊天附件共用的檔案會在外接磁碟另存一份，仍占用原來的內部磁碟空間。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聊天附件與數據庫留恠夲機。與聊天附件囲享啲文件茬外盤另存①份，仍佔苚內盤原來啲空間。"
+          }
+        }
+      }
+    },
+    "仅大文件与视频（msg/file + msg/video）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الملفات الكبيرة ومقاطع الفيديو فقط (msg/file + msg/video)"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠇⠁⠗⠛⠑ ⠋⠊⠇⠑⠎ & ⠧⠊⠙⠑⠕⠎ ⠕⠝⠇⠽ ⠐⠣⠍⠎⠛⠌⠋⠊⠇⠑ + ⠍⠎⠛⠌⠧⠊⠙⠑⠕⠐⠜"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur große Dateien & Videos (msg/file + msg/video)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large files & videos only (msg/file + msg/video)"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur grandaj dosieroj kaj videoj (msg/file + msg/video)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo archivos grandes y vídeos (msg/file + msg/video)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers volumineux et vidéos uniquement (msg/file + msg/video)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "केवल बड़ी फ़ाइलें और वीडियो (msg/file + msg/video)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya file besar & video (msg/file + msg/video)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo file grandi e video (msg/file + msg/video)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大容量ファイルと動画のみ（msg/file + msg/video）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대용량 파일 및 동영상만 (msg/file + msg/video)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alleen grote bestanden en video’s (msg/file + msg/video)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tylko duże pliki i wideo (msg/file + msg/video)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apenas arquivos grandes e vídeos (msg/file + msg/video)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Только крупные файлы и видео (msg/file + msg/video)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เฉพาะไฟล์ขนาดใหญ่และวิดีโอ (msg/file + msg/video)"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yalnızca büyük dosyalar ve videolar (msg/file + msg/video)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ tệp lớn và video (msg/file + msg/video)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅大文件与视频（msg/file + msg/video）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅大檔案與影片（msg/file + msg/video）"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "僅大攵件與视频（msg/file + msg/video）"
+          }
+        }
+      }
+    },
     "仅迁移数据" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -78513,6 +78786,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "微信账号數據"
+          }
+        }
+      }
+    },
+    "未在账号下找到可迁移的 msg/file 或 msg/video 目录。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يُعثر على مجلد msg/file أو msg/video قابل للترحيل ضمن هذا الحساب."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠝⠕ ⠍⠊⠛⠗⠁⠞⠁⠃⠇⠑ ⠍⠎⠛⠌⠋⠊⠇⠑ ⠕⠗ ⠍⠎⠛⠌⠧⠊⠙⠑⠕ ⠋⠕⠇⠙⠑⠗ ⠺⠁⠎ ⠋⠕⠥⠝⠙ ⠥⠝⠙⠑⠗ ⠞⠓⠊⠎ ⠁⠉⠉⠕⠥⠝⠞⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unter diesem Konto wurde kein migrierbarer Ordner msg/file oder msg/video gefunden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No migratable msg/file or msg/video folder was found under this account."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neniu migrebla dosierujo msg/file aŭ msg/video troviĝis sub ĉi tiu konto."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró ninguna carpeta msg/file o msg/video migrable en esta cuenta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun dossier msg/file ou msg/video migrable n’a été trouvé dans ce compte."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस खाते के अंतर्गत माइग्रेट करने योग्य msg/file या msg/video निर्देशिका नहीं मिली।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ditemukan folder msg/file atau msg/video yang dapat dimigrasikan pada akun ini."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna cartella msg/file o msg/video migrabile trovata in questo account."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアカウント下に、移行可能な msg/file または msg/video ディレクトリが見つかりませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 계정 아래에서 마이그레이션할 수 있는 msg/file 또는 msg/video 디렉터리를 찾지 못했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen migreerbare map msg/file of msg/video gevonden onder dit account."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie znaleziono na tym koncie katalogu msg/file ani msg/video możliwego do przeniesienia."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma pasta msg/file ou msg/video migrável foi encontrada nesta conta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этом аккаунте не найдено доступных для переноса папок msg/file или msg/video."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่พบโฟลเดอร์ msg/file หรือ msg/video ที่ย้ายได้ภายใต้บัญชีนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu hesap altında taşınabilir msg/file veya msg/video klasörü bulunamadı."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tìm thấy thư mục msg/file hoặc msg/video có thể di chuyển trong tài khoản này."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未在账号下找到可迁移的 msg/file 或 msg/video 目录。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未在帳號下找到可遷移的 msg/file 或 msg/video 目錄。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未╪账号下找↘可遷迻の msg/file 或 msg/video 目錄。"
           }
         }
       }
@@ -161834,6 +162244,143 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "遷迻 msg + business"
+          }
+        }
+      }
+    },
+    "迁移 msg/file + msg/video" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترحيل msg/file + msg/video"
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠍⠊⠛⠗⠁⠞⠑ ⠍⠎⠛⠌⠋⠊⠇⠑ + ⠍⠎⠛⠌⠧⠊⠙⠑⠕"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video migrieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrate msg/file + msg/video"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migri msg/file + msg/video"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar msg/file + msg/video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrer msg/file + msg/video"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video माइग्रेट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrasikan msg/file + msg/video"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migra msg/file + msg/video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video を移行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video 마이그레이션"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video migreren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przenieś msg/file + msg/video"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrar msg/file + msg/video"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перенести msg/file + msg/video"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ย้าย msg/file + msg/video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "msg/file + msg/video taşı"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di chuyển msg/file + msg/video"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移 msg/file + msg/video"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移 msg/file + msg/video"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷迻 msg/file + msg/video"
           }
         }
       }

@@ -498,6 +498,7 @@ actor ContainerVolumeMigrator {
 
     private func copyPreparation(_ transfer: DataTransferRecord, source: URL, destination: URL,
                                  finalDestination: URL, logicalSourceRoot: URL? = nil,
+                                 separatesExternalFileHardlinks: Bool = false,
                                  progressHandler: FileCopier.ProgressHandler?) async throws -> TreeCopySnapshot {
         let currentStore = store
         let operationID = transfer.operationID
@@ -505,6 +506,7 @@ actor ContainerVolumeMigrator {
         return try await TreeCopySession().copy(from: source, to: destination,
             excludingRootEntries: Self.volumeSystemArtifacts, finalDestination: finalDestination,
             logicalSourceRoot: logicalSourceRoot, legacyRootOwnership: transfer.legacyRootOwnership,
+            separatesExternalFileHardlinks: separatesExternalFileHardlinks,
             verifySourceAfterCopy: false,
             verifyDestinationAfterCopy: false,
             preparedHandler: { baseline in
@@ -515,6 +517,15 @@ actor ContainerVolumeMigrator {
                 if let destinationUUID { identity.volumeUUID = destinationUUID }
                 try currentStore.claimCopyDestination(operationID: operationID, identity: identity)
             }, progressHandler: progressHandler)
+    }
+
+    private func isWeChatFilesAndVideosMember(_ url: URL, bundleIdentifier: String?) -> Bool {
+        guard let bundleIdentifier else { return false }
+        let policy = PartialWeChatMigrationPolicy(homeDirectory: safety.homeDirectory, containerIdentifier: bundleIdentifier)
+        guard policy.splitGroup(forMember: url) == .filesAndVideos else { return false }
+        let resolvedPolicy = PartialWeChatMigrationPolicy(homeDirectory: safety.homeDirectory.resolvingSymlinksInPath(),
+                                                          containerIdentifier: bundleIdentifier)
+        return resolvedPolicy.splitGroup(forMember: url.resolvingSymlinksInPath()) == .filesAndVideos
     }
 
     private func promoteCompletePreparation(_ expected: DataTransferRecord) async throws -> DataTransferRecord? {
@@ -1573,8 +1584,14 @@ actor ContainerVolumeMigrator {
         await progressHandler?(.working(.preparing))
         let source = item.path.standardizedFileURL
         let restored = try completedRestoreLineage(at: source)
+        let isRecordedRetry = reusingOperationID != nil
+        let isConfiguredWeChat = safety.partialWeChatMigrationEnabled
+            && bundleIdentifier == safety.weChatContainerIdentifier
+        let separatesExternalFileHardlinks = (isConfiguredWeChat || isRecordedRetry)
+            && isWeChatFilesAndVideosMember(source, bundleIdentifier: bundleIdentifier)
         try await safety.requireNewMigration(at: source, bundleIdentifier: bundleIdentifier,
-            ownedTransferIDs: Set(restored.map(\.operationID)))
+            ownedTransferIDs: Set(restored.map(\.operationID)),
+            resumingRecordedMigration: isRecordedRetry && separatesExternalFileHardlinks)
         guard existingRealDirectory(at: source) else { throw MigrationError.sourceNotDirectory(source) }
         guard !isMountPoint(source) else { throw MigrationError.alreadyManaged(source) }
         guard !DataPathTopology.overlaps(DataPathTopology.relationship(source.path, externalRootURL.path)) else {
@@ -1654,7 +1671,8 @@ actor ContainerVolumeMigrator {
             transfer.phase = .copying
             try store.updateTransfer(transfer)
             let baseline = try await copyPreparation(transfer, source: source, destination: staging,
-                finalDestination: source, progressHandler: progressHandler)
+                finalDestination: source, separatesExternalFileHardlinks: separatesExternalFileHardlinks,
+                progressHandler: progressHandler)
             transfer = try store.transfer(operationID: transfer.operationID) ?? transfer
             // Read back once after all copy/switch callbacks and inspections.
             // Until then only the preparation baseline authorizes recovery.

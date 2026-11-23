@@ -72,6 +72,7 @@ actor TreeCopySession {
         logicalSourceRoot: URL? = nil,
         legacyRootOwnership: TreeCopySnapshot.Ownership? = nil,
         validateRelocatedLinks: Bool = true,
+        separatesExternalFileHardlinks: Bool = false,
         // 仅在调用方切换入口前自行复核源端时关闭，默认保持独立复制的完整校验。
         verifySourceAfterCopy: Bool = true,
         verifyDestinationAfterCopy: Bool = true,
@@ -84,6 +85,7 @@ actor TreeCopySession {
                 try await self.copy(from: source, to: destination, excludingRootEntries: excludingRootEntries,
                     finalDestination: finalDestination, logicalSourceRoot: logicalSourceRoot,
                     legacyRootOwnership: legacyRootOwnership, validateRelocatedLinks: validateRelocatedLinks,
+                    separatesExternalFileHardlinks: separatesExternalFileHardlinks,
                     verifySourceAfterCopy: verifySourceAfterCopy, verifyDestinationAfterCopy: verifyDestinationAfterCopy,
                     preparedHandler: preparedHandler, destinationCreatedHandler: destinationCreatedHandler,
                     progressHandler: progressHandler)
@@ -111,7 +113,8 @@ actor TreeCopySession {
         }
         var baseline = try Self.snapshot(at: source, excludingRootEntries: excludingRootEntries,
                                          finalDestination: finalDestination, logicalSourceRoot: logicalSourceRoot,
-                                         validateRelocatedLinks: validateRelocatedLinks, profile: profile)
+                                         validateRelocatedLinks: validateRelocatedLinks, profile: profile,
+                                         separatesExternalFileHardlinks: separatesExternalFileHardlinks)
         if let legacyRootOwnership {
             guard legacyRootOwnership.uid == geteuid(), legacyRootOwnership.gid == getegid(),
                   baseline.ownershipCompatibility?.sourceIgnoresOwnership != true,
@@ -183,6 +186,7 @@ actor TreeCopySession {
     nonisolated static func snapshot(at root: URL, excludingRootEntries: Set<String> = [], finalDestination: URL? = nil,
                                      logicalSourceRoot: URL? = nil, validateRelocatedLinks: Bool = true,
                                      profile: TreeCopyProfile = .strictData,
+                                     separatesExternalFileHardlinks: Bool = false,
                                      scanTitle: String = "", scanDetail: String = "") throws -> TreeCopySnapshot {
         let root = canonicalRoot(root)
         DataTransferSession.progress?.setDirectory(logicalSourceRoot ?? root, onlyIfUnset: true)
@@ -192,7 +196,8 @@ actor TreeCopySession {
                     ? "正在读取源目录，记录文件内容和属性，作为复制和后续检查的依据。".localized : scanDetail,
                 title: scanTitle)
             return try withCopyDiagnostics(String(format: "检查源端目录：%@".localized, root.path)) {
-                try scan(root, exclusions: excludingRootEntries, profile: profile)
+                try scan(root, exclusions: excludingRootEntries, profile: profile,
+                         permitsExternalFileHardlinks: separatesExternalFileHardlinks)
             }
         }
         // A proven volume mounted privately during restore retains the link
@@ -307,7 +312,9 @@ actor TreeCopySession {
         try DataTransferSession.measure(.verification) {
             DataTransferSession.progress?.verify(purpose)
             try withCopyDiagnostics(String(format: "校验源端目录：%@".localized, root.path)) {
-                try compare(scan(root, exclusions: snapshot.excludedRootEntries, profile: profile, expectedItems: snapshot.entries.count), snapshot,
+                try compare(scan(root, exclusions: snapshot.excludedRootEntries, profile: profile,
+                                 permitsExternalFileHardlinks: snapshot.externalFileHardlinks != nil,
+                                 expectedItems: snapshot.entries.count), snapshot,
                             identities: true, rootPath: root.path, profile: profile)
             }
         }
@@ -322,7 +329,9 @@ actor TreeCopySession {
         try requireVolumeUUID(expectedVolumeUUID, at: root)
         let actual = try DataTransferSession.measure(.verification) {
             DataTransferSession.progress?.verify(purpose)
-            return try scan(root, exclusions: snapshot.excludedRootEntries, profile: profile, expectedItems: snapshot.entries.count)
+            return try scan(root, exclusions: snapshot.excludedRootEntries, profile: profile,
+                            permitsExternalFileHardlinks: snapshot.externalFileHardlinks != nil,
+                            expectedItems: snapshot.entries.count)
         }
         try requireVolumeUUID(expectedVolumeUUID, at: root)
         var current = stat()
@@ -405,7 +414,8 @@ actor TreeCopySession {
             throw TreeCopyError.verificationFailed(root.path)
         }
         DataTransferSession.progress?.verify(.retainedCopy)
-        let actual = try scan(retained, exclusions: snapshot.excludedRootEntries, profile: profile)
+        let actual = try scan(retained, exclusions: snapshot.excludedRootEntries, profile: profile,
+                              permitsExternalFileHardlinks: snapshot.externalFileHardlinks != nil)
         try compareRemovalRemainder(actual, snapshot, root: retained,
                                     expectedVolumeUUID: expectedVolumeUUID, removalID: removalID, profile: profile)
     }
@@ -433,7 +443,9 @@ actor TreeCopySession {
         // Deletion is authorized by the manifest alone, so every node is
         // re-checked with the profile that produced it. Relaxing the copy
         // profile must not relax the proof that a node is the recorded one.
-        let actual = try scan(root, exclusions: snapshot.excludedRootEntries, profile: profile, includeFinderMetadata: true)
+        let actual = try scan(root, exclusions: snapshot.excludedRootEntries, profile: profile,
+                              includeFinderMetadata: true,
+                              permitsExternalFileHardlinks: ownershipRole == .source && snapshot.externalFileHardlinks != nil)
         if allowPartialRemoval, let removalID {
             try compareRemovalRemainder(actual, snapshot, root: root,
                                         expectedVolumeUUID: expectedVolumeUUID, removalID: removalID,
@@ -492,6 +504,8 @@ actor TreeCopySession {
         }
         let remainingPaths = Set(actual.entries.map(\.path))
         let quarantinedName = removalName(removalID)
+        let expectedOutsideByInode = externalLinkCountsByInode(expected)
+        let actualOutsideByInode = externalLinkCountsByInode(actual)
         var matched: Set<String> = []
         for entry in actual.entries {
             // New or changed Finder settings do not require an old manifest
@@ -514,6 +528,7 @@ actor TreeCopySession {
             guard matched.insert(baseline.path).inserted,
                   entry.identity.inode == baseline.identity.inode,
                   expectedVolumeUUID != nil || entry.identity.device == baseline.identity.device,
+                  actualOutsideByInode[entry.identity.inode] == expectedOutsideByInode[baseline.identity.inode],
                   entry.kind == baseline.kind,
                   entry.mode == baseline.mode || (entry.kind == .directory && entry.mode == baseline.mode | 0o700) else {
                 throw TreeCopyError.sourceChanged(entry.path)
@@ -531,6 +546,15 @@ actor TreeCopySession {
         }
         guard matched.contains("") else { throw TreeCopyError.verificationFailed(root.path) }
         if let expectedVolumeUUID { try requireVolumeUUID(expectedVolumeUUID, at: root) }
+    }
+
+    nonisolated private static func externalLinkCountsByInode(_ snapshot: TreeCopySnapshot) -> [UInt64: Int] {
+        guard let counts = snapshot.externalFileHardlinks else { return [:] }
+        var result: [UInt64: Int] = [:]
+        for entry in snapshot.entries {
+            if let count = counts[entry.path] { result[entry.identity.inode] = count }
+        }
+        return result
     }
 
     nonisolated private static func removeNode(fd: Int32, parent: Int32, name: String, path: String,
@@ -928,14 +952,17 @@ actor TreeCopySession {
     nonisolated private static func scan(_ root: URL, exclusions: Set<String>,
                                         profile: TreeCopyProfile = .strictData,
                                         includeFinderMetadata: Bool = false,
+                                        permitsExternalFileHardlinks: Bool = false,
                                         expectedItems: Int = 0) throws -> TreeCopySnapshot {
         try withCopyDiagnostics(String(format: "读取目录：%@".localized, root.path)) {
-            try scanContents(root, exclusions: exclusions, profile: profile, includeFinderMetadata: includeFinderMetadata, expectedItems: expectedItems)
+            try scanContents(root, exclusions: exclusions, profile: profile, includeFinderMetadata: includeFinderMetadata,
+                             permitsExternalFileHardlinks: permitsExternalFileHardlinks, expectedItems: expectedItems)
         }
     }
 
     nonisolated private static func scanContents(_ root: URL, exclusions: Set<String>,
-                                                profile: TreeCopyProfile, includeFinderMetadata: Bool, expectedItems: Int) throws -> TreeCopySnapshot {
+                                                profile: TreeCopyProfile, includeFinderMetadata: Bool,
+                                                permitsExternalFileHardlinks: Bool, expectedItems: Int) throws -> TreeCopySnapshot {
         try MigrationExecution.checkpoint()
         DataTransferSession.progress?.startTraversal(at: root, expectedItems: expectedItems)
         for name in exclusions where name.isEmpty || name == "." || name == ".." || name.contains("/") {
@@ -957,10 +984,13 @@ actor TreeCopySession {
         // A count and canonical name prove the same hardlink relationships as
         // grouping whole entries, without a second manifest and one array for
         // every ordinary single-link file.
-        for links in hardlinks.values {
-            guard Int(links.reportedCount) == links.count else {
+        var externalFileHardlinks: [String: Int] = [:]
+        for links in hardlinks.values where Int(links.reportedCount) != links.count {
+            let outsideCount = Int(links.reportedCount) - links.count
+            guard permitsExternalFileHardlinks, links.canSeparate, outsideCount > 0 else {
                 throw TreeCopyError.hardlinkOutsideSelection(links.canonicalPath)
             }
+            externalFileHardlinks[links.canonicalPath] = outsideCount
         }
         for index in entries.indices {
             if let links = hardlinks[entries[index].identity], links.count > 1 {
@@ -976,13 +1006,16 @@ actor TreeCopySession {
         let compatibility: TreeCopySnapshot.OwnershipCompatibility? = ownershipIsIgnored
             ? .init(sourceIgnoresOwnership: true, destinationIgnoresOwnership: true,
                     projectedSourceOwner: .init(uid: geteuid(), gid: getegid())) : nil
-        return TreeCopySnapshot(ownershipCompatibility: compatibility, entries: entries, excludedRootEntries: exclusions)
+        return TreeCopySnapshot(ownershipCompatibility: compatibility,
+                                externalFileHardlinks: externalFileHardlinks.isEmpty ? nil : externalFileHardlinks,
+                                entries: entries, excludedRootEntries: exclusions)
     }
 
     private struct ScannedHardlinks {
         let reportedCount: UInt16
         var count: Int
         var canonicalPath: String
+        var canSeparate: Bool
     }
 
     private typealias CapturedNode = (before: stat, entry: TreeCopySnapshot.Entry)
@@ -1114,13 +1147,16 @@ actor TreeCopySession {
         entries.append(entry)
         DataTransferSession.progress?.activity(completedItem: true)
         if entry.kind == .file || entry.kind == .namedPipe {
+            let canSeparate = entry.kind == .file && name != ".DS_Store"
             if var links = hardlinks[entry.identity] {
                 guard links.reportedCount == before.st_nlink else { throw TreeCopyError.sourceChanged(path) }
                 links.count += 1
                 links.canonicalPath = min(links.canonicalPath, path)
+                links.canSeparate = links.canSeparate && canSeparate
                 hardlinks[entry.identity] = links
             } else {
-                hardlinks[entry.identity] = .init(reportedCount: before.st_nlink, count: 1, canonicalPath: path)
+                hardlinks[entry.identity] = .init(reportedCount: before.st_nlink, count: 1,
+                                                  canonicalPath: path, canSeparate: canSeparate)
             }
         }
         if entry.kind == .directory {
@@ -1528,6 +1564,9 @@ actor TreeCopySession {
     nonisolated private static func compare(_ actual: TreeCopySnapshot, _ expected: TreeCopySnapshot, identities: Bool,
                                            ownershipRole: OwnershipRole = .source, rootPath: String,
                                            profile: TreeCopyProfile = .strictData) throws {
+        if ownershipRole == .source, actual.externalFileHardlinks != expected.externalFileHardlinks {
+            throw TreeCopyError.sourceChanged(rootPath)
+        }
         let ownershipIsIgnored = try permitsProjectedOwnership(expected, role: ownershipRole)
         if !ownershipIsIgnored, actual.ownershipCompatibility?.sourceIgnoresOwnership == true {
             throw TreeCopyError.ownershipDisabled(rootPath)

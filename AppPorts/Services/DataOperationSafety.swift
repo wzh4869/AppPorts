@@ -56,8 +56,12 @@ struct DataOperationSafety: Sendable {
     }
 
     func requireNewMigration(at source: URL, destination: URL? = nil, bundleIdentifier: String? = nil,
-                             ownedTransferIDs: Set<UUID> = []) async throws {
-        try requirePolicy(at: source)
+                             ownedTransferIDs: Set<UUID> = [], resumingRecordedMigration: Bool = false) async throws {
+        if resumingRecordedMigration {
+            try requireExistingMigrationPolicy(at: source, bundleIdentifier: bundleIdentifier)
+        } else {
+            try requirePolicy(at: source)
+        }
         try requireNoOverlap(at: source, ownedTransferIDs: ownedTransferIDs)
         if let destination {
             guard !DataPathTopology.overlaps(DataPathTopology.relationship(source.path, destination.path)) else {
@@ -84,20 +88,16 @@ struct DataOperationSafety: Sendable {
         }
         try DataOperationSafety(homeDirectory: homeDirectory, store: store, runner: runner,
                                 partialWeChatMigrationEnabled: true, weChatContainerIdentifier: identifier)
-            .requirePolicy(at: url, includingLegacyWeChatMembers: true)
+            .requirePolicy(at: url)
     }
 
     func requirePolicy(at url: URL) throws {
-        try requirePolicy(at: url, includingLegacyWeChatMembers: false)
-    }
-
-    private func requirePolicy(at url: URL, includingLegacyWeChatMembers: Bool) throws {
         let policy = DataPathPolicy(homeDirectory: homeDirectory, partialWeChatMigrationEnabled: partialWeChatMigrationEnabled,
                                     weChatContainerIdentifier: weChatContainerIdentifier)
         let protectedRoots = ["Library/Containers", "Library/Group Containers"].map {
             homeDirectory.appendingPathComponent($0).path
         }
-        let decision = policy.evaluate(url, includingLegacyWeChatMembers: includingLegacyWeChatMembers)
+        let decision = policy.evaluate(url)
         guard decision.canMigrate,
               !protectedRoots.contains(where: { [.same, .ancestor].contains(DataPathTopology.relationship(url.path, $0)) }) else {
             throw Failure.protectedPath(url.path, decision.reason)

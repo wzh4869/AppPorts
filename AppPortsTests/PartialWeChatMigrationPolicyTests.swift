@@ -17,14 +17,14 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
 
     func testEnabledPolicyOnlyAllowsExactMediaMembers() {
         let policy = DataPathPolicy(homeDirectory: home, partialWeChatMigrationEnabled: true)
-        for name in ["msg", "business"] {
+        for name in ["msg", "business", "msg/file", "msg/video"] {
             let decision = policy.evaluate(account.appendingPathComponent(name))
             XCTAssertTrue(decision.canMigrate, name)
             XCTAssertTrue(decision.partialSubdirectory, name)
             XCTAssertFalse(decision.mayDiscoverChildren, name)
         }
         for name in ["db_storage", "config", "resource", "all_users", "msg_other", "business/deeper",
-                     "msg/deeper", "msg/attach", "msg/migrate", "msg/file", "msg/video", "msg/file/2026-11", "msg/video/2026-11"] {
+                     "msg/deeper", "msg/attach", "msg/migrate", "msg/file/2026-11", "msg/video/2026-11"] {
             XCTAssertFalse(policy.evaluate(account.appendingPathComponent(name)).canMigrate, name)
         }
         XCTAssertTrue(policy.evaluate(account).mayDiscoverChildren)
@@ -40,9 +40,8 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         try fixture.store.upsert(fixture.record(at: video))
         let safety = DataOperationSafety(homeDirectory: fixture.home, store: fixture.store,
                                          partialWeChatMigrationEnabled: true)
-        for path in [sqliteFile, video] {
-            XCTAssertThrowsError(try safety.requirePolicy(at: path))
-        }
+        XCTAssertThrowsError(try safety.requirePolicy(at: sqliteFile))
+        XCTAssertNoThrow(try safety.requirePolicy(at: video))
         let identifier = PartialWeChatMigrationPolicy.bundleIdentifier
         XCTAssertThrowsError(try safety.requireExistingMigrationPolicy(at: sqliteFile, bundleIdentifier: identifier))
         XCTAssertNoThrow(try safety.requireExistingMigrationPolicy(at: video, bundleIdentifier: identifier))
@@ -68,7 +67,7 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
             legacyItems.append(item)
         }
         let service = fixture.service()
-        XCTAssertEqual(WeChatAccountMigrationService.Mode.allCases, [.whole, .split])
+        XCTAssertEqual(WeChatAccountMigrationService.Mode.allCases, [.whole, .split, .filesAndVideos])
         XCTAssertEqual(try service.state(of: fixture.account), .filesAndVideos)
         let row = try XCTUnwrap(WeChatAccountMigrationService.groupedItems(legacyItems,
             homeDirectory: fixture.home, splitMode: false).first)
@@ -82,12 +81,12 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         localSibling.status = DataDirStatus.local
         let partialRow = try XCTUnwrap(WeChatAccountMigrationService.groupedItems([legacyItems[0], localSibling],
             homeDirectory: fixture.home, splitMode: true).first)
-        XCTAssertEqual(partialRow.status, DataDirStatus.mounted)
-        XCTAssertEqual(partialRow.weChatSplitMembers.map(\.path), [memberPaths[0]])
+        XCTAssertEqual(partialRow.status, DataDirStatus.pendingCompletion)
+        XCTAssertEqual(partialRow.weChatSplitMembers.map(\.path), memberPaths)
         XCTAssertFalse(partialRow.isMigratable)
         XCTAssertTrue(partialRow.canRestore)
 
-        for mode in WeChatAccountMigrationService.Mode.allCases {
+        for mode in [WeChatAccountMigrationService.Mode.whole, .split] {
             do {
                 _ = try await service.migrate(account: fixture.account, mode: mode,
                                               externalRoot: fixture.external, appName: "WeChat")
