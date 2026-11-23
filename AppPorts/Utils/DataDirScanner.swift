@@ -1893,6 +1893,7 @@ actor DataDirScanner {
             }
             item.recoveryOperationID = completedRestores[source.path]?.operationID ?? transfer.operationID
             item.hasMountTransferRecord = item.hasMountTransferRecord || transfer.mode == .mount
+            item.hasCompletedRestore = completedRestores[source.path] != nil
             // Retention is a separate housekeeping task after a completed
             // restore. The execution workflow verifies and finishes its lineage
             // before reusing an old destination.
@@ -1900,7 +1901,7 @@ actor DataDirScanner {
                item.pathPolicy?.reason != .runtimeConflict, item.pathPolicy?.reason != .readFailure {
                 let policy = DataPathPolicy(homeDirectory: homeDir, partialWeChatMigrationEnabled: partialWeChatMigrationEnabled,
                                     weChatContainerIdentifier: weChatContainerIdentifier).evaluate(item.path)
-                let canContinue = completedRestores[source.path] != nil && item.status == DataDirStatus.local
+                let canContinue = item.hasCompletedRestore && item.status == DataDirStatus.local
                 item.applyPathPolicy(.init(role: policy.role, reason: .retainedOriginal,
                                            canMigrate: canContinue && policy.canMigrate, mayDiscoverChildren: false))
             } else {

@@ -318,10 +318,18 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
             member.hasMountTransferRecord = true
             member.recoveryOperationID = UUID()
             member.status = DataDirStatus.local
+            member.hasCompletedRestore = true
             let rows = WeChatAccountMigrationService.groupedItems([member], homeDirectory: fixture.home)
             let row = try XCTUnwrap(rows.first)
-            XCTAssertEqual(row.status, DataDirStatus.pendingCompletion)
+            XCTAssertEqual(row.status, DataDirStatus.restored)
             XCTAssertEqual(row.weChatSplitMembers.first?.recoveryOperationID, member.recoveryOperationID)
+
+            let siblingPath = path == "msg" ? "business" : "msg/video"
+            var sibling = DataDirItem(name: siblingPath, path: fixture.account.appendingPathComponent(siblingPath),
+                                      type: .containers, priority: .critical, description: "")
+            sibling.status = DataDirStatus.mounted
+            let mixed = WeChatAccountMigrationService.groupedItems([member, sibling], homeDirectory: fixture.home)
+            XCTAssertEqual(mixed.first?.status, DataDirStatus.pendingCompletion)
         }
     }
 

@@ -195,6 +195,13 @@ struct DataDirOperationButtons: View {
             migrationButton(title: "查看进度".localized, icon: "clock.arrow.circlepath") {
                 onViewTask()
             }
+        } else if item.status == DataDirStatus.restored, let onMountRestore {
+            HStack(spacing: 6) {
+                if item.isMigratable {
+                    migrationButton(title: "迁移".localized, icon: "externaldrive.fill.badge.plus") { onMigrate(item) }
+                }
+                migrationButton(title: "查看旧副本".localized, icon: "externaldrive") { onMountRestore(item) }
+            }
         } else if !item.weChatSplitMembers.isEmpty {
             HStack(spacing: 6) {
                 if item.autoMountPaused, let onMount {
@@ -489,7 +496,7 @@ struct DataDirStatusBadge: View {
         case "现有软链": return "questionmark.circle"
         case "用户目录入口": return "link"
         case "待接回": return "arrow.triangle.branch"
-        case "本地":   return "internaldrive"
+        case "本地", DataDirStatus.restored: return "internaldrive"
         case "已挂载": return "externaldrive.fill.badge.checkmark"
         case "待挂载": return "externaldrive.badge.plus"
         case DataDirStatus.mountPaused: return "pause.circle"
@@ -507,7 +514,7 @@ struct DataDirStatusBadge: View {
         case "待规范": return .mint
         case "现有软链": return .teal
         case "待接回": return .indigo
-        case "本地":   return .secondary
+        case "本地", DataDirStatus.restored: return .secondary
         case "已挂载": return .purple
         case "待挂载", DataDirStatus.mountPaused, "已暂停": return .orange
         case "卷丢失": return .red
@@ -523,7 +530,7 @@ struct DataDirStatusBadge: View {
         case "待规范": return .mint.opacity(0.14)
         case "现有软链": return .teal.opacity(0.14)
         case "待接回": return .indigo.opacity(0.14)
-        case "本地":   return Color.primary.opacity(0.05)
+        case "本地", DataDirStatus.restored: return Color.primary.opacity(0.05)
         case "已挂载": return .purple.opacity(0.12)
         case "待挂载", DataDirStatus.mountPaused, "已暂停": return .orange.opacity(0.14)
         case "卷丢失": return .red.opacity(0.12)

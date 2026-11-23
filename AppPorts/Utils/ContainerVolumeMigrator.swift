@@ -2311,6 +2311,8 @@ actor ContainerVolumeMigrator {
         } catch {
             if !(error is CancellationError) {
                 CleanupRetryContext.record(.transfer(operationID), failed: true, store: store)
+                AppLogger.shared.logOperationFailure(category: "data_cleanup", operationID: operationID.uuidString,
+                    error: error, stage: "cleaning")
             }
             throw error
         }
@@ -2340,6 +2342,7 @@ actor ContainerVolumeMigrator {
             throw DataOperationSafety.Failure.inspection(operationID.uuidString)
         }
         DataTransferSession.progress?.observeResumedCopy(cleanup: true)
+        DataTransferSession.progress?.begin(.cleaning, title: DataTransferVerification.activeData.title)
         let baseline = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded)
         let location = ActiveDataLocation(try store.completedLocation(after: operationID))
         let active = try await requireActiveData(for: transfer, matching: location)
@@ -2428,6 +2431,7 @@ actor ContainerVolumeMigrator {
                     transfer.phase = .cleanupRequested
                     transfer.recoverableReason = nil
                 } else {
+                    DataTransferSession.progress?.begin(.cleaning, title: DataTransferVerification.retainedCopy.title)
                     let info = try await disk.volumeInfo(for: uuid)
                     guard info.volumeUUID?.caseInsensitiveCompare(uuid) == .orderedSame else {
                         throw DataOperationSafety.Failure.conflict(backup.path)
@@ -2443,7 +2447,8 @@ actor ContainerVolumeMigrator {
                             }
                             try requireVolumeMarker(at: automatic, record: record)
                             try await requireExpectedVolume(uuid, at: automatic)
-                            try await safety.requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier)
+                            try await safety.requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier,
+                                preferWholeVolumeInspection: true)
                             guard try store.transfer(operationID: operationID) == transfer else {
                                 throw DataOperationSafety.Failure.conflict(current)
                             }
@@ -2459,7 +2464,8 @@ actor ContainerVolumeMigrator {
                     guard try DataPathIdentity.capture(backup, volumeUUID: uuid).matchesFilesystemObject(expectedBackup) else {
                         throw DataOperationSafety.Failure.conflict(backup.path)
                     }
-                    try await safety.requireNoKnownWriters(at: backup, bundleIdentifier: transfer.bundleIdentifier)
+                    try await safety.requireNoKnownWriters(at: backup, bundleIdentifier: transfer.bundleIdentifier,
+                        preferWholeVolumeInspection: true)
                     let container = try await disk.apfsContainerUUID(containingVolume: uuid)
                     try await requireExpectedVolume(uuid, at: backup)
                     try await requireActiveData(for: transfer, matching: location)
@@ -2478,6 +2484,9 @@ actor ContainerVolumeMigrator {
                     transfer.cleanupVolumeContainerUUID = container
                     try await requireActiveData(for: transfer, matching: location)
                     try TreeCopySession.verifyUnchanged(at: backup, against: baseline, expectedVolumeUUID: uuid, purpose: .retainedCopy)
+                    let volumeName = transfer.recoveryMountRecord?.volumeName ?? backup.lastPathComponent
+                    DataTransferSession.progress?.begin(.cleaning,
+                        title: String(format: "正在卸载「%@」".localized, volumeName))
                     try await unmountVolume(mountPoint: backup)
                     removeEmptyDirectoryQuietly(at: backup)
                     try await requireActiveData(for: transfer, matching: location)

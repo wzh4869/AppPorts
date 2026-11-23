@@ -112,6 +112,7 @@ struct DataDirsView: View {
     @State private var preservedMaterials: [DataTransferMaterial] = []
     @State private var currentDataPaths: [UUID: String] = [:]
     @State private var showCleanupResolution = false
+    @State private var cleanupResolutionPaths: Set<String>?
 
     // 错误弹窗
     @State private var showError = false
@@ -160,7 +161,7 @@ struct DataDirsView: View {
         }
     }
 
-    private let appDataStatusOrder = ["本地", "已链接", "已挂载", "待挂载", "等待解锁", "卷丢失", "待规范", "现有软链", "用户目录入口", "待接回", "待完成", "未找到"]
+    private let appDataStatusOrder = ["本地", DataDirStatus.restored, "已链接", "已挂载", "待挂载", "等待解锁", "卷丢失", "待规范", "现有软链", "用户目录入口", "待接回", "待完成", "未找到"]
 
     private var partialWeChatMigrationEnabled: Bool {
         _ = weChatPreferenceRevision
@@ -190,7 +191,9 @@ struct DataDirsView: View {
             if selectedTab == .appDirs && (!attentionTransfers.isEmpty || !attentionCleanups.isEmpty || !attentionMaterials.isEmpty) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("部分数据操作尚未完成，已保留副本。".localized)
+                        let cleanupOnly = attentionCleanups.isEmpty && attentionMaterials.isEmpty
+                            && attentionTransfers.allSatisfy(\.isDataSwitchComplete)
+                        Text((cleanupOnly ? "已保留旧副本" : "部分数据操作尚未完成，已保留副本。").localized)
                         if let reason = attentionTransfers.compactMap(\.recoverableReason).first ?? attentionMaterials.first?.reason {
                             Text(verbatim: reason).font(.caption).foregroundStyle(.secondary)
                                 .lineLimit(2).help(reason)
@@ -367,10 +370,13 @@ struct DataDirsView: View {
         }) {
             ReadinessCheckSheet()
         }
-        .sheet(isPresented: $showCleanupResolution) {
-            DataCleanupResolutionSheet(transfers: dataTransfers, currentDataPaths: currentDataPaths,
-                pendingCleanups: pendingCleanups, preservedMaterials: preservedMaterials,
-                title: "全部待处理项".localized, onRetryAll: { retryPendingOperations() }, onRetry: { id in
+        .sheet(isPresented: $showCleanupResolution, onDismiss: { cleanupResolutionPaths = nil }) {
+            let scope = cleanupResolutionPaths
+            let transfers = scope.map { paths in dataTransfers.filter { paths.contains($0.originalPath) } } ?? dataTransfers
+            DataCleanupResolutionSheet(transfers: transfers, currentDataPaths: currentDataPaths,
+                pendingCleanups: scope == nil ? pendingCleanups : [], preservedMaterials: scope == nil ? preservedMaterials : [],
+                title: (scope == nil ? "全部待处理项" : "已还原到本地").localized,
+                onRetryAll: scope == nil ? { retryPendingOperations() } : nil, onRetry: { id in
                     DispatchQueue.main.async { retryPendingOperations(operationID: id) }
                 }, onChanged: { refreshOperationRecords() }, onPermissions: {
                     DispatchQueue.main.async { showReadinessCheck = true }
@@ -1121,7 +1127,7 @@ struct DataDirsView: View {
     }
 
     /// 链接状态优先级：已链接、挂载迁移、待规范、现有软链优先展示
-    private let statusPriority: [String] = ["已链接", "已挂载", "待挂载", "等待解锁", "卷丢失", "待完成", "待规范", "现有软链", "用户目录入口", "待接回", "本地", "未找到"]
+    private let statusPriority: [String] = ["已链接", "已挂载", "待挂载", "等待解锁", "卷丢失", "待完成", "待规范", "现有软链", "用户目录入口", "待接回", DataDirStatus.restored, "本地", "未找到"]
 
     private func statusSortKey(_ status: String) -> Int {
         statusPriority.firstIndex(of: status) ?? statusPriority.count
@@ -2308,6 +2314,11 @@ struct DataDirsView: View {
 
     private func askMountRestore(_ item: DataDirItem) {
         if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
+        if item.status == DataDirStatus.restored {
+            cleanupResolutionPaths = Set(item.weChatSplitMembers.map { $0.path.standardizedFileURL.path })
+            showCleanupResolution = true
+            return
+        }
         if !item.weChatSplitMembers.isEmpty {
             if requestAssociatedAppExit(for: item, continuing: { askMountRestore(item) }) { return }
             let restoreMode: WeChatAccountMigrationService.Mode = item.isWeChatFilesAndVideosSplit ? .filesAndVideos : .split

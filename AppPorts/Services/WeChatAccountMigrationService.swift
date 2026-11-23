@@ -396,6 +396,9 @@ struct WeChatAccountMigrationService: Sendable {
             let localPreview = splitMode && active.count == expectedCount
                 && active.allSatisfy { $0.status == DataDirStatus.local && !$0.hasMountTransferRecord && $0.recoveryOperationID == nil }
                 && item.isMigratable
+            let restored = active.contains { $0.hasCompletedRestore } && active.allSatisfy {
+                $0.status == DataDirStatus.local && ($0.hasCompletedRestore || (!$0.hasMountTransferRecord && $0.recoveryOperationID == nil))
+            }
             if !localPreview && active.allSatisfy({ $0.status == DataDirStatus.local && !$0.hasMountTransferRecord && $0.recoveryOperationID == nil }) {
                 continue
             }
@@ -405,9 +408,11 @@ struct WeChatAccountMigrationService: Sendable {
             item.description = targetGroup == .filesAndVideos
                 ? "微信账号 · 拆分迁移（msg/file + msg/video）".localized
                 : "微信账号 · 拆分迁移（msg + business）".localized
-            item.isMigratable = localPreview
+            item.isMigratable = localPreview || (restored && splitMode && targetGroup == .media
+                && active.count == expectedCount && active.allSatisfy(\.isMigratable) && item.isMigratable)
             item.hasMountTransferRecord = !localPreview
             item.status = localPreview ? DataDirStatus.local
+                : restored ? DataDirStatus.restored
                 : active.contains(where: { $0.status == DataDirStatus.local }) ? DataDirStatus.pendingCompletion
                 : active.contains(where: { $0.status == DataDirStatus.volumeMissing }) ? DataDirStatus.volumeMissing
                 : active.contains(where: { $0.status == DataDirStatus.waitingForUnlock }) ? DataDirStatus.waitingForUnlock

@@ -143,7 +143,8 @@ struct DataOperationSafety: Sendable {
 
     /// Read-only observation, not a lock against future writers. Checks run again
     /// before switching/cleanup; verified originals remain retained afterwards.
-    func requireNoKnownWriters(at url: URL, bundleIdentifier: String? = nil) async throws {
+    func requireNoKnownWriters(at url: URL, bundleIdentifier: String? = nil,
+                               preferWholeVolumeInspection: Bool = false) async throws {
         try requireApplicationStopped(at: url, bundleIdentifier: bundleIdentifier)
         var info = stat()
         guard lstat(url.path, &info) == 0 else {
@@ -152,11 +153,21 @@ struct DataOperationSafety: Sendable {
             throw Failure.inspection(url.path)
         }
         let directory = info.st_mode & S_IFMT == S_IFDIR
-        // +D enumerates the entire tree before reporting open files. Million-file
-        // directories need a larger budget even when no process is writing.
+        let selection: [String]
+        let timeout: TimeInterval
+        if preferWholeVolumeInspection, directory,
+           let mountPoint = DiskUtility.mountedVolumePath(containing: url),
+           DiskUtility.pathsMatch(mountPoint, url.path) {
+            // Select open handles by filesystem instead of enumerating its files.
+            selection = ["+f", "--", mountPoint]
+            timeout = 30
+        } else {
+            // +D walks the tree before reporting any open handles.
+            selection = directory ? ["+D", url.path] : ["--", url.path]
+            timeout = directory ? 1800 : 30
+        }
         let result = try await runner.run(executable: "/usr/sbin/lsof",
-            arguments: ["-nP", "-F", "pcfa"] + (directory ? ["+D", url.path] : ["--", url.path]),
-            timeout: directory ? 1800 : 30)
+            arguments: ["-nP", "-F", "pcfa"] + selection, timeout: timeout)
         let diagnostic = result.stderrText.lowercased()
         if diagnostic.contains("permission denied") || diagnostic.contains("operation not permitted") {
             throw Failure.accessDenied(url.path)
