@@ -210,7 +210,9 @@ struct WeChatAccountMigrationService: Sendable {
         // belong to an interrupted split and are resumed rather than migrated again.
         let records = try store.recordsStrict()
         let transfers = try store.transfers()
-        let previousMounts = records + transfers.compactMap(\.recoveryMountRecord)
+        // A committed switch is represented by the live mount records. The
+        // recovery mount on a completed restore only identifies its old copy.
+        let previousMounts = records + transfers.filter { !$0.isDataSwitchComplete }.compactMap(\.recoveryMountRecord)
         if mode.isSplit, previousMounts.contains(where: {
             members.map(\.path).contains($0.mountPointPath)
                 && URL(fileURLWithPath: $0.externalRootPath).standardizedFileURL.path != externalRoot.standardizedFileURL.path
