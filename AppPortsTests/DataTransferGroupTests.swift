@@ -36,6 +36,21 @@ struct DataTransferGroupTests {
         #expect(group.cleanupTransfers.map(\.operationID) == [restoration.operationID])
     }
 
+    @Test("An account's old copies include only unfinished records for its member paths")
+    func scopedRetainedTransfers() {
+        var video = record(direction: .restore, mode: .mount)
+        video.originalPath = "/synthetic/account/msg/./video"
+        var file = record(direction: .restore, mode: .mount)
+        file.originalPath = "/synthetic/account/msg/file"
+        file.retainedCopyRemovedAt = Date()
+        var other = record(direction: .restore, mode: .mount)
+        other.originalPath = "/synthetic/other-account/msg/video"
+        let paths: Set<String> = ["/synthetic/account", "/synthetic/account/msg/video", file.originalPath]
+
+        #expect(DataCleanupResolution.retainedTransfers(in: [file, video, other], at: paths).map(\.id) == [video.id])
+        #expect(DataCleanupResolution.retainedTransfers(in: [file, other], at: paths).isEmpty)
+    }
+
     @Test("A physically cleaned current location is shown without inventing another retained copy")
     func removedCurrentCopyOnlyKeepsLocationProof() throws {
         let oldRestore = record(direction: .restore)

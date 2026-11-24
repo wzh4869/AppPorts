@@ -111,8 +111,15 @@ struct DataDirsView: View {
     @State private var dataTransfers: [DataTransferRecord] = []
     @State private var preservedMaterials: [DataTransferMaterial] = []
     @State private var currentDataPaths: [UUID: String] = [:]
-    @State private var showCleanupResolution = false
-    @State private var cleanupResolutionPaths: Set<String>?
+    private enum CleanupResolution: Hashable, Identifiable {
+        case all
+        case restored(Set<String>)
+
+        var id: Self { self }
+    }
+
+    @State private var cleanupResolution: CleanupResolution?
+    @State private var requestedRestoredPaths: Set<String>?
 
     // 错误弹窗
     @State private var showError = false
@@ -200,7 +207,7 @@ struct DataDirsView: View {
                         }
                     }
                     Spacer()
-                    Button("处理异常".localized) { showCleanupResolution = true }
+                    Button("处理异常".localized) { cleanupResolution = .all }
                 }
                 .padding(12)
             }
@@ -208,7 +215,7 @@ struct DataDirsView: View {
                 HStack {
                     Text("已保留旧副本".localized).foregroundStyle(.secondary)
                     Spacer()
-                    Button("查看旧副本".localized) { showCleanupResolution = true }
+                    Button("查看旧副本".localized) { cleanupResolution = .all }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -370,13 +377,16 @@ struct DataDirsView: View {
         }) {
             ReadinessCheckSheet()
         }
-        .sheet(isPresented: $showCleanupResolution, onDismiss: { cleanupResolutionPaths = nil }) {
-            let scope = cleanupResolutionPaths
-            let transfers = scope.map { paths in dataTransfers.filter { paths.contains($0.originalPath) } } ?? dataTransfers
+        .sheet(item: $cleanupResolution) { resolution in
+            let showAll = resolution == .all
+            let transfers = switch resolution {
+            case .all: dataTransfers
+            case .restored(let paths): DataCleanupResolution.retainedTransfers(in: dataTransfers, at: paths)
+            }
             DataCleanupResolutionSheet(transfers: transfers, currentDataPaths: currentDataPaths,
-                pendingCleanups: scope == nil ? pendingCleanups : [], preservedMaterials: scope == nil ? preservedMaterials : [],
-                title: (scope == nil ? "全部待处理项" : "已还原到本地").localized,
-                onRetryAll: scope == nil ? { retryPendingOperations() } : nil, onRetry: { id in
+                pendingCleanups: showAll ? pendingCleanups : [], preservedMaterials: showAll ? preservedMaterials : [],
+                title: (showAll ? "全部待处理项" : "已还原到本地").localized,
+                onRetryAll: showAll ? { retryPendingOperations() } : nil, onRetry: { id in
                     DispatchQueue.main.async { retryPendingOperations(operationID: id) }
                 }, onChanged: { refreshOperationRecords() }, onPermissions: {
                     DispatchQueue.main.async { showReadinessCheck = true }
@@ -491,6 +501,7 @@ struct DataDirsView: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .ignoresSafeArea(.container, edges: .top)
             .onChange(of: selectedApp?.path) { _ in
+                requestedRestoredPaths = nil
                 selectedAppIsWeChat = false
                 directorySearchText = ""
                 directoryRevealRequest = nil
@@ -1315,19 +1326,40 @@ struct DataDirsView: View {
                     self.preservedMaterials = inspection.preservedMaterials
                     self.pendingCleanups = inspection.cleanups
                     if let error = inspection.validationError {
+                        self.requestedRestoredPaths = nil
                         self.errorMessage = error.localizedDescription
                         self.showError = true
+                    } else {
+                        self.updateRestoredCleanupResolution(with: inspection.transfers)
                     }
                 }
             } catch {
                 guard !Task.isCancelled else { return }
                 await MainActor.run {
                     guard self.recordRefreshToken == token else { return }
+                    self.requestedRestoredPaths = nil
                     self.errorMessage = error.localizedDescription
                     self.showError = true
                 }
             }
         }
+    }
+
+    private func updateRestoredCleanupResolution(with transfers: [DataTransferRecord]) {
+        if let paths = requestedRestoredPaths {
+            requestedRestoredPaths = nil
+            if !DataCleanupResolution.retainedTransfers(in: transfers, at: paths).isEmpty {
+                cleanupResolution = .restored(paths)
+                return
+            }
+        } else if case .restored(let paths)? = cleanupResolution,
+                  DataCleanupResolution.retainedTransfers(in: transfers, at: paths).isEmpty {
+            cleanupResolution = nil
+        } else {
+            return
+        }
+        appDataScanCache.removeAll()
+        if let app = selectedApp { scanLibraryDirs(for: app, useCachedResult: false) }
     }
 
     private func cancelAppListSizeScan() {
@@ -1337,6 +1369,7 @@ struct DataDirsView: View {
     }
 
     private func suspendDirectoryScans() {
+        requestedRestoredPaths = nil
         recordRefreshTask?.cancel()
         recordRefreshToken = UUID()
         if isScanning { hasLoadedDirectories = false }
@@ -1366,6 +1399,7 @@ struct DataDirsView: View {
         if selectedTab == .appDirs {
             refreshOperationRecords()
         } else {
+            requestedRestoredPaths = nil
             recordRefreshTask?.cancel()
             recordRefreshToken = UUID()
         }
@@ -2315,8 +2349,9 @@ struct DataDirsView: View {
     private func askMountRestore(_ item: DataDirItem) {
         if let job = activeJob(for: item) { migrationTasks.openJobDetail(job); return }
         if item.status == DataDirStatus.restored {
-            cleanupResolutionPaths = Set(item.weChatSplitMembers.map { $0.path.standardizedFileURL.path })
-            showCleanupResolution = true
+            let paths = [item.path] + item.weChatSplitMembers.map(\.path)
+            requestedRestoredPaths = Set(paths.map { $0.standardizedFileURL.path })
+            refreshOperationRecords()
             return
         }
         if !item.weChatSplitMembers.isEmpty {

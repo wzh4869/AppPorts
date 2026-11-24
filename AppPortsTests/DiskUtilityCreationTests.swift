@@ -41,8 +41,48 @@ struct DiskUtilityCreationTests {
         ["APFSVolumeUUID": uuid, "DeviceIdentifier": device, "Name": name]
     }
     private func plist(_ volumes: [[String: String]], uuid: String? = nil, reference: String = "disk7") -> [String: any Sendable] {
-        ["Containers": [["ContainerReference": reference, "APFSContainerUUID": uuid ?? containerUUID, "Volumes": volumes] as [String: any Sendable]]]
+        ["Containers": [container(volumes, uuid: uuid, reference: reference)]]
     }
+    private func container(_ volumes: [[String: String]], uuid: String? = nil, reference: String = "disk7") -> [String: any Sendable] {
+        ["ContainerReference": reference, "APFSContainerUUID": uuid ?? containerUUID, "Volumes": volumes]
+    }
+
+    @Test func cleanupToleratesAnUnrelatedDiskImageAttachedTwice() async throws {
+        let imageUUID = "CFC06FE1-EF86-4CB2-9819-BBD6B34927C2"
+        let images = [
+            container([volume(newUUID, "disk11s1", "MetalToolchainCryptex")], uuid: imageUUID, reference: "disk11"),
+            container([volume(newUUID, "disk13s1", "MetalToolchainCryptex")], uuid: imageUUID, reference: "disk13")
+        ]
+        let target = container([volume(oldUUID, "disk7s1", "Retained")])
+        let present = images + [target]
+        let lookup = DiskUtility(runner: VolumeCreationRunner(before: ["Containers": present], after: ["Containers": present]), administratorRunner: nil)
+        #expect(try await lookup.apfsContainerUUID(containingVolume: oldUUID.lowercased()) == containerUUID)
+        #expect(try await lookup.apfsVolumeIsPresent(oldUUID, inContainer: containerUUID.lowercased()))
+
+        let absent = images + [container([])]
+        let retry = DiskUtility(runner: VolumeCreationRunner(before: ["Containers": absent], after: ["Containers": absent]), administratorRunner: nil)
+        #expect(try await retry.apfsVolumeIsPresent(oldUUID, inContainer: containerUUID) == false)
+    }
+
+    @Test(arguments: ["duplicate-container", "duplicate-volume", "duplicate-in-same-container"])
+    func cleanupRejectsAmbiguousTargetIdentities(_ scenario: String) async throws {
+        let target = volume(oldUUID, "disk7s1", "Retained")
+        let containers: [[String: any Sendable]]
+        switch scenario {
+        case "duplicate-container":
+            containers = [container([target]), container([], uuid: containerUUID.lowercased(), reference: "disk9")]
+        case "duplicate-volume":
+            containers = [container([target]), container([volume(oldUUID.lowercased(), "disk9s1", "Other")],
+                uuid: "CFC06FE1-EF86-4CB2-9819-BBD6B34927C2", reference: "disk9")]
+        default:
+            containers = [container([target, volume(oldUUID.lowercased(), "disk7s2", "Other")])]
+        }
+        let inventory: [String: any Sendable] = ["Containers": containers]
+        let disk = DiskUtility(runner: VolumeCreationRunner(before: inventory, after: inventory), administratorRunner: nil)
+        await #expect(throws: DiskUtility.Failure.self) { try await disk.apfsContainerUUID(containingVolume: oldUUID) }
+        await #expect(throws: DiskUtility.Failure.self) { try await disk.apfsVolumeIsPresent(oldUUID, inContainer: containerUUID) }
+    }
+
     @Test func createsVolumeThroughDiskArbitrationAndFreshUUID() async throws {
         let existing = volume(oldUUID, "disk7s1", "NewName") // Name equality never proves creation.
         let runner = VolumeCreationRunner(before: plist([existing]), after: plist([existing, volume(newUUID, "disk7s2", "NewName")]))
