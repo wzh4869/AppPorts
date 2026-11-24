@@ -14,6 +14,12 @@ struct VolumeStateClassifier: Sendable {
     struct Snapshot: Sendable {
         let volumes: [String: Volume]
         var complete = true
+        var ambiguousVolumes: [String: [Volume]] = [:]
+
+        func hasAmbiguousVolume(uuid: String?, at path: String) -> Bool {
+            if let uuid, ambiguousVolumes[uuid.uppercased()] != nil { return true }
+            return ambiguousVolumes.values.contains { volumes in volumes.contains { $0.mountPoint == path } }
+        }
     }
 
     enum PathState: Sendable {
@@ -33,6 +39,9 @@ struct VolumeStateClassifier: Sendable {
             .init(state: state, originalPath: transfer.originalPath, volumeUUID: uuid, residue: residue, detail: detail)
         }
         guard snapshot.complete else { return finding(.unreadable, nil, "inventory_unavailable") }
+        guard !snapshot.hasAmbiguousVolume(uuid: uuid, at: transfer.originalPath) else {
+            return finding(.unreadable, nil, "ambiguous_volume")
+        }
         let volume = uuid.flatMap { snapshot.volumes[$0.uppercased()] }
         let mountedAtOriginal = snapshot.volumes.values.first { $0.mountPoint == transfer.originalPath }
         if let mountedAtOriginal, mountedAtOriginal.uuid.caseInsensitiveCompare(uuid ?? "") != .orderedSame {
@@ -101,6 +110,9 @@ struct VolumeStateClassifier: Sendable {
             var detail: String?
             let occupant = snapshot.volumes.values.first { $0.mountPoint == record.mountPointPath }
             if !snapshot.complete { state = .unreadable }
+            else if snapshot.hasAmbiguousVolume(uuid: record.volumeUUID, at: record.mountPointPath) {
+                state = .unreadable; detail = "ambiguous_volume"
+            }
             else if let occupant, occupant.uuid.caseInsensitiveCompare(record.volumeUUID) != .orderedSame {
                 state = .unreadable; detail = "unexpected_mounted_volume"
             }
@@ -116,6 +128,7 @@ struct VolumeStateClassifier: Sendable {
         for cleanup in records.cleanups {
             remember(cleanup.mountRecord.volumeUUID)
             let unreadable = [cleanup.localPath, cleanup.mountRecord.mountPointPath, cleanup.restoreStagingPath].compactMap { $0 }.contains {
+                if snapshot.hasAmbiguousVolume(uuid: cleanup.mountRecord.volumeUUID, at: $0) { return true }
                 if case .unreadable = observe(URL(fileURLWithPath: $0)) { return true }
                 return false
             }
@@ -146,6 +159,11 @@ struct VolumeStateClassifier: Sendable {
             } else { state = .orphanUnidentified }
             findings.append(.init(state: state, originalPath: volume.mountPoint ?? "", volumeUUID: volume.uuid,
                                   detail: volume.locked ? "waiting_for_unlock" : "report_only"))
+        }
+        for uuid in snapshot.ambiguousVolumes.keys.sorted() where !known.contains(uuid) {
+            if snapshot.ambiguousVolumes[uuid]?.contains(where: { $0.name.hasPrefix("AppPorts-") }) == true {
+                findings.append(.init(state: .unreadable, originalPath: "", volumeUUID: uuid, detail: "ambiguous_volume"))
+            }
         }
         if !snapshot.complete || records.validationError != nil {
             findings.append(.init(state: .unreadable, originalPath: "", volumeUUID: nil,

@@ -28,8 +28,8 @@ enum CleanupRetryContext {
         automatic && CleanupRetryBackoff.shouldDefer(until: transfer.nextAutomaticRetryAt, now: now())
     }
 
-    static func record(_ target: CleanupRetryTarget, failed: Bool, store: ContainerMountStore) {
-        do { try store.recordCleanupRetry(target, failed: failed, now: now()) }
+    static func record(_ target: CleanupRetryTarget, failed: Bool, store: ContainerMountStore, failureReason: String? = nil) {
+        do { try store.recordCleanupRetry(target, failed: failed, now: now(), failureReason: failureReason) }
         catch { AppLogger.shared.logError("无法保存清理重试时间", error: error, errorCode: "CLEANUP-RETRY-SAVE-FAILED") }
     }
 

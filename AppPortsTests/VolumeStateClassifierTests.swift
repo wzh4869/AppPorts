@@ -125,15 +125,41 @@ struct VolumeStateClassifierTests {
         #expect(VolumeStateReporting.diagnosticSection(nil).contains("  state: not_scanned"))
     }
 
-    @Test("Diagnostic parser uses kernel mounts, rejects partial and duplicate inventories")
+    @Test("Diagnostic parser uses kernel mounts and rejects incomplete inventories")
     func parsesOneSnapshot() throws {
         let volume: [String: Any] = ["APFSVolumeUUID": "external", "DeviceIdentifier": "disk7s1", "Name": "AppPorts-test", "MountPoint": "/wrong", "Locked": true]
         let result = try DiskUtility.parseVolumeStateSnapshot(["Containers": [["Volumes": [volume]]]], mounts: ["/dev/disk7s1": "/actual"])
         #expect(result.volumes["EXTERNAL"]?.mountPoint == "/actual")
         #expect(result.volumes["EXTERNAL"]?.locked == true)
-        for invalid: [String: Any] in [[:], ["Containers": [[:]]], ["Containers": [["Volumes": [volume, volume]]]]] {
+        for invalid: [String: Any] in [[:], ["Containers": [[:]]], ["Containers": [["Volumes": [[:]]]]]] {
             #expect(throws: (any Error).self) { try DiskUtility.parseVolumeStateSnapshot(invalid, mounts: [:]) }
         }
+    }
+
+    @Test("Duplicate image UUIDs affect only matching UUIDs and mount paths")
+    func reportsOnlyAffectedVolumesAsAmbiguous() throws {
+        let record = transfer()
+        let volumes = [
+            ["APFSVolumeUUID": "EXTERNAL", "DeviceIdentifier": "disk7s1", "Name": "AppPorts-test"],
+            ["APFSVolumeUUID": "IMAGE", "DeviceIdentifier": "disk11s1", "Name": "MetalToolchainCryptex"],
+            ["APFSVolumeUUID": "image", "DeviceIdentifier": "disk13s1", "Name": "MetalToolchainCryptex"]
+        ]
+        let inventory: [String: Any] = ["Containers": volumes.map { ["Volumes": [$0]] }]
+        let snapshot = try DiskUtility.parseVolumeStateSnapshot(inventory, mounts: ["/dev/disk7s1": "/unrelated/volume"])
+        #expect(snapshot.complete)
+        #expect(snapshot.volumes["EXTERNAL"]?.mountPoint == "/unrelated/volume")
+        #expect(snapshot.volumes["IMAGE"] == nil)
+        #expect(snapshot.ambiguousVolumes["IMAGE"]?.count == 2)
+
+        let identity = identity
+        let classifier = VolumeStateClassifier(observe: { _ in .directory(identity) })
+        #expect(classifier.classify(record, snapshot: snapshot).residue == .entryAvailable)
+        var ambiguousRecord = record
+        ambiguousRecord.createdVolumeUUID = "IMAGE"
+        #expect(classifier.classify(ambiguousRecord, snapshot: snapshot).detail == "ambiguous_volume")
+
+        let occupied = try DiskUtility.parseVolumeStateSnapshot(inventory, mounts: ["/dev/disk11s1": record.originalPath])
+        #expect(classifier.classify(record, snapshot: occupied).state == .unreadable)
     }
 
     @Test("Real path probes distinguish missing, unreadable placeholders, and symlinks")

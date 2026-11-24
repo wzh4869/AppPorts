@@ -291,6 +291,7 @@ struct DataDirItem: Identifiable, Equatable, Sendable {
     var canRestore: Bool {
         hasManagedLinkRecord || DataDirStatus.mountStatuses.contains(status)
             || status == DataDirStatus.linked || status == DataDirStatus.needsNormalization
+            || weChatSplitMembers.contains { $0.canRestore || ($0.recoveryOperationID != nil && !$0.hasCompletedRestore) }
     }
 
     /// 已迁移或需要恢复的目录不能再次迁移，但不属于“不支持迁移”。

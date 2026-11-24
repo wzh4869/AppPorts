@@ -2598,7 +2598,7 @@ struct ContainerVolumeMigratorTests {
         let oldUUID = try #require(try DataPathIdentity.capture(source).volumeUUID)
         let runner = FakeDiskCommandRunner(createdVolumeUUID: oldUUID)
         runner.hideContentsOnUnmount()
-        let migrator = workspace.makeMigrator(runner: runner, homeDirectory: workspace.rootURL.appendingPathComponent("SeedHome"))
+        let migrator = workspace.makeMigrator(runner: runner, homeDirectory: home, weChatContainerIdentifier: identifier)
         let old = try await migrator.migrateAndComplete(item: workspace.item(for: source),
             externalRootURL: workspace.externalRootURL, appName: "Synthetic WeChat", bundleIdentifier: identifier, progressHandler: nil)
         #expect(old.cleanupWarning == nil)
@@ -2676,7 +2676,11 @@ struct ContainerVolumeMigratorTests {
         try FileManager.default.createDirectory(at: nextRoot, withIntermediateDirectories: false)
         let next = try await migrator.migrateAndComplete(item: workspace.item(for: source), externalRootURL: nextRoot,
             appName: "Synthetic", bundleIdentifier: nil, progressHandler: nil)
-        #expect(next.cleanupWarning != nil)
+        let warning = try #require(next.cleanupWarning)
+        let failedCleanup = try #require(try workspace.store.transfer(operationID: oldRestore.operationID))
+        #expect(failedCleanup.phase == .awaitingUserVerification)
+        #expect(failedCleanup.recoverableReason == warning.details)
+        #expect(failedCleanup.nextAutomaticRetryAt != nil)
         #expect(next.record.volumeUUID == nextUUID)
         #expect(runner.mountedUUID(at: source) == nextUUID)
         let nextTransfer = try #require(try workspace.store.transfer(operationID: next.operationID))
@@ -3389,6 +3393,7 @@ struct ContainerVolumeMigratorTests {
             safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
             makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
             homeDirectory: URL? = nil,
+            weChatContainerIdentifier: String? = nil,
             synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
         ) -> ContainerVolumeMigrator {
             let counter = agentSyncCounter
@@ -3406,6 +3411,8 @@ struct ContainerVolumeMigratorTests {
                 availableCapacity: availableCapacity,
                 mountFlags: mountFlags,
                 homeDirectory: homeDirectory ?? rootURL.appendingPathComponent("Home"),
+                partialWeChatMigrationEnabled: weChatContainerIdentifier != nil,
+                weChatContainerIdentifier: weChatContainerIdentifier ?? PartialWeChatMigrationPolicy.bundleIdentifier,
                 safetyRunner: safetyRunner,
                 makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },
                 synchronizeCleanupParent: synchronizeCleanupParent

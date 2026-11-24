@@ -578,17 +578,26 @@ struct DiskUtility: Sendable {
         func invalid() -> Failure { .unexpectedOutput(command: "diskutil apfs list", output: "Invalid diagnostic inventory") }
         guard let containers = plist["Containers"] as? [[String: Any]] else { throw invalid() }
         var result: [String: VolumeStateClassifier.Volume] = [:]
+        var ambiguous: [String: [VolumeStateClassifier.Volume]] = [:]
         for container in containers {
             guard let volumes = container["Volumes"] as? [[String: Any]] else { throw invalid() }
             for volume in volumes {
                 guard let uuid = volume["APFSVolumeUUID"] as? String, !uuid.isEmpty,
                       let device = volume["DeviceIdentifier"] as? String, !device.isEmpty,
-                      let name = volume["Name"] as? String, result[uuid.uppercased()] == nil else { throw invalid() }
-                result[uuid.uppercased()] = .init(uuid: uuid.uppercased(), name: name,
+                      let name = volume["Name"] as? String else { throw invalid() }
+                let key = uuid.uppercased()
+                let entry = VolumeStateClassifier.Volume(uuid: key, name: name,
                     mountPoint: mounts["/dev/" + device], locked: volume["Locked"] as? Bool ?? false)
+                if let previous = result.removeValue(forKey: key) {
+                    ambiguous[key] = [previous, entry]
+                } else if ambiguous[key] != nil {
+                    ambiguous[key]?.append(entry)
+                } else {
+                    result[key] = entry
+                }
             }
         }
-        return .init(volumes: result)
+        return .init(volumes: result, ambiguousVolumes: ambiguous)
     }
 
     // A disk image attached twice can repeat container and volume UUIDs. Keep
