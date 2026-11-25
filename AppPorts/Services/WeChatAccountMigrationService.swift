@@ -170,7 +170,7 @@ struct WeChatAccountMigrationService: Sendable {
             let transfers = (try? store.transfers()) ?? []
             let recordedPaths = Set(
                 records.map(\.mountPointPath)
-                    + transfers.filter { $0.rollbackCompletedAt == nil }.map(\.originalPath)
+                    + transfers.filter { $0.rollbackCompletedAt == nil && !$0.isDataSwitchComplete }.map(\.originalPath)
             )
             let candidates = policy.members(of: account, group: .filesAndVideos).filter { url in
                 if recordedPaths.contains(url.path) { return true }
@@ -218,17 +218,18 @@ struct WeChatAccountMigrationService: Sendable {
                 && URL(fileURLWithPath: $0.externalRootPath).standardizedFileURL.path != externalRoot.standardizedFileURL.path
         }) { throw Failure.restoreFirst }
         for source in members {
-            let hasRecord = records.contains { $0.mountPointPath == source.path }
-                || transfers.contains { $0.originalPath == source.path && $0.rollbackCompletedAt == nil }
-            if hasRecord { continue }
+            let hasUnfinishedRecord = records.contains { $0.mountPointPath == source.path }
+                || transfers.contains { $0.originalPath == source.path && $0.rollbackCompletedAt == nil && !$0.isDataSwitchComplete }
+            if hasUnfinishedRecord { continue }
             let info = try SignatureSnapshot.info(at: source)
             guard info.st_mode & S_IFMT == S_IFDIR else {
                 throw mode == .filesAndVideos ? Failure.missingFilesAndVideos : Failure.missingMembers
             }
+            let ownedTransferIDs = completedRestoreTransferIDs(at: source, in: transfers)
             let safety = DataOperationSafety(homeDirectory: policy.homeDirectory, store: store,
                                             partialWeChatMigrationEnabled: enabled, weChatContainerIdentifier: policy.containerIdentifier)
             try safety.requirePolicy(at: source)
-            try safety.requireNoOverlap(at: source)
+            try safety.requireNoOverlap(at: source, ownedTransferIDs: ownedTransferIDs)
             try safety.requireNoManagedFileSystemAncestor(at: source)
             try safety.requireNoManagedDescendants(at: source)
             if !preverifiedSources.contains(source.standardizedFileURL.path) {
@@ -347,6 +348,16 @@ struct WeChatAccountMigrationService: Sendable {
               try SignatureSnapshot.info(at: account).st_mode & S_IFMT == S_IFDIR else { throw Failure.invalidAccount }
     }
 
+    private func completedRestoreTransferIDs(at source: URL, in transfers: [DataTransferRecord]) -> Set<UUID> {
+        let related = transfers.filter { $0.originalPath == source.path && $0.rollbackCompletedAt == nil }
+        guard !related.isEmpty, related.allSatisfy(\.isDataSwitchComplete) else { return [] }
+        let terminals = related.filter { candidate in
+            !related.contains { $0.priorOperationID == candidate.operationID }
+        }
+        guard terminals.count == 1, terminals.first?.direction == .restore else { return [] }
+        return Set(related.map(\.operationID))
+    }
+
     /// Keep scanner recovery facts intact; the browser exposes one account action,
     /// never independent checkboxes/buttons for split members.
     static func groupedItems(_ items: [DataDirItem], homeDirectory: URL = URL(fileURLWithPath: NSHomeDirectory()),
@@ -410,7 +421,7 @@ struct WeChatAccountMigrationService: Sendable {
             item.description = targetGroup == .filesAndVideos
                 ? "微信账号 · 拆分迁移（msg/file + msg/video）".localized
                 : "微信账号 · 拆分迁移（msg + business）".localized
-            item.isMigratable = localPreview || (restored && splitMode && targetGroup == .media
+            item.isMigratable = localPreview || (restored && splitMode
                 && active.count == expectedCount && active.allSatisfy(\.isMigratable) && item.isMigratable)
             item.hasMountTransferRecord = !localPreview
             item.status = localPreview ? DataDirStatus.local

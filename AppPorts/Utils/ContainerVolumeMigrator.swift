@@ -1591,7 +1591,7 @@ actor ContainerVolumeMigrator {
             && isWeChatFilesAndVideosMember(source, bundleIdentifier: bundleIdentifier)
         try await safety.requireNewMigration(at: source, bundleIdentifier: bundleIdentifier,
             ownedTransferIDs: Set(restored.map(\.operationID)),
-            resumingRecordedMigration: isRecordedRetry && separatesExternalFileHardlinks)
+            resumingRecordedMigration: isRecordedRetry)
         guard existingRealDirectory(at: source) else { throw MigrationError.sourceNotDirectory(source) }
         guard !isMountPoint(source) else { throw MigrationError.alreadyManaged(source) }
         guard !DataPathTopology.overlaps(DataPathTopology.relationship(source.path, externalRootURL.path)) else {
@@ -2356,7 +2356,8 @@ actor ContainerVolumeMigrator {
                 throw DataOperationSafety.Failure.conflict(parent.path)
             }
         }
-        try await safety.requireNoKnownWriters(at: active, bundleIdentifier: transfer.bundleIdentifier)
+        try await safety.requireNoKnownWriters(at: active, bundleIdentifier: transfer.bundleIdentifier,
+            preferWholeVolumeInspection: location.mode == .mount && location.direction == .migrate)
         try await requireActiveData(for: transfer, matching: location)
         try DurableFileIO.syncTree(at: active, excludingRootEntries: Self.volumeSystemArtifacts)
         try DurableFileIO.syncDirectory(at: active.deletingLastPathComponent())

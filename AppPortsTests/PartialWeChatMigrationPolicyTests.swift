@@ -333,6 +333,35 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         }
     }
 
+    func testRestoredSplitAllowsRemigrationWhenSplitModeEnabled() throws {
+        let fixture = try Fixture(); defer { fixture.cleanup() }
+        for path in ["msg/file", "msg/video"] {
+            try FileManager.default.createDirectory(at: fixture.account.appendingPathComponent(path),
+                                                    withIntermediateDirectories: true)
+        }
+        for paths in [["msg", "business"], ["msg/file", "msg/video"]] {
+            let members: [DataDirItem] = paths.map { relative in
+                var member = DataDirItem(name: relative, path: fixture.account.appendingPathComponent(relative),
+                                         type: .containers, priority: .critical, description: "")
+                member.hasMountTransferRecord = true
+                member.recoveryOperationID = UUID()
+                member.status = DataDirStatus.local
+                member.hasCompletedRestore = true
+                member.isMigratable = true
+                return member
+            }
+            let enabledRow = try XCTUnwrap(WeChatAccountMigrationService.groupedItems(
+                members, homeDirectory: fixture.home, splitMode: true).first)
+            XCTAssertEqual(enabledRow.status, DataDirStatus.restored)
+            XCTAssertTrue(enabledRow.isMigratable, "Restored \(paths) should remain migratable when splitMode is enabled")
+
+            let disabledRow = try XCTUnwrap(WeChatAccountMigrationService.groupedItems(
+                members, homeDirectory: fixture.home, splitMode: false).first)
+            XCTAssertEqual(disabledRow.status, DataDirStatus.restored)
+            XCTAssertFalse(disabledRow.isMigratable)
+        }
+    }
+
     func testMissingMemberFailsBeforeMovingEitherDirectory() async throws {
         let fixture = try Fixture(); defer { fixture.cleanup() }
         try FileManager.default.removeItem(at: fixture.account.appendingPathComponent("business"))
