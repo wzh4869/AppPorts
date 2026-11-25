@@ -256,6 +256,18 @@ actor ContainerVolumeMigrator {
             .appendingPathComponent("AppPorts/mounts")
     }
 
+    /// Mounted APFS volume roots can contain macOS-owned system artifacts
+    /// (`.TemporaryItems`, `.Trashes`, `.DocumentRevisions-V100`, etc.) with
+    /// non-readable POSIX modes (`0311`/`0111`). Exclude only those known root
+    /// entries when inspecting an active mount point.
+    func requireNoKnownWriters(at url: URL, bundleIdentifier: String? = nil,
+                               preferWholeVolumeInspection: Bool = false) async throws {
+        let excluded = isMountPoint(url) ? Self.volumeSystemArtifacts : []
+        try await safety.requireNoKnownWriters(at: url, bundleIdentifier: bundleIdentifier,
+                                               preferWholeVolumeInspection: preferWholeVolumeInspection,
+                                               excludingRootEntries: excluded)
+    }
+
     // MARK: - 迁移
 
     /// User operations finish verified cleanup under their outer operation
@@ -551,7 +563,7 @@ actor ContainerVolumeMigrator {
         let baseline = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded)
         do { try TreeCopySession.verifyCopy(at: candidate, against: baseline) }
         catch { return nil }
-        try await safety.requireNoKnownWriters(at: source, bundleIdentifier: expected.bundleIdentifier)
+        try await requireNoKnownWriters(at: source, bundleIdentifier: expected.bundleIdentifier)
         _ = try await mountPreparationSource(expected, verifyContents: true)
         try TreeCopySession.verifyCopy(at: candidate, against: baseline)
         try DurableFileIO.syncTree(at: candidate, excludingRootEntries: Self.volumeSystemArtifacts)
@@ -702,7 +714,7 @@ actor ContainerVolumeMigrator {
                     }
                     try requireVolumeMarker(at: automatic, record: record)
                     try await requireExpectedVolume(uuid, at: automatic)
-                    try await safety.requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier)
+                    try await requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier)
                 }
                 try safety.requireApplicationStopped(at: local, bundleIdentifier: transfer.bundleIdentifier)
                 let ignoresOwnership: Bool
@@ -753,7 +765,7 @@ actor ContainerVolumeMigrator {
             throw DataOperationSafety.Failure.inspection(source.path)
         }
         guard flags & UInt32(MNT_IGNORE_OWNERSHIP) != 0 else { return try await operation() }
-        try await safety.requireNoKnownWriters(at: source, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: source, bundleIdentifier: transfer.bundleIdentifier)
         _ = try await mountPreparationSource(transfer, verifyContents: false)
         guard mountFlags(source) == flags else { throw DataOperationSafety.Failure.conflict(source.path) }
         let result: Result
@@ -835,7 +847,7 @@ actor ContainerVolumeMigrator {
             synchronizeAgent(store)
             return
         } else { source = try await mountPreparationSource(transfer, verifyContents: true) }
-        try await safety.requireNoKnownWriters(at: source, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: source, bundleIdentifier: transfer.bundleIdentifier)
         _ = try await mountPreparationSource(transfer, verifyContents: true)
         do {
             guard let path = transfer.stagingPath, let parentIdentity = transfer.preparationParentIdentity,
@@ -1262,7 +1274,7 @@ actor ContainerVolumeMigrator {
             }
             let current = try await verifiedResumeVolume(uuid, allowedAt: [staging], state: state)
             if let current {
-                try await safety.requireNoKnownWriters(at: current, bundleIdentifier: transfer.bundleIdentifier)
+                try await requireNoKnownWriters(at: current, bundleIdentifier: transfer.bundleIdentifier)
                 try requireVolumeMarker(at: current, record: record)
                 guard try DataPathIdentity.capture(current, volumeUUID: uuid).matchesFilesystemObject(destinationIdentity) else {
                     throw DataOperationSafety.Failure.conflict(current.path)
@@ -1320,13 +1332,13 @@ actor ContainerVolumeMigrator {
                 throw DataOperationSafety.Failure.conflict(backup.path)
             }
         }
-        try await safety.requireNoKnownWriters(at: original, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: original, bundleIdentifier: transfer.bundleIdentifier)
         try requireVerifiedResumeLedger(state)
         var volumeRoot = try await verifiedResumeVolume(uuid, allowedAt: [local, staging], state: state)
         if volumeRoot == local, !hasBackup { throw DataOperationSafety.Failure.conflict(local.path) }
         if isMountPoint(local), volumeRoot != local { throw DataOperationSafety.Failure.conflict(local.path) }
         if let automatic = volumeRoot, automatic != local, automatic != staging {
-            try await safety.requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier)
+            try await requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier)
             try await requireExpectedVolume(uuid, at: automatic)
             try requireVerifiedResumeLedger(state)
             guard verifiedResumeAutomaticPath(uuid, state: state) == automatic else {
@@ -1361,7 +1373,7 @@ actor ContainerVolumeMigrator {
         }
         guard let copied = volumeRoot else { throw DataOperationSafety.Failure.inspection(staging.path) }
         try await requireExpectedVolume(uuid, at: copied)
-        try await safety.requireNoKnownWriters(at: copied, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: copied, bundleIdentifier: transfer.bundleIdentifier)
         try await requireExpectedVolume(uuid, at: copied)
         try requireVerifiedResumeLedger(state)
         if requiresOwnership { try requireOwners(at: copied) }
@@ -1502,7 +1514,7 @@ actor ContainerVolumeMigrator {
         var ownershipUpdate: (path: URL, flags: UInt32)?
         do {
             try await requireExpectedVolume(uuid, at: source)
-            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: transfer.bundleIdentifier)
+            try await requireNoKnownWriters(at: source, bundleIdentifier: transfer.bundleIdentifier)
             try await requireExpectedVolume(uuid, at: source)
             try requireVerifiedResumeLedger(state)
             guard let flags = mountFlags(source) else { throw DataOperationSafety.Failure.inspection(source.path) }
@@ -1511,7 +1523,7 @@ actor ContainerVolumeMigrator {
                 try await setOwnershipForRestore(mountPoint: source, originalFlags: flags, enabled: true)
                 try await requireExpectedVolume(uuid, at: source)
             }
-            try await safety.requireNoKnownWriters(at: staging, bundleIdentifier: transfer.bundleIdentifier)
+            try await requireNoKnownWriters(at: staging, bundleIdentifier: transfer.bundleIdentifier)
             try await requireExpectedVolume(uuid, at: source)
             try requireVerifiedResumeLedger(state)
             if requiresOwnership { try requireOwners(at: source) }
@@ -1679,7 +1691,7 @@ actor ContainerVolumeMigrator {
             let destinationIdentity = try DataPathIdentity.capture(staging, volumeUUID: uuid)
             await progressHandler?(FileCopier.Progress(copiedBytes: baseline.logicalBytes,
                 totalBytes: baseline.logicalBytes, currentFile: "正在切换本地入口...".localized, showsByteProgress: false, stage: .switching))
-            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: bundleIdentifier)
+            try await requireNoKnownWriters(at: source, bundleIdentifier: bundleIdentifier)
             try await requireExpectedVolume(uuid, at: staging)
             try TreeCopySession.verifyCopy(at: staging, against: baseline, purpose: .beforeSwitch)
             transfer.baseline = try PropertyListEncoder().encode(baseline)
@@ -1885,7 +1897,7 @@ actor ContainerVolumeMigrator {
         }
         let operationID = AppLogger.shared.makeOperationID(prefix: "container-unmount")
         try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
-        try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
+        try await requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
         do {
             try await unmountVolume(mountPoint: mountPoint, force: force)
         } catch {
@@ -2057,7 +2069,7 @@ actor ContainerVolumeMigrator {
         var originalFlags: UInt32?
         if originallyOnline {
             try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
-            try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
+            try await requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
             guard let flags = mountFlags(mountPoint) else { throw DataOperationSafety.Failure.inspection(mountPoint.path) }
             originalFlags = flags
         }
@@ -2108,7 +2120,7 @@ actor ContainerVolumeMigrator {
                 try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
                 if requiresOwnership, let flags = originalFlags, flags & UInt32(MNT_IGNORE_OWNERSHIP) != 0 {
                     // Do not overwrite mount options changed since the initial preflight.
-                    try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
+                    try await requireNoKnownWriters(at: mountPoint, bundleIdentifier: record.bundleIdentifier)
                     try await requireExpectedVolume(record.volumeUUID, at: mountPoint)
                     guard mountFlags(mountPoint) == flags else { throw DataOperationSafety.Failure.conflict(mountPoint.path) }
                     ownershipUpdateFlags = flags
@@ -2120,7 +2132,7 @@ actor ContainerVolumeMigrator {
                 // Recovery never reintroduces a forbidden mount at Data/tmp or a container root.
                 let hint = try await knownMountPoint(for: record, operationID: operationID)
                 if case .mounted(let current) = hint {
-                    try await safety.requireNoKnownWriters(at: current, bundleIdentifier: record.bundleIdentifier)
+                    try await requireNoKnownWriters(at: current, bundleIdentifier: record.bundleIdentifier)
                 }
                 try fileManager.createDirectory(at: recovery.deletingLastPathComponent(), withIntermediateDirectories: true)
                 if transfer.recoveryMountPointIdentity == nil {
@@ -2136,7 +2148,7 @@ actor ContainerVolumeMigrator {
                     // A prior attempt may have mounted successfully before its postcheck failed.
                     // Inspect the retained volume directly; a new lease would inspect its payload.
                     try await requireExpectedVolume(record.volumeUUID, at: recovery)
-                    try await safety.requireNoKnownWriters(at: recovery, bundleIdentifier: record.bundleIdentifier)
+                    try await requireNoKnownWriters(at: recovery, bundleIdentifier: record.bundleIdentifier)
                 } else {
                     try await mountVolume(record.volumeUUID, at: recovery, operationID: operationID, knownMountPoint: hint,
                                           requireOwnership: requiresOwnership)
@@ -2159,7 +2171,7 @@ actor ContainerVolumeMigrator {
             }
             transfer.sourceIdentity = try DataPathIdentity.capture(source, volumeUUID: record.volumeUUID)
             try store.updateTransfer(transfer)
-            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
+            try await requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
             transfer.phase = .copying
             try store.updateTransfer(transfer)
             let baseline = try await copyPreparation(transfer, source: source, destination: staging,
@@ -2168,7 +2180,7 @@ actor ContainerVolumeMigrator {
             await progressHandler?(FileCopier.Progress(copiedBytes: baseline.logicalBytes,
                 totalBytes: baseline.logicalBytes, currentFile: "正在切换本地入口...".localized, showsByteProgress: false, stage: .switching))
             try safety.requireLocalRestoreParent(at: mountPoint, isMountPoint: isMountPoint)
-            try await safety.requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
+            try await requireNoKnownWriters(at: source, bundleIdentifier: record.bundleIdentifier)
             try TreeCopySession.verifyUnchanged(at: source, against: baseline)
             try TreeCopySession.verifyCopy(at: staging, against: baseline, purpose: .beforeSwitch)
             transfer.baseline = try PropertyListEncoder().encode(baseline)
@@ -2356,7 +2368,7 @@ actor ContainerVolumeMigrator {
                 throw DataOperationSafety.Failure.conflict(parent.path)
             }
         }
-        try await safety.requireNoKnownWriters(at: active, bundleIdentifier: transfer.bundleIdentifier,
+        try await requireNoKnownWriters(at: active, bundleIdentifier: transfer.bundleIdentifier,
             preferWholeVolumeInspection: location.mode == .mount && location.direction == .migrate)
         try await requireActiveData(for: transfer, matching: location)
         try DurableFileIO.syncTree(at: active, excludingRootEntries: Self.volumeSystemArtifacts)
@@ -2368,7 +2380,7 @@ actor ContainerVolumeMigrator {
                       try DataPathIdentity.capture(retained).matchesFilesystemObject(expectedBackup) else {
                     throw DataOperationSafety.Failure.conflict(retained.path)
                 }
-                try await safety.requireNoKnownWriters(at: retained, bundleIdentifier: transfer.bundleIdentifier)
+                try await requireNoKnownWriters(at: retained, bundleIdentifier: transfer.bundleIdentifier)
                 try await requireActiveData(for: transfer, matching: location)
                 let activeIdentity = try DataPathIdentity.capture(active)
                 guard try store.transfer(operationID: operationID) == transfer else {
@@ -2448,7 +2460,7 @@ actor ContainerVolumeMigrator {
                         }
                         try requireVolumeMarker(at: automatic, record: record)
                         try await requireExpectedVolume(uuid, at: automatic)
-                        try await safety.requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier,
+                        try await requireNoKnownWriters(at: automatic, bundleIdentifier: transfer.bundleIdentifier,
                             preferWholeVolumeInspection: true)
                         guard try store.transfer(operationID: operationID) == transfer else {
                             throw DataOperationSafety.Failure.conflict(current)
@@ -2465,7 +2477,7 @@ actor ContainerVolumeMigrator {
                 guard try DataPathIdentity.capture(backup, volumeUUID: uuid).matchesFilesystemObject(expectedBackup) else {
                     throw DataOperationSafety.Failure.conflict(backup.path)
                 }
-                try await safety.requireNoKnownWriters(at: backup, bundleIdentifier: transfer.bundleIdentifier,
+                try await requireNoKnownWriters(at: backup, bundleIdentifier: transfer.bundleIdentifier,
                     preferWholeVolumeInspection: true)
                 let container = try await disk.apfsContainerUUID(containingVolume: uuid)
                 try await requireExpectedVolume(uuid, at: backup)
@@ -3044,7 +3056,7 @@ actor ContainerVolumeMigrator {
             throw DataOperationSafety.Failure.conflict(mountPoint.path)
         }
         let identity = try DataPathIdentity.capture(mountPoint, volumeUUID: volumeUUID)
-        try await safety.requireNoKnownWriters(at: mountPoint, bundleIdentifier: nil)
+        try await requireNoKnownWriters(at: mountPoint, bundleIdentifier: nil)
         try await requireExpectedVolume(volumeUUID, at: mountPoint)
         guard mountFlags(mountPoint) == current,
               try DataPathIdentity.capture(mountPoint, volumeUUID: volumeUUID).matchesFilesystemObject(identity) else {

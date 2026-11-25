@@ -64,6 +64,103 @@ struct DataOperationSafetyTests {
         #expect(try Data(contentsOf: file) == Data("unchanged".utf8))
     }
 
+    @Test("Excluded volume system artifacts allow writer inspection while non-excluded or traversed warnings still fail")
+    func excludedVolumeArtifactDiagnostics() async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.home.appendingPathComponent("Mounted(App)")
+        try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+        let canonical = source.resolvingSymlinksInPath().standardizedFileURL.path
+        let safeWarnings = [
+            "lsof: WARNING: can't opendir(\(canonical)/.TemporaryItems): Permission denied",
+            "lsof: WARNING: can't opendir(\(canonical)/.Trashes/501): Operation not permitted"
+        ].joined(separator: "\n") + "\n"
+        let safeRunner = InspectionRunner(expectedPath: source.path, directory: true,
+            result: .init(status: 1, standardOutput: Data(), standardError: Data(safeWarnings.utf8), timedOut: false))
+        // Excluded entries on a mounted root are ignored, while empty exclusions still fail closed.
+        try await DataOperationSafety(homeDirectory: fixture.home, store: fixture.store, runner: safeRunner)
+            .requireNoKnownWriters(at: source, excludingRootEntries: ContainerVolumeMigrator.volumeSystemArtifacts)
+        await #expect(throws: DataOperationSafety.Failure.self) {
+            try await DataOperationSafety(homeDirectory: fixture.home, store: fixture.store, runner: safeRunner)
+                .requireNoKnownWriters(at: source)
+        }
+
+        // Non-excluded child warnings must report the failing child path rather than the root.
+        let childPath = "\(canonical)/Business/private"
+        let childWarning = "lsof: WARNING: can't opendir(\(childPath)): Permission denied\n"
+        let childRunner = InspectionRunner(expectedPath: source.path, directory: true,
+            result: .init(status: 1, standardOutput: Data(), standardError: Data(childWarning.utf8), timedOut: false))
+        do {
+            try await DataOperationSafety(homeDirectory: fixture.home, store: fixture.store, runner: childRunner)
+                .requireNoKnownWriters(at: source, excludingRootEntries: ContainerVolumeMigrator.volumeSystemArtifacts)
+            Issue.record("A non-excluded child permission warning must fail")
+        } catch DataOperationSafety.Failure.accessDenied(let path) {
+            #expect(path == childPath)
+        }
+
+        // Path traversal out of an excluded root entry must never be ignored.
+        let traversalWarning = "lsof: WARNING: can't opendir(\(canonical)/.TemporaryItems/../secret): Permission denied\n"
+        let traversalRunner = InspectionRunner(expectedPath: source.path, directory: true,
+            result: .init(status: 1, standardOutput: Data(), standardError: Data(traversalWarning.utf8), timedOut: false))
+        do {
+            try await DataOperationSafety(homeDirectory: fixture.home, store: fixture.store, runner: traversalRunner)
+                .requireNoKnownWriters(at: source, excludingRootEntries: ContainerVolumeMigrator.volumeSystemArtifacts)
+            Issue.record("Path traversal must not match excluded root entries")
+        } catch DataOperationSafety.Failure.accessDenied(let path) {
+            #expect(path == "\(canonical)/.TemporaryItems/../secret")
+        }
+    }
+
+    @Test("Real lsof still catches a live writer when a 0311 .TemporaryItems sibling exists")
+    @MainActor
+    func realLsofWithProtectedTemporaryItems() async throws {
+        guard geteuid() != 0 else { return }
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let source = fixture.home.appendingPathComponent("MountedVolume")
+        let tempItems = source.appendingPathComponent(".TemporaryItems")
+        try FileManager.default.createDirectory(at: tempItems, withIntermediateDirectories: true)
+        defer { _ = chmod(tempItems.path, 0o700) }
+        let file = source.appendingPathComponent("data")
+        try Data("unchanged".utf8).write(to: file)
+        #expect(chmod(tempItems.path, 0o311) == 0)
+
+        let safety = DataOperationSafety(homeDirectory: fixture.home, store: fixture.store)
+        await #expect(throws: DataOperationSafety.Failure.self) {
+            try await safety.requireNoKnownWriters(at: source)
+        }
+
+        let child = Process()
+        let input = Pipe(), output = Pipe()
+        child.executableURL = URL(fileURLWithPath: "/bin/sh")
+        child.arguments = ["-c", "exec 9<> \"$1\"; printf READY; read response", "writer", file.path]
+        child.standardInput = input
+        child.standardOutput = output
+        child.standardError = FileHandle.nullDevice
+        try child.run()
+        defer {
+            try? input.fileHandleForWriting.write(contentsOf: Data("done\n".utf8))
+            try? input.fileHandleForWriting.close()
+            if child.isRunning { child.terminate() }
+            child.waitUntilExit()
+        }
+        #expect(output.fileHandleForReading.readData(ofLength: 5) == Data("READY".utf8))
+        do {
+            try await safety.requireNoKnownWriters(at: source,
+                excludingRootEntries: ContainerVolumeMigrator.volumeSystemArtifacts)
+            Issue.record("Live writer must still be blocked when .TemporaryItems is excluded")
+        } catch DataOperationSafety.Failure.writers(let path, let processes) {
+            #expect(path == source.path)
+            #expect(!processes.isEmpty)
+        }
+        try? input.fileHandleForWriting.write(contentsOf: Data("done\n".utf8))
+        try? input.fileHandleForWriting.close()
+        child.waitUntilExit()
+
+        try await safety.requireNoKnownWriters(at: source,
+            excludingRootEntries: ContainerVolumeMigrator.volumeSystemArtifacts)
+    }
+
     private struct InspectionRunner: ShellCommandRunning {
         let expectedPath: String
         let directory: Bool

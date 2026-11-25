@@ -54,11 +54,30 @@ final class AppDataMigrationPreparationTests: XCTestCase {
 
     func testIncompleteMeasurementCannotAuthorizeMigration() {
         let original = item()
-        let issue = DataDirReadIssue(url: original.path,
+        let deniedChild = original.path.appendingPathComponent("sub/private")
+        let permissionIssue = DataDirReadIssue(url: deniedChild,
             error: NSError(domain: NSPOSIXErrorDomain, code: Int(POSIXErrorCode.EACCES.rawValue)))
         XCTAssertThrowsError(try AppDataMigrationPreparation.refreshedItem(original,
             result: .init(items: [original], readIssues: [])) { _ in
-                .init(bytes: 8192, readIssues: [issue])
-            })
+                .init(bytes: 8192, readIssues: [permissionIssue])
+            }) { error in
+            guard case DataOperationSafety.Failure.accessDenied(let path) = error else {
+                return XCTFail("Expected accessDenied, got \(error)")
+            }
+            XCTAssertEqual(path, deniedChild.path)
+        }
+
+        let ioChild = original.path.appendingPathComponent("sub/corrupt")
+        let ioIssue = DataDirReadIssue(url: ioChild,
+            error: NSError(domain: NSPOSIXErrorDomain, code: Int(POSIXErrorCode.EIO.rawValue)))
+        XCTAssertThrowsError(try AppDataMigrationPreparation.refreshedItem(original,
+            result: .init(items: [original], readIssues: [])) { _ in
+                .init(bytes: 8192, readIssues: [ioIssue])
+            }) { error in
+            guard case DataOperationSafety.Failure.inspection(let path) = error else {
+                return XCTFail("Expected inspection, got \(error)")
+            }
+            XCTAssertEqual(path, ioChild.path)
+        }
     }
 }

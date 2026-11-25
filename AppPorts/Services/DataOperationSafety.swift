@@ -144,12 +144,19 @@ struct DataOperationSafety: Sendable {
     /// Read-only observation, not a lock against future writers. Checks run again
     /// before switching/cleanup; verified originals remain retained afterwards.
     func requireNoKnownWriters(at url: URL, bundleIdentifier: String? = nil,
-                               preferWholeVolumeInspection: Bool = false) async throws {
+                               preferWholeVolumeInspection: Bool = false,
+                               excludingRootEntries: Set<String> = []) async throws {
         try requireApplicationStopped(at: url, bundleIdentifier: bundleIdentifier)
         var info = stat()
         guard lstat(url.path, &info) == 0 else {
             if errno == ENOENT { return }
-            if errno == EACCES || errno == EPERM { throw Failure.accessDenied(url.path) }
+            if errno == EACCES || errno == EPERM {
+                AppLogger.shared.logContext("数据写入者检查被拒绝访问", details: [
+                    ("path", url.path),
+                    ("errno", String(errno))
+                ], level: "WARN")
+                throw Failure.accessDenied(url.path)
+            }
             throw Failure.inspection(url.path)
         }
         let directory = info.st_mode & S_IFMT == S_IFDIR
@@ -168,16 +175,110 @@ struct DataOperationSafety: Sendable {
         }
         let result = try await runner.run(executable: "/usr/sbin/lsof",
             arguments: ["-nP", "-F", "pcfa"] + selection, timeout: timeout)
-        let diagnostic = result.stderrText.lowercased()
-        if diagnostic.contains("permission denied") || diagnostic.contains("operation not permitted") {
-            throw Failure.accessDenied(url.path)
+        let unexplained = Self.unexplainedLsofDiagnostics(in: result.stderrText, root: url,
+                                                          excludingRootEntries: excludingRootEntries)
+        func boundedDiagnostic(_ lines: [String]) -> String {
+            let joined = lines.joined(separator: "\n")
+            guard joined.count > 512 else { return joined }
+            return String(joined.prefix(512)) + "…"
         }
-        guard !result.timedOut else { throw Failure.inspectionTimedOut(url.path) }
-        guard [0, 1].contains(result.status), result.stderrText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        let permissionLines = unexplained.filter {
+            let lower = $0.lowercased()
+            return lower.contains("permission denied") || lower.contains("operation not permitted")
+        }
+        if !permissionLines.isEmpty {
+            let failingPath = permissionLines.compactMap(Self.lsofWarningTargetPath(in:)).first ?? url.path
+            AppLogger.shared.logContext("数据写入者检查被拒绝访问", details: [
+                ("path", url.path),
+                ("failing_path", failingPath),
+                ("status", String(result.status)),
+                ("stderr", boundedDiagnostic(unexplained))
+            ], level: "WARN")
+            throw Failure.accessDenied(failingPath)
+        }
+        guard !result.timedOut else {
+            AppLogger.shared.logContext("数据写入者检查超时", details: [
+                ("path", url.path),
+                ("status", String(result.status)),
+                ("stderr", boundedDiagnostic(unexplained))
+            ], level: "WARN")
+            throw Failure.inspectionTimedOut(url.path)
+        }
+        guard [0, 1].contains(result.status), unexplained.isEmpty else {
+            AppLogger.shared.logContext("数据写入者检查失败", details: [
+                ("path", url.path),
+                ("status", String(result.status)),
+                ("stderr", boundedDiagnostic(unexplained))
+            ], level: "WARN")
             throw Failure.inspection(url.path)
         }
         let writers = Self.writingProcesses(in: result.stdoutText, ownPID: ProcessInfo.processInfo.processIdentifier)
         guard writers.isEmpty else { throw Failure.writers(url.path, writers) }
+    }
+
+    static func unexplainedLsofDiagnostics(in stderr: String, root: URL,
+                                            excludingRootEntries: Set<String>) -> [String] {
+        let lines = stderr
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        guard !excludingRootEntries.isEmpty else { return lines }
+        var allowedRoots: Set<String> = [
+            root.standardizedFileURL.path,
+            root.resolvingSymlinksInPath().standardizedFileURL.path
+        ]
+        // URL.resolvingSymlinksInPath() strips `/private` from `/private/var` and `/private/tmp`,
+        // whereas `lsof` reports POSIX realpath prefixes.
+        if let resolved = realpath(root.path, nil) {
+            allowedRoots.insert(String(cString: resolved))
+            free(resolved)
+        }
+        return lines.filter { line in
+            !isExcludedVolumeArtifactWarning(line, allowedRoots: allowedRoots, excludingRootEntries: excludingRootEntries)
+        }
+    }
+
+    private static func isExcludedVolumeArtifactWarning(_ line: String, allowedRoots: Set<String>,
+                                                        excludingRootEntries: Set<String>) -> Bool {
+        guard let parsed = parseLsofWarning(in: line) else { return false }
+        let reason = parsed.reason.lowercased()
+        guard reason.contains("permission denied") || reason.contains("operation not permitted") else { return false }
+        return allowedRoots.contains { rootPath in
+            let suffix: Substring
+            if rootPath == "/" {
+                guard parsed.path.hasPrefix("/") else { return false }
+                suffix = parsed.path.dropFirst()
+            } else {
+                guard parsed.path.hasPrefix(rootPath + "/") else { return false }
+                suffix = parsed.path.dropFirst(rootPath.count + 1)
+            }
+            let components = suffix.split(separator: "/", omittingEmptySubsequences: false)
+            guard !components.isEmpty,
+                  !components.contains(where: { $0.isEmpty || $0 == "." || $0 == ".." }) else { return false }
+            return excludingRootEntries.contains(String(components[0]))
+        }
+    }
+
+    static func lsofWarningTargetPath(in line: String) -> String? {
+        parseLsofWarning(in: line)?.path
+    }
+
+    private static func parseLsofWarning(in line: String) -> (path: String, reason: String)? {
+        let prefix = "lsof: warning: can't "
+        let lower = line.lowercased()
+        guard lower.hasPrefix(prefix) else { return nil }
+        let afterPrefix = line.index(line.startIndex, offsetBy: prefix.count)
+        guard let openParen = line[afterPrefix...].firstIndex(of: "(") else { return nil }
+        let syscall = line[afterPrefix..<openParen].trimmingCharacters(in: .whitespaces).lowercased()
+        guard ["opendir", "lstat", "stat", "readlink"].contains(syscall) else { return nil }
+        let pathStart = line.index(after: openParen)
+        guard let closeRange = line.range(of: "): ", options: .backwards, range: pathStart..<line.endIndex) else {
+            return nil
+        }
+        let path = String(line[pathStart..<closeRange.lowerBound])
+        let reason = String(line[closeRange.upperBound...])
+        guard !path.isEmpty else { return nil }
+        return (path, reason)
     }
 
     /// A leased empty, locked mount point has no data tree to enumerate. Its

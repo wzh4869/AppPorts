@@ -128,7 +128,13 @@ struct WeChatAccountMigrationService: Sendable {
             }
         }
 
-        let singlePass = DirectorySizeTraversal.measure(at: account, subtrees: singlePassSubtrees)
+        let skipped: Set<URL> = DiskUtility.isMountPoint(account)
+            ? Set(ContainerVolumeMigrator.volumeSystemArtifacts.map {
+                account.standardizedFileURL.appendingPathComponent($0).standardizedFileURL
+            })
+            : []
+        let singlePass = DirectorySizeTraversal.measure(at: account, skippingDirectories: skipped,
+                                                        subtrees: singlePassSubtrees)
         let total = singlePass.root
 
         for member in mediaMembers {

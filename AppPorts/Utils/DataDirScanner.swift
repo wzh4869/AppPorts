@@ -408,7 +408,12 @@ func measureDirectorySize(
 
     // Native traversal retains the offline guard issues; readable placeholders
     // must never make an ancestor's partial size complete or cacheable.
-    let skipped = Set(pausedIssues.map(\.url))
+    var skipped = Set(pausedIssues.map(\.url))
+    if isMountPoint(url) {
+        for artifact in ContainerVolumeMigrator.volumeSystemArtifacts {
+            skipped.insert(standardized.appendingPathComponent(artifact).standardizedFileURL)
+        }
+    }
     var result = traverse(url, skipped)
     result.readIssues += pausedIssues
     // 0 不写缓存：未挂载的挂载点就是一个空目录，算出来同样是 0；缓存下来会让卷挂好之后

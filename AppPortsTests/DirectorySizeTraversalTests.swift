@@ -244,6 +244,36 @@ final class DirectorySizeTraversalTests: XCTestCase {
         XCTAssertEqual(scoped.bytes, 3)
     }
 
+    func testMountedVolumeSizeMeasurementSkipsVolumeSystemArtifacts() throws {
+        guard geteuid() != 0 else { throw XCTSkip("Permission fixture requires an unprivileged test process") }
+        let root = try workspace()
+        let tempItems = root.appendingPathComponent(".TemporaryItems")
+        let trashes = root.appendingPathComponent(".Trashes")
+        let spotlight = root.appendingPathComponent(".Spotlight-V100")
+        defer {
+            _ = chmod(tempItems.path, 0o700)
+            _ = chmod(trashes.path, 0o700)
+            invalidateSizeCache(for: root)
+            try? manager.removeItem(at: root)
+        }
+        try manager.createDirectory(at: tempItems, withIntermediateDirectories: true)
+        try manager.createDirectory(at: trashes, withIntermediateDirectories: true)
+        try manager.createDirectory(at: spotlight, withIntermediateDirectories: true)
+        try Data(count: 1024).write(to: spotlight.appendingPathComponent("index"))
+        try Data(count: 42).write(to: root.appendingPathComponent("payload"))
+        XCTAssertEqual(chmod(tempItems.path, 0o311), 0)
+        XCTAssertEqual(chmod(trashes.path, 0o311), 0)
+
+        let mounted = measureDirectorySize(at: root, useCache: false, isMountPoint: { _ in true })
+        XCTAssertTrue(mounted.isComplete)
+        XCTAssertEqual(mounted.bytes, 42)
+        XCTAssertTrue(mounted.readIssues.isEmpty)
+
+        let local = measureDirectorySize(at: root, useCache: false, isMountPoint: { _ in false })
+        XCTAssertFalse(local.isComplete)
+        XCTAssertTrue(local.readIssues.contains { $0.isPermissionDenied })
+    }
+
     private func workspace() throws -> URL {
         let root = manager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try manager.createDirectory(at: root, withIntermediateDirectories: true)

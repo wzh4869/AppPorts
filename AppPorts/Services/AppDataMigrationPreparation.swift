@@ -52,7 +52,20 @@ struct AppDataMigrationPreparation: Sendable {
                 == Set(original.weChatSplitMembers.map { $0.path.standardizedFileURL.path }) else { throw Failure.changed }
         let measured = measure(fresh)
         try Task.checkCancellation()
-        guard measured.isComplete else { throw DataOperationSafety.Failure.accessDenied(fresh.path.path) }
+        guard measured.isComplete else {
+            let issueSummary = measured.readIssues.prefix(5).map { issue in
+                "\(issue.url.path) [permissionDenied=\(issue.isPermissionDenied)]: \(issue.errorDescription)"
+            }.joined(separator: "\n")
+            AppLogger.shared.logContext("迁移前目录扫描不完整，已阻止迁移", details: [
+                ("path", fresh.path.path),
+                ("issue_count", String(measured.readIssues.count)),
+                ("issues", issueSummary)
+            ], level: "WARN")
+            if let denied = measured.readIssues.first(where: \.isPermissionDenied) {
+                throw DataOperationSafety.Failure.accessDenied(denied.url.path)
+            }
+            throw DataOperationSafety.Failure.inspection(measured.readIssues.first?.url.path ?? fresh.path.path)
+        }
         fresh.applySize(measured)
         return fresh
     }

@@ -366,7 +366,7 @@ extension ContainerVolumeMigrator {
             try await mountVolume(uuid, at: candidate, operationID: transfer.operationID.uuidString, allowRelocation: false,
                                   requireOwnership: baseline.ownershipCompatibility?.destinationIgnoresOwnership != true)
         }
-        try await safety.requireNoKnownWriters(at: candidate, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: candidate, bundleIdentifier: transfer.bundleIdentifier)
         try await requireExpectedVolume(uuid, at: candidate)
         try requireRecoveryJournal(transfer)
         guard !isSymbolicLink(at: candidate),
@@ -492,8 +492,8 @@ extension ContainerVolumeMigrator {
         try verifyOwnership()
         let local = try await currentRollbackSource(transfer)
         try await requireExpectedVolume(uuid, at: automatic)
-        try await safety.requireNoKnownWriters(at: automatic)
-        try await safety.requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: automatic)
+        try await requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
         try await requireExpectedVolume(uuid, at: automatic)
         _ = try await currentRollbackSource(transfer)
         try verifyOwnership()
@@ -606,8 +606,8 @@ extension ContainerVolumeMigrator {
                                   allowRelocation: false, requireOwnership: requiresOwnership)
         }
         try await requireExpectedVolume(uuid, at: staging)
-        try await safety.requireNoKnownWriters(at: staging)
-        try await safety.requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: staging)
+        try await requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
         try requireExclusiveMigrationCandidate(transfer)
         func verifyCandidate() throws {
             try requireParent()
@@ -711,7 +711,7 @@ extension ContainerVolumeMigrator {
             try safety.requireLocalRestoreParent(at: local, isMountPoint: isMountPoint)
             let hint = try await knownMountPoint(for: record, operationID: transfer.operationID.uuidString)
             if case .mounted(let current) = hint {
-                try await safety.requireNoKnownWriters(at: current, bundleIdentifier: transfer.bundleIdentifier)
+                try await requireNoKnownWriters(at: current, bundleIdentifier: transfer.bundleIdentifier)
             }
             try requireRecoveryJournal(transfer)
             let requiresOwnership: Bool
@@ -769,8 +769,8 @@ extension ContainerVolumeMigrator {
             throw DataOperationSafety.Failure.conflict(path)
         }
         let local = try await currentRollbackSource(transfer)
-        try await safety.requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
-        try await safety.requireNoKnownWriters(at: actual)
+        try await requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
+        try await requireNoKnownWriters(at: actual)
         try requireRecoveryJournal(transfer)
         let baseline = try PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded)
         // A full candidate/removal manifest proves the obsolete bytes without
@@ -925,7 +925,7 @@ extension ContainerVolumeMigrator {
                       try store.transfers().allSatisfy({ $0.originalPath != local.path || $0.rollbackCompletedAt != nil || $0.isDataSwitchComplete }) else {
                     throw DataOperationSafety.Failure.conflict(local.path)
                 }
-                try await safety.requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
+                try await requireNoKnownWriters(at: local, bundleIdentifier: transfer.bundleIdentifier)
                 if isMountPoint(local) {
                     guard let record = try store.recordsStrict().first(where: { $0.mountPointPath == local.path }) else {
                         throw DataOperationSafety.Failure.conflict(local.path)
@@ -942,7 +942,7 @@ extension ContainerVolumeMigrator {
                           try DataPathIdentity.capture(actual).matchesFilesystemObject(candidateIdentity) else {
                         throw DataOperationSafety.Failure.conflict(actual.path)
                     }
-                    try await safety.requireNoKnownWriters(at: actual)
+                    try await requireNoKnownWriters(at: actual)
                     let baseline: TreeCopySnapshot
                     let wasRemoving = transfer.preparationRemovalBaseline != nil
                     if let saved = transfer.preparationRemovalBaseline {

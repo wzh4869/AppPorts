@@ -1150,6 +1150,32 @@ struct ContainerVolumeMigratorTests {
         }
     }
 
+    @Test("Online restore succeeds when mounted volume root emits lsof permission warnings for system artifacts")
+    func restoreIgnoresMountedVolumeSystemArtifactWarnings() async throws {
+        let workspace = try Workspace()
+        defer { workspace.cleanup() }
+        let source = try workspace.makeContainerDirectory(named: "ArtifactRestore")
+        let record = workspace.record(mountPoint: source)
+        try workspace.store.upsert(record)
+        let runner = FakeDiskCommandRunner(onlineVolumes: [record.volumeUUID])
+        runner.markVolumeMounted(record.volumeUUID, at: source.path)
+        runner.hideContentsOnUnmount()
+        defer { runner.stashedVolumeContents.forEach { try? FileManager.default.removeItem(at: $0) } }
+        let artifactWarning = "lsof: WARNING: can't opendir(\(source.path)/.TemporaryItems): Permission denied\n"
+        let migrator = workspace.makeMigrator(runner: runner,
+            safetyRunner: RestoreArtifactWarningProbe(stderr: artifactWarning))
+        _ = try await migrator.restore(record: record, estimatedTotalBytes: 0, progressHandler: nil)
+        #expect(!runner.isMounted(source))
+        #expect(try Data(contentsOf: source.appendingPathComponent("payload.txt")) == Data("payload".utf8))
+    }
+
+    private struct RestoreArtifactWarningProbe: ShellCommandRunning {
+        let stderr: String
+        func run(executable: String, arguments: [String], timeout: TimeInterval) async throws -> ShellCommandResult {
+            ShellCommandResult(status: 1, standardOutput: Data(), standardError: Data(stderr.utf8), timedOut: false)
+        }
+    }
+
     private func unstartedRestore(_ workspace: Workspace, _ record: ContainerMountRecord) -> DataTransferRecord {
         let id = UUID()
         return DataTransferRecord(operationID: id, mode: .mount, direction: .restore,
