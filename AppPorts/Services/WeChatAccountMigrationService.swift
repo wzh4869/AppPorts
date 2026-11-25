@@ -41,7 +41,7 @@ struct WeChatAccountMigrationService: Sendable {
         let filesAndVideosCount: Int
         var retainedBytes: Int64 { max(0, total.bytes - media.bytes) }
         var isComplete: Bool { total.isComplete && media.isComplete }
-        var isFilesAndVideosComplete: Bool { total.isComplete && filesAndVideos.isComplete && filesAndVideosCount > 0 }
+        var isFilesAndVideosComplete: Bool { filesAndVideos.isComplete && filesAndVideosCount > 0 }
     }
 
     enum Failure: LocalizedError {

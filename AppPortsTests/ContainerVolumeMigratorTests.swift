@@ -2634,7 +2634,7 @@ struct ContainerVolumeMigratorTests {
         let workspace = try Workspace()
         defer { workspace.cleanup() }
         let home = workspace.rootURL.appendingPathComponent("Home")
-        let identifier = PartialWeChatMigrationPolicy.bundleIdentifier
+        let identifier = "org.appports.synthetic.wechat"
         let account = PartialWeChatMigrationPolicy(homeDirectory: home, containerIdentifier: identifier)
             .accountsRoot.appendingPathComponent("wxid_test")
         let source = account.appendingPathComponent("msg")
@@ -2644,16 +2644,18 @@ struct ContainerVolumeMigratorTests {
 
         let runner = FakeDiskCommandRunner()
         runner.failWhen(prefix: ["mount"])
-        let enabledMigrator = workspace.makeMigrator(runner: runner, homeDirectory: home, weChatContainerIdentifier: identifier)
+        let enabledMigrator = workspace.makeMigrator(runner: runner, homeDirectory: home,
+            partialWeChatMigrationEnabled: true, weChatContainerIdentifier: identifier)
         await #expect(throws: (any Error).self) {
             _ = try await enabledMigrator.migrate(item: workspace.item(for: source),
-                externalRootURL: workspace.externalRootURL, appName: "WeChat", bundleIdentifier: identifier, progressHandler: nil)
+                externalRootURL: workspace.externalRootURL, appName: "Synthetic WeChat", bundleIdentifier: identifier, progressHandler: nil)
         }
         let pending = try #require(try workspace.store.transfers().first)
         #expect(pending.isPreparationRecoverable)
 
         runner.clearFailure()
-        let disabledMigrator = workspace.makeMigrator(runner: runner, homeDirectory: home)
+        let disabledMigrator = workspace.makeMigrator(runner: runner, homeDirectory: home,
+            partialWeChatMigrationEnabled: false, weChatContainerIdentifier: identifier)
         let warning = try await disabledMigrator.resumeVerifiedTransfer(operationID: pending.operationID, progressHandler: nil)
         #expect(warning == nil)
         #expect(runner.isMounted(source))
@@ -2712,7 +2714,7 @@ struct ContainerVolumeMigratorTests {
             externalRootURL: workspace.externalRootURL, appName: "Synthetic WeChat", bundleIdentifier: identifier, progressHandler: nil)
         _ = try await migrator.restore(record: videoMigrated.record, estimatedTotalBytes: 0, progressHandler: nil)
         try FileManager.default.removeItem(at: coldVideo)
-        #expect(try service.plannedMembers(of: coldAccount, for: .filesAndVideos) == [coldFile])
+        #expect(try service.plannedMembers(of: coldAccount, for: .filesAndVideos).map(\.path) == [coldFile.path])
     }
 
     @Test("A new mount migration completes historical copies after restored local data is edited")
@@ -3479,6 +3481,7 @@ struct ContainerVolumeMigratorTests {
             safetyRunner: any ShellCommandRunning = SyntheticNoWritersRunner(),
             makeMountPointLease: (@Sendable (URL) throws -> any MountPointLeasing)? = nil,
             homeDirectory: URL? = nil,
+            partialWeChatMigrationEnabled: Bool? = nil,
             weChatContainerIdentifier: String? = nil,
             synchronizeCleanupParent: @escaping @Sendable (URL) throws -> Void = { try DurableFileIO.syncDirectory(at: $0) }
         ) -> ContainerVolumeMigrator {
@@ -3497,7 +3500,7 @@ struct ContainerVolumeMigratorTests {
                 availableCapacity: availableCapacity,
                 mountFlags: mountFlags,
                 homeDirectory: homeDirectory ?? rootURL.appendingPathComponent("Home"),
-                partialWeChatMigrationEnabled: weChatContainerIdentifier != nil,
+                partialWeChatMigrationEnabled: partialWeChatMigrationEnabled ?? (weChatContainerIdentifier != nil),
                 weChatContainerIdentifier: weChatContainerIdentifier ?? PartialWeChatMigrationPolicy.bundleIdentifier,
                 safetyRunner: safetyRunner,
                 makeMountPointLease: makeMountPointLease ?? { try runner.makeMountPointLease(at: $0) },

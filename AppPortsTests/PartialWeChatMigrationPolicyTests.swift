@@ -362,6 +362,30 @@ final class PartialWeChatMigrationPolicyTests: XCTestCase {
         }
     }
 
+    func testFilesAndVideosSizingIgnoresUnreadableUnrelatedSibling() throws {
+        guard geteuid() != 0 else { throw XCTSkip("Requires an unprivileged process") }
+        let fixture = try Fixture(); defer { fixture.cleanup() }
+        let fileDir = fixture.account.appendingPathComponent("msg/file")
+        let videoDir = fixture.account.appendingPathComponent("msg/video")
+        let attachDir = fixture.account.appendingPathComponent("msg/attach")
+        for dir in [fileDir, videoDir, attachDir] {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        try Data("file-bytes".utf8).write(to: fileDir.appendingPathComponent("a.bin"))
+        try Data("video-bytes".utf8).write(to: videoDir.appendingPathComponent("b.mp4"))
+        try Data("attach-bytes".utf8).write(to: attachDir.appendingPathComponent("c.dat"))
+        defer { _ = chmod(attachDir.path, 0o700) }
+        XCTAssertEqual(chmod(attachDir.path, 0), 0)
+
+        let sizing = try fixture.service().measure(fixture.account)
+        XCTAssertFalse(sizing.total.isComplete)
+        XCTAssertFalse(sizing.isComplete)
+        XCTAssertTrue(sizing.filesAndVideos.isComplete)
+        XCTAssertEqual(sizing.filesAndVideosCount, 2)
+        XCTAssertTrue(sizing.isFilesAndVideosComplete)
+        XCTAssertEqual(sizing.filesAndVideos.bytes, Int64("file-bytes".utf8.count + "video-bytes".utf8.count))
+    }
+
     func testMissingMemberFailsBeforeMovingEitherDirectory() async throws {
         let fixture = try Fixture(); defer { fixture.cleanup() }
         try FileManager.default.removeItem(at: fixture.account.appendingPathComponent("business"))

@@ -67,7 +67,7 @@ struct WeChatAccountMigrationSheet: View {
                         sizeRow("迁移 msg/file + msg/video".localized, value: sizing.filesAndVideos.formattedSize)
                         Text("聊天附件和数据库留在本地。与聊天附件共享的文件会在外盘另存一份，仍占用原来的内盘空间。".localized)
                             .font(AppDialogTypography.body).foregroundStyle(.secondary)
-                        if !sizing.total.isComplete || !sizing.filesAndVideos.isComplete {
+                        if !sizing.filesAndVideos.isComplete {
                             Text("目录大小未能完整读取，请检查访问权限后重试。".localized)
                                 .foregroundStyle(.orange)
                         }
