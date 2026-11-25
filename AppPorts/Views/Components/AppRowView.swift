@@ -68,7 +68,6 @@ struct AppRowView: View {
             rowActions
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .anchorPreference(key: AppListRowColumnsAnchor.self, value: .bounds) { $0 }
         .padding(.vertical, 6)
         .padding(.horizontal, 12)
         .background(AppListSelectionAppearance())
