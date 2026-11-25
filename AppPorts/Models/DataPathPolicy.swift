@@ -48,10 +48,9 @@ struct DataPathPolicy: Sendable {
         self.weChatContainerIdentifier = weChatContainerIdentifier
     }
 
-    func evaluate(_ url: URL, includingLegacyWeChatMembers: Bool = false) -> Decision {
-        let lexical = classify(url.standardizedFileURL, home: homeDirectory, includingLegacyWeChatMembers: includingLegacyWeChatMembers)
-        let resolved = classify(url.resolvingSymlinksInPath(), home: homeDirectory.resolvingSymlinksInPath(),
-                                includingLegacyWeChatMembers: includingLegacyWeChatMembers)
+    func evaluate(_ url: URL) -> Decision {
+        let lexical = classify(url.standardizedFileURL, home: homeDirectory)
+        let resolved = classify(url.resolvingSymlinksInPath(), home: homeDirectory.resolvingSymlinksInPath())
         // Preserve the protected source role even when a historical link points out of the container.
         let result = !lexical.canMigrate ? lexical : (!resolved.canMigrate ? resolved : lexical.role == .unrelated ? resolved : lexical)
         let isLink = (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) != nil
@@ -60,7 +59,7 @@ struct DataPathPolicy: Sendable {
                         partialSubdirectory: result.partialSubdirectory)
     }
 
-    private func classify(_ url: URL, home: URL, includingLegacyWeChatMembers: Bool) -> Decision {
+    private func classify(_ url: URL, home: URL) -> Decision {
         let path = url.standardizedFileURL.pathComponents
         let ordinary = home.appendingPathComponent("Library/Containers").standardizedFileURL.pathComponents
         let group = home.appendingPathComponent("Library/Group Containers").standardizedFileURL.pathComponents
@@ -87,8 +86,7 @@ struct DataPathPolicy: Sendable {
                 return Decision(role: .businessData, reason: nil, canMigrate: true,
                                 mayDiscoverChildren: partialWeChatMigrationEnabled && relative[0] == weChatContainerIdentifier && partial.isAccount(url))
             }
-            if partialWeChatMigrationEnabled, relative[0] == weChatContainerIdentifier,
-               let member = partial.memberMatch(for: url), member.group == .media || includingLegacyWeChatMembers {
+            if partialWeChatMigrationEnabled, relative[0] == weChatContainerIdentifier, partial.account(forMember: url) != nil {
                 return Decision(role: .businessData, reason: nil, canMigrate: true,
                                 mayDiscoverChildren: false, partialSubdirectory: true)
             }

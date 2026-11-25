@@ -80,7 +80,7 @@ flowchart TB
 
 等目錄大小讀取完整後，再開始遷移。切換方式前，先完整還原該帳號已遷移的資料。拆分後離線時，媒體或檔案/影片入口與其他受管離線目錄同樣保持唯讀可瀏覽、拒絕新建寫入，避免登入時因路徑權限錯誤而崩潰；能否繼續查看文字訊息仍取決於微信版本，不保證所有內容在未連接磁碟時可用。加密目標還需[設定資料卷宗密碼](/docs/storage-guide#encrypted-drives)。
 
-新版以整個 `msg` 目錄為單位拆分遷移，讓 `msg/file` 與 `msg/attach` 中可能指向同一份檔案的硬連結保留在同一卷宗。舊版「僅大檔案與影片（`msg/file + msg/video`）」已停止新遷移。已使用舊模式的帳號可繼續使用：接回原外接磁碟，在「應用程式資料」選取微信和對應帳號，依狀態提示解鎖或掛載。想把資料搬回內建磁碟或改用其他遷移方式時，先按一下「還原」，等該帳號已遷出的目錄全部還原後，再視需要選擇「全部遷移」或「拆分遷移」。
+「僅大檔案與影片（`msg/file + msg/video`）」只遷移這兩個目錄，聊天附件與資料庫會留在內部磁碟。與其他目錄共用的檔案會在外接磁碟另存一份，仍占用原來的內部磁碟空間。還原時將外接磁碟上的版本遷回，其他目錄裡的檔案原樣保留。
 
 [![既有拆分遷移的範例。帳號列標出 msg/file 和 msg/video 的合計範圍與「已掛載」狀態，可從右側還原。下一列 WMPF 仍在本機。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hant-8212e352bb7a2e5c.png?sign=oarsds3Fl7-CUMwzt-RNV22dquhwHuYo-B8OI3BrAEg%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hant-8212e352bb7a2e5c.png?sign=oarsds3Fl7-CUMwzt-RNV22dquhwHuYo-B8OI3BrAEg%3D%3A0)
 

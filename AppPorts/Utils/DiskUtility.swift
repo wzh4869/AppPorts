@@ -495,23 +495,29 @@ struct DiskUtility: Sendable {
     /// UUID-based inventory makes cleanup retry distinguish deletion from an
     /// unplugged drive; a transient device identifier cannot supply that proof.
     func apfsContainerUUID(containingVolume volumeUUID: String) async throws -> String {
-        let containers = try await apfsCleanupInventory()
-        let matches = containers.filter { $0.volumes.contains(volumeUUID.uppercased()) }
-        guard matches.count == 1, let match = matches.first else {
+        let containers = try await apfsCleanupInventory(forVolume: volumeUUID)
+        let matches = containers.filter { $0.targetVolumeCount > 0 }
+        guard matches.count == 1, let match = matches.first, match.targetVolumeCount == 1,
+              containers.filter({ $0.uuid == match.uuid }).count == 1 else {
             throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Retained volume is unavailable or ambiguous")
         }
         return match.uuid
     }
 
     func apfsVolumeIsPresent(_ volumeUUID: String, inContainer containerUUID: String) async throws -> Bool {
-        let containers = try await apfsCleanupInventory()
-        guard let container = containers.first(where: { $0.uuid == containerUUID.uppercased() }) else {
+        let containers = try await apfsCleanupInventory(forVolume: volumeUUID)
+        let expectedUUID = containerUUID.uppercased()
+        let matches = containers.filter { $0.uuid == expectedUUID }
+        guard let container = matches.first else {
             throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Retained volume's APFS container is offline")
         }
-        guard !containers.contains(where: { $0.uuid != container.uuid && $0.volumes.contains(volumeUUID.uppercased()) }) else {
+        guard matches.count == 1, container.targetVolumeCount <= 1 else {
+            throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Retained volume is unavailable or ambiguous")
+        }
+        guard !containers.contains(where: { $0.uuid != expectedUUID && $0.targetVolumeCount > 0 }) else {
             throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Retained volume container changed")
         }
-        return container.volumes.contains(volumeUUID.uppercased())
+        return container.targetVolumeCount == 1
     }
 
     /// An unsuccessful creator may leave no volume at all. Proving absence in
@@ -572,40 +578,49 @@ struct DiskUtility: Sendable {
         func invalid() -> Failure { .unexpectedOutput(command: "diskutil apfs list", output: "Invalid diagnostic inventory") }
         guard let containers = plist["Containers"] as? [[String: Any]] else { throw invalid() }
         var result: [String: VolumeStateClassifier.Volume] = [:]
+        var ambiguous: [String: [VolumeStateClassifier.Volume]] = [:]
         for container in containers {
             guard let volumes = container["Volumes"] as? [[String: Any]] else { throw invalid() }
             for volume in volumes {
                 guard let uuid = volume["APFSVolumeUUID"] as? String, !uuid.isEmpty,
                       let device = volume["DeviceIdentifier"] as? String, !device.isEmpty,
-                      let name = volume["Name"] as? String, result[uuid.uppercased()] == nil else { throw invalid() }
-                result[uuid.uppercased()] = .init(uuid: uuid.uppercased(), name: name,
+                      let name = volume["Name"] as? String else { throw invalid() }
+                let key = uuid.uppercased()
+                let entry = VolumeStateClassifier.Volume(uuid: key, name: name,
                     mountPoint: mounts["/dev/" + device], locked: volume["Locked"] as? Bool ?? false)
+                if let previous = result.removeValue(forKey: key) {
+                    ambiguous[key] = [previous, entry]
+                } else if ambiguous[key] != nil {
+                    ambiguous[key]?.append(entry)
+                } else {
+                    result[key] = entry
+                }
             }
         }
-        return .init(volumes: result)
+        return .init(volumes: result, ambiguousVolumes: ambiguous)
     }
 
-    private func apfsCleanupInventory() async throws -> [(uuid: String, volumes: Set<String>)] {
+    // A disk image attached twice can repeat container and volume UUIDs. Keep
+    // each entry so cleanup checks ambiguity only for the identities it uses.
+    private func apfsCleanupInventory(forVolume volumeUUID: String) async throws -> [(uuid: String, targetVolumeCount: Int)] {
         let plist = try await runPlist(["apfs", "list", "-plist"])
         guard let values = plist["Containers"] as? [[String: Any]] else {
             throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Missing container inventory")
         }
-        var seenContainers: Set<String> = []
-        var seenVolumes: Set<String> = []
+        let targetUUID = volumeUUID.uppercased()
         return try values.map { value in
             guard let uuid = value["APFSContainerUUID"] as? String, !uuid.isEmpty,
-                  seenContainers.insert(uuid.uppercased()).inserted,
                   let volumes = value["Volumes"] as? [[String: Any]] else {
                 throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Invalid container inventory")
             }
-            let ids = try volumes.map { volume -> String in
-                guard let id = volume["APFSVolumeUUID"] as? String, !id.isEmpty,
-                      seenVolumes.insert(id.uppercased()).inserted else {
+            var targetVolumeCount = 0
+            for volume in volumes {
+                guard let id = volume["APFSVolumeUUID"] as? String, !id.isEmpty else {
                     throw Failure.unexpectedOutput(command: "diskutil apfs list", output: "Invalid volume inventory")
                 }
-                return id.uppercased()
+                if id.uppercased() == targetUUID { targetVolumeCount += 1 }
             }
-            return (uuid.uppercased(), Set(ids))
+            return (uuid.uppercased(), targetVolumeCount)
         }
     }
 

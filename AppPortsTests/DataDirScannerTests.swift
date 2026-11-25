@@ -1443,6 +1443,7 @@ final class DataDirScannerTests: XCTestCase {
             let scanned = try XCTUnwrap(items.first { $0.path.standardizedFileURL == source.standardizedFileURL })
             XCTAssertEqual(scanned.status, DataDirStatus.local, state)
             XCTAssertEqual(scanned.isMigratable, ["restored", "used-after-restore", "cleanup-retry"].contains(state), state)
+            XCTAssertEqual(scanned.hasCompletedRestore, scanned.isMigratable, state)
             XCTAssertEqual(scanned.recoveryOperationID, restored.operationID, state)
             XCTAssertNil(scanned.linkedDestination, state)
             XCTAssertTrue(scanned.matchesVisibility(showZeroByteDirectories: false, showNonMigratableDirectories: false), state)

@@ -178,9 +178,9 @@ final class ContainerMountStore: @unchecked Sendable {
     func pendingCleanups() throws -> [ContainerCleanupRecord] { try read { $0.cleanups } }
     func preservedMaterials() throws -> [DataTransferMaterial] { try read { $0.preservedMaterials } }
 
-    /// Update scheduling only, using the current journal rather than a stale
+    /// Update retry metadata using the current journal rather than a stale
     /// pre-recovery record. Deleted records remain deleted.
-    func recordCleanupRetry(_ target: CleanupRetryTarget, failed: Bool, now: Date = Date()) throws {
+    func recordCleanupRetry(_ target: CleanupRetryTarget, failed: Bool, now: Date = Date(), failureReason: String? = nil) throws {
         try mutate { current in
             func state(_ count: Int?) -> (Int?, Date?) {
                 guard failed else { return (nil, nil) }
@@ -192,6 +192,10 @@ final class ContainerMountStore: @unchecked Sendable {
                 guard let index = current.transfers.firstIndex(where: { $0.operationID == id }) else { return }
                 (current.transfers[index].retryFailureCount, current.transfers[index].nextAutomaticRetryAt)
                     = state(current.transfers[index].retryFailureCount)
+                if failed, let failureReason, current.transfers[index].isDataSwitchComplete,
+                   current.transfers[index].retainedCopyRemovedAt == nil {
+                    current.transfers[index].recoverableReason = failureReason
+                }
             case .legacy(let id):
                 guard let index = current.cleanups.firstIndex(where: { $0.id == id }) else { return }
                 (current.cleanups[index].retryFailureCount, current.cleanups[index].nextAutomaticRetryAt)

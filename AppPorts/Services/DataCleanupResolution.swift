@@ -4,6 +4,13 @@ import Foundation
 /// User choices change the journal only. A retained copy is never called
 /// deleted, moved over live data, or silently included in later cleanup.
 enum DataCleanupResolution {
+    static func retainedTransfers(in transfers: [DataTransferRecord], at paths: Set<String>) -> [DataTransferRecord] {
+        transfers.filter { transfer in
+            transfer.retainedCopyRemovedAt == nil
+                && paths.contains(URL(fileURLWithPath: transfer.originalPath).standardizedFileURL.path)
+        }
+    }
+
     static func currentDataPaths(for transfers: [DataTransferRecord], store: ContainerMountStore = .shared) -> [UUID: String] {
         Dictionary(uniqueKeysWithValues: transfers.compactMap { transfer in
             (try? store.completedLocation(after: transfer.operationID)).map { (transfer.operationID, $0.activePath) }

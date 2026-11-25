@@ -636,6 +636,45 @@ final class TreeCopySessionTests: XCTestCase {
         }
     }
 
+    func testSeparatingAnOutsideFileLinkPreservesSelectedLinksAndLocalAttachment() async throws {
+        let w = try workspace()
+        defer { cleanup(w.root) }
+        let payload = w.source.appendingPathComponent("a")
+        let sibling = w.source.appendingPathComponent("b")
+        let attachment = w.root.appendingPathComponent("attach")
+        let bytes = Data("shared media".utf8)
+        try bytes.write(to: payload)
+        XCTAssertEqual(link(payload.path, sibling.path), 0)
+        XCTAssertEqual(link(payload.path, attachment.path), 0)
+
+        let baseline = try await TreeCopySession().copy(from: w.source, to: w.destination,
+                                                       separatesExternalFileHardlinks: true)
+        let saved = try PropertyListDecoder().decode(TreeCopySnapshot.self,
+            from: PropertyListEncoder().encode(baseline))
+        XCTAssertEqual(saved.externalFileHardlinks, ["a": 1])
+        try TreeCopySession.verifyUnchanged(at: w.source, against: saved)
+        try TreeCopySession.verifyCopy(at: w.destination, against: saved)
+        let copied = w.destination.appendingPathComponent("a")
+        XCTAssertEqual(try info(copied).st_ino, try info(w.destination.appendingPathComponent("b")).st_ino)
+        XCTAssertNotEqual(try info(copied).st_ino, try info(attachment).st_ino)
+
+        let lateLink = w.root.appendingPathComponent("late-link")
+        XCTAssertEqual(link(payload.path, lateLink.path), 0)
+        XCTAssertThrowsError(try TreeCopySession.verifyUnchanged(at: w.source, against: saved))
+        try fm.removeItem(at: lateLink)
+
+        // A checkpointed cleanup may have already removed the canonical
+        // selected link. The remaining inode still has one outside link.
+        let removalID = UUID()
+        try fm.removeItem(at: payload)
+        try TreeCopySession.verifyRemovalRemainder(at: w.source, against: saved, removalID: removalID)
+        try TreeCopySession.removeVerifiedCopy(at: w.source, against: saved, allowPartialRemoval: true,
+                                             removalID: removalID, requireSourceIdentity: true)
+        XCTAssertEqual(try Data(contentsOf: attachment), bytes)
+        XCTAssertEqual(try info(attachment).st_nlink, 1)
+        XCTAssertEqual(try Data(contentsOf: copied), bytes)
+    }
+
     func testHardlinkAddedAfterInitialVerificationStopsFinalVerification() async throws {
         let w = try workspace()
         defer { cleanup(w.root) }

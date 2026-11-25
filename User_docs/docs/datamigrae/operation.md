@@ -80,7 +80,7 @@ flowchart TB
 
 等目录大小读取完整后，再点击“开始迁移”。切换方式前，先完整还原该账号已迁移的数据。拆分后离线时，媒体或文件/视频入口与其他受管离线目录同样保持只读可遍历、拒绝新建写入，避免登录时因路径权限报错崩溃；能否继续查看文字或历史记录仍取决于微信版本，不保证所有内容在未连盘时可用。加密目标还需[设置数据卷密码](/docs/storage-guide#encrypted-drives)。
 
-新版按整个 `msg` 目录拆分迁移，让 `msg/file` 与 `msg/attach` 里可能指向同一份文件的硬链接保留在同一卷。旧版「仅大文件与视频（`msg/file + msg/video`）」已停止新迁移。已使用旧模式的账号可继续使用：连接原外置盘，在「应用数据」选中微信和对应账号，按状态提示解锁或挂载。想把数据搬回内盘或换一种迁移方式时，先点击「还原」，等该账号已迁出的目录全部还原后，再按需选择「全部迁移」或「拆分迁移」。
+「仅大文件与视频（`msg/file + msg/video`）」只迁移这两个目录，聊天附件和数据库留在内盘。与其他目录共享的文件会在外盘另存一份，内盘上的共享文件仍占用原来的空间。还原时迁回外盘上的版本，其他目录里的文件按原样保留。
 
 [![已有拆分迁移的示例。账号行标出 msg/file 和 msg/video 的合计范围及「已挂载」状态，右侧可还原。下一行 WMPF 仍在本地。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hans-9c98ce2c39213106.png?sign=bfHYBYn6NmoihVKSzp_jnliz0GiACSUuFBr8Rr3i9SY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-zh-hans-9c98ce2c39213106.png?sign=bfHYBYn6NmoihVKSzp_jnliz0GiACSUuFBr8Rr3i9SY%3D%3A0)
 

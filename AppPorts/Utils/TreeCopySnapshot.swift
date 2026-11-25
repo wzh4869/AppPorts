@@ -70,6 +70,10 @@ struct TreeCopySnapshot: Codable, Equatable, Sendable {
     /// Entries remain observations of the source, including projected IDs.
     var ownershipCompatibility: OwnershipCompatibility? = nil
 
+    /// Source-only counts, keyed by the first selected path for each inode.
+    /// A destination must reproduce the selected links and have no outside links.
+    var externalFileHardlinks: [String: Int]? = nil
+
     func destinationEntry(_ entry: Entry) -> Entry {
         let owner = entry.path.isEmpty ? restoredRootOwnership ?? ownershipCompatibility?.projectedSourceOwner
                                       : ownershipCompatibility?.projectedSourceOwner
