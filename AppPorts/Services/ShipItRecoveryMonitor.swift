@@ -18,6 +18,7 @@ final class ShipItRecoveryMonitor {
     private let didCheck: (() -> Void)?
     private let taskCenter: MigrationTaskCenter?
     private let observedStore: ShipItObservedTaskStore?
+    private let logContext: @Sendable (String, [(String, String?)], String) -> Void
     private var events: ShipItUpdateEventMonitor?
     private var observers: Set<AnyCancellable> = []
     private var task: Task<Void, Never>?
@@ -28,6 +29,8 @@ final class ShipItRecoveryMonitor {
     private var needsCheck = false
     private var recovering = false
     private var identifiers: Set<String> = []
+    private var lastMonitoredCount: Int?
+    private var reportedSkips: [String: ShipItUpdateRecovery.SkipObservation] = [:]
     private var suppressed: Set<String> = []
     private var activeCandidateKey: String?
     private var failures: [String: String] = [:]
@@ -40,13 +43,17 @@ final class ShipItRecoveryMonitor {
          didCheck: (() -> Void)? = nil, taskCenter: MigrationTaskCenter? = nil,
          observedStore: ShipItObservedTaskStore? = nil,
          startEvents: @escaping (ShipItUpdateEventMonitor, Set<String>) -> Bool = { $0.start(identifiers: $1) },
-         didStartListening: @escaping () throws -> Void = {}) {
+         didStartListening: @escaping () throws -> Void = {},
+         logContext: @escaping @Sendable (String, [(String, String?)], String) -> Void = {
+             AppLogger.shared.logContext($0, details: $1, level: $2)
+         }) {
         self.recovery = recovery ?? ShipItUpdateRecovery(); injected = recovery != nil
         self.interval = interval; self.debounce = debounce; self.eventLatency = eventLatency
         self.operationState = operationState ?? .shared
         self.workspaceCenter = workspaceCenter; self.didCheck = didCheck
         self.startEvents = startEvents
         self.didStartListening = didStartListening
+        self.logContext = logContext
         self.taskCenter = taskCenter ?? (recovery == nil ? .shared : nil)
         self.observedStore = observedStore ?? (recovery == nil ? ShipItObservedTaskStore() : nil)
     }
@@ -106,8 +113,14 @@ final class ShipItRecoveryMonitor {
                 let worker = recovery
                 identifiers = try await Task.detached(priority: .utility) { try worker.monitoredBundleIdentifiers() }.value
                 try Task.checkCancellation()
+                if lastMonitoredCount != identifiers.count {
+                    lastMonitoredCount = identifiers.count
+                    logContext("更新守护监听名单已更新", [("monitored_count", String(identifiers.count))], "TRACE")
+                }
                 updateListener()
-                let candidates = try await Task.detached(priority: .utility) { try worker.candidates() }.value
+                let scan = try await Task.detached(priority: .utility) { try worker.scanCandidates() }.value
+                let candidates = scan.candidates
+                recordSkips(scan.skips)
                 let rollbacks = try await Task.detached(priority: .utility) { try worker.pendingRollbacks() }.value
                 rejectedPackages = rejectedPackages.filter { key, _ in candidates.contains { $0.key == key } }
                 for pending in rollbacks {
@@ -141,6 +154,17 @@ final class ShipItRecoveryMonitor {
                 startupRetryDelay = min(startupRetryDelay * 2, 30_000_000_000)
             } else if retry { requestCheck(after: interval) }
         }
+    }
+
+    private func recordSkips(_ skips: [ShipItUpdateRecovery.SkipObservation]) {
+        let current = Dictionary(skips.map { ($0.bundleIdentifier, $0) }, uniquingKeysWith: { _, latest in latest })
+        for (bundleIdentifier, skip) in current.sorted(by: { $0.key < $1.key }) where reportedSkips[bundleIdentifier] != skip {
+            logContext("跳过 ShipIt 更新候选", [
+                ("bundle_id", skip.bundleIdentifier),
+                ("reason", skip.reason.rawValue)
+            ], "TRACE")
+        }
+        reportedSkips = current
     }
 
     private func updateListener() {
@@ -301,6 +325,8 @@ final class ShipItRecoveryMonitor {
         await task?.value
         task = nil
         needsCheck = false
+        lastMonitoredCount = nil
+        reportedSkips.removeAll()
         for candidate in Array(unfinished.values) {
             if disabledByUser, failures[candidate.key] == nil {
                 let message = String(format: "更新守护已关闭。「%@」仍待恢复，重新开启守护后将继续检查。".localized, candidate.record.name)

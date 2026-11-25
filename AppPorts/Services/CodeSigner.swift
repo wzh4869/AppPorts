@@ -615,6 +615,25 @@ actor CodeSigner {
         return [signature, global]
     }
 
+    /// Background maintenance waits like data maintenance so brief startup agent sync does not log a spurious failure.
+    private func acquireMaintenanceLocks(timeout: TimeInterval) async throws -> [OperationLock] {
+        let globalURL = backupDirectoryURL.standardizedFileURL == Self.defaultBackupDirectoryURL.standardizedFileURL
+            ? OperationLock.defaultFileURL : backupDirectoryURL.deletingLastPathComponent().appendingPathComponent("operation.lock")
+        let global = OperationLock(fileURL: globalURL)
+        let budget = max(0, timeout)
+        let deadline = Date().addingTimeInterval(budget)
+        guard await global.acquire(timeout: budget) else {
+            throw global.diagnosticFailure(scope: .global)
+        }
+        let remaining = max(0, deadline.timeIntervalSinceNow)
+        let signature = OperationLock(fileURL: backupDirectoryURL.appendingPathComponent("signature-operation.lock"))
+        guard await signature.acquire(timeout: remaining) else {
+            global.release()
+            throw signature.diagnosticFailure(scope: .signature)
+        }
+        return [signature, global]
+    }
+
     private func logSignatureFailure(_ error: Error, record: SignatureOperationRecord? = nil,
                                      app: URL? = nil, stage: String, result: String = "failed") {
         AppLogger.shared.logOperationFailure(category: "signature", operationID: record?.id.uuidString
@@ -1660,14 +1679,14 @@ extension CodeSigner {
         return record
     }
 
-    func performAutomaticMaintenance() async -> [String] {
+    func performAutomaticMaintenance(lockTimeout: TimeInterval = OperationLock.appWaitTimeout) async -> [String] {
         var warnings: [String] = []
         let attemptID = AppLogger.shared.makeOperationID(prefix: "signature-maintenance")
         var stage = "preparing_services"
         do {
             try await prepareServices()
             stage = "waiting"
-            let locks = try acquireLocks()
+            let locks = try await acquireMaintenanceLocks(timeout: lockTimeout)
             stage = "inventory"
             defer { locks.forEach { $0.release() } }
             let inventory = try operations.inventory()

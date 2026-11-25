@@ -101,27 +101,83 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
 
     var cacheDirectory: URL { caches }
 
+    struct SkipObservation: Equatable, Sendable {
+        enum Reason: String, Sendable {
+            case portalMismatch = "portal_mismatch"
+            case targetParentMissing = "target_parent_missing"
+            case targetParentNotCanonical = "target_parent_not_canonical"
+            case volumeUUIDMismatch = "volume_uuid_mismatch"
+            case missingStateFile = "missing_state_file"
+            case invalidStateFormat = "invalid_state_format"
+            case bundleIdentifierMismatch = "bundle_identifier_mismatch"
+            case targetPathMismatch = "target_path_mismatch"
+            case updateBundleOutsideCache = "update_bundle_outside_cache"
+            case missingStderrLog = "missing_stderr_log"
+            case missingInstallMarker = "missing_install_marker"
+            case missingQuitMarker = "missing_quit_marker"
+            case unrecognizedErrorMarker = "unrecognized_error_marker"
+            case logTargetMismatch = "log_target_mismatch"
+            case logOlderThanState = "log_older_than_state"
+            case receiptMismatch = "receipt_mismatch"
+            case alreadyCompleted = "already_completed"
+            case notNewerThanTarget = "not_newer_than_target"
+            case rollbackPending = "rollback_pending"
+        }
+
+        let bundleIdentifier: String
+        let reason: Reason
+        let fingerprint: String
+    }
+
+    struct CandidateScan: Equatable, Sendable {
+        let candidates: [Candidate]
+        let skips: [SkipObservation]
+    }
+
     func monitoredBundleIdentifiers() throws -> Set<String> {
         Set(try records.records().filter { !$0.isRestored && $0.expectsLocalEntry }
             .compactMap(\.targetBundleIdentifier).filter(Self.validIdentifier))
     }
 
     func candidates() throws -> [Candidate] {
+        try scanCandidates().candidates
+    }
+
+    func scanCandidates() throws -> CandidateScan {
         var result: [Candidate] = []
+        var skips: [SkipObservation] = []
         for record in try records.records() {
             do {
-                guard let (candidate, saved, _) = try installation(for: record) else { continue }
-                if hasRollbackRequest(candidate) { continue }
-                if let saved {
-                    if saved.complete, try !ownsCompletedUpdate(candidate) { continue }
-                } else if try SignatureSnapshot.entryExists(candidate.request.targetBundleURL), !Self.isNewer(candidate) { continue }
-                result.append(candidate)
+                switch try inspectInstallation(for: record) {
+                case .none:
+                    continue
+                case .skipped(let skip):
+                    if let skip { skips.append(skip) }
+                    continue
+                case .matched(let (candidate, saved, _)):
+                    let identifier = candidate.request.bundleIdentifier
+                    let cache = candidate.stateURL.deletingLastPathComponent()
+                    if hasRollbackRequest(candidate) {
+                        skips.append(makeSkip(identifier: identifier, cache: cache, reason: .rollbackPending))
+                        continue
+                    }
+                    if let saved {
+                        if saved.complete, try !ownsCompletedUpdate(candidate) {
+                            skips.append(makeSkip(identifier: identifier, cache: cache, reason: .alreadyCompleted))
+                            continue
+                        }
+                    } else if try SignatureSnapshot.entryExists(candidate.request.targetBundleURL), !Self.isNewer(candidate) {
+                        skips.append(makeSkip(identifier: identifier, cache: cache, reason: .notNewerThanTarget))
+                        continue
+                    }
+                    result.append(candidate)
+                }
             } catch {
                 AppLogger.shared.logContext("跳过无法检查的 ShipIt 更新记录",
                     details: [("bundle_id", record.targetBundleIdentifier), ("error", error.localizedDescription)], level: "TRACE")
             }
         }
-        return result
+        return CandidateScan(candidates: result, skips: skips)
     }
 
     /// A missing target alone is not an update failure (unplug, Finder deletion, normal swap).
@@ -131,45 +187,93 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
 
     private typealias Installation = (candidate: Candidate, receipt: Receipt?, start: String?)
 
+    private enum InspectionResult {
+        case matched(Installation)
+        case skipped(SkipObservation?)
+        case none
+    }
+
     private func installation(for record: AppSearchRecord) throws -> Installation? {
+        guard case .matched(let found) = try inspectInstallation(for: record) else { return nil }
+        return found
+    }
+
+    private func inspectInstallation(for record: AppSearchRecord) throws -> InspectionResult {
         guard !record.isRestored, record.expectsLocalEntry,
               let identifier = record.targetBundleIdentifier, Self.validIdentifier(identifier),
-              let uuid = record.volumeUUID, !uuid.isEmpty else { return nil }
+              let uuid = record.volumeUUID, !uuid.isEmpty else { return .none }
         let local = URL(fileURLWithPath: record.localPath)
         let target = URL(fileURLWithPath: record.externalPath)
-        guard AppPortalMaintenance.entries(at: local).contains(where: { $0.externalURL == target }),
-              FileManager.default.fileExists(atPath: target.deletingLastPathComponent().path),
-              target.pathExtension == "app", Self.canonical(target.deletingLastPathComponent()) == target.deletingLastPathComponent(),
-              try Self.volume(at: target.deletingLastPathComponent()) == uuid else { return nil }
         let cache = caches.appendingPathComponent(identifier + ".ShipIt")
         let state = cache.appendingPathComponent("ShipItState.plist")
-        guard FileManager.default.fileExists(atPath: state.path) else { return nil }
-        let bytes = try Self.smallFile(state)
-        guard let request = try? JSONDecoder().decode(Request.self, from: bytes),
-              request.bundleIdentifier == identifier,
-              request.targetBundleURL.isFileURL, request.updateBundleURL.isFileURL,
-              request.targetBundleURL.standardizedFileURL.path == target.path,
-              request.updateBundleURL.pathExtension == "app",
-              Self.canonical(request.updateBundleURL).path.hasPrefix(Self.canonical(cache).path + "/update."),
-              Self.canonical(request.updateBundleURL).path == request.updateBundleURL.standardizedFileURL.path else { return nil }
         let log = cache.appendingPathComponent("ShipIt_stderr.log")
-        guard FileManager.default.fileExists(atPath: log.path),
-              let installation = try Self.latestInstallationAttempt(in: log) else { return nil }
+        guard AppPortalMaintenance.entries(at: local).contains(where: { Self.pathsMatch($0.externalURL.path, target.path) }) else {
+            return skipIfActive(identifier: identifier, cache: cache, reason: .portalMismatch)
+        }
+        guard FileManager.default.fileExists(atPath: target.deletingLastPathComponent().path) else {
+            return skipIfActive(identifier: identifier, cache: cache, reason: .targetParentMissing)
+        }
+        guard target.pathExtension == "app",
+              Self.pathsMatch(Self.canonical(target.deletingLastPathComponent()).path, target.deletingLastPathComponent().path) else {
+            return skipIfActive(identifier: identifier, cache: cache, reason: .targetParentNotCanonical)
+        }
+        guard try Self.volume(at: target.deletingLastPathComponent()) == uuid else {
+            return skipIfActive(identifier: identifier, cache: cache, reason: .volumeUUIDMismatch)
+        }
+        guard FileManager.default.fileExists(atPath: state.path) else {
+            return skipIfActive(identifier: identifier, cache: cache, reason: .missingStateFile)
+        }
+        let bytes = try Self.smallFile(state)
+        guard let request = try? JSONDecoder().decode(Request.self, from: bytes) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .invalidStateFormat))
+        }
+        guard request.bundleIdentifier == identifier else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .bundleIdentifierMismatch))
+        }
+        guard request.targetBundleURL.isFileURL, request.updateBundleURL.isFileURL,
+              Self.pathsMatch(request.targetBundleURL.standardizedFileURL.path, target.path) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .targetPathMismatch))
+        }
+        let canonicalUpdate = Self.canonical(request.updateBundleURL).path
+        let updatePrefix = Self.canonical(cache).path + "/update."
+        guard request.updateBundleURL.pathExtension == "app",
+              canonicalUpdate.decomposedStringWithCanonicalMapping.hasPrefix(updatePrefix.decomposedStringWithCanonicalMapping),
+              Self.pathsMatch(canonicalUpdate, request.updateBundleURL.standardizedFileURL.path) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .updateBundleOutsideCache))
+        }
+        guard FileManager.default.fileExists(atPath: log.path) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .missingStderrLog))
+        }
+        guard let installation = try Self.latestInstallationAttempt(in: log) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .missingInstallMarker))
+        }
         let attempt = installation.details
-        guard attempt.contains("ShipIt quitting"),
-              (attempt.contains("Installation error:") || attempt.contains("Too many attempts to install, aborting update")
-                  || attempt.contains("Error aborting installation:")),
-              // Resumed installs may report only an OSStatus on the final error line.
-              // Bind its target using the same attempt's earlier move/rollback messages.
-              (attempt.contains(target.path) || attempt.contains(request.targetBundleURL.absoluteString)),
-              try Self.modified(log) >= Self.modified(state) else { return nil }
+        guard attempt.contains("ShipIt quitting") else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .missingQuitMarker))
+        }
+        guard attempt.contains("Installation error:") || attempt.contains("Too many attempts to install, aborting update")
+                || attempt.contains("Error aborting installation:") else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .unrecognizedErrorMarker))
+        }
+        // Resumed installs may report only an OSStatus on the final error line.
+        // Bind its target using the same attempt's earlier move/rollback messages.
+        guard Self.attemptReferencesTarget(attempt, target: target, requestTargetURL: request.targetBundleURL) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .logTargetMismatch))
+        }
+        guard try Self.modified(log) >= Self.modified(state) else {
+            return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .logOlderThanState))
+        }
         var candidate = Candidate(record: record, request: request, requestBytes: bytes, stateURL: state)
         var url = receiptURL(candidate)
         while try SignatureSnapshot.entryExists(url) {
             let saved = try JSONDecoder().decode(Receipt.self, from: Self.smallFile(url))
-            guard saved.candidate == candidate else { return nil }
+            guard saved.candidate == candidate else {
+                return .skipped(makeSkip(identifier: identifier, cache: cache, reason: .receiptMismatch))
+            }
             guard saved.complete, saved.installerStateCleaned == true, !hasRollbackRequest(candidate),
-                  try installation.isLater(than: saved, at: url) else { return (candidate, saved, installation.timestamp) }
+                  try installation.isLater(than: saved, at: url) else {
+                return .matched((candidate, saved, installation.timestamp))
+            }
             // Only a later ShipIt run can advance past a completed transaction.
             // An interrupted install or rollback must keep its original stage and key.
             var next = candidate
@@ -177,11 +281,97 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
             url = receiptURL(next)
             if try !SignatureSnapshot.entryExists(url), !hasRollbackRequest(next), try ownsCompletedUpdate(candidate) {
                 // A later failed run left our installed copy intact. Only the old request needs retiring.
-                return (candidate, saved, installation.timestamp)
+                return .matched((candidate, saved, installation.timestamp))
             }
             candidate = next
         }
-        return (candidate, nil, installation.timestamp)
+        return .matched((candidate, nil, installation.timestamp))
+    }
+
+    private func skipIfActive(identifier: String, cache: URL, reason: SkipObservation.Reason) -> InspectionResult {
+        let state = cache.appendingPathComponent("ShipItState.plist")
+        let log = cache.appendingPathComponent("ShipIt_stderr.log")
+        guard FileManager.default.fileExists(atPath: state.path) || FileManager.default.fileExists(atPath: log.path) else {
+            return .none
+        }
+        return .skipped(makeSkip(identifier: identifier, cache: cache, reason: reason))
+    }
+
+    private func makeSkip(identifier: String, cache: URL, reason: SkipObservation.Reason) -> SkipObservation {
+        SkipObservation(bundleIdentifier: identifier, reason: reason, fingerprint: Self.cacheFingerprint(in: cache))
+    }
+
+    private static func cacheFingerprint(in cache: URL) -> String {
+        func stamp(_ url: URL) -> String {
+            guard let info = try? SignatureSnapshot.info(at: url) else { return "-" }
+            return "\(info.st_mtimespec.tv_sec).\(info.st_mtimespec.tv_nsec):\(info.st_size)"
+        }
+        let state = cache.appendingPathComponent("ShipItState.plist")
+        let log = cache.appendingPathComponent("ShipIt_stderr.log")
+        return "s:\(stamp(state))|l:\(stamp(log))"
+    }
+
+    static func pathsMatch(_ left: String, _ right: String) -> Bool {
+        let a = URL(fileURLWithPath: left).standardizedFileURL.path
+        let b = URL(fileURLWithPath: right).standardizedFileURL.path
+        return a == b || a.decomposedStringWithCanonicalMapping == b.decomposedStringWithCanonicalMapping
+    }
+
+    static func attemptReferencesTarget(_ attempt: String, target: URL, requestTargetURL: URL) -> Bool {
+        let targetPath = target.standardizedFileURL.path
+        let rawVariants = Set([
+            targetPath,
+            targetPath.precomposedStringWithCanonicalMapping,
+            targetPath.decomposedStringWithCanonicalMapping
+        ])
+        for variant in rawVariants where containsPathToken(variant, in: attempt) {
+            return true
+        }
+        if let expression = try? NSRegularExpression(pattern: #"file://[^\s"',;)}\]]+"#) {
+            let decomposedTarget = targetPath.decomposedStringWithCanonicalMapping
+            let range = NSRange(attempt.startIndex..., in: attempt)
+            for match in expression.matches(in: attempt, range: range) {
+                guard let tokenRange = Range(match.range, in: attempt) else { continue }
+                var raw = String(attempt[tokenRange])
+                while raw.hasSuffix(".") { raw.removeLast() }
+                guard let parsed = URL(string: raw), parsed.isFileURL else { continue }
+                let parsedPath = parsed.standardizedFileURL.path
+                if pathsMatch(parsedPath, targetPath)
+                    || parsedPath.decomposedStringWithCanonicalMapping.hasPrefix(decomposedTarget + "/") {
+                    return true
+                }
+            }
+        }
+        var requestString = requestTargetURL.absoluteString
+        while requestString.hasSuffix("/") { requestString.removeLast() }
+        return containsPathToken(requestString, in: attempt)
+    }
+
+    private static func containsPathToken(_ needle: String, in haystack: String) -> Bool {
+        guard !needle.isEmpty else { return false }
+        var searchStart = haystack.startIndex
+        while let range = haystack.range(of: needle, range: searchStart..<haystack.endIndex) {
+            let beforeOK: Bool
+            if range.lowerBound == haystack.startIndex {
+                beforeOK = true
+            } else {
+                beforeOK = !isPathContinuationCharacter(haystack[haystack.index(before: range.lowerBound)])
+            }
+            let afterOK: Bool
+            if range.upperBound == haystack.endIndex {
+                afterOK = true
+            } else {
+                let next = haystack[range.upperBound]
+                afterOK = next == "/" || !isPathContinuationCharacter(next)
+            }
+            if beforeOK && afterOK { return true }
+            searchStart = range.upperBound
+        }
+        return false
+    }
+
+    private static func isPathContinuationCharacter(_ character: Character) -> Bool {
+        character.isLetter || character.isNumber || character == "." || character == "-" || character == "_"
     }
 
     /// Caller owns the foreground operation token; this worker owns the filesystem locks.

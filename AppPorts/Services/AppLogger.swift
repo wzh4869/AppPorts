@@ -956,7 +956,11 @@ final class AppLogger: @unchecked Sendable {
         return archiveURL
     }
 
-    nonisolated func buildDiagnosticPackage(in rootURL: URL, includeAppInventory: Bool = false) throws -> URL {
+    nonisolated func buildDiagnosticPackage(
+        in rootURL: URL,
+        includeAppInventory: Bool = false,
+        guardianSummary: [String]? = nil
+    ) throws -> URL {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmmss"
         let packageURL = rootURL.appendingPathComponent("AppPorts-Diagnostic-\(formatter.string(from: Date()))", isDirectory: true)
@@ -973,6 +977,7 @@ final class AppLogger: @unchecked Sendable {
         let recentFailures = operationSummaries.filter { ["failed", "rolled_back", "success_with_warning"].contains($0.result) }
 
         let volumeInventory = VolumeStateReporting.diagnosticSection(VolumeStateReporting.lastInventory())
+        let updateGuardian = guardianSummary ?? UpdateGuardianReporting.diagnosticSection()
         let metadata: [String: String] = [
             "generated_at": timestampString(for: Date()),
             "session_id": sessionID,
@@ -989,7 +994,8 @@ final class AppLogger: @unchecked Sendable {
             "app_inventory_included": String(includeAppInventory),
             "recent_operation_count": String(operationSummaries.count),
             "recent_failure_count": String(recentFailures.count),
-            "volume_state_inventory": volumeInventory.joined(separator: "\n")
+            "volume_state_inventory": volumeInventory.joined(separator: "\n"),
+            "update_guardian": updateGuardian.joined(separator: "\n")
         ]
 
         try writeJSON(metadata, to: packageURL.appendingPathComponent("diagnostic-summary.json"))
@@ -1311,6 +1317,7 @@ final class AppLogger: @unchecked Sendable {
         }
 
         if let inventory = metadata["volume_state_inventory"] { lines.append(inventory) }
+        if let guardian = metadata["update_guardian"] { lines.append(guardian) }
         return lines.joined(separator: "\n") + "\n"
     }
 }

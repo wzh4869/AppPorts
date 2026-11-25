@@ -2458,4 +2458,28 @@ struct SignatureOperationTests {
         func signingMaterialsAreEmpty() throws -> Bool { try SignatureOperationStore(backupDirectoryURL: backups).records().isEmpty }
         func remove() { try? SignatureSnapshot.remove(root) }
     }
+
+    @Test("Automatic signature maintenance waits for a transient global lock and still reports persistent contention")
+    func automaticMaintenanceWaitsForTransientGlobalLock() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let globalLockURL = fixture.root.appendingPathComponent("operation.lock")
+        let holder = OperationLock(fileURL: globalLockURL, writerAdmissionCheck: {})
+        try #require(holder.tryAcquire())
+
+        let releaseTask = Task {
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            holder.release()
+        }
+        let waitedWarnings = await fixture.signer().performAutomaticMaintenance(lockTimeout: 2)
+        await releaseTask.value
+        #expect(waitedWarnings.isEmpty, Comment(rawValue: waitedWarnings.joined(separator: "\n")))
+
+        let persistentHolder = OperationLock(fileURL: globalLockURL, writerAdmissionCheck: {})
+        try #require(persistentHolder.tryAcquire())
+        defer { persistentHolder.release() }
+        let busyWarnings = await fixture.signer().performAutomaticMaintenance(lockTimeout: 0.2)
+        #expect(busyWarnings.count == 1)
+        #expect(busyWarnings[0] == OperationBlockage(reason: .globalLockBusy).localizedDescription)
+    }
 }

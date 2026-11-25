@@ -401,13 +401,13 @@ extension ShipItUpdateRecovery {
     private func nativeTemporaryApplications(_ candidate: Candidate, movedFromTarget: Bool) throws -> [URL] {
         let log = candidate.stateURL.deletingLastPathComponent().appendingPathComponent("ShipIt_stderr.log")
         guard let attempt = try Self.latestInstallationAttempt(in: log)?.details else { throw RollbackError.changed }
-        let expression = try NSRegularExpression(pattern: "(?:Moving bundle|Moved bundle contents across volumes) from (file://\\S+) to (file://\\S+)")
+        let expression = try NSRegularExpression(pattern: #"(?:Moving bundle|Moved bundle contents across volumes) from (file://[^\s"',;)}\]]+) to (file://[^\s"',;)}\]]+)"#)
         let target = candidate.request.targetBundleURL.standardizedFileURL
         return expression.matches(in: attempt, range: NSRange(attempt.startIndex..., in: attempt)).compactMap { match in
             guard let a = Range(match.range(at: 1), in: attempt), let b = Range(match.range(at: 2), in: attempt),
                   let from = URL(string: String(attempt[a])), let to = URL(string: String(attempt[b])) else { return nil }
-            if from.standardizedFileURL.path == target.path, isNativeTemporaryApplication(to, identifier: candidate.request.bundleIdentifier) { return to.standardizedFileURL }
-            if !movedFromTarget, to.standardizedFileURL.path == target.path,
+            if Self.pathsMatch(from.standardizedFileURL.path, target.path), isNativeTemporaryApplication(to, identifier: candidate.request.bundleIdentifier) { return to.standardizedFileURL }
+            if !movedFromTarget, Self.pathsMatch(to.standardizedFileURL.path, target.path),
                isNativeTemporaryApplication(from, identifier: candidate.request.bundleIdentifier) { return from.standardizedFileURL }
             return nil
         }
@@ -427,11 +427,11 @@ extension ShipItUpdateRecovery {
            try Self.smallFile(candidate.stateURL) != candidate.requestBytes { throw RollbackError.changed }
         let parent = candidate.request.targetBundleURL.deletingLastPathComponent()
         guard try records.records().contains(candidate.record), !candidate.record.isRestored,
-              candidate.request.targetBundleURL.path == candidate.record.externalPath,
-              parent == parent.resolvingSymlinksInPath().standardizedFileURL,
+              Self.pathsMatch(candidate.request.targetBundleURL.path, candidate.record.externalPath),
+              Self.pathsMatch(parent.path, parent.resolvingSymlinksInPath().standardizedFileURL.path),
               try parent.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString == candidate.record.volumeUUID,
               AppPortalMaintenance.entries(at: URL(fileURLWithPath: candidate.record.localPath)).contains(where: {
-                  $0.externalURL.standardizedFileURL.path == candidate.request.targetBundleURL.standardizedFileURL.path
+                  Self.pathsMatch($0.externalURL.standardizedFileURL.path, candidate.request.targetBundleURL.standardizedFileURL.path)
               }) else { throw RollbackError.changed }
     }
 

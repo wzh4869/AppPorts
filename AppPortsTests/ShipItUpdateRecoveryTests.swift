@@ -1416,4 +1416,162 @@ final class ShipItUpdateRecoveryTests: XCTestCase {
         let report = "Recovered: \(fixture.target.path)\nCache retained: \(fixture.source.path)\nSignature: verified\nLaunch: substituted, real application not started\n"
         try report.write(to: fixture.root.appendingPathComponent("RESULT.txt"), atomically: true, encoding: .utf8)
     }
+
+    func testScanCandidatesReportsSpecificSkipReasonsAndIgnoresIdleRecords() throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        // Idle record with no .ShipIt cache directory should not emit any skip observation.
+        let idleLocal = fixture.root.appendingPathComponent("Local/Idle.app")
+        let idleTarget = fixture.target.deletingLastPathComponent().appendingPathComponent("Idle.app")
+        try Fixture.bundle(at: idleLocal, identifier: "org.appports.idle.appports.stub", executable: "launcher")
+        let idleResources = idleLocal.appendingPathComponent("Contents/Resources")
+        try FileManager.default.createDirectory(at: idleResources, withIntermediateDirectories: true)
+        try idleTarget.path.write(to: idleResources.appendingPathComponent("real_app_path.txt"), atomically: true, encoding: .utf8)
+        try FileManager.default.createDirectory(at: idleTarget, withIntermediateDirectories: false)
+        try fixture.store.record(name: "Idle", localURL: idleLocal, externalURL: idleTarget, expectsLocalEntry: true, explicitOperation: true)
+
+        let recovery = fixture.recovery()
+
+        // 1. Missing quit marker
+        try "Detected this as an install request\nInstallation error: Couldn't copy to \(fixture.target.path)\n"
+            .write(to: fixture.log, atomically: true, encoding: .utf8)
+        var scan = try recovery.scanCandidates()
+        XCTAssertTrue(scan.candidates.isEmpty)
+        XCTAssertEqual(scan.skips.map(\.bundleIdentifier), [fixture.identifier])
+        XCTAssertEqual(scan.skips.first?.reason, .missingQuitMarker)
+
+        // 2. Unrecognized error marker
+        try "Detected this as an install request\nUnexpected failure at \(fixture.target.path)\nShipIt quitting\n"
+            .write(to: fixture.log, atomically: true, encoding: .utf8)
+        scan = try recovery.scanCandidates()
+        XCTAssertEqual(scan.skips.first?.reason, .unrecognizedErrorMarker)
+
+        // 3. Log referencing only a sibling prefix trap
+        try "Detected this as an install request\nInstallation error: Couldn't copy to \(fixture.target.path).bak\nShipIt quitting\n"
+            .write(to: fixture.log, atomically: true, encoding: .utf8)
+        scan = try recovery.scanCandidates()
+        XCTAssertEqual(scan.skips.first?.reason, .logTargetMismatch)
+
+        // 4. Invalid (non-JSON) state file
+        try Data("not-json".utf8).write(to: fixture.state)
+        scan = try recovery.scanCandidates()
+        XCTAssertEqual(scan.skips.first?.reason, .invalidStateFormat)
+
+        // 5. Missing state file while stderr log exists
+        try FileManager.default.removeItem(at: fixture.state)
+        scan = try recovery.scanCandidates()
+        XCTAssertEqual(scan.skips.first?.reason, .missingStateFile)
+    }
+
+    func testAttemptReferencesTargetMatchesUnicodeSpacesSlashVariantsAndRejectsPrefixCollisions() throws {
+        let external = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShipIt-Unicode-\(UUID().uuidString)")
+            .appendingPathComponent("外接 硬盘/AppPorts.noindex")
+        defer { try? FileManager.default.removeItem(at: external.deletingLastPathComponent().deletingLastPathComponent()) }
+        let fixture = try Fixture(externalDirectory: external)
+        defer { try? FileManager.default.removeItem(at: fixture.root) }
+        let recovery = fixture.recovery()
+
+        // ShipItState.plist has trailing slash, while stderr log has percent-encoded file:// URL without trailing slash.
+        let encodedNoSlash = fixture.target.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        try """
+        2026-11-24 12:00:00.000 ShipIt[1:1] Detected this as an install request
+        2026-11-24 12:00:01.000 ShipIt[1:1] Moving bundle from file:///private/tmp/owned/Fixture.app to \(encodedNoSlash)
+        2026-11-24 12:00:02.000 ShipIt[1:1] Installation error: Error Domain=NSOSStatusErrorDomain Code=-67068 "(null)"
+        2026-11-24 12:00:02.100 ShipIt[1:1] ShipIt quitting
+        """.write(to: fixture.log, atomically: true, encoding: .utf8)
+        XCTAssertEqual(try recovery.scanCandidates().candidates.count, 1)
+
+        // Reverse: ShipItState.plist without trailing slash, log with trailing slash + comma punctuation.
+        let noSlashRequest: [String: Any] = [
+            "targetBundleURL": encodedNoSlash,
+            "updateBundleURL": fixture.source.absoluteString + "/",
+            "bundleIdentifier": fixture.identifier,
+            "launchAfterInstallation": true
+        ]
+        try JSONSerialization.data(withJSONObject: noSlashRequest).write(to: fixture.state)
+        try """
+        2026-11-24 12:00:03.000 ShipIt[1:1] Detected this as an install request
+        2026-11-24 12:00:04.000 ShipIt[1:1] Couldn't abort install to \(encodedNoSlash)/, error -7
+        2026-11-24 12:00:05.000 ShipIt[1:1] Installation error: Error Domain=NSOSStatusErrorDomain Code=-67068 "(null)"
+        2026-11-24 12:00:05.100 ShipIt[1:1] ShipIt quitting
+        """.write(to: fixture.log, atomically: true, encoding: .utf8)
+        XCTAssertEqual(try recovery.scanCandidates().candidates.count, 1)
+
+        // Direct helper checks: NFC/NFD canonical equivalence and prefix collision rejection.
+        let nfcTarget = URL(fileURLWithPath: "/Volumes/Café 磁盘/AppPorts.noindex/My App.app")
+        let nfdLog = "Installation error: Couldn't copy to /Volumes/Cafe\u{0301} 磁盘/AppPorts.noindex/My App.app\n"
+        XCTAssertTrue(ShipItUpdateRecovery.attemptReferencesTarget(nfdLog, target: nfcTarget, requestTargetURL: nfcTarget))
+        let collisionLog = "Installation error: Couldn't copy to \(encodedNoSlash).bak and \(fixture.target.path).bak\n"
+        XCTAssertFalse(ShipItUpdateRecovery.attemptReferencesTarget(collisionLog, target: fixture.target, requestTargetURL: fixture.target))
+    }
+
+    @MainActor
+    func testMonitorLogsDeduplicatedSkipReasonsAndMonitoredCount() async throws {
+        let fixture = try Fixture(); defer { try? FileManager.default.removeItem(at: fixture.root) }
+        try "Detected this as an install request\nInstallation error: Couldn't copy to \(fixture.target.path)\n"
+            .write(to: fixture.log, atomically: true, encoding: .utf8)
+
+        final class LogRecorder: @unchecked Sendable {
+            private let lock = NSLock()
+            private var entries: [(title: String, details: [String: String], level: String)] = []
+            func append(_ title: String, _ details: [(String, String?)], _ level: String) {
+                lock.lock(); defer { lock.unlock() }
+                let dict = Dictionary(details.compactMap { k, v in v.map { (k, $0) } }, uniquingKeysWith: { _, latest in latest })
+                entries.append((title, dict, level))
+            }
+            func snapshot() -> [(title: String, details: [String: String], level: String)] {
+                lock.lock(); defer { lock.unlock() }
+                return entries
+            }
+        }
+
+        let recorder = LogRecorder()
+        let center = NotificationCenter()
+        let state = AppOperationState(notificationCenter: center)
+        var checkCount = 0
+        var onCheck: (() -> Void)?
+        let monitor = ShipItRecoveryMonitor(
+            recovery: fixture.recovery(),
+            operationState: state,
+            debounce: 50_000_000,
+            workspaceCenter: center,
+            didCheck: {
+                checkCount += 1
+                onCheck?()
+            },
+            startEvents: { _, _ in true },
+            logContext: { recorder.append($0, $1, $2) }
+        )
+
+        let first = expectation(description: "First check")
+        onCheck = { if checkCount == 1 { first.fulfill() } }
+        monitor.start()
+        await fulfillment(of: [first], timeout: 5)
+
+        // Second check with unchanged state/log must not emit duplicate skip or count entries.
+        let second = expectation(description: "Second check")
+        onCheck = { if checkCount == 2 { second.fulfill() } }
+        center.post(name: NSWorkspace.didWakeNotification, object: nil)
+        await fulfillment(of: [second], timeout: 5)
+
+        let afterSecond = recorder.snapshot()
+        XCTAssertEqual(afterSecond.filter { $0.title == "更新守护监听名单已更新" }.count, 1)
+        XCTAssertEqual(afterSecond.first { $0.title == "更新守护监听名单已更新" }?.details["monitored_count"], "1")
+        let skipsAfterSecond = afterSecond.filter { $0.title == "跳过 ShipIt 更新候选" }
+        XCTAssertEqual(skipsAfterSecond.count, 1)
+        XCTAssertEqual(skipsAfterSecond.first?.details["reason"], "missing_quit_marker")
+
+        // Changing the log to a different skip reason emits one new skip entry.
+        try "Detected this as an install request\nUnexpected exit at \(fixture.target.path)\nShipIt quitting\n"
+            .write(to: fixture.log, atomically: true, encoding: .utf8)
+        let third = expectation(description: "Third check")
+        onCheck = { if checkCount == 3 { third.fulfill() } }
+        center.post(name: NSWorkspace.didWakeNotification, object: nil)
+        await fulfillment(of: [third], timeout: 5)
+
+        await monitor.stop()
+        let skipsAfterThird = recorder.snapshot().filter { $0.title == "跳过 ShipIt 更新候选" }
+        XCTAssertEqual(skipsAfterThird.count, 2)
+        XCTAssertEqual(skipsAfterThird.last?.details["reason"], "unrecognized_error_marker")
+    }
 }

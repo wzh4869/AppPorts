@@ -157,6 +157,8 @@ final class AppLoggerTests: XCTestCase {
         let metadata = try JSONDecoder().decode([String: String].self, from: metadataData)
         XCTAssertEqual(metadata["redaction_mode"], "share_safe")
         XCTAssertTrue(try XCTUnwrap(metadata["volume_state_inventory"]).contains("state:"))
+        XCTAssertTrue(try XCTUnwrap(metadata["update_guardian"]).contains("enabled:"))
+        XCTAssertTrue(summaryText.contains("update_guardian"))
 
         // 检查解码后的字符串，避免 JSON 的 \/ 转义掩盖泄露。
         for fileURL in try fileManager.contentsOfDirectory(at: packageURL, includingPropertiesForKeys: nil) {
@@ -303,6 +305,61 @@ final class AppLoggerTests: XCTestCase {
             let exists = Darwin.kill(pid, 0) == 0
             if exists { _ = Darwin.kill(pid, SIGKILL) }
             XCTAssertFalse(exists, "Timed out diagnostic process was left running")
+        }
+    }
+
+    func testDiagnosticExportIncludesUpdateGuardianSummaryWithoutAppNames() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        let dataDir = root.appendingPathComponent("GuardianData", isDirectory: true)
+        let recoveryDir = dataDir.appendingPathComponent("shipit-recovery", isDirectory: true)
+        try fileManager.createDirectory(at: recoveryDir, withIntermediateDirectories: true)
+
+        let records = [
+            AppSearchRecord(name: "SecretApp", localPath: "/Applications/SecretApp.app",
+                            externalPath: "/Volumes/Private Disk/AppPorts.noindex/SecretApp.app",
+                            volumeUUID: "VOL-1", expectsLocalEntry: true, lifecycle: .migrated,
+                            remainingExternal: nil, targetBundleIdentifier: "com.example.secret"),
+            AppSearchRecord(name: "RestoredApp", localPath: "/Applications/RestoredApp.app",
+                            externalPath: "/Volumes/Private Disk/AppPorts.noindex/RestoredApp.app",
+                            volumeUUID: "VOL-1", expectsLocalEntry: true, lifecycle: .restored,
+                            remainingExternal: false, targetBundleIdentifier: "com.example.restored")
+        ]
+        try JSONEncoder().encode(records).write(to: dataDir.appendingPathComponent("app-search-records.json"))
+        try Data("{}".utf8).write(to: recoveryDir.appendingPathComponent("abc123.json"))
+        try Data("{}".utf8).write(to: recoveryDir.appendingPathComponent("abc123.task.json"))
+        try Data("{}".utf8).write(to: recoveryDir.appendingPathComponent("def456.rollback-intent.json"))
+        try Data("{}".utf8).write(to: recoveryDir.appendingPathComponent("def456.rollback.json"))
+
+        let suiteName = "AppLoggerTests.Guardian.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+        defaults.set(true, forKey: BackgroundAgentPreferences.updateGuardianKey)
+
+        let snapshot = UpdateGuardianReporting.collect(defaults: defaults, dataDirectory: dataDir, readyPID: { 4242 })
+        XCTAssertEqual(snapshot, .init(enabled: true, ready: true, monitoredCount: 1, receiptCount: 1, pendingRollbackCount: 1))
+
+        let exportRoot = root.appendingPathComponent("GuardianExport", isDirectory: true)
+        try fileManager.createDirectory(at: exportRoot, withIntermediateDirectories: true)
+        let package = try logger.buildDiagnosticPackage(
+            in: exportRoot,
+            includeAppInventory: false,
+            guardianSummary: UpdateGuardianReporting.diagnosticSection(snapshot)
+        )
+
+        let summaryText = try String(contentsOf: package.appendingPathComponent("diagnostic-summary.txt"), encoding: .utf8)
+        let metadataData = try Data(contentsOf: package.appendingPathComponent("diagnostic-summary.json"))
+        let metadata = try JSONDecoder().decode([String: String].self, from: metadataData)
+        let guardianBlock = try XCTUnwrap(metadata["update_guardian"])
+
+        for content in [summaryText, guardianBlock] {
+            XCTAssertTrue(content.contains("enabled: true"))
+            XCTAssertTrue(content.contains("ready: true"))
+            XCTAssertTrue(content.contains("monitored_count: 1"))
+            XCTAssertTrue(content.contains("receipt_count: 1"))
+            XCTAssertTrue(content.contains("pending_rollback_count: 1"))
+            XCTAssertFalse(content.contains("SecretApp"))
+            XCTAssertFalse(content.contains("com.example.secret"))
+            XCTAssertFalse(content.contains("Private Disk"))
         }
     }
 

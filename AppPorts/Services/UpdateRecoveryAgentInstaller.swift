@@ -99,3 +99,79 @@ enum UpdateRecoveryAgentInstaller {
         }
     }
 }
+
+enum UpdateGuardianReporting {
+    struct Snapshot: Equatable, Sendable {
+        let enabled: Bool
+        let ready: Bool
+        let monitoredCount: Int?
+        let receiptCount: Int
+        let pendingRollbackCount: Int
+    }
+
+    static func collect(
+        defaults: UserDefaults = .standard,
+        dataDirectory: URL = WriterAdmission.defaultDataDirectory,
+        readyPID: (() -> Int32?)? = nil
+    ) -> Snapshot {
+        let enabled = BackgroundAgentPreferences.updateGuardianEnabled(defaults: defaults)
+        let isRunningUnitTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            || NSClassFromString("XCTestCase") != nil
+        let ready: Bool
+        if let readyPID {
+            ready = enabled && readyPID() != nil
+        } else if isRunningUnitTests {
+            ready = false
+        } else {
+            ready = enabled && UpdateRecoveryAgentInstaller.readyGuardianPID() != nil
+        }
+        let useDirectory = readyPID != nil || dataDirectory != WriterAdmission.defaultDataDirectory || !isRunningUnitTests
+        let monitoredCount: Int?
+        let receiptCount: Int
+        let pendingRollbackCount: Int
+        if useDirectory {
+            let store = AppSearchRecordStore(fileURL: dataDirectory.appendingPathComponent("app-search-records.json"))
+            monitoredCount = try? ShipItUpdateRecovery(records: store).monitoredBundleIdentifiers().count
+            let counts = recoveryDirectoryCounts(at: dataDirectory.appendingPathComponent("shipit-recovery"))
+            receiptCount = counts.receipts
+            pendingRollbackCount = counts.pendingRollbacks
+        } else {
+            monitoredCount = nil
+            receiptCount = 0
+            pendingRollbackCount = 0
+        }
+        return Snapshot(enabled: enabled, ready: ready, monitoredCount: monitoredCount,
+                        receiptCount: receiptCount, pendingRollbackCount: pendingRollbackCount)
+    }
+
+    private static func recoveryDirectoryCounts(at directory: URL) -> (receipts: Int, pendingRollbacks: Int) {
+        guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory.path) else {
+            return (0, 0)
+        }
+        var receipts = 0
+        var rollbackKeys: Set<String> = []
+        for name in entries where !name.hasPrefix(".") {
+            if name.hasSuffix(".rollback.json") {
+                rollbackKeys.insert(String(name.dropLast(".rollback.json".count)))
+            } else if name.hasSuffix(".rollback-intent.json") {
+                rollbackKeys.insert(String(name.dropLast(".rollback-intent.json".count)))
+            } else if name.hasSuffix(".json"), !name.hasSuffix(".task.json") {
+                receipts += 1
+            }
+        }
+        return (receipts, rollbackKeys.count)
+    }
+
+    /// Aggregate guardian status contains no application names, paths, or credentials.
+    static func diagnosticSection(_ snapshot: Snapshot? = nil) -> [String] {
+        let value = snapshot ?? collect()
+        return [
+            "update_guardian",
+            "  enabled: \(value.enabled)",
+            "  ready: \(value.ready)",
+            "  monitored_count: \(value.monitoredCount.map(String.init) ?? "unknown")",
+            "  receipt_count: \(value.receiptCount)",
+            "  pending_rollback_count: \(value.pendingRollbackCount)"
+        ]
+    }
+}
