@@ -37,6 +37,14 @@ final class MainWindowAppearanceTests: XCTestCase {
         XCTAssertEqual(window.contentRect(forFrameRect: window.frame).size, userSize)
     }
 
+    func testMainWindowDoesNotMoveWhenDraggingContentControls() {
+        let window = makeWindow()
+        defer { window.close() }
+        window.contentView = MainWindowAppearance.WindowView()
+
+        XCTAssertFalse(window.isMovableByWindowBackground)
+    }
+
     func testAppearanceMappingCoversSystemLightDarkAndFallback() {
         XCTAssertNil(MainWindowAppearance.nsAppearance(for: "system"))
         XCTAssertNil(MainWindowAppearance.nsAppearance(for: nil))

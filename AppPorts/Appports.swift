@@ -363,6 +363,9 @@ struct MainWindowAppearance: NSViewRepresentable {
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.titlebarSeparatorStyle = .none
+            // Content controls, including text fields, must receive the complete
+            // mouse drag so users can select text without moving the window.
+            window.isMovableByWindowBackground = false
             let isInitialWindow = AppDelegate.mainWindow !== window
             AppDelegate.mainWindow = window
             if isInitialWindow, !window.styleMask.contains(.fullScreen) {
