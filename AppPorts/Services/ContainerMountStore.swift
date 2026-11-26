@@ -3,6 +3,7 @@
 //  AppPorts
 //
 
+import CryptoKit
 import Darwin
 import Foundation
 
@@ -93,6 +94,12 @@ final class ContainerMountStore: @unchecked Sendable {
         self.fileURL = resolved
         self.lock = Self.lock(for: resolved)
         self.writeData = writeData
+    }
+
+    var baselineValidationCacheCountForTesting: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return baselineValidation.cachedEntryCount
     }
 
     /// Check the live writers for this dataset again at each mutation boundary.
@@ -861,10 +868,13 @@ final class ContainerMountStore: @unchecked Sendable {
             $0.legacyRootOwnership != nil || $0.legacyMountFlags != nil
         } || document.mounts.contains { $0.ownershipPolicy != nil }
             || document.cleanups.contains { $0.mountRecord.ownershipPolicy != nil }
+        let transferKeys = document.transfers.map(TransferBaselineKeys.init)
         // A schema-4 writer does not understand projected ownership on either
         // side of an ordinary copy. Keep that contract in its opaque baseline
         // while preventing older clients from executing against it.
-        let needsCompatibilitySchema = try document.transfers.contains { try self.hasOwnershipCompatibility($0, using: validation) }
+        let needsCompatibilitySchema = try zip(document.transfers, transferKeys).contains { transfer, keys in
+            try self.hasOwnershipCompatibility(transfer, key: keys.baseline, using: validation)
+        }
         let needsCleanupSchema = document.transfers.contains { $0.cleanupParentIdentity != nil || $0.recoveryMountRecord != nil }
         let needsPreparationSchema = !document.preservedMaterials.isEmpty || document.transfers.contains {
             $0.preparationPath != nil || $0.sourceBaseline != nil || $0.stagingIdentity != nil
@@ -877,7 +887,9 @@ final class ContainerMountStore: @unchecked Sendable {
         }
         // A schema-7 reader drops resource-fork summaries when decoding a
         // manifest. Apply this to creation and partial-removal baselines too.
-        let needsResourceForkSchema = try document.transfers.contains { try self.hasResourceForkContract($0, using: validation) }
+        let needsResourceForkSchema = try zip(document.transfers, transferKeys).contains { transfer, keys in
+            try self.hasResourceForkContract(transfer, keys: keys, using: validation)
+        }
         let needsRollbackSchema = document.transfers.contains { $0.rollbackCompletedAt != nil }
         let needsCleanupDecisionSchema = document.transfers.contains { $0.cleanupDisposition != nil }
         let needsRetrySchema = document.transfers.contains { $0.retryFailureCount != nil || $0.nextAutomaticRetryAt != nil }
@@ -898,7 +910,7 @@ final class ContainerMountStore: @unchecked Sendable {
         document.manualMountPauses = document.manualMountPauses.filter { uuid, path in
             document.mounts.contains { $0.volumeUUID.uppercased() == uuid && $0.mountPointPath == path }
         }
-        try validate(document, using: validation)
+        try validate(document, using: validation, precomputedKeys: transferKeys)
         // Remount checks may confirm an unchanged record. Do not turn those
         // checks into filesystem events and another round of UI scans.
         guard document != original else { return }
@@ -1089,24 +1101,77 @@ final class ContainerMountStore: @unchecked Sendable {
         let restoredRootOwnership: TreeCopySnapshot.Ownership?
     }
 
-    /// Keys are the full immutable manifest bytes freshly read from disk, never
-    /// a path, inode, timestamp or previous filesystem verification. Reusing
-    /// their small parsing summaries avoids decoding tens of thousands of
-    /// entries at every journal transition. No decoded file tree is retained.
-    private final class BaselineValidation {
-        var legacyOwnership: [Data: LegacyOwnershipMarker] = [:]
-        var ownershipCompatibility: [Data: Bool] = [:]
-        var resourceForks: [Data: Bool] = [:]
-        var snapshots: [Data: SnapshotValidation] = [:]
+    private struct BaselineKey: Hashable {
+        let byteCount: Int
+        let digest: SHA256.Digest
 
-        func boundMemory() {
-            let keys = Set(legacyOwnership.keys).union(ownershipCompatibility.keys)
-                .union(resourceForks.keys).union(snapshots.keys)
-            guard keys.count > 8 || keys.reduce(0, { $0 + $1.count }) > 64 * 1024 * 1024 else { return }
+        init(data: Data) {
+            byteCount = data.count
+            digest = SHA256.hash(data: data)
+        }
+    }
+
+    private struct TransferBaselineKeys {
+        let baseline: BaselineKey?
+        let sourceBaseline: BaselineKey?
+        let preparationRemovalBaseline: BaselineKey?
+
+        init(_ transfer: DataTransferRecord) {
+            baseline = transfer.baseline.map(BaselineKey.init(data:))
+            sourceBaseline = transfer.sourceBaseline.map(BaselineKey.init(data:))
+            preparationRemovalBaseline = transfer.preparationRemovalBaseline.map(BaselineKey.init(data:))
+        }
+
+        var allKeys: [BaselineKey] {
+            [baseline, sourceBaseline, preparationRemovalBaseline].compactMap { $0 }
+        }
+    }
+
+    /// Keys are derived from the full immutable manifest bytes freshly read from
+    /// disk (byte length + SHA-256 digest), never a path, inode, timestamp or
+    /// previous filesystem verification. Reusing their small parsing summaries
+    /// avoids decoding tens of thousands of entries at every journal transition,
+    /// without retaining raw manifest bytes or decoded file trees in memory.
+    private final class BaselineValidation {
+        static let maxEntries = 32
+        var legacyOwnership: [BaselineKey: LegacyOwnershipMarker] = [:]
+        var ownershipCompatibility: [BaselineKey: Bool] = [:]
+        var resourceForks: [BaselineKey: Bool] = [:]
+        var snapshots: [BaselineKey: SnapshotValidation] = [:]
+
+        var isEmpty: Bool {
+            legacyOwnership.isEmpty && ownershipCompatibility.isEmpty
+                && resourceForks.isEmpty && snapshots.isEmpty
+        }
+
+        var cachedEntryCount: Int {
+            Set(legacyOwnership.keys).union(ownershipCompatibility.keys)
+                .union(resourceForks.keys).union(snapshots.keys).count
+        }
+
+        func clearIfNonEmpty() {
+            guard !isEmpty else { return }
             legacyOwnership.removeAll()
             ownershipCompatibility.removeAll()
             resourceForks.removeAll()
             snapshots.removeAll()
+        }
+
+        func retainOnly(_ activeKeys: Set<BaselineKey>) {
+            guard !isEmpty else { return }
+            guard !activeKeys.isEmpty else { clearIfNonEmpty(); return }
+            legacyOwnership = legacyOwnership.filter { activeKeys.contains($0.key) }
+            ownershipCompatibility = ownershipCompatibility.filter { activeKeys.contains($0.key) }
+            resourceForks = resourceForks.filter { activeKeys.contains($0.key) }
+            snapshots = snapshots.filter { activeKeys.contains($0.key) }
+        }
+
+        func boundMemory() {
+            guard legacyOwnership.count > Self.maxEntries
+                    || ownershipCompatibility.count > Self.maxEntries
+                    || resourceForks.count > Self.maxEntries
+                    || snapshots.count > Self.maxEntries else { return }
+            clearIfNonEmpty()
         }
     }
 
@@ -1119,8 +1184,9 @@ final class ContainerMountStore: @unchecked Sendable {
         let legacyRoot: Root?
     }
 
-    private func snapshotValidation(_ encoded: Data, using validation: BaselineValidation) -> SnapshotValidation {
-        if let cached = validation.snapshots[encoded] { return cached }
+    private func snapshotValidation(_ encoded: Data, key: BaselineKey? = nil, using validation: BaselineValidation) -> SnapshotValidation {
+        let cacheKey = key ?? BaselineKey(data: encoded)
+        if let cached = validation.snapshots[cacheKey] { return cached }
         let result: SnapshotValidation = autoreleasepool {
             guard let snapshot = try? PropertyListDecoder().decode(TreeCopySnapshot.self, from: encoded) else {
                 return SnapshotValidation(decodes: false, legacyRoot: nil)
@@ -1132,7 +1198,7 @@ final class ContainerMountStore: @unchecked Sendable {
             } else { root = nil }
             return SnapshotValidation(decodes: true, legacyRoot: root)
         }
-        validation.snapshots[encoded] = result
+        validation.snapshots[cacheKey] = result
         return result
     }
 
@@ -1152,15 +1218,16 @@ final class ContainerMountStore: @unchecked Sendable {
 
     /// Older stores accepted opaque baselines. Keep that read compatibility,
     /// but never silently discard a present, malformed new ownership contract.
-    private func hasOwnershipCompatibility(_ transfer: DataTransferRecord, using validation: BaselineValidation) throws -> Bool {
+    private func hasOwnershipCompatibility(_ transfer: DataTransferRecord, key: BaselineKey? = nil, using validation: BaselineValidation) throws -> Bool {
         guard let baseline = transfer.baseline else { return false }
-        if let cached = validation.ownershipCompatibility[baseline] { return cached }
+        let cacheKey = key ?? BaselineKey(data: baseline)
+        if let cached = validation.ownershipCompatibility[cacheKey] { return cached }
         let result: Bool = try autoreleasepool {
             do { return try PropertyListDecoder().decode(OwnershipCompatibilityMarker.self, from: baseline).isPresent }
             catch let error as StoreError { throw error }
             catch { return false }
         }
-        validation.ownershipCompatibility[baseline] = result
+        validation.ownershipCompatibility[cacheKey] = result
         return result
     }
 
@@ -1201,10 +1268,17 @@ final class ContainerMountStore: @unchecked Sendable {
         }
     }
 
-    private func hasResourceForkContract(_ transfer: DataTransferRecord, using validation: BaselineValidation) throws -> Bool {
+    private func hasResourceForkContract(_ transfer: DataTransferRecord, keys: TransferBaselineKeys? = nil, using validation: BaselineValidation) throws -> Bool {
         var found = false
-        for encoded in [transfer.baseline, transfer.sourceBaseline, transfer.preparationRemovalBaseline].compactMap({ $0 }) {
-            if let cached = validation.resourceForks[encoded] {
+        let items: [(Data?, BaselineKey?)] = [
+            (transfer.baseline, keys?.baseline),
+            (transfer.sourceBaseline, keys?.sourceBaseline),
+            (transfer.preparationRemovalBaseline, keys?.preparationRemovalBaseline)
+        ]
+        for (encoded, precomputedKey) in items {
+            guard let encoded else { continue }
+            let cacheKey = precomputedKey ?? BaselineKey(data: encoded)
+            if let cached = validation.resourceForks[cacheKey] {
                 found = found || cached
                 continue
             }
@@ -1223,21 +1297,23 @@ final class ContainerMountStore: @unchecked Sendable {
                     return false
                 }
             }
-            validation.resourceForks[encoded] = result
+            validation.resourceForks[cacheKey] = result
             found = found || result
         }
         return found
     }
 
     /// The destination-only ownership exception must never leak into source or cleanup metadata.
-    private func validateLegacyOwnership(_ transfer: DataTransferRecord, using validation: BaselineValidation) throws {
-        let marker = transfer.baseline.map { encoded in
-            if let cached = validation.legacyOwnership[encoded] { return cached }
+    private func validateLegacyOwnership(_ transfer: DataTransferRecord, key: BaselineKey? = nil, using validation: BaselineValidation) throws {
+        let cacheKey = transfer.baseline.map { key ?? BaselineKey(data: $0) }
+        let marker: LegacyOwnershipMarker? = transfer.baseline.map { encoded in
+            let lookupKey = cacheKey!
+            if let cached = validation.legacyOwnership[lookupKey] { return cached }
             let result = autoreleasepool {
                 (try? PropertyListDecoder().decode(LegacyOwnershipMarker.self, from: encoded))
                     ?? LegacyOwnershipMarker(restoredRootOwnership: nil)
             }
-            validation.legacyOwnership[encoded] = result
+            validation.legacyOwnership[lookupKey] = result
             return result
         }
         // An intent has no manifest yet; once copying succeeds, both records must agree.
@@ -1247,7 +1323,7 @@ final class ContainerMountStore: @unchecked Sendable {
         guard transfer.legacyRootOwnership != nil || transfer.legacyMountFlags != nil else { return }
         try validateLegacyOwnershipIntent(transfer)
         if let encoded = transfer.baseline {
-            guard let root = snapshotValidation(encoded, using: validation).legacyRoot,
+            guard let root = snapshotValidation(encoded, key: cacheKey, using: validation).legacyRoot,
                   let owner = transfer.legacyRootOwnership,
                   root.uid == 0 || root.uid == owner.uid,
                   root.identity.inode == transfer.sourceIdentity.inode,
@@ -1268,7 +1344,8 @@ final class ContainerMountStore: @unchecked Sendable {
         }
     }
 
-    private func validate(_ document: Document, using validation: BaselineValidation = BaselineValidation()) throws {
+    private func validate(_ document: Document, using validation: BaselineValidation = BaselineValidation(),
+                          precomputedKeys: [TransferBaselineKeys]? = nil) throws {
         func validateActivation(_ transfer: DataTransferRecord) throws {
             if let identity = transfer.candidateRemovalMountPointIdentity {
                 guard document.schemaVersion >= 12, identity.isResolved,
@@ -1354,23 +1431,26 @@ final class ContainerMountStore: @unchecked Sendable {
                 }
             }
         }
-        for transfer in document.transfers {
+        var activeBaselineKeys = Set<BaselineKey>()
+        for (index, transfer) in document.transfers.enumerated() {
             if let disposition = transfer.cleanupDisposition {
                 guard document.schemaVersion >= 10, transfer.retainedCopyRemovedAt == nil,
                       disposition != .keep || transfer.isDataSwitchComplete else {
                     throw StoreError.invalidState("Invalid retained-copy decision")
                 }
             }
-            try validateLegacyOwnership(transfer, using: validation)
-            _ = try hasOwnershipCompatibility(transfer, using: validation)
-            _ = try hasResourceForkContract(transfer, using: validation)
+            let keys = precomputedKeys?[index] ?? TransferBaselineKeys(transfer)
+            activeBaselineKeys.formUnion(keys.allKeys)
+            try validateLegacyOwnership(transfer, key: keys.baseline, using: validation)
+            _ = try hasOwnershipCompatibility(transfer, key: keys.baseline, using: validation)
+            _ = try hasResourceForkContract(transfer, keys: keys, using: validation)
             if transfer.sourceBaseline != nil || transfer.preparationPath != nil || transfer.volumeCreationContainerUUID != nil {
                 guard document.schemaVersion >= 7,
                       transfer.preparationPath.map(validPath) ?? true,
                       transfer.preparationParentIdentity.map(\.isResolved) ?? true,
                       transfer.stagingParentIdentity.map(\.isResolved) ?? true,
                       transfer.stagingIdentity.map(\.isResolved) ?? true,
-                      transfer.sourceBaseline.map({ snapshotValidation($0, using: validation).decodes }) ?? true else {
+                      transfer.sourceBaseline.map({ snapshotValidation($0, key: keys.sourceBaseline, using: validation).decodes }) ?? true else {
                     throw StoreError.invalidState("Invalid copy creation evidence")
                 }
             }
@@ -1485,6 +1565,11 @@ final class ContainerMountStore: @unchecked Sendable {
                     }
                 }
             }
+        }
+        if activeBaselineKeys.isEmpty {
+            validation.clearIfNonEmpty()
+        } else {
+            validation.retainOnly(activeBaselineKeys)
         }
     }
 

@@ -13,6 +13,7 @@ final class AppOperationState: ObservableObject {
     @Published private var activeOperation: UUID?
     @Published private var migrationCount = 0
     @Published private(set) var recordsRevision: UInt64 = 0
+    private var pendingRecordsChange = false
     private var recordObserver: AnyCancellable?
     private var terminationReply: (() -> Void)?
     private var cancellation: (() -> Void)?
@@ -21,7 +22,11 @@ final class AppOperationState: ObservableObject {
         recordObserver = notificationCenter.publisher(for: .appPortsRecordsDidChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, !self.isBusy else { return }
+                guard let self else { return }
+                if self.isBusy {
+                    self.pendingRecordsChange = true
+                    return
+                }
                 self.recordsRevision &+= 1
             }
     }
@@ -37,6 +42,7 @@ final class AppOperationState: ObservableObject {
         let wasBusy = isBusy
         migrationCount = count
         if wasBusy && !isBusy {
+            pendingRecordsChange = false
             recordsRevision &+= 1
             completeTerminationIfIdle()
         }
@@ -49,13 +55,22 @@ final class AppOperationState: ObservableObject {
         return token
     }
 
-    func finish(_ token: UUID) {
+    func finish(_ token: UUID, publishRecordsChange: Bool = true) {
         guard activeOperation == token else { return }
         activeOperation = nil
         cancellation = nil
-        // Publish once at the end of a foreground operation, not on every
-        // journal phase. Idle windows also observe background store changes.
-        recordsRevision &+= 1
+        // Publish once at the end of a mutating foreground operation (or when a
+        // background store change arrived while busy). A pre-lock refusal leaves
+        // recordsRevision untouched so idle observers do not rescan or resync.
+        let shouldPublish = publishRecordsChange || pendingRecordsChange
+        if !isBusy {
+            if shouldPublish {
+                pendingRecordsChange = false
+                recordsRevision &+= 1
+            }
+        } else if shouldPublish {
+            pendingRecordsChange = true
+        }
         completeTerminationIfIdle()
         if terminationReply == nil {
             MigrationTaskCenter.shared.schedule()

@@ -876,6 +876,60 @@ struct DataTransferStoreTests {
         #expect(identity.inode != parent.inode)
     }
 
+    @Test("Baseline validation cache prunes completed transfers and distinguishes equal-length manifests")
+    func baselineValidationCachePrunesAndDistinguishesContent() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        var transfer = fixture.transfer(mode: .symlink)
+        try fixture.store.beginTransfer(transfer)
+        transfer.phase = .copying
+        try fixture.store.updateTransfer(transfer)
+        transfer.phase = .verified
+        transfer.baseline = Data(repeating: 0xAB, count: 4 * 1024 * 1024)
+        try fixture.store.updateTransfer(transfer)
+        #expect(fixture.store.baselineValidationCacheCountForTesting == 1)
+
+        transfer.phase = .switching
+        try fixture.store.updateTransfer(transfer)
+        try fixture.store.finalizeTransfer(operationID: transfer.operationID, baseline: transfer.baseline!)
+        try fixture.store.requestCleanup(operationID: transfer.operationID)
+        try fixture.store.finishTransfer(operationID: transfer.operationID, deletionConfirmed: true)
+
+        #expect(try fixture.store.transfers().isEmpty)
+        #expect(fixture.store.baselineValidationCacheCountForTesting == 0)
+        for _ in 0..<50 {
+            #expect(try fixture.store.transfers().isEmpty)
+        }
+        #expect(fixture.store.baselineValidationCacheCountForTesting == 0)
+
+        var second = fixture.transfer(mode: .symlink)
+        try fixture.store.beginTransfer(second)
+        second.phase = .copying
+        try fixture.store.updateTransfer(second)
+        second.phase = .verified
+        let validBytes = try PropertyListSerialization.data(
+            fromPropertyList: ["note": "same-len-valid-payload"], format: .binary, options: 0)
+        second.baseline = validBytes
+        try fixture.store.updateTransfer(second)
+        #expect(fixture.store.baselineValidationCacheCountForTesting == 1)
+
+        let malformedBytes = try PropertyListSerialization.data(
+            fromPropertyList: ["ownershipCompatibility": "bad"], format: .binary, options: 0)
+        var third = DataTransferRecord(mode: .symlink, direction: .migrate, appName: "Other", bundleIdentifier: "test.other",
+            dataDirType: "fixture", originalPath: fixture.root.appendingPathComponent("B").path,
+            activePath: fixture.root.appendingPathComponent("external/B").path,
+            destinationPath: fixture.root.appendingPathComponent("external/B").path,
+            backupPath: fixture.root.appendingPathComponent("B.backup").path,
+            sourceIdentity: DataPathIdentity(device: 1, inode: 43),
+            destinationIdentity: DataPathIdentity(device: 2, inode: 501))
+        try fixture.store.beginTransfer(third)
+        third.phase = .copying
+        try fixture.store.updateTransfer(third)
+        third.phase = .verified
+        third.baseline = malformedBytes
+        #expect(throws: ContainerMountStore.StoreError.self) { try fixture.store.updateTransfer(third) }
+    }
+
     private final class LockedErrors: @unchecked Sendable {
         private let lock = NSLock()
         private var values: [any Error] = []

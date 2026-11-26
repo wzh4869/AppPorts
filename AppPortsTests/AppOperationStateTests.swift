@@ -60,6 +60,31 @@ final class AppOperationStateTests: XCTestCase {
         XCTAssertEqual(state.recordsRevision, 1)
     }
 
+    func testNonMutatingFinishSkipsRecordsRevisionUnlessBackgroundChangeArrived() async throws {
+        let center = NotificationCenter()
+        let state = AppOperationState(notificationCenter: center)
+
+        let first = try XCTUnwrap(state.begin())
+        state.finish(first, publishRecordsChange: false)
+        XCTAssertFalse(state.isBusy)
+        XCTAssertEqual(state.recordsRevision, 0)
+
+        let second = try XCTUnwrap(state.begin())
+        center.post(name: .appPortsRecordsDidChange, object: nil)
+        try await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertEqual(state.recordsRevision, 0)
+        state.finish(second, publishRecordsChange: false)
+        XCTAssertFalse(state.isBusy)
+        XCTAssertEqual(state.recordsRevision, 1)
+
+        let third = try XCTUnwrap(state.begin())
+        var replied = false
+        XCTAssertTrue(state.finishBeforeTerminating { replied = true })
+        state.finish(third, publishRecordsChange: false)
+        XCTAssertTrue(replied)
+        XCTAssertEqual(state.recordsRevision, 1)
+    }
+
     func testNormalQuitCancelsARealDataCopyAndRepliesOnlyAfterItsRecoveryRecordIsSaved() async throws {
         for copies in [1, 4] {
             try await checkNormalQuitCancelsARealDataCopy(copies: copies)
