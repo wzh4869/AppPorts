@@ -128,9 +128,12 @@ struct AppStoreSettingsView: View {
                 detail: "At login or when an external drive reconnects, restore migrated data volumes and the app library, and keep AppPorts-managed APFS data volumes hidden.".localized,
                 isOn: $diskMaintenanceEnabled)
             Divider()
-            AppSettingsToggle(title: "Application update guardian".localized,
-                detail: "退出 AppPorts 后，仍会在后台监测已迁移应用的更新。遇到可处理的更新故障时，守护会尝试自动恢复。你可以在任务中心查看处理结果。".localized,
-                isOn: $updateGuardianEnabled)
+            AppSettingsToggle(
+                title: "Application update guardian".localized,
+                badge: "BETA",
+                detail: "退出后仍在后台监测已迁移应用的更新，遇故障尝试自动恢复，结果见任务中心。并非所有应用都支持。".localized,
+                isOn: $updateGuardianEnabled
+            )
             if agentSync.isSynchronizing {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)

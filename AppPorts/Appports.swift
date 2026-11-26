@@ -125,8 +125,9 @@ struct AppMoverApp: App {
     /// 全局语言管理器
     @StateObject private var languageManager = LanguageManager.shared
 
-    /// 控制欢迎界面显示。走完一次后不再自动出现，需要重看请到「设置 › 准备情况」。
-    @State private var showWelcome = !UserDefaults.standard.bool(forKey: WelcomeView.completionDefaultsKey)
+    /// 控制欢迎与边界共识确认页显示。
+    /// 新用户走完整 3 步欢迎页，升级老用户仅展示一次单屏「边界与共识」。
+    @State private var welcomeMode = WelcomeLaunchPolicy.presentationMode()
     @ObservedObject private var operationState = AppOperationState.shared
     @StateObject private var logMenuState = LogMenuState()
     @AppStorage("LogEnabled") private var loggingEnabled = true
@@ -154,8 +155,10 @@ struct AppMoverApp: App {
         let initialSize = MainWindowAppearance.initialContentSize(on: NSScreen.main)
         WindowGroup {
             Group {
-                if showWelcome {
-                    WelcomeView(showWelcomeScreen: $showWelcome)
+                if let welcomeMode {
+                    WelcomeView(mode: welcomeMode) {
+                        self.welcomeMode = nil
+                    }
                 } else {
                     ContentView()
                 }

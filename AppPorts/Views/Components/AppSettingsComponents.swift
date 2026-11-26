@@ -70,13 +70,35 @@ extension AppSettingsSection where HeaderAccessory == EmptyView {
 
 struct AppSettingsToggle: View {
     let title: String
+    var badge: String? = nil
     let detail: String
     @Binding var isOn: Bool
+
+    private var accessibilityTitle: String {
+        guard let badge, !badge.isEmpty else { return title }
+        return "\(title) (\(badge))"
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: AppSettingsStyle.sectionGap) {
             VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
-                Text(title).font(AppSettingsStyle.rowFont)
+                HStack(alignment: .center, spacing: 6) {
+                    Text(title).font(AppSettingsStyle.rowFont)
+                    if let badge, !badge.isEmpty {
+                        Text(verbatim: badge)
+                            .font(.system(size: 9.5, weight: .semibold))
+                            .tracking(0.4)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 5.5)
+                            .padding(.vertical, 1.5)
+                            .background(Color.primary.opacity(0.065))
+                            .clipShape(RoundedRectangle(cornerRadius: 4.5, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4.5, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.12), lineWidth: 0.5)
+                            )
+                    }
+                }
                 if !detail.isEmpty {
                     Text(detail)
                         .font(AppSettingsStyle.secondaryFont)
@@ -85,7 +107,7 @@ struct AppSettingsToggle: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Toggle(title, isOn: $isOn)
+            Toggle(accessibilityTitle, isOn: $isOn)
                 .toggleStyle(.switch)
                 .labelsHidden()
                 .fixedSize()

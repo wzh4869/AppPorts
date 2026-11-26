@@ -544,26 +544,17 @@ struct DataDirsView: View {
                         Spacer()
                         if selectedApp != nil {
                             appDataSortMenu
+                            appDataVisibilityButton
                             appDataFilterButton
                         }
                     }
-                    .frame(minHeight: 22)
+                    .frame(height: 24)
 
                     if selectedApp != nil {
                         directorySearchField
                         if hasActiveAppDataFilters { appDataFilterSummary }
                         if !libraryItems.isEmpty || !libraryReadIssues.isEmpty || libraryIdentityIssue != nil {
-                            VStack(alignment: .leading, spacing: 8) {
-                                statsSummary(
-                                    items: summaryBaseLibraryItems,
-                                    allItems: libraryItems,
-                                    readIssues: libraryReadIssues,
-                                    hasIdentityIssue: libraryIdentityIssue != nil,
-                                    displayedItems: filteredLibraryItems,
-                                    onSelectSummary: selectSummaryFilter
-                                )
-                                appDataVisibilityToggles
-                            }
+                            appDataStatsRow
                         }
                         if let issue = libraryIdentityIssue {
                             appIdentityWarning(issue: issue)
@@ -898,14 +889,15 @@ struct DataDirsView: View {
 
     private func statsBar(items: [DataDirItem]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 12) {
+            VisibilityStatsAccessoryRow {
                 statsSummary(items: items, allItems: dotFolderItems, readIssues: dotFolderReadIssues)
-                zeroByteDirectoriesToggle
-                Toggle("显示不可迁移目录".localized, isOn: $showNonMigratableToolDirectories)
-                    .toggleStyle(.checkbox)
-                    .font(.system(size: 12))
-                    .fixedSize()
+            } trailing: {
+                ToolDirectoryVisibilityChips(
+                    showZeroByteDirectories: $showZeroByteDirectories,
+                    showNonMigratableDirectories: $showNonMigratableToolDirectories
+                )
             }
+            .frame(minHeight: 24, alignment: .leading)
             if !dotFolderReadFailures.isEmpty {
                 directoryReadWarning(issues: dotFolderReadFailures)
             }
@@ -919,17 +911,50 @@ struct DataDirsView: View {
         .padding(.vertical, 4)
     }
 
-    private var appDataVisibilityToggles: some View {
-        AppDataVisibilityControls(showZeroByteDirectories: $showZeroByteDirectories,
-                                  showLockedStructure: $showLockedDirectoryStructure,
-                                  showNonMigratableDirectories: $showNonMigratableDirectories)
+    private var appDataVisibilityButton: some View {
+        AppDataVisibilityButton(
+            showZeroByteDirectories: $showZeroByteDirectories,
+            showLockedStructure: $showLockedDirectoryStructure,
+            showNonMigratableDirectories: $showNonMigratableDirectories
+        )
     }
 
-    private var zeroByteDirectoriesToggle: some View {
-        Toggle("显示零字节目录".localized, isOn: $showZeroByteDirectories)
-            .toggleStyle(.checkbox)
-            .font(.system(size: 12))
-            .fixedSize()
+    private var hasActiveAppDataVisibilityOptions: Bool {
+        showZeroByteDirectories || showLockedDirectoryStructure || showNonMigratableDirectories
+    }
+
+    @ViewBuilder
+    private var appDataStatsRow: some View {
+        Group {
+            if hasActiveAppDataVisibilityOptions {
+                VisibilityStatsAccessoryRow {
+                    statsSummary(
+                        items: summaryBaseLibraryItems,
+                        allItems: libraryItems,
+                        readIssues: libraryReadIssues,
+                        hasIdentityIssue: libraryIdentityIssue != nil,
+                        displayedItems: filteredLibraryItems,
+                        onSelectSummary: selectSummaryFilter
+                    )
+                } trailing: {
+                    AppDataVisibilityActivePills(
+                        showZeroByteDirectories: $showZeroByteDirectories,
+                        showLockedStructure: $showLockedDirectoryStructure,
+                        showNonMigratableDirectories: $showNonMigratableDirectories
+                    )
+                }
+            } else {
+                statsSummary(
+                    items: summaryBaseLibraryItems,
+                    allItems: libraryItems,
+                    readIssues: libraryReadIssues,
+                    hasIdentityIssue: libraryIdentityIssue != nil,
+                    displayedItems: filteredLibraryItems,
+                    onSelectSummary: selectSummaryFilter
+                )
+            }
+        }
+        .frame(minHeight: 22, alignment: .leading)
     }
 
     private var libraryReadFailures: [DataDirReadIssue] {

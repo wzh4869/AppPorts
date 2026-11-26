@@ -298,6 +298,150 @@ final class MigrationSafetyRenderTests: XCTestCase {
     }
 
     @MainActor
+    func testRenderDirectoryVisibilityControls() async throws {
+        guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
+            throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render directory visibility controls")
+        }
+        let output = URL(fileURLWithPath: path, isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let originalLanguage = LanguageManager.shared.language
+        let originalPreference = UserDefaults.standard.object(forKey: "selectedLanguage")
+        defer {
+            LanguageManager.shared.language = originalLanguage
+            if let originalPreference {
+                UserDefaults.standard.set(originalPreference, forKey: "selectedLanguage")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "selectedLanguage")
+            }
+        }
+
+        for language in ["zh-Hans", "en", "de", "ar"] {
+            LanguageManager.shared.language = language
+            let locale = Locale(identifier: language)
+            let direction: LayoutDirection = language == "ar" ? .rightToLeft : .leftToRight
+            for scheme in [ColorScheme.light, .dark] {
+                func localized<V: View>(_ view: V) -> some View {
+                    view.environment(\.locale, locale).environment(\.layoutDirection, direction)
+                }
+
+                let popover = AppDataVisibilityPopover(
+                    showZeroByteDirectories: .constant(false),
+                    showLockedStructure: .constant(true),
+                    showNonMigratableDirectories: .constant(false)
+                )
+                try await render(
+                    localized(popover),
+                    size: NSSize(width: 316, height: 220),
+                    to: output.appendingPathComponent("visibility-popover-\(language)-\(scheme).png"),
+                    colorScheme: scheme
+                )
+
+                let composite = VStack(alignment: .leading, spacing: 14) {
+                    // Wide App Data stats + active pills + button (OFF vs ON layout stability check)
+                    ForEach([false, true], id: \.self) { enabled in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 12) {
+                                Text(String(format: "%@ 的数据目录".localized, "WeChat")).font(.headline)
+                                Spacer()
+                                Text("默认".localized).font(.system(size: 12)).foregroundColor(.secondary)
+                                AppDataVisibilityButton(
+                                    showZeroByteDirectories: .constant(false),
+                                    showLockedStructure: .constant(enabled),
+                                    showNonMigratableDirectories: .constant(false)
+                                )
+                                Button("筛选".localized) {}
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                            }
+                            .frame(height: 24)
+                            Group {
+                                if enabled {
+                                    VisibilityStatsAccessoryRow {
+                                        HStack(spacing: 14) {
+                                            Text("应用数据：".localized + "34.7 GB").foregroundColor(.secondary)
+                                            Label(String(format: "%lld 个目录".localized, Int64(2)), systemImage: "folder.fill")
+                                                .foregroundColor(.secondary)
+                                            Text("目录大小：".localized + "34.7 GB").foregroundColor(.accentColor)
+                                            Spacer()
+                                        }
+                                        .font(.system(size: 12))
+                                    } trailing: {
+                                        AppDataVisibilityActivePills(
+                                            showZeroByteDirectories: .constant(false),
+                                            showLockedStructure: .constant(true),
+                                            showNonMigratableDirectories: .constant(false)
+                                        )
+                                    }
+                                } else {
+                                    HStack(spacing: 14) {
+                                        Text("应用数据：".localized + "34.7 GB").foregroundColor(.secondary)
+                                        Label(String(format: "%lld 个目录".localized, Int64(2)), systemImage: "folder.fill")
+                                            .foregroundColor(.secondary)
+                                        Text("目录大小：".localized + "34.7 GB").foregroundColor(.accentColor)
+                                        Spacer()
+                                    }
+                                    .font(.system(size: 12))
+                                }
+                            }
+                            .frame(minHeight: 22, alignment: .leading)
+                        }
+                        .padding(12)
+                        .background(Color.primary.opacity(0.05))
+                        .cornerRadius(12)
+                    }
+
+                    // Narrow wrapping test with all 3 active pills
+                    VisibilityStatsAccessoryRow {
+                        HStack(spacing: 12) {
+                            Text("应用数据：".localized + "34.7 GB").foregroundColor(.secondary)
+                            Label(String(format: "%lld 个目录".localized, Int64(12)), systemImage: "folder.fill")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        }
+                        .font(.system(size: 12))
+                    } trailing: {
+                        AppDataVisibilityActivePills(
+                            showZeroByteDirectories: .constant(true),
+                            showLockedStructure: .constant(true),
+                            showNonMigratableDirectories: .constant(true)
+                        )
+                    }
+                    .padding(12)
+                    .frame(width: 520)
+                    .background(Color.primary.opacity(0.05))
+                    .cornerRadius(12)
+
+                    // Tool Directories stats bar with Option A chips (off & on)
+                    VisibilityStatsAccessoryRow {
+                        HStack(spacing: 14) {
+                            Label(String(format: "%lld 个目录".localized, Int64(8)), systemImage: "folder.fill")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        }
+                        .font(.system(size: 12))
+                    } trailing: {
+                        ToolDirectoryVisibilityChips(
+                            showZeroByteDirectories: .constant(true),
+                            showNonMigratableDirectories: .constant(false)
+                        )
+                    }
+                    .padding(12)
+                    .background(Color.primary.opacity(0.05))
+                    .cornerRadius(12)
+                }
+                .padding(16)
+
+                try await render(
+                    localized(composite),
+                    size: NSSize(width: 760, height: 420),
+                    to: output.appendingPathComponent("visibility-bars-\(language)-\(scheme).png"),
+                    colorScheme: scheme
+                )
+            }
+        }
+    }
+
+    @MainActor
     func testRenderDataTransferProgressStages() async throws {
         guard let path = ProcessInfo.processInfo.environment["APPPORTS_RENDER_UI_OUTPUT"], path.hasPrefix("/") else {
             throw XCTSkip("Set APPPORTS_RENDER_UI_OUTPUT to render transfer progress")

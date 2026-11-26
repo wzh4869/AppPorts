@@ -6,6 +6,7 @@ struct UpdateSettingsSection: View {
     @State private var isChecking = false
     @State private var result: UpdateCheckResult?
     @State private var availableUpdate: AppUpdateInfo?
+    @State private var showBoundaryConsensus = false
     @ObservedObject private var updater = AppUpdateController.shared
     @ObservedObject private var languageManager = LanguageManager.shared
 
@@ -31,6 +32,12 @@ struct UpdateSettingsSection: View {
             if case let .available(update) = checked { availableUpdate = update }
         }
         .modifier(AppUpdatePresentation(update: $availableUpdate))
+        .sheet(isPresented: $showBoundaryConsensus) {
+            BoundaryConsensusSheet()
+        }
+        .modifier(AppUpdatePresentationDismissal {
+            showBoundaryConsensus = false
+        })
         .onDisappear { isChecking = false }
     }
 
@@ -64,17 +71,10 @@ struct UpdateSettingsSection: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .help("当前运行的 AppPorts".localized)
 
-            HStack(spacing: AppSettingsStyle.rowGap) {
-                Link("官网".localized, destination: URL(string: "https://appports.shimoko.com/")!)
-                Link("文档".localized, destination: DocumentationLink.homeURL())
-                Button("关于".localized) {
-                    AboutWindowController.shared.present()
-                }
-                Spacer(minLength: 0)
-            }
-            .buttonStyle(.bordered)
-            .font(AppSettingsStyle.bodyFont)
-            .controlSize(AppSettingsStyle.controlSize)
+            settingsLinksRow
+                .buttonStyle(.bordered)
+                .font(AppSettingsStyle.bodyFont)
+                .controlSize(AppSettingsStyle.controlSize)
 
             if hasPendingDownload {
                 HStack {
@@ -100,11 +100,95 @@ struct UpdateSettingsSection: View {
         }
     }
 
+    @ViewBuilder
+    private var settingsLinksRow: some View {
+        if #available(macOS 13.0, *) {
+            SettingsWrapRowLayout(horizontalSpacing: AppSettingsStyle.rowGap, verticalSpacing: AppSettingsStyle.rowGap) {
+                settingsLinkControls
+            }
+        } else {
+            HStack(spacing: AppSettingsStyle.rowGap) {
+                settingsLinkControls
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var settingsLinkControls: some View {
+        Link("官网".localized, destination: URL(string: "https://appports.shimoko.com/")!)
+            .fixedSize()
+        Link("文档".localized, destination: DocumentationLink.homeURL())
+            .fixedSize()
+        Button("边界与共识".localized) {
+            showBoundaryConsensus = true
+        }
+        .fixedSize()
+        Button("关于".localized) {
+            AboutWindowController.shared.present()
+        }
+        .fixedSize()
+    }
+
     private func statusText(for result: UpdateCheckResult) -> String {
         switch result {
         case .available(let update): return "发现新版本".localized + " · " + update.version
         case .upToDate: return "当前已是最新版本。".localized
         case .failed: return "无法检查更新，请稍后重试。".localized
+        }
+    }
+}
+
+@available(macOS 13.0, *)
+private struct SettingsWrapRowLayout: Layout {
+    var horizontalSpacing: CGFloat
+    var verticalSpacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var rowWidth: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var totalWidth: CGFloat = 0
+        var totalHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if rowWidth > 0, rowWidth + horizontalSpacing + size.width > maxWidth {
+                totalWidth = max(totalWidth, rowWidth)
+                totalHeight += rowHeight + verticalSpacing
+                rowWidth = size.width
+                rowHeight = size.height
+            } else {
+                if rowWidth > 0 { rowWidth += horizontalSpacing }
+                rowWidth += size.width
+                rowHeight = max(rowHeight, size.height)
+            }
+        }
+
+        totalWidth = max(totalWidth, rowWidth)
+        totalHeight += rowHeight
+        return CGSize(width: proposal.width ?? totalWidth, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var cursorX = bounds.minX
+        var cursorY = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if cursorX > bounds.minX, cursorX + size.width > bounds.maxX {
+                cursorX = bounds.minX
+                cursorY += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+            subview.place(
+                at: CGPoint(x: cursorX, y: cursorY),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(size)
+            )
+            cursorX += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
         }
     }
 }
