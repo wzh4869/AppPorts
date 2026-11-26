@@ -89,11 +89,24 @@ struct SidebarStorageSection: View {
     let directory: URL?
     let showsTarget: Bool
     @ObservedObject private var operations = AppOperationState.shared
+    @ObservedObject private var diskEjection = DiskEjectionController.shared
     @State private var localSpace: StorageSpaceSnapshot?
     @State private var targetSpace: StorageSpaceSnapshot?
     @State private var hasReadLocal = false
     @State private var hasReadTarget = false
     @State private var volumeRevision = 0
+    @State private var unmountingVolumePaths: Set<String> = []
+    @State private var unmountGraceTask: Task<Void, Never>?
+
+    private var isTargetSuppressed: Bool {
+        guard let directory else { return false }
+        if diskEjection.suppressesVolumeAccess(at: directory) { return true }
+        return unmountingVolumePaths.contains { DiskEjectionController.path(directory.path, isWithin: $0) }
+    }
+
+    private var storageTaskID: String {
+        "\(showsTarget)-\(directory?.path ?? "")-\(operations.recordsRevision)-\(volumeRevision)-\(isTargetSuppressed)"
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -104,16 +117,53 @@ struct SidebarStorageSection: View {
             }
         }
         .font(.system(size: 11))
-        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { _ in
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willUnmountNotification)) { notification in
+            guard let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL else { return }
+            let volumePath = DiskEjectionController.standardizedPath(volumeURL.path)
+            unmountingVolumePaths.insert(volumePath)
+            unmountGraceTask?.cancel()
+            unmountGraceTask = Task { @MainActor in
+                do { try await Task.sleep(nanoseconds: 10_000_000_000) } catch { return }
+                unmountingVolumePaths.remove(volumePath)
+                unmountGraceTask = nil
+            }
+        }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { notification in
+            if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
+                unmountingVolumePaths.remove(DiskEjectionController.standardizedPath(volumeURL.path))
+            } else {
+                unmountingVolumePaths.removeAll()
+            }
+            if unmountingVolumePaths.isEmpty {
+                unmountGraceTask?.cancel()
+                unmountGraceTask = nil
+            }
             volumeRevision += 1
         }
-        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { _ in
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { notification in
+            if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
+                unmountingVolumePaths.remove(DiskEjectionController.standardizedPath(volumeURL.path))
+            } else {
+                unmountingVolumePaths.removeAll()
+            }
+            if unmountingVolumePaths.isEmpty {
+                unmountGraceTask?.cancel()
+                unmountGraceTask = nil
+            }
             volumeRevision += 1
         }
-        .task(id: "\(showsTarget)-\(directory?.path ?? "")-\(operations.recordsRevision)-\(volumeRevision)") {
-            hasReadTarget = false
-            targetSpace = nil
+        .onDisappear {
+            unmountGraceTask?.cancel()
+            unmountGraceTask = nil
+            unmountingVolumePaths.removeAll()
+        }
+        .task(id: storageTaskID) {
             let target = showsTarget ? directory : nil
+            let suppressed = isTargetSuppressed
+            if !suppressed || target == nil {
+                hasReadTarget = false
+                targetSpace = nil
+            }
             while !Task.isCancelled {
                 let local = await Task.detached(priority: .utility) {
                     let dataVolume = URL(fileURLWithPath: "/System/Volumes/Data")
@@ -123,12 +173,19 @@ struct SidebarStorageSection: View {
                 guard !Task.isCancelled else { return }
                 localSpace = local
                 hasReadLocal = true
-                let external = await Task.detached(priority: .utility) {
-                    target.flatMap { StorageSpaceSnapshot.read(at: $0) }
-                }.value
-                guard !Task.isCancelled else { return }
-                targetSpace = external
-                hasReadTarget = true
+                if suppressed {
+                    if let target, DiskEjectionController.mountedExternalVolumeRoot(for: target) == nil {
+                        targetSpace = nil
+                        hasReadTarget = true
+                    }
+                } else {
+                    let external = await Task.detached(priority: .utility) {
+                        target.flatMap { StorageSpaceSnapshot.read(at: $0) }
+                    }.value
+                    guard !Task.isCancelled else { return }
+                    targetSpace = external
+                    hasReadTarget = true
+                }
                 do { try await Task.sleep(nanoseconds: 5_000_000_000) }
                 catch { return }
             }

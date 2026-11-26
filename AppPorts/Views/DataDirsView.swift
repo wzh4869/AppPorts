@@ -27,6 +27,7 @@ struct DataDirsView: View {
     @ObservedObject private var languageManager = LanguageManager.shared
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
+    @ObservedObject private var diskEjection = DiskEjectionController.shared
 
     // MARK: - 外部依赖
     var isActive: Bool = true
@@ -276,11 +277,27 @@ struct DataDirsView: View {
                 reloadCurrentTab()
             }
         }
+        .onChange(of: diskEjection.yieldRevision) { _ in
+            guard diskEjection.suppressesVolumeAccess(at: externalDriveURL) else { return }
+            deferredTabReloadAfterBusy = false
+            suspendDirectoryScans()
+        }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willUnmountNotification)) { notification in
+            guard let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL,
+                  let root = externalDriveURL,
+                  DiskEjectionController.path(root.path, isWithin: volumeURL.path) else { return }
+            deferredTabReloadAfterBusy = false
+            suspendDirectoryScans()
+        }
         .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didUnmountNotification)) { notification in
             if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
                 invalidateSizeCache(for: volumeURL)
             }
             appDataScanCache.removeAll()
+            if isExternalVolumeSuppressedAndMounted {
+                deferredTabReloadAfterBusy = false
+                return
+            }
             if operationState.isBusy {
                 deferredTabReloadAfterBusy = true
             } else if isActive {
@@ -299,6 +316,9 @@ struct DataDirsView: View {
                     appListSizeNeedsResume = true
                 }
                 cancelAppListSizeScan()
+            } else if isExternalVolumeSuppressedAndMounted {
+                deferredTabReloadAfterBusy = false
+                appListSizeNeedsResume = false
             } else if deferredTabReloadAfterBusy {
                 deferredTabReloadAfterBusy = false
                 appListSizeNeedsResume = false
@@ -1391,6 +1411,11 @@ struct DataDirsView: View {
         appListSizeTask?.cancel()
         appListSizeScanToken = UUID()
         isBatchSizingApps = false
+    }
+
+    private var isExternalVolumeSuppressedAndMounted: Bool {
+        guard let root = externalDriveURL, diskEjection.suppressesVolumeAccess(at: root) else { return false }
+        return DiskEjectionController.mountedExternalVolumeRoot(for: root) != nil
     }
 
     private func suspendDirectoryScans() {

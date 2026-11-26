@@ -135,6 +135,34 @@ struct AppLibraryImageEjectionTests {
         } catch ManualMountPauseError.retryPaused { }
     }
 
+    @Test
+    @MainActor
+    func imageControllerEjectionPublishesRecordsChangeAfterSynchronousDetach() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = ContainerMountStore(fileURL: root.appendingPathComponent("container-mounts.plist"))
+        let pauses = DiskEjectionPauseStore(store: store)
+        let record = image("/fixture/NAS/Apps.sparsebundle")
+        let runner = ImageEjectionRunner(record: record, pauses: pauses)
+        let state = AppOperationState(notificationCenter: NotificationCenter())
+        let service = DiskEjectionService(store: store,
+            inventory: { Issue.record("Images must not require a physical disk"); throw DiskEjectionError.unavailable },
+            requestFinderEject: { _ in Issue.record("Backing disk/share must not be ejected") },
+            selectedImage: { record }, imageService: AppLibraryImageService(runner: runner))
+        let controller = DiskEjectionController(service: service, operationState: state)
+        controller.eject(at: URL(fileURLWithPath: "/Volumes/Library"))
+        #expect(controller.yieldRevision == 1)
+        #expect(controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/Library/App.app")))
+        let deadline = Date().addingTimeInterval(3)
+        while (controller.isWorking || state.isBusy) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        #expect(await runner.detached)
+        #expect(controller.errorMessage == nil)
+        #expect(state.recordsRevision == 1)
+    }
+
     private func image(_ path: String) -> AppLibraryImageService.Record {
         var record = AppLibraryImageService.Record(imageURL: URL(fileURLWithPath: path))
         record.volumeUUID = "EA5A45C7-E35A-458D-830F-090D74C68888"

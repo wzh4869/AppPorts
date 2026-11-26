@@ -226,6 +226,33 @@ struct AppListScanStateTests {
         #expect(!local.isScanning)
         #expect(local.request == localRequest) // Completion must not look like missing initialization.
     }
+
+    @Test func cancelInFlightStopsProgressWithoutResettingInitialization() throws {
+        var state = AppListScanState()
+        state.cancelInFlight()
+        #expect(state.request == nil)
+        #expect(!state.isScanning)
+
+        let activeResult = state.begin(externalDirectory: external, customPaths: [], isManual: true)
+        let active = try #require(activeResult)
+        let row = AppItem(name: "Sample.app", path: external.appendingPathComponent("Sample.app"), status: AppStatus.external)
+        state.publishPreview([row], for: active)
+        #expect(state.isScanning)
+        #expect(state.preview == [row])
+
+        state.cancelInFlight()
+        #expect(!state.isScanning)
+        #expect(state.preview.isEmpty)
+        #expect(state.request != nil)
+        #expect(state.request != active)
+
+        // Late preview or completion from the cancelled request must be ignored.
+        state.publishPreview([row], for: active)
+        #expect(state.preview.isEmpty)
+        state.finish(active)
+        #expect(!state.isScanning)
+        #expect(state.request != nil)
+    }
 }
 
 @MainActor

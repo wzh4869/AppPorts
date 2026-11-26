@@ -42,6 +42,7 @@ struct CustomDirsView: View {
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
     @ObservedObject private var configStore = CustomDirConfigStore.shared
+    @ObservedObject private var diskEjection = DiskEjectionController.shared
     private var configs: [CustomDirConfig] { configStore.configs }
     @State private var pairs: [CustomDirPair] = []
     @State private var selectedLocalIDs: Set<String> = []
@@ -160,6 +161,22 @@ struct CustomDirsView: View {
         }
         .onChange(of: isScanning) { scanning in
             onScanningChanged?(scanning)
+        }
+        .onChange(of: diskEjection.yieldRevision) { _ in
+            guard configs.contains(where: {
+                diskEjection.suppressesVolumeAccess(at: $0.externalBaseURL)
+                    || diskEjection.suppressesVolumeAccess(at: $0.externalDestinationURL)
+            }) else { return }
+            invalidateRefresh()
+        }
+        .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willUnmountNotification)) { notification in
+            guard let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL else { return }
+            let volumePath = DiskEjectionController.standardizedPath(volumeURL.path)
+            guard configs.contains(where: {
+                DiskEjectionController.path($0.externalBaseURL.path, isWithin: volumePath)
+                    || DiskEjectionController.path($0.externalDestinationURL.path, isWithin: volumePath)
+            }) else { return }
+            invalidateRefresh()
         }
         .onChange(of: operationState.recordsRevision) { _ in refresh() }
         .onChange(of: configStore.configs) { _ in refresh() }

@@ -299,6 +299,7 @@ actor AppScanner {
             ],
             level: "TRACE"
         )
+        guard !Task.isCancelled else { return [] }
         infoPlistCache.removeAll()
         let fileManager = FileManager.default
         var candidates = ScanCandidates(grouping: .applicationIdentity, onProgress: onProgress)
@@ -310,6 +311,7 @@ actor AppScanner {
         let items = (try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: keys, options: .skipsHiddenFiles)) ?? []
 
         for itemURL in items {
+            guard !Task.isCancelled else { return [] }
             // 只处理 .app 扩展名的项目
             if itemURL.pathExtension == "app" {
                 let appName = itemURL.lastPathComponent
@@ -1058,6 +1060,7 @@ actor AppScanner {
             ],
             level: "TRACE"
         )
+        guard !Task.isCancelled else { return [] }
         infoPlistCache.removeAll()
         let fileManager = FileManager.default
         var candidates = ScanCandidates(grouping: grouping, onProgress: onProgress)
@@ -1066,6 +1069,7 @@ actor AppScanner {
         let runningSnapshot = makeRunningSnapshot(runningAppURLs: runningAppURLs, runningApplications: runningApplications)
 
         for itemURL in items {
+            guard !Task.isCancelled else { return [] }
             if itemURL.pathExtension == "app" {
                 let appName = itemURL.lastPathComponent
                 var status = AppStatus.unlinked

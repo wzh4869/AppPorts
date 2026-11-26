@@ -14,7 +14,7 @@ Finder 已能联动弹出分散挂载的 APFS 卷，但 AppPorts 的主程序和
 
 在外部应用库标题旁加入弹出入口及暂停后的重试、恢复入口。用户于 2026-10-23 确认实施；新增文案现已[补齐全部 22 语言](../testing/2026-10-23-本地化覆盖与英文占位守卫.md)，临时中英文范围与定向英文回退已结束。
 
-弹出服务与数据操作共用 OperationLock，先确认目标是外置物理盘，按当前磁盘清单收集整盘卷 UUID、容器 UUID 和挂载路径，排除 EFI 分区身份，再持久化暂停状态后向 Finder 发送 eject Apple event。当外部应用库选择在磁盘子目录（例如 `/Volumes/<disk>/<subdir>`）时，初次弹出入口先通过包含它的真实挂载点（并以清单挂载路径前缀兜底）查询 `diskutil info -plist`，不将卷内子路径直接传给 `diskutil`；`DiskUtility.Failure.commandFailed` 对带 `<plist>` 的错误输出自动提取 `ErrorMessage`，避免在弹窗里直接暴露原始 XML。Finder 负责系统占用提示；脚本返回成功仅证明请求已接受，必须另查物理介质是否离线。NSWorkspace 原型在占用时仅返回 OSStatus -47，不符合复用 Finder 提示的目标。
+弹出服务与数据操作共用 OperationLock（默认等待 5 秒以避开瞬时后台维护与挂载代理，且预锁忙碌拒绝不触发 `recordsRevision` 级联，见[外盘弹出锁竞争与基线验证缓存修复](../bug-fix/2026-11-26-外盘弹出锁竞争与基线验证缓存修复.md)；物理盘异步弹出请求本身也不触发 `recordsRevision`，并在弹出前及 `willUnmountNotification` 期间由界面层主动退让外盘扫描、目录监控与容量轮询，见[外盘弹出时界面主动退让避免自占卷](../bug-fix/2026-11-26-外盘弹出时界面主动退让避免自占卷.md)），先确认目标是外置物理盘，按当前磁盘清单收集整盘卷 UUID、容器 UUID 和挂载路径，排除 EFI 分区身份，再持久化暂停状态后向 Finder 发送 eject Apple event。当外部应用库选择在磁盘子目录（例如 `/Volumes/<disk>/<subdir>`）时，初次弹出入口先通过包含它的真实挂载点（并以清单挂载路径前缀兜底）查询 `diskutil info -plist`，不将卷内子路径直接传给 `diskutil`；`DiskUtility.Failure.commandFailed` 对带 `<plist>` 的错误输出自动提取 `ErrorMessage`，避免在弹窗里直接暴露原始 XML。Finder 负责系统占用提示；脚本返回成功仅证明请求已接受，必须另查物理介质是否离线。NSWorkspace 原型在占用时仅返回 OSStatus -47，不符合复用 Finder 提示的目标。
 
 暂停文件与迁移账本分开，沿用同一数据目录和操作锁；读取失败时停止自动维护，不能默认为没有暂停。暂停按卷/容器和精确路径边界影响目标盘。主程序、登录代理、自动恢复和底层挂载入口共同检查。WriterAdmission 能力更新，避免运行中的旧代理忽略新状态。
 
@@ -45,7 +45,7 @@ AppPorts 的结果显示独立于 Finder。`PhysicalDiskMonitor` 只注册 Disk 
 
 暂停状态和应用列表各自更新。`pause.circle` 表示仍有保存的暂停记录，`eject` 表示没有该记录，不能单独当作磁盘在线证明。2026-10-23 用户接回真实外盘后，暂停记录已清空、两个数据卷由代理在 13:57:18 挂回，但界面仍显示空外部列表和孤立入口；13:57:28 手动扫描得到 40 个外部应用。这个失败归属于列表刷新缺口，不是要求用户再退出应用。
 
-`AppLibraryVolumeObserver` 同时监听 workspace 的 didMount 和 didUnmount，ContentView 将两类事件接到既有一秒防抖扫描：重新打开当前外部目录及 `.noindex` 目录监控，并以同一轮扫描更新本地入口和外部应用。挂载事件仍触发原有后台维护，卸载事件不主动重挂；忙碌期间沿用 needsAppRescan 的延后刷新。目录描述符属于旧挂载会话，不能用“新卷挂到相同路径”证明旧 FolderMonitor 仍有效。
+`AppLibraryVolumeObserver` 同时监听 workspace 的 didMount 和 didUnmount，ContentView 将两类事件接到既有一秒防抖扫描：重新打开当前外部目录及 `.noindex` 目录监控，并以同一轮扫描更新本地入口和外部应用。挂载事件仍触发原有后台维护，卸载事件不主动重挂；忙碌期间沿用 needsAppRescan 的延后刷新；当目标外盘正处于弹出退让或暂停且仍在挂载时，兄弟容器卷卸载不再对仍在卸载中的外盘触发重扫或重启监控（见[外盘弹出时界面主动退让避免自占卷](../bug-fix/2026-11-26-外盘弹出时界面主动退让避免自占卷.md)）。目录描述符属于旧挂载会话，不能用“新卷挂到相同路径”证明旧 FolderMonitor 仍有效。
 
 监听对象支持停止和重启，用 generation 拒绝停止前已排队的主线程回调，避免离开视图后重新启动目录监控。暂不按通知路径过滤，系统自动挂载和数据卷切换的多个事件由既有防抖合并，避免漏掉分散挂载对本地入口状态的影响。
 

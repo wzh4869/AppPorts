@@ -27,9 +27,13 @@ struct ContentView: View {
     @AppStorage(MainWindowAppearance.defaultsKey) private var appAppearance = "system"
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var migrationTasks = MigrationTaskCenter.shared
+    @ObservedObject private var diskEjection = DiskEjectionController.shared
     private typealias ScanRequest = AppListScanState.Request
     @State private var localScanState = AppListScanState()
     @State private var externalScanState = AppListScanState()
+    @State private var appScanTask: Task<Void, Never>?
+    @State private var unmountingVolumePaths: Set<String> = []
+    @State private var unmountGraceTask: Task<Void, Never>?
     @State private var isVisible = false
     @State private var needsAppRescan = false
     @State private var runningStateGeneration: UInt64 = 0
@@ -291,6 +295,11 @@ struct ContentView: View {
             isVisible = false
             runningStateRefreshTask?.cancel()
             runningStateRefreshTask = nil
+            appScanTask?.cancel()
+            appScanTask = nil
+            unmountGraceTask?.cancel()
+            unmountGraceTask = nil
+            unmountingVolumePaths.removeAll()
             localScanState.invalidate()
             externalScanState.invalidate()
             localMonitor?.stopMonitoring()
@@ -355,6 +364,22 @@ struct ContentView: View {
                 AppListCacheStore.shared.save(externalApps, pane: .external, source: source, context: context)
             }
         }
+        .onChange(of: diskEjection.yieldRevision) { _ in
+            guard isExternalAccessSuppressed(for: externalDriveURL) else { return }
+            yieldExternalVolumeAccess(reason: "disk-ejection")
+        }
+        .onChange(of: diskEjection.pauses) { _ in
+            resumeExternalMonitoringAfterEjectionIfNeeded()
+        }
+        .onChange(of: diskEjection.imagePauses) { _ in
+            resumeExternalMonitoringAfterEjectionIfNeeded()
+        }
+        .onReceive(
+            NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willUnmountNotification)
+                .receive(on: RunLoop.main)
+        ) { notification in
+            handleWorkspaceWillUnmount(notification)
+        }
         .onChange(of: operationState.recordsRevision) { _ in
             AppLibraryAgentSync.shared.selectionDidChange()
             guard isVisible else { return }
@@ -369,7 +394,9 @@ struct ContentView: View {
                 operationDataTab = nil
             }
             // 补上操作期间延后的监控刷新，也初始化操作期间新打开的窗口。
-            if !isBusy, needsAppRescan || localScanState.request == nil || externalScanState.request == nil {
+            if !isBusy,
+               !isExternalVolumeSuppressedAndMounted(externalDriveURL),
+               needsAppRescan || localScanState.request == nil || externalScanState.request == nil {
                 scanBothApps()
             }
         }
@@ -1505,6 +1532,9 @@ struct ContentView: View {
     @MainActor
     private func scanAppLists(local: Bool, external: Bool, forceSizeRefresh: Bool) {
         guard isVisible else { return }
+        if !forceSizeRefresh, isExternalVolumeSuppressedAndMounted(externalDriveURL) {
+            return
+        }
         prepareAppListSources(local: local, external: external)
         let localRequest = local ? localScanState.begin(externalDirectory: externalDriveURL,
             customPaths: customLocalScanPaths, isManual: forceSizeRefresh) : nil
@@ -1516,8 +1546,11 @@ struct ContentView: View {
         let localRows = localApps.isEmpty ? localScanState.preview : localApps
         let externalRows = externalApps.isEmpty ? externalScanState.preview : externalApps
         let generation = AppMigrationService.maintenanceGeneration
-        Task.detached(priority: .userInitiated) {
+        appScanTask?.cancel()
+        appScanTask = Task.detached(priority: .userInitiated) {
+            guard !Task.isCancelled else { return }
             let runningApplications = await MainActor.run { self.getRunningApplications() }
+            guard !Task.isCancelled else { return }
             let runningURLs = Set(runningApplications.compactMap(\.bundleURL))
             await withTaskGroup(of: PaneSizeWork?.self) { group in
                 if let request = localRequest {
@@ -1531,6 +1564,7 @@ struct ContentView: View {
                         let apps = await self.discoverLocalApps(request: request, previous: localRows, runningURLs: runningURLs,
                             runningApplications: runningApplications, previewCache: localPreviewCache,
                             maintenanceGeneration: generation)
+                        guard !Task.isCancelled else { return nil }
                         return await self.publishDiscoveredApps(apps, isLocal: true, request: request)
                     }
                 }
@@ -1544,12 +1578,14 @@ struct ContentView: View {
                     group.addTask {
                         let apps = await self.discoverExternalApps(request: request, previous: externalRows, runningURLs: runningURLs,
                             runningApplications: runningApplications, previewCache: externalPreviewCache)
+                        guard !Task.isCancelled else { return nil }
                         return await self.publishDiscoveredApps(apps, isLocal: false, request: request)
                     }
                 }
                 // Discovery publishes independently. Size misses share the existing four-worker budget.
                 let scanner = AppScanner()
                 for await work in group {
+                    guard !Task.isCancelled else { group.cancelAll(); return }
                     if let work {
                         await self.computeAndStoreSizes(misses: work.misses, isLocal: work.isLocal,
                             scanner: scanner, request: work.request)
@@ -3037,6 +3073,12 @@ struct ContentView: View {
         externalMonitor?.stopMonitoring()
         externalLibraryMonitor?.stopMonitoring()
         externalLibraryMonitor = nil
+        externalMonitor = nil
+        guard !isExternalAccessSuppressed(for: url) else {
+            AppLogger.shared.logContext("外盘处于弹出退让期，暂不启动外部目录监控", details: [("path", url.path)], level: "TRACE")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
         AppLogger.shared.logContext("启动外部目录监控", details: [("path", url.path)])
 
         let monitor = FolderMonitor(url: url)
@@ -3057,6 +3099,9 @@ struct ContentView: View {
         monitorRescanDebouncer.schedule { [self] in
             Task { @MainActor in
                 guard self.isVisible else { return }
+                if self.isExternalVolumeSuppressedAndMounted(self.externalDriveURL) {
+                    return
+                }
                 AppLogger.shared.logContext("Monitor 防抖触发扫描", details: [("trigger", local ? "local" : "external")], level: "TRACE")
                 if let root = self.externalDriveURL { self.startMonitoringExternal(url: root) }
                 self.scanBothApps()
@@ -3070,6 +3115,62 @@ struct ContentView: View {
         externalLibraryMonitor?.stopMonitoring()
         externalLibraryMonitor = nil
         externalMonitor = nil
+    }
+
+    @MainActor
+    private func isExternalAccessSuppressed(for url: URL?) -> Bool {
+        guard let url else { return false }
+        if diskEjection.suppressesVolumeAccess(at: url) { return true }
+        return unmountingVolumePaths.contains { DiskEjectionController.path(url.path, isWithin: $0) }
+    }
+
+    @MainActor
+    private func isExternalVolumeSuppressedAndMounted(_ url: URL?) -> Bool {
+        guard let url, isExternalAccessSuppressed(for: url) else { return false }
+        return DiskEjectionController.mountedExternalVolumeRoot(for: url) != nil
+    }
+
+    @MainActor
+    private func yieldExternalVolumeAccess(reason: String) {
+        monitorRescanDebouncer.cancel()
+        stopMonitoringExternal()
+        appScanTask?.cancel()
+        appScanTask = nil
+        localScanState.cancelInFlight()
+        externalScanState.cancelInFlight()
+        needsAppRescan = false
+        AppLogger.shared.logContext(
+            "外盘即将卸载，暂停外部扫描与目录监控",
+            details: [("reason", reason), ("path", externalDriveURL?.path)],
+            level: "TRACE"
+        )
+    }
+
+    @MainActor
+    private func handleWorkspaceWillUnmount(_ notification: Notification) {
+        guard let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL,
+              let external = externalDriveURL else { return }
+        let volumePath = DiskEjectionController.standardizedPath(volumeURL.path)
+        guard DiskEjectionController.path(external.path, isWithin: volumePath) else { return }
+        unmountingVolumePaths.insert(volumePath)
+        yieldExternalVolumeAccess(reason: "workspace-will-unmount")
+        unmountGraceTask?.cancel()
+        unmountGraceTask = Task { @MainActor in
+            do { try await Task.sleep(nanoseconds: 10_000_000_000) } catch { return }
+            unmountingVolumePaths.remove(volumePath)
+            unmountGraceTask = nil
+            resumeExternalMonitoringAfterEjectionIfNeeded(triggerScan: false)
+        }
+    }
+
+    @MainActor
+    private func resumeExternalMonitoringAfterEjectionIfNeeded(triggerScan: Bool = true) {
+        guard isVisible, let root = externalDriveURL,
+              !isExternalAccessSuppressed(for: root),
+              DiskEjectionController.mountedExternalVolumeRoot(for: root) != nil,
+              externalMonitor == nil else { return }
+        startMonitoringExternal(url: root)
+        if triggerScan { scanBothApps() }
     }
 
     // MARK: - 签名被替换的应用提醒
@@ -3183,10 +3284,25 @@ struct ContentView: View {
         let observer = AppLibraryVolumeObserver(center: NSWorkspace.shared.notificationCenter)
         observer.start { isMount in
             guard self.isVisible else { return }
+            if let root = self.externalDriveURL {
+                let mountedRoot = DiskEjectionController.mountedExternalVolumeRoot(for: root)
+                if mountedRoot == nil {
+                    self.unmountingVolumePaths.removeAll()
+                    self.unmountGraceTask?.cancel()
+                    self.unmountGraceTask = nil
+                } else if isMount {
+                    self.unmountingVolumePaths.removeAll()
+                    self.unmountGraceTask?.cancel()
+                    self.unmountGraceTask = nil
+                }
+            }
+            if isMount { self.remountContainerVolumes(trigger: "volume-mounted") }
+            if self.isExternalVolumeSuppressedAndMounted(self.externalDriveURL) {
+                return
+            }
             // Reuse the scan debounce so sibling APFS volume events coalesce.
             // Its callback rebuilds monitoring at the current mount and scans both panes.
             self.scheduleMonitorRescan(local: false)
-            if isMount { self.remountContainerVolumes(trigger: "volume-mounted") }
         }
         libraryVolumeObserver = observer
     }

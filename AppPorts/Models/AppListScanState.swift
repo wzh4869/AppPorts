@@ -83,6 +83,18 @@ struct AppListScanState {
         needsSizeRefresh = false
     }
 
+    /// 主动退让（例如外盘即将卸载）时终止在途扫描：令旧回调失效并收起进度态，
+    /// 但保留非空请求占位，避免操作结束时被误判为“尚未初始化的新窗口”而立即重扫。
+    mutating func cancelInFlight() {
+        guard isScanning else { return }
+        request = Request(externalDirectory: request?.externalDirectory,
+                          customPaths: request?.customPaths ?? [],
+                          forceSizeRefresh: false)
+        isScanning = false
+        clearPreview()
+        needsSizeRefresh = false
+    }
+
     mutating func invalidate() {
         request = nil
         isScanning = false

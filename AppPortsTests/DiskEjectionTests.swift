@@ -268,10 +268,131 @@ struct DiskEjectionTests {
         let lock = OperationLock(fileURL: f.root.appendingPathComponent("operation.lock"))
         #expect(lock.tryAcquire()); defer { lock.release() }
         let calls = Calls()
-        let service = DiskEjectionService(disk: f.disk, store: f.store, requestFinderEject: { await calls.append($0.path) })
+        let service = DiskEjectionService(disk: f.disk, store: f.store, lockWaitTimeout: 0.2,
+            requestFinderEject: { await calls.append($0.path) })
         await #expect(throws: DiskEjectionError.self) { try await service.request(at: URL(fileURLWithPath: "/Volumes/USB")) }
         #expect(try f.pauses.snapshot().pauses.isEmpty)
         #expect(await calls.paths.isEmpty)
+    }
+
+    @Test("Brief operation lock contention succeeds once the lock is released within the wait budget")
+    func transientLockContentionSucceeds() async throws {
+        let f = try Fixture(); defer { f.remove() }
+        let lock = OperationLock(fileURL: f.root.appendingPathComponent("operation.lock"))
+        #expect(lock.tryAcquire())
+        let releaser = Task.detached {
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            lock.release()
+        }
+        defer { releaser.cancel(); lock.release() }
+        let calls = Calls()
+        let service = DiskEjectionService(disk: f.disk, store: f.store, lockWaitTimeout: 2,
+            requestFinderEject: { await calls.append($0.path) })
+        try await service.request(at: URL(fileURLWithPath: "/Volumes/USB"))
+        #expect(await calls.paths == ["/Volumes/USB"])
+        #expect(try f.pauses.snapshot().pauses.count == 1)
+    }
+
+    @Test("A busy ejection refusal does not bump recordsRevision or trigger spurious refreshes")
+    @MainActor
+    func busyEjectionSkipsRecordsRevisionCascade() async throws {
+        let f = try Fixture(); defer { f.remove() }
+        let lock = OperationLock(fileURL: f.root.appendingPathComponent("operation.lock"))
+        #expect(lock.tryAcquire()); defer { lock.release() }
+        let calls = Calls()
+        let state = AppOperationState(notificationCenter: NotificationCenter())
+        let service = DiskEjectionService(disk: f.disk, store: f.store, lockWaitTimeout: 0.15,
+            requestFinderEject: { await calls.append($0.path) })
+        let controller = DiskEjectionController(service: service, operationState: state)
+        controller.eject(at: URL(fileURLWithPath: "/Volumes/USB"))
+        let deadline = Date().addingTimeInterval(3)
+        while (controller.isWorking || state.isBusy) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        #expect(!controller.isWorking)
+        #expect(!state.isBusy)
+        #expect(controller.errorMessage == DiskEjectionError.busy.localizedDescription)
+        #expect(state.recordsRevision == 0)
+        #expect(try f.pauses.snapshot().pauses.isEmpty)
+        #expect(await calls.paths.isEmpty)
+    }
+
+    @Test("Cancelling an ejection waiting for the operation lock exits promptly without reporting a busy error")
+    @MainActor
+    func quitCancelsLockWaitPromptly() async throws {
+        let f = try Fixture(); defer { f.remove() }
+        let lock = OperationLock(fileURL: f.root.appendingPathComponent("operation.lock"))
+        #expect(lock.tryAcquire()); defer { lock.release() }
+        let calls = Calls()
+        let state = AppOperationState(notificationCenter: NotificationCenter())
+        let service = DiskEjectionService(disk: f.disk, store: f.store, lockWaitTimeout: 5,
+            requestFinderEject: { await calls.append($0.path) })
+        let controller = DiskEjectionController(service: service, operationState: state)
+        controller.eject(at: URL(fileURLWithPath: "/Volumes/USB"))
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let started = Date()
+        var replied = false
+        #expect(state.finishBeforeTerminating { replied = true })
+        let deadline = Date().addingTimeInterval(2)
+        while (!replied || controller.isWorking || state.isBusy) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        #expect(replied)
+        #expect(Date().timeIntervalSince(started) < 2)
+        #expect(!controller.isWorking)
+        #expect(!state.isBusy)
+        #expect(controller.errorMessage == nil)
+        #expect(state.recordsRevision == 0)
+        #expect(try f.pauses.snapshot().pauses.isEmpty)
+        #expect(await calls.paths.isEmpty)
+    }
+
+    @Test("Physical disk ejection yields target volume access immediately and skips recordsRevision cascade")
+    @MainActor
+    func physicalDiskEjectionYieldsAndSkipsRecordsRevision() async throws {
+        let f = try Fixture(); defer { f.remove() }
+        let calls = Calls()
+        let state = AppOperationState(notificationCenter: NotificationCenter())
+        let service = DiskEjectionService(disk: f.disk, store: f.store,
+            mountedVolumePath: { url in url.path.hasPrefix("/Volumes/USB") ? "/Volumes/USB" : nil },
+            requestFinderEject: { url in
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                await calls.append(url.path)
+            })
+        let controller = DiskEjectionController(service: service, operationState: state)
+        #expect(controller.yieldRevision == 0)
+        #expect(!controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB/Apps")))
+
+        controller.eject(at: URL(fileURLWithPath: "/Volumes/USB/Apps"))
+        #expect(controller.yieldRevision == 1)
+        #expect(controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB")))
+        #expect(controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB/Apps")))
+        #expect(!controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB2/Apps")))
+        #expect(!controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/Other")))
+
+        let deadline = Date().addingTimeInterval(3)
+        while (controller.isWorking || state.isBusy) && Date() < deadline {
+            try await Task.sleep(nanoseconds: 25_000_000)
+        }
+        #expect(!controller.isWorking)
+        #expect(!state.isBusy)
+        #expect(controller.errorMessage == nil)
+        #expect(state.recordsRevision == 0)
+        #expect(await calls.paths == ["/Volumes/USB"])
+        #expect(controller.pauses.count == 1)
+        #expect(controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB/Apps")))
+        #expect(!controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/Other")))
+
+        // An unrelated replacement disk mounted at the same path must not be suppressed.
+        let replacement = ExternalDiskInventory.Disk(deviceIdentifier: "disk8", connectionID: "boot:8", displayName: "Replacement",
+            volumeUUIDs: ["OTHER"], containerUUIDs: ["OTHER-CONTAINER"], mountPaths: ["/Volumes/USB"])
+        let replacedController = DiskEjectionController(
+            service: DiskEjectionService(disk: f.disk, store: f.store,
+                inventory: { .init(disks: [replacement]) }, physicalState: { _ in .offline }),
+            operationState: state
+        )
+        await replacedController.refresh()
+        #expect(!replacedController.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB/Apps")))
     }
 
     @Test("A corrupt pause document cannot silently permit ejection")
