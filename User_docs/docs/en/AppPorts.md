@@ -4,6 +4,8 @@ AppPorts is a free, open-source macOS tool for moving applications and data. It 
 
 Apps and data can move independently. You can move a large app alone, or keep the app installed locally and move only its eligible data directories. Different content has different limits; AppPorts offers actions appropriate to the selected item.
 
+Before using AppPorts, please read [Boundaries & Consensus](/docs/consensus) to understand what it can and cannot do, and why keeping backups matters.
+
 ## How to use these docs {#reading}
 
 These guides are for everyday AppPorts users. They cover preparation, migration, restoration and troubleshooting.

@@ -1,14 +1,8 @@
 # How AppPorts decides whether a migrated app can update
 
-IINA can install a new version in place on an external drive. Another app may install its new version back on your Mac. The **Available** badge means AppPorts has identified a way to update the app after migration. To find out whether a new version is out today, use the app’s own update command or the App Store. Check for Updates in AppPorts Settings checks AppPorts itself.
+IINA can install a new version in place on an external drive. Another app may install its new version back on your Mac. The **Available** badge means AppPorts has identified a way to update the app after migration. To find out whether a new version is out today, use the app’s own update command or the App Store. [Check for Updates](/docs/settings#updates) in AppPorts Settings checks AppPorts itself.
 
 The badge and migration examples use the November 21, 2026 AppPorts 2.3.1 candidate (build 82). On November 22, we also verified the guardian’s task history and log entries with build 84; these badges, hover previews, and independent-update detections (along with QQ and QQ Music) shipped in the 2.4.0 release. You can check your build number in Settings.
-
-## What Check for Updates checks {#appports}
-
-AppPorts checks the official release feed when you open its main interface. You can also run a check in Settings. AppPorts compares each numeric component of the version in the official `latest.json` feed with the version you are running. For example, if both versions are 2.3.1, increasing the build number from 80 to 81 alone does not trigger an update prompt. A manual check reports a connection failure separately from a successful check that finds your version is current.
-
-When a newer release is available, you can download that version from the China mirror or GitHub. AppPorts checks the package size, SHA-256 digest, app identifier, version, architecture, and minimum system requirement. Choosing **Install and Restart** starts the replacement. Let any active migration or recovery finish first. [Update settings](/docs/settings#updates)
 
 ## How to read Checking, Available, and Unknown {#badges}
 
@@ -16,9 +10,9 @@ The item in your Mac’s Applications folder may be a launcher. AppPorts follows
 
 | What AppPorts finds | What the list shows |
 | --- | --- |
-| Sparkle apps verified to update the external copy themselves | Direct-download versions of NetEase Music, IINA, Keka, CotEditor, Transmission, Mac Performance Monitor, and PortKiller show Available when both the app identifier and tested installer match. The guardian can be off. |
-| ShipIt apps verified to complete their own installation | Qoder and OpenCode updated through their bundled ShipIt. When the helper matches, they show Available even with the guardian off. A ready guardian can also attempt recovery after an installation failure. |
-| Other recognized Sparkle or Squirrel/ShipIt apps | AppPorts has only identified the framework or a recovery path. The badge shows Available when the guardian is ready, Checking while it starts, and Unknown when it is off. WorkBuddy has a confirmed migration, and DeepSeek Harness has a confirmed guardian recovery. |
+| Apps using Sparkle (an in-app updater) verified to update the external copy themselves | Direct-download versions of NetEase Music, IINA, Keka, CotEditor, Transmission, Mac Performance Monitor, and PortKiller show Available when both the app identifier and tested installer match. The guardian can be off. |
+| Apps using ShipIt (a built-in Electron installer) verified to complete their own installation | Qoder and OpenCode updated through their bundled installer (ShipIt). When the helper matches, they show Available even with the guardian off. A ready guardian can also attempt recovery after an installation failure. |
+| Other recognized in-app updater apps (Sparkle or Squirrel/ShipIt) | AppPorts has only identified the framework or a recovery path. The badge shows Available when the guardian is ready, Checking while it starts, and Unknown when it is off. WorkBuddy has a confirmed migration, and DeepSeek Harness has a confirmed guardian recovery. |
 | Electron alone, or a file with “updater” in its name | Unknown. Electron apps can use different installers, and this evidence does not establish where an update will land. |
 | A Mac App Store app | On macOS 15.1 or later, a store receipt and a copy in the `Applications` folder on the drive configured in the App Store qualify as Available. A local store app can also qualify before migration to that destination. The App Store performs the update independently of the guardian. |
 | Apps verified to update in place | Firefox, Thunderbird, Google Chrome, JetBrains Toolbox, Zed, DMG Canvas, Querious, Screenflick, QQ, and QQ Music for Mac show Available after an unlocked migration when their bundle identifier and bundled executable match. You can update them in the app with the guardian off. |
@@ -35,17 +29,17 @@ When a mode choice is needed for an Available app, **Migrate unlocked (recommend
 
 An external copy that is already locked shows Locked Migration. Move it back locally, update, and move it out again. If an updater installs version 1.1 locally while 1.0 remains on the external drive, refreshing the list gives **Pending Move Out** priority. Check both versions and choose Move to External to move the new copy. A manual installation can produce the same version difference, so that observation alone does not give the app a lasting Available badge. [Updating and moving apps](/docs/core#updates)
 
-## How the guardian handles a failed ShipIt installation {#guardian}
+## How the guardian handles a failed built-in updater installation {#guardian}
 
-With Application update guardian enabled in Settings → Background agents, it can continue working after you quit the main app. Each third-party app still checks for and downloads its own updates. For a recorded migration, the guardian checks the following.
+With Application update guardian enabled in Settings → Background agents, it can continue working after you quit the main app. Each third-party app still checks for and downloads its own updates. When an app finishes downloading a new build and hands installation off to its built-in updater (often the ShipIt helper inside Electron/Squirrel apps) and that install step fails, the guardian checks the following for a recorded migration.
 
-1. **Identify the installation attempt.** The local entry, external volume, and target path must match the migration record. The guardian matches the ShipIt request to the target, failure, and exit in the latest install attempt. It reads up to 1 MiB from the end of the log. A failure from days ago cannot justify acting on today’s update.
+1. **Identify the installation attempt.** The local entry, external volume, and target path must match the migration record. The guardian matches the built-in installer (ShipIt) request to the target, failure, and exit in the latest install attempt. It reads up to 1 MiB from the end of the log. A failure from days ago cannot justify acting on today’s update.
 2. **Check the target and the cached update.** The guardian checks the app identifier and developer signature. If the external copy still exists, it also checks the developer matches and the replacement is newer. It waits while the installer or another operation has the resources it needs. Missing evidence leaves existing copies in place.
 3. **Install and verify the result.** The guardian verifies the staged new copy before installing it at the original external path. When replacing an existing version, it retains that bundle and refreshes the local entry if it still exists. Task Center shows progress and the outcome of each recovery in a single **App Update Recovery** entry. If the same download fails signature verification twice, the guardian checks the previous version and automatically restores it once the app and installer exit. After refreshing the local entry, it removes the rejected download and temporary copies traced to this attempt. If it cannot verify a previous version, Task Center explains why and the recovery files are kept.
 
 **How can I tell whether AppPorts stepped in?** Open Task Center and find the **App Update Recovery** entry for the app. **Update Recovered** means the guardian completed the recovery. If logging was enabled at the time, choose **View in Finder** under Settings → Log Settings. In `AppPorts_Log.txt`, search for the literal log message `已自动完成 ShipIt 更新恢复`. Check the timestamp and the `bundle_id` on the next line to identify the app. [Log settings](/docs/settings#logs)
 
-A normal Sparkle update or a successful ShipIt installation can finish entirely within the app. If there is no recovery entry in Task Center, quit the app and reopen it from its original local entry to check which version is actually running. [Update protection and recovery](/docs/migration-strategy/portal#updates)
+A normal in-app update or a successful installation by the app’s own updater can finish entirely within the app. If there is no recovery entry in Task Center, quit the app and reopen it from its original local entry to check which version is actually running. [Update protection and recovery](/docs/migration-strategy/portal#updates)
 
 ## What happens to the guardian when AppPorts updates {#handoff}
 
