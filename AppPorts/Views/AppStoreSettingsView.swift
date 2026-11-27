@@ -7,7 +7,7 @@ struct AppStoreSettingsView: View {
     @AppStorage("allowAppStoreMigration") private var allowAppStoreMigration = false
     @AppStorage("allowIOSAppMigration") private var allowIOSAppMigration = false
     @AppStorage("LogEnabled") private var isLoggingEnabled = true
-    @AppStorage("MaxLogSizeBytes") private var maxLogSize = 2 * 1024 * 1024
+    @AppStorage("MaxLogSizeBytes") private var maxLogSize = Int(AppLogger.defaultMaxLogSizeBytes)
     @AppStorage(AutoResignInstaller.policyErrorDefaultsKey) private var autoResignPolicyError = ""
     @AppStorage(MigrationPreferences.classicDataMigrationKey) private var classicDataMigrationEnabled = false
     @AppStorage(BackgroundAgentPreferences.diskMaintenanceKey) private var diskMaintenanceEnabled = true
@@ -16,6 +16,9 @@ struct AppStoreSettingsView: View {
     @State private var isRetryingAutoResignCleanup = false
     @State private var showClassicModeAcknowledgement = false
     @State private var classicModeAcknowledged = false
+    @State private var logSizeText = AppLogger.shared.getLogSizeString()
+    @State private var logDirectoryPath = AppLogger.shared.logFileURL.deletingLastPathComponent().path
+    @State private var isUsingCustomLogPath = AppLogger.shared.isUsingCustomLogPath
     @StateObject private var readiness: ReadinessCheckModel
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var permissionReadiness = PermissionReadiness.shared
@@ -51,9 +54,13 @@ struct AppStoreSettingsView: View {
         .modifier(AppUpdatePresentationDismissal {
             showClassicModeAcknowledgement = false
         })
-        .onAppear(perform: refreshAppStoreInstall)
+        .onAppear {
+            refreshAppStoreInstall()
+            refreshLogSettingsState()
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             refreshAppStoreInstall()
+            refreshLogSettingsState()
         }
         .onChange(of: externalDrivePath) { _ in refreshAppStoreInstall() }
         .onChange(of: diskMaintenanceEnabled) { _ in agentSync.selectionDidChange() }
@@ -205,25 +212,68 @@ struct AppStoreSettingsView: View {
 
     private var logsSection: some View {
         AppSettingsSection(title: "日志设置".localized) {
-            AppSettingsToggle(title: "启用日志记录".localized,
-                detail: "管理应用运行日志和诊断信息".localized, isOn: $isLoggingEnabled)
+            AppSettingsToggle(
+                title: "启用日志记录".localized,
+                detail: "管理应用运行日志和诊断信息".localized,
+                isOn: Binding(
+                    get: { isLoggingEnabled },
+                    set: {
+                        AppLogger.shared.isLoggingEnabled = $0
+                        refreshLogSettingsState()
+                    }
+                )
+            )
             if isLoggingEnabled {
                 Divider()
-                HStack {
-                    Text("最大日志大小".localized)
-                    Spacer()
-                    Picker("最大日志大小".localized, selection: $maxLogSize) {
-                        ForEach([1, 2, 5, 10, 50, 100], id: \.self) { size in
+                HStack(alignment: .center, spacing: AppSettingsStyle.sectionGap) {
+                    VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
+                        Text("最大日志大小".localized)
+                            .font(AppSettingsStyle.rowFont)
+                        Text(String(format: "当前大小: %@".localized, logSizeText))
+                            .font(AppSettingsStyle.secondaryFont)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Picker("最大日志大小".localized, selection: Binding(
+                        get: { maxLogSize },
+                        set: { AppLogger.shared.maxLogSize = Int64($0) }
+                    )) {
+                        ForEach(AppLogger.selectableLogSizeMBOptions, id: \.self) { size in
                             Text(verbatim: "\(size) MB").tag(size * 1024 * 1024)
                         }
+                        Divider()
+                        Text("不限".localized).tag(Int(AppLogger.unlimitedMaxLogSizeBytes))
                     }
                     .labelsHidden().pickerStyle(.menu).fixedSize()
                 }
-                HStack {
-                    Button("在 Finder 中查看".localized) { AppLogger.shared.openLogInFinder() }
-                    Button("导出诊断包".localized) { AppLogger.shared.exportDiagnosticPackageInteractively() }
+                Divider()
+                HStack(alignment: .center, spacing: AppSettingsStyle.sectionGap) {
+                    VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
+                        Text("日志位置".localized)
+                            .font(AppSettingsStyle.rowFont)
+                        Text(verbatim: abbreviatedLogDirectoryPath)
+                            .font(AppSettingsStyle.secondaryFont)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .help(logDirectoryPath)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(spacing: 6) {
+                        if isUsingCustomLogPath {
+                            Button("恢复默认".localized) {
+                                AppLogger.shared.resetLogPathToDefault()
+                                refreshLogSettingsState()
+                            }
+                            .fixedSize()
+                        }
+                        Button("更换位置".localized, action: chooseLogLocation)
+                            .fixedSize()
+                    }
                 }
-                Button("清空日志".localized) { AppLogger.shared.clearLog() }
+                Divider()
+                logActionButtons
+                    .padding(.top, 2)
             }
             if !autoResignPolicyError.isEmpty {
                 Divider()
@@ -233,6 +283,66 @@ struct AppStoreSettingsView: View {
                     .disabled(operationState.isBusy || isRetryingAutoResignCleanup)
             }
         }
+    }
+
+    private var abbreviatedLogDirectoryPath: String {
+        (logDirectoryPath as NSString).abbreviatingWithTildeInPath
+    }
+
+    @ViewBuilder
+    private var logActionButtons: some View {
+        let singleRow = HStack(spacing: 8) {
+            Button("在 Finder 中查看".localized) { AppLogger.shared.openLogInFinder() }
+                .fixedSize(horizontal: true, vertical: false)
+            Button("导出诊断包".localized) { AppLogger.shared.exportDiagnosticPackageInteractively() }
+                .fixedSize(horizontal: true, vertical: false)
+            Spacer(minLength: 8)
+            Button("清空日志".localized, role: .destructive) {
+                if AppLogger.shared.confirmAndClearLog() {
+                    refreshLogSettingsState()
+                }
+            }
+            .fixedSize(horizontal: true, vertical: false)
+        }
+        if #available(macOS 13.0, *) {
+            ViewThatFits(in: .horizontal) {
+                singleRow
+                VStack(alignment: .leading, spacing: AppSettingsStyle.rowGap) {
+                    HStack(spacing: 8) {
+                        Button("在 Finder 中查看".localized) { AppLogger.shared.openLogInFinder() }
+                        Button("导出诊断包".localized) { AppLogger.shared.exportDiagnosticPackageInteractively() }
+                    }
+                    Button("清空日志".localized, role: .destructive) {
+                        if AppLogger.shared.confirmAndClearLog() {
+                            refreshLogSettingsState()
+                        }
+                    }
+                }
+            }
+        } else {
+            singleRow
+        }
+    }
+
+    @MainActor
+    private func refreshLogSettingsState() {
+        logSizeText = AppLogger.shared.getLogSizeString()
+        logDirectoryPath = AppLogger.shared.logFileURL.deletingLastPathComponent().path
+        isUsingCustomLogPath = AppLogger.shared.isUsingCustomLogPath
+    }
+
+    @MainActor
+    private func chooseLogLocation() {
+        let panel = NSOpenPanel()
+        panel.prompt = "选择日志保存位置".localized
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.directoryURL = AppLogger.shared.logFileURL.deletingLastPathComponent()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let logFile = url.appendingPathComponent("AppPorts_Log.txt")
+        AppLogger.shared.setLogPath(logFile)
+        refreshLogSettingsState()
     }
 
     @MainActor

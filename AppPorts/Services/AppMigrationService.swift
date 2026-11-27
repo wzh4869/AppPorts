@@ -1079,7 +1079,7 @@ struct AppMigrationService {
                 ("operation_id", operationID),
                 ("portal_kind", portalKindDescription(portalKind))
             ],
-            level: "TRACE"
+            level: "DIAG"
         )
 
         try recheckWriterAdmission()
@@ -1744,7 +1744,7 @@ struct AppMigrationService {
                 ("local_path", localURL.path),
                 ("external_path", externalURL.path)
             ],
-            level: "TRACE"
+            level: "DIAG"
         )
 
         switch resolvedPortalKind {
@@ -1779,7 +1779,7 @@ struct AppMigrationService {
             try createStubPortal(at: localURL, pointingTo: externalURL)
         }
 
-        AppLogger.shared.logPathState("本地入口结果[\(operationID ?? "n/a")]", url: localURL, level: "TRACE")
+        AppLogger.shared.logPathState("本地入口结果[\(operationID ?? "n/a")]", url: localURL, level: "DIAG")
     }
 
     /// 创建 Folder Mirror：本地真实文件夹，逐项镜像外部套件文件夹。

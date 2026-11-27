@@ -315,7 +315,6 @@ actor AppScanner {
             // 只处理 .app 扩展名的项目
             if itemURL.pathExtension == "app" {
                 let appName = itemURL.lastPathComponent
-                AppLogger.shared.log("扫描应用: \(appName)", level: "TRACE")
                 let baseStatus = detectLocalAppStatus(at: itemURL)
                 let status = statusForLocalApp(
                     baseStatus: baseStatus,
@@ -415,6 +414,21 @@ actor AppScanner {
                 ("running_count", String(sortedApps.filter(\.isRunning).count))
             ],
             level: "TRACE"
+        )
+        AppLogger.shared.updateAppInventorySnapshot(
+            scope: "local",
+            entries: sortedApps.map { app in
+                AppLogger.AppInventoryEntry(
+                    scope: "local",
+                    name: app.name,
+                    status: app.status,
+                    version: app.version,
+                    containerKind: String(describing: app.containerKind),
+                    isSystemApp: app.isSystemApp,
+                    isAppStoreApp: app.isAppStoreApp,
+                    isRunning: app.isRunning
+                )
+            }
         )
         return sortedApps
     }
@@ -1286,6 +1300,21 @@ actor AppScanner {
                 ("statuses", Dictionary(grouping: sortedApps, by: \.status).map { "\($0.key)=\($0.value.count)" }.sorted().joined(separator: ", "))
             ],
             level: "TRACE"
+        )
+        AppLogger.shared.updateAppInventorySnapshot(
+            scope: "external",
+            entries: sortedApps.map { app in
+                AppLogger.AppInventoryEntry(
+                    scope: "external",
+                    name: app.name,
+                    status: app.status,
+                    version: app.version,
+                    containerKind: String(describing: app.containerKind),
+                    isSystemApp: app.isSystemApp,
+                    isAppStoreApp: app.isAppStoreApp,
+                    isRunning: app.isRunning
+                )
+            }
         )
         return sortedApps
     }

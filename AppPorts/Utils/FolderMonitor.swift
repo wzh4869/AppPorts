@@ -50,6 +50,12 @@ class FolderMonitor {
     /// 防抖计时器
     private var debounceTimer: DispatchWorkItem?
 
+    /// 高频目录变化日志聚合计数（不影响实际防抖回调频率）
+    private var pendingRawEventCount = 0
+    private var suppressedChangeLogCount = 0
+    private var lastChangeLogUptime: TimeInterval = 0
+    private let changeLogCoalesceInterval: TimeInterval = 10.0
+
     /// 测试钩子：观察每次描述符关闭结果 (fd, closeReturnCode)
     private let onDescriptorClosed: (@Sendable (Int32, Int32) -> Void)?
     
@@ -104,20 +110,41 @@ class FolderMonitor {
         source.setEventHandler { [weak self, weak source] in
             guard let self, let source, !source.isCancelled else { return }
             let work = DispatchWorkItem { [weak self, weak source] in
-                let callback: (() -> Void)? = {
-                    guard let self, let source, !source.isCancelled else { return nil }
+                guard let self, let source, !source.isCancelled else { return }
+                let (callback, shouldLog, rawEvents, coalescedTriggers): ((() -> Void)?, Bool, Int, Int) = {
                     self.stateLock.lock()
                     defer { self.stateLock.unlock() }
-                    guard self.dispatchSource === source else { return nil }
-                    return self.onChange
+                    guard self.dispatchSource === source else { return (nil, false, 0, 0) }
+                    let raw = self.pendingRawEventCount
+                    self.pendingRawEventCount = 0
+                    let now = ProcessInfo.processInfo.systemUptime
+                    if self.lastChangeLogUptime == 0 || (now - self.lastChangeLogUptime) >= self.changeLogCoalesceInterval {
+                        let coalesced = self.suppressedChangeLogCount
+                        self.suppressedChangeLogCount = 0
+                        self.lastChangeLogUptime = now
+                        return (self.onChange, true, raw, coalesced)
+                    } else {
+                        self.suppressedChangeLogCount += 1
+                        return (self.onChange, false, raw, 0)
+                    }
                 }()
                 guard let callback else { return }
-                AppLogger.shared.logContext("FolderMonitor 检测到目录变化", details: [("path", self?.url.path)], level: "TRACE")
+                if shouldLog {
+                    var details: [(String, String?)] = [
+                        ("path", self.url.path),
+                        ("raw_events", String(max(rawEvents, 1)))
+                    ]
+                    if coalescedTriggers > 0 {
+                        details.append(("coalesced_triggers", String(coalescedTriggers)))
+                    }
+                    AppLogger.shared.logContext("FolderMonitor 检测到目录变化", details: details, level: "TRACE")
+                }
                 callback()
             }
             self.stateLock.lock()
             let isCurrent = self.dispatchSource === source
             if isCurrent {
+                self.pendingRawEventCount += 1
                 self.debounceTimer?.cancel()
                 self.debounceTimer = work
             }
@@ -151,14 +178,22 @@ class FolderMonitor {
         stateLock.lock()
         let timer = debounceTimer
         let source = dispatchSource
+        let remainingCoalesced = suppressedChangeLogCount
         debounceTimer = nil
         dispatchSource = nil
         onChange = nil
+        pendingRawEventCount = 0
+        suppressedChangeLogCount = 0
+        lastChangeLogUptime = 0
         stateLock.unlock()
 
         timer?.cancel()
         if let source {
-            AppLogger.shared.logContext("FolderMonitor 停止监控", details: [("path", url.path)], level: "TRACE")
+            var details: [(String, String?)] = [("path", url.path)]
+            if remainingCoalesced > 0 {
+                details.append(("coalesced_triggers", String(remainingCoalesced)))
+            }
+            AppLogger.shared.logContext("FolderMonitor 停止监控", details: details, level: "TRACE")
             source.cancel()
         }
     }

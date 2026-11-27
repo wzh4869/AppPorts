@@ -86,6 +86,7 @@ enum ContainerRemountLoop {
         var deferredCycles = 0
         var sawResults = false
         var waitingLogged = false
+        var backstopRetries = 0
         var stopReason: StopReason?
 
         while cycles < policy.maxCycles {
@@ -134,6 +135,14 @@ enum ContainerRemountLoop {
             }
             let timeout = min(remaining, policy.backstop)
             if let change = await waitForChange(timeout) {
+                if backstopRetries > 1 {
+                    AppLogger.shared.logContext(
+                        "兜底复查汇总",
+                        details: [("backstop_retries", String(backstopRetries)), ("cycle", String(cycles))],
+                        level: "TRACE"
+                    )
+                }
+                backstopRetries = 0
                 AppLogger.shared.logContext(
                     "等到目录变化，重试挂载",
                     details: [
@@ -143,12 +152,23 @@ enum ContainerRemountLoop {
                     ]
                 )
             } else if remaining > policy.backstop {
-                AppLogger.shared.logContext(
-                    "等待窗口内没有目录变化，兜底复查一次",
-                    details: [("cycle", String(cycles)), ("timeout_seconds", Self.seconds(timeout))],
-                    level: "TRACE"
-                )
+                backstopRetries += 1
+                if backstopRetries == 1 {
+                    AppLogger.shared.logContext(
+                        "等待窗口内没有目录变化，兜底复查一次",
+                        details: [("cycle", String(cycles)), ("timeout_seconds", Self.seconds(timeout))],
+                        level: "TRACE"
+                    )
+                }
             }
+        }
+
+        if backstopRetries > 1 {
+            AppLogger.shared.logContext(
+                "兜底复查汇总",
+                details: [("backstop_retries", String(backstopRetries)), ("cycle", String(cycles))],
+                level: "TRACE"
+            )
         }
 
         // 一次都没跑成（一直在给主应用让路）时如实说明，别让日志看起来像"没有记录"。

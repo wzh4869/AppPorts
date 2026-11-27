@@ -90,7 +90,7 @@ actor FileCopier {
                     ("estimated_total_bytes", String(state.totalBytes)),
                     ("remove_quarantine", removeQuarantine ? "true" : "false")
                 ],
-                level: "TRACE"
+                level: "DIAG"
             )
 
             switch sourceValues.fileResourceType {
@@ -147,7 +147,7 @@ actor FileCopier {
                     ("source", source.path),
                     ("destination", destination.path)
                 ],
-                level: "TRACE"
+                level: "DIAG"
             )
             return state.copiedBytes
         } catch {
@@ -247,7 +247,7 @@ actor FileCopier {
                         try Self.copySymbolicLink(from: item, to: target, removeQuarantine: removeQuarantine)
                         await recordCompletion(bytes: 0, name: item.lastPathComponent, state: &state, progressHandler: progressHandler)
                     case .socket:
-                        AppLogger.shared.logContext("跳过 socket 文件", details: [("path", item.path)], level: "TRACE")
+                        AppLogger.shared.logContext("跳过 socket 文件", details: [("path", item.path)], level: "DIAG")
                     case .regular:
                         let size = Int64(values.fileSize ?? 0)
                         if concurrentCopies == 1 {

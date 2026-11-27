@@ -174,7 +174,7 @@ final class ShipItUpdateRecovery: @unchecked Sendable {
                 }
             } catch {
                 AppLogger.shared.logContext("跳过无法检查的 ShipIt 更新记录",
-                    details: [("bundle_id", record.targetBundleIdentifier), ("error", error.localizedDescription)], level: "TRACE")
+                    details: [("bundle_id", record.targetBundleIdentifier), ("error", error.localizedDescription)], level: "DIAG")
             }
         }
         return CandidateScan(candidates: result, skips: skips)

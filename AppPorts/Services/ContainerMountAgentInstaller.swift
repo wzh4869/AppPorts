@@ -429,6 +429,7 @@ enum ContainerMountAgentInstaller {
         // copy/verification must finish before this process can exit.
         semaphore.wait()
         AppLogger.shared.log("容器卷自动挂载代理退出")
+        AppLogger.shared.flush()
         exit(0)
     }
 

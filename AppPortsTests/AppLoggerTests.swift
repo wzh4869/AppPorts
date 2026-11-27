@@ -187,6 +187,7 @@ final class AppLoggerTests: XCTestCase {
             )
         }
 
+        logger.flush()
         let contents = try String(contentsOf: logger.logFileURL, encoding: .utf8)
         var currentEvent = ""
         var events = Set<String>()
@@ -219,6 +220,7 @@ final class AppLoggerTests: XCTestCase {
             operation: operation, retainedDetails: nil))
         logger.logError("INCOMPLETE", error: ContainerVolumeMigrator.AutomaticRecoveryError.incomplete(
             operation: operation, recovery: recovery))
+        logger.flush()
         let contents = try String(contentsOf: logger.logFileURL, encoding: .utf8)
         XCTAssertTrue(contents.contains("error_underlying_domain: NSPOSIXErrorDomain"))
         XCTAssertTrue(contents.contains("error_underlying_file_path: /synthetic/source/payload"))
@@ -251,6 +253,7 @@ final class AppLoggerTests: XCTestCase {
         let recoveredURL = rootURL.appendingPathComponent("recovered.log")
         logger.setLogPath(recoveredURL)
         logger.log("logging recovered")
+        logger.flush()
         XCTAssertTrue(try String(contentsOf: recoveredURL, encoding: .utf8).contains("logging recovered"))
     }
 
@@ -361,6 +364,385 @@ final class AppLoggerTests: XCTestCase {
             XCTAssertFalse(content.contains("com.example.secret"))
             XCTAssertFalse(content.contains("Private Disk"))
         }
+    }
+
+    func testDefaultMaxLogSizeIs10MBAndMigrationRespectsLargerValues() throws {
+        func makeIsolatedDefaults() throws -> (UserDefaults, String) {
+            let name = "AppLoggerTests.Migration.\(UUID().uuidString)"
+            return (try XCTUnwrap(UserDefaults(suiteName: name)), name)
+        }
+
+        // 1. Fresh user gets 10 MB default
+        let (freshDefaults, freshSuite) = try makeIsolatedDefaults()
+        defer { UserDefaults.standard.removePersistentDomain(forName: freshSuite) }
+        let freshLogger = AppLogger(userDefaults: freshDefaults)
+        XCTAssertEqual(freshLogger.maxLogSize, 10 * 1024 * 1024)
+
+        // 2. Legacy < 10 MB settings (1 MB / 2 MB / 5 MB) migrate once to 10 MB,
+        //    and subsequent manual reductions are preserved across restarts.
+        for legacyMB in [1, 2, 5] {
+            let (defaults, suite) = try makeIsolatedDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+            defaults.set(legacyMB * 1024 * 1024, forKey: "MaxLogSizeBytes")
+
+            let migrated = AppLogger(userDefaults: defaults)
+            XCTAssertEqual(migrated.maxLogSize, 10 * 1024 * 1024, "Expected \(legacyMB) MB to migrate to 10 MB")
+
+            migrated.maxLogSize = 2 * 1024 * 1024
+            let afterManualLower = AppLogger(userDefaults: defaults)
+            XCTAssertEqual(afterManualLower.maxLogSize, 2 * 1024 * 1024, "Manual change after migration must be respected")
+        }
+
+        // 3. Legacy > 10 MB settings (50 MB / 100 MB) are never lowered.
+        for largeMB in [50, 100] {
+            let (defaults, suite) = try makeIsolatedDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+            defaults.set(largeMB * 1024 * 1024, forKey: "MaxLogSizeBytes")
+
+            let preserved = AppLogger(userDefaults: defaults)
+            XCTAssertEqual(preserved.maxLogSize, Int64(largeMB) * 1024 * 1024)
+        }
+    }
+
+    func testDualFileRoutingAndRenameRotationPreserveChronologicalExport() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        logger.maxLogSize = 4096 // main single-vol ~1228 B, trace single-vol ~1024 B
+
+        for index in 0..<25 {
+            logger.log("MAIN-RECORD-\(String(format: "%02d", index)) " + String(repeating: "m", count: 80), level: "INFO")
+            logger.log("TRACE-RECORD-\(String(format: "%02d", index)) " + String(repeating: "t", count: 80), level: "TRACE")
+        }
+        logger.flush()
+
+        let mainCurrentURL = logger.logFileURL
+        let mainArchiveURL = root.appendingPathComponent("AppPorts_Log.1.txt")
+        let traceCurrentURL = logger.traceLogFileURL
+        let traceArchiveURL = root.appendingPathComponent("AppPorts_Trace.1.txt")
+
+        XCTAssertTrue(fileManager.fileExists(atPath: mainCurrentURL.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: mainArchiveURL.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: traceCurrentURL.path))
+        XCTAssertTrue(fileManager.fileExists(atPath: traceArchiveURL.path))
+
+        let mainCurrentText = try String(contentsOf: mainCurrentURL, encoding: .utf8)
+        let traceCurrentText = try String(contentsOf: traceCurrentURL, encoding: .utf8)
+        XCTAssertFalse(mainCurrentText.contains("TRACE-RECORD-"))
+        XCTAssertFalse(traceCurrentText.contains("MAIN-RECORD-"))
+
+        let exportRoot = root.appendingPathComponent("DualExport", isDirectory: true)
+        try fileManager.createDirectory(at: exportRoot, withIntermediateDirectories: true)
+        let package = try logger.buildDiagnosticPackage(in: exportRoot)
+
+        let exportedMain = try String(contentsOf: package.appendingPathComponent("AppPorts_Log.share-safe.txt"), encoding: .utf8)
+        let exportedTrace = try String(contentsOf: package.appendingPathComponent("AppPorts_Trace.share-safe.txt"), encoding: .utf8)
+        XCTAssertTrue(exportedMain.contains("MAIN-RECORD-24"))
+        XCTAssertTrue(exportedTrace.contains("TRACE-RECORD-24"))
+        if let earlierMain = exportedMain.range(of: "MAIN-RECORD-20"),
+           let laterMain = exportedMain.range(of: "MAIN-RECORD-24") {
+            XCTAssertLessThan(earlierMain.lowerBound, laterMain.lowerBound)
+        }
+
+        logger.clearLog()
+        XCTAssertFalse(fileManager.fileExists(atPath: mainArchiveURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: traceCurrentURL.path))
+        XCTAssertFalse(fileManager.fileExists(atPath: traceArchiveURL.path))
+    }
+
+    func testOperationSummariesPersistAcrossLoggerRestart() throws {
+        let suiteName = try XCTUnwrap(defaultsSuiteName)
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+
+        logger.logOperationSummary(
+            category: "app_move",
+            operationID: "persisted-op-1",
+            result: "failed",
+            errorCode: "TEST-PERSIST-ERR",
+            details: [("volume", "Secret Disk")]
+        )
+        logger.flush()
+
+        let restartedLogger = AppLogger(userDefaults: defaults)
+        let summaries = restartedLogger.recentOperationSummariesSnapshot()
+        XCTAssertEqual(summaries.last?.operationID, "persisted-op-1")
+        XCTAssertEqual(summaries.last?.errorCode, "TEST-PERSIST-ERR")
+
+        let exportRoot = try XCTUnwrap(tempRootURL).appendingPathComponent("RestartExport", isDirectory: true)
+        try fileManager.createDirectory(at: exportRoot, withIntermediateDirectories: true)
+        let package = try restartedLogger.buildDiagnosticPackage(in: exportRoot)
+        let failuresText = try String(contentsOf: package.appendingPathComponent("recent-failures.json"), encoding: .utf8)
+        XCTAssertTrue(failuresText.contains("persisted-op-1"))
+        XCTAssertFalse(failuresText.contains("Secret Disk"))
+    }
+
+    func testAppInventorySnapshotExportedOnlyWhenIncluded() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        logger.updateAppInventorySnapshot(scope: "local", entries: [
+            AppLogger.AppInventoryEntry(
+                scope: "local",
+                name: "SecretTool.app",
+                status: "本地",
+                version: "1.2.3",
+                containerKind: "standaloneApp",
+                isSystemApp: false,
+                isAppStoreApp: false,
+                isRunning: true
+            )
+        ])
+        logger.flush()
+
+        let excludedRoot = root.appendingPathComponent("InventoryExcluded", isDirectory: true)
+        try fileManager.createDirectory(at: excludedRoot, withIntermediateDirectories: true)
+        let excludedPackage = try logger.buildDiagnosticPackage(in: excludedRoot, includeAppInventory: false)
+        XCTAssertFalse(fileManager.fileExists(atPath: excludedPackage.appendingPathComponent("app-inventory.json").path))
+
+        let includedRoot = root.appendingPathComponent("InventoryIncluded", isDirectory: true)
+        try fileManager.createDirectory(at: includedRoot, withIntermediateDirectories: true)
+        let includedPackage = try logger.buildDiagnosticPackage(in: includedRoot, includeAppInventory: true)
+        let inventoryData = try Data(contentsOf: includedPackage.appendingPathComponent("app-inventory.json"))
+        let entries = try JSONDecoder().decode([AppLogger.AppInventoryEntry].self, from: inventoryData)
+        XCTAssertEqual(entries.first?.name, "SecretTool.app")
+        XCTAssertEqual(entries.first?.scope, "local")
+    }
+
+    func testRedactedDiagnosticTextHandlesInlineDelimitersAndNetworkShareURLs() {
+        let raw = """
+        error: path="/Volumes/Alice Private Disk", code=EPERM; user='/Users/alice'
+        remote=smb://alice:secret@nas.local/Media/AppPorts
+        legacy=afp://192.168.1.50/TimeMachine
+        """
+        let redacted = logger.redactedDiagnosticText(from: raw)
+        XCTAssertTrue(redacted.contains(#"path="/Volumes/<redacted-volume>", code=EPERM; user='/Users/<redacted-user>'"#))
+        XCTAssertTrue(redacted.contains("remote=smb://<redacted-share>"))
+        XCTAssertTrue(redacted.contains("legacy=afp://<redacted-share>"))
+        XCTAssertFalse(redacted.contains("Alice Private Disk"))
+        XCTAssertFalse(redacted.contains("nas.local"))
+        XCTAssertFalse(redacted.contains("192.168.1.50"))
+    }
+
+    func testConcurrentMultiInstanceWritesShareLockWithoutInterleaving() throws {
+        let suiteName = try XCTUnwrap(defaultsSuiteName)
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        let secondLogger = AppLogger(userDefaults: defaults)
+
+        DispatchQueue.concurrentPerform(iterations: 60) { index in
+            let activeLogger = index.isMultiple(of: 2) ? logger! : secondLogger
+            activeLogger.logContext(
+                "MULTI|\(index)",
+                details: (0..<4).map { ("k_\($0)", "MOWNER|\(index)|\($0)") }
+            )
+        }
+        logger.flush()
+        secondLogger.flush()
+
+        let contents = try String(contentsOf: logger.logFileURL, encoding: .utf8)
+        var currentEvent = ""
+        var events = Set<String>()
+        var fields = Set<String>()
+        var mismatches = 0
+        for line in contents.split(separator: "\n") {
+            if let marker = line.range(of: "MULTI|") {
+                currentEvent = String(line[marker.upperBound...])
+                events.insert(currentEvent)
+            }
+            if let marker = line.range(of: "MOWNER|") {
+                let field = String(line[marker.upperBound...])
+                fields.insert(field)
+                if field.split(separator: "|").first.map(String.init) != currentEvent {
+                    mismatches += 1
+                }
+            }
+        }
+        XCTAssertEqual(events.count, 60)
+        XCTAssertEqual(fields.count, 240)
+        XCTAssertEqual(mismatches, 0)
+    }
+
+    func testResetLogPathToDefaultClearsCustomOverride() throws {
+        let suiteName = "AppLoggerTests.CustomPath.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        let customLogger = AppLogger(userDefaults: defaults, usesTestLogDirectory: false)
+        let customURL = try XCTUnwrap(tempRootURL).appendingPathComponent("Custom/AppPorts_Log.txt")
+
+        XCTAssertFalse(customLogger.isUsingCustomLogPath)
+        customLogger.setLogPath(customURL)
+        XCTAssertTrue(customLogger.isUsingCustomLogPath)
+        XCTAssertEqual(customLogger.logFileURL.standardizedFileURL, customURL.standardizedFileURL)
+
+        customLogger.resetLogPathToDefault()
+        XCTAssertFalse(customLogger.isUsingCustomLogPath)
+        XCTAssertEqual(customLogger.logFileURL.standardizedFileURL, customLogger.defaultLogFileURL.standardizedFileURL)
+    }
+
+    func testUnlimitedLogSizeDisablesRotationAndSurvivesMigration() throws {
+        let suiteName = "AppLoggerTests.Unlimited.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        let root = try XCTUnwrap(tempRootURL).appendingPathComponent("UnlimitedRoot", isDirectory: true)
+        try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+        defaults.set(root.appendingPathComponent("AppPorts_Log.txt").path, forKey: "LogFilePath")
+        defaults.set(true, forKey: "LogEnabled")
+        defaults.set(Int(AppLogger.unlimitedMaxLogSizeBytes), forKey: "MaxLogSizeBytes")
+
+        let unlimitedLogger = AppLogger(userDefaults: defaults)
+        XCTAssertTrue(unlimitedLogger.isLogSizeUnlimited)
+        XCTAssertEqual(unlimitedLogger.maxLogSize, AppLogger.unlimitedMaxLogSizeBytes)
+
+        for index in 0..<40 {
+            unlimitedLogger.log("UNLIMITED-MAIN-\(index) " + String(repeating: "u", count: 256), level: "INFO")
+            unlimitedLogger.log("UNLIMITED-TRACE-\(index) " + String(repeating: "t", count: 256), level: "TRACE")
+        }
+        unlimitedLogger.flush()
+
+        XCTAssertFalse(fileManager.fileExists(atPath: root.appendingPathComponent("AppPorts_Log.1.txt").path))
+        XCTAssertFalse(fileManager.fileExists(atPath: root.appendingPathComponent("AppPorts_Trace.1.txt").path))
+        let content = try String(contentsOf: unlimitedLogger.logFileURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("UNLIMITED-MAIN-0"))
+        XCTAssertTrue(content.contains("UNLIMITED-MAIN-39"))
+
+        let exportRoot = root.appendingPathComponent("Export", isDirectory: true)
+        try fileManager.createDirectory(at: exportRoot, withIntermediateDirectories: true)
+        let package = try unlimitedLogger.buildDiagnosticPackage(in: exportRoot)
+        let metadataData = try Data(contentsOf: package.appendingPathComponent("diagnostic-summary.json"))
+        let metadata = try JSONDecoder().decode([String: String].self, from: metadataData)
+        XCTAssertEqual(metadata["max_log_size"], "unlimited")
+    }
+
+    func testDiagnosticExportHandlesInvalidUTF8BytesInLegacyLog() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        var rawBytes = Data("[2026-03-12 20:00:00] [INFO] before-corrupt\n".utf8)
+        rawBytes.append(contentsOf: [0xFF, 0xFE, 0x0A])
+        rawBytes.append(contentsOf: "[2026-03-12 20:00:01] [ERROR] after-corrupt /Volumes/Alice Private Disk/App.app\n".utf8)
+        try rawBytes.write(to: logger.logFileURL)
+
+        let exportRoot = root.appendingPathComponent("CorruptUTF8Export", isDirectory: true)
+        try fileManager.createDirectory(at: exportRoot, withIntermediateDirectories: true)
+        let package = try logger.buildDiagnosticPackage(in: exportRoot)
+        let exported = try String(contentsOf: package.appendingPathComponent("AppPorts_Log.share-safe.txt"), encoding: .utf8)
+        XCTAssertTrue(exported.contains("before-corrupt"))
+        XCTAssertTrue(exported.contains("after-corrupt /Volumes/<redacted-volume>/App.app"))
+        XCTAssertFalse(exported.contains("Alice Private Disk"))
+    }
+
+    func testRedactedDiagnosticTextMasksMultilinePlistVolumeNameAndMountPoint() {
+        let raw = """
+        \t<key>VolumeName</key>
+        \t<string>Alice Private Disk</string>
+        \t<key>MountPoint</key>
+        \t<string>/Volumes/Alice Private Disk</string>
+        \t<key>Home</key>
+        \t<string>/Users/alice</string>
+        """
+        let redacted = logger.redactedDiagnosticText(from: raw)
+        XCTAssertTrue(redacted.contains("<key>VolumeName</key>\n\t<string><redacted-volume></string>"))
+        XCTAssertTrue(redacted.contains("<key>MountPoint</key>\n\t<string>/Volumes/<redacted-volume></string>"))
+        XCTAssertTrue(redacted.contains("<key>Home</key>\n\t<string>/Users/<redacted-user></string>"))
+        XCTAssertFalse(redacted.contains("Alice Private Disk"))
+        XCTAssertFalse(redacted.contains("/Users/alice"))
+    }
+
+    func testRealZipArchiveExportTruncatesOversizedLogWithoutModifyingLocalFile() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        logger.maxLogSize = AppLogger.unlimitedMaxLogSizeBytes
+
+        // Write a >16 MB log file to exercise tail-bounded export + real /usr/bin/ditto ZIP creation
+        let header = Data("[2026-01-01 00:00:00] [INFO] VERY-OLD-ENTRY-SHOULD-BE-OUTSIDE-EXPORT-WINDOW\n".utf8)
+        let fillerLine = Data(("[2026-06-01 12:00:00] [INFO] " + String(repeating: "x", count: 1000) + "\n").utf8)
+        let tail = Data("""
+        [2026-11-27 09:55:00] [ERROR] RECENT-TAIL-ENTRY /Volumes/Alice Private Disk/Apps/Demo.app
+        \t<key>VolumeName</key>
+        \t<string>Alice Private Disk</string>
+        """.utf8)
+
+        let logURL = logger.logFileURL
+        fileManager.createFile(atPath: logURL.path, contents: nil)
+        let handle = try FileHandle(forWritingTo: logURL)
+        try handle.write(contentsOf: header)
+        for _ in 0..<17_000 {
+            try handle.write(contentsOf: fillerLine)
+        }
+        try handle.write(contentsOf: tail)
+        try handle.close()
+
+        let originalSize = try XCTUnwrap(fileManager.attributesOfItem(atPath: logURL.path)[.size] as? Int64)
+        XCTAssertGreaterThan(originalSize, 16 * 1024 * 1024)
+
+        let archiveURL = try logger.createDiagnosticArchive(includeAppInventory: false)
+        defer { try? fileManager.removeItem(at: archiveURL.deletingLastPathComponent()) }
+
+        // Local file must be completely untouched
+        let afterSize = try XCTUnwrap(fileManager.attributesOfItem(atPath: logURL.path)[.size] as? Int64)
+        XCTAssertEqual(afterSize, originalSize)
+
+        let zipSize = try XCTUnwrap(fileManager.attributesOfItem(atPath: archiveURL.path)[.size] as? Int64)
+        XCTAssertGreaterThan(zipSize, 0)
+        XCTAssertLessThan(zipSize, 2 * 1024 * 1024)
+
+        // Extract the real ZIP archive and verify contents + redaction
+        let extractedRoot = root.appendingPathComponent("ExtractedZip", isDirectory: true)
+        try fileManager.createDirectory(at: extractedRoot, withIntermediateDirectories: true)
+        _ = try AppLogger.runDiagnosticCommand(
+            executableURL: URL(fileURLWithPath: "/usr/bin/ditto"),
+            arguments: ["-x", "-k", archiveURL.path, extractedRoot.path],
+            timeout: 30
+        )
+        let extractedDirs = try fileManager.contentsOfDirectory(at: extractedRoot, includingPropertiesForKeys: nil)
+        let packageDir = try XCTUnwrap(extractedDirs.first)
+
+        let metadataData = try Data(contentsOf: packageDir.appendingPathComponent("diagnostic-summary.json"))
+        let metadata = try JSONDecoder().decode([String: String].self, from: metadataData)
+        XCTAssertEqual(metadata["main_log_export_truncated"], "true")
+        XCTAssertEqual(metadata["max_log_size"], "unlimited")
+
+        let exportedLog = try String(contentsOf: packageDir.appendingPathComponent("AppPorts_Log.share-safe.txt"), encoding: .utf8)
+        XCTAssertTrue(exportedLog.contains("诊断包导出副本仅包含最近"))
+        XCTAssertTrue(exportedLog.contains("RECENT-TAIL-ENTRY /Volumes/<redacted-volume>/Apps/Demo.app"))
+        XCTAssertTrue(exportedLog.contains("<key>VolumeName</key>\n\t<string><redacted-volume></string>"))
+        XCTAssertFalse(exportedLog.contains("VERY-OLD-ENTRY-SHOULD-BE-OUTSIDE-EXPORT-WINDOW"))
+        XCTAssertFalse(exportedLog.contains("Alice Private Disk"))
+    }
+
+    func testClearLogMovesLogVolumesToTrashAndFallsBackOnError() throws {
+        let root = try XCTUnwrap(tempRootURL)
+        let suiteName = "AppLoggerTests.Trash.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suiteName) }
+
+        let trashDir = root.appendingPathComponent("MockTrash", isDirectory: true)
+        try fileManager.createDirectory(at: trashDir, withIntermediateDirectories: true)
+        let logDir = root.appendingPathComponent("TrashLogs", isDirectory: true)
+        try fileManager.createDirectory(at: logDir, withIntermediateDirectories: true)
+        defaults.set(logDir.appendingPathComponent("AppPorts_Log.txt").path, forKey: "LogFilePath")
+        defaults.set(true, forKey: "LogEnabled")
+
+        let lock = NSLock()
+        nonisolated(unsafe) var trashedNames: [String] = []
+        let trashLogger = AppLogger(userDefaults: defaults, trashItemHandler: { url in
+            lock.lock()
+            trashedNames.append(url.lastPathComponent)
+            lock.unlock()
+            try FileManager.default.moveItem(at: url, to: trashDir.appendingPathComponent(url.lastPathComponent))
+        })
+
+        // Seed all 4 log volumes
+        for name in ["AppPorts_Log.txt", "AppPorts_Log.1.txt", "AppPorts_Trace.txt", "AppPorts_Trace.1.txt"] {
+            try Data("sample-\(name)\n".utf8).write(to: logDir.appendingPathComponent(name))
+        }
+        trashLogger.clearLog()
+
+        XCTAssertEqual(Set(trashedNames), ["AppPorts_Log.txt", "AppPorts_Log.1.txt", "AppPorts_Trace.txt", "AppPorts_Trace.1.txt"])
+        XCTAssertTrue(fileManager.fileExists(atPath: trashDir.appendingPathComponent("AppPorts_Log.1.txt").path))
+        XCTAssertFalse(fileManager.fileExists(atPath: logDir.appendingPathComponent("AppPorts_Log.1.txt").path))
+
+        // Fallback to direct removeItem when trash fails (e.g. volume without Trash support)
+        let fallbackLogger = AppLogger(userDefaults: defaults, trashItemHandler: { _ in
+            throw CocoaError(.featureUnsupported)
+        })
+        try Data("archive\n".utf8).write(to: logDir.appendingPathComponent("AppPorts_Log.1.txt"))
+        fallbackLogger.clearLog()
+        XCTAssertFalse(fileManager.fileExists(atPath: logDir.appendingPathComponent("AppPorts_Log.1.txt").path))
     }
 
     private func stringValues(in value: Any) -> [String] {

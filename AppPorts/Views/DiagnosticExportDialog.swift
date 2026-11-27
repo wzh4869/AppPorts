@@ -9,11 +9,14 @@ enum DiagnosticExportDialog {
     }
 
     static func run(defaultFileName: String) -> Options? {
+        let layoutDirection: NSUserInterfaceLayoutDirection =
+            LanguageManager.shared.layoutDirection == .rightToLeft ? .rightToLeft : .leftToRight
         let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 480, height: 260),
                             styleMask: [.titled, .closable], backing: .buffered, defer: false)
         panel.title = "导出诊断包".localized
         panel.isReleasedWhenClosed = false
         let optionsView = DiagnosticExportOptionsView(defaultFileName: defaultFileName)
+        optionsView.userInterfaceLayoutDirection = layoutDirection
         panel.contentView = optionsView
         panel.delegate = optionsView
         panel.defaultButtonCell = optionsView.exportButton.cell as? NSButtonCell
@@ -67,7 +70,7 @@ private final class DiagnosticExportOptionsView: NSView, NSWindowDelegate {
         inventoryCheckbox.setButtonType(.switch)
         inventoryCheckbox.title = "允许包含本机应用列表".localized
         inventoryCheckbox.font = .systemFont(ofSize: NSFont.systemFontSize)
-        inventoryCheckbox.alignment = .left
+        inventoryCheckbox.alignment = .natural
         inventoryCheckbox.imagePosition = .imageLeading
         inventoryCheckbox.target = self
         inventoryCheckbox.action = #selector(toggleAppInventory(_:))
@@ -82,7 +85,15 @@ private final class DiagnosticExportOptionsView: NSView, NSWindowDelegate {
         exportButton.target = self
         exportButton.action = #selector(confirmExport)
         exportButton.keyEquivalent = "\r"
-        exportButton.isEnabled = false
+        if let defaultDestination = Self.defaultDestinationURL(fileName: defaultFileName) {
+            destinationURL = defaultDestination
+            pathField.stringValue = defaultDestination.path
+            pathField.textColor = .labelColor
+            pathField.toolTip = defaultDestination.path
+            exportButton.isEnabled = true
+        } else {
+            exportButton.isEnabled = false
+        }
         for button in [cancelButton, exportButton] { button.bezelStyle = .rounded }
         let controls: [NSView] = [explanation, saveLabel, pathField, underline, chooseButton, inventoryCheckbox, cancelButton, exportButton]
         for view in controls {
@@ -148,6 +159,19 @@ private final class DiagnosticExportOptionsView: NSView, NSWindowDelegate {
     }
 
     @objc private func cancelExport() { NSApp.stopModal(withCode: .cancel) }
+
+    private static func defaultDestinationURL(fileName: String) -> URL? {
+        let fileManager = FileManager.default
+        let candidates = [
+            fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first,
+            fileManager.urls(for: .downloadsDirectory, in: .userDomainMask).first,
+            fileManager.homeDirectoryForCurrentUser
+        ].compactMap { $0 }
+        for directory in candidates where fileManager.isWritableFile(atPath: directory.path) {
+            return directory.appendingPathComponent(fileName)
+        }
+        return nil
+    }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         NSApp.stopModal(withCode: .cancel)

@@ -1801,7 +1801,7 @@ actor TreeCopySession {
                 AppLogger.shared.logContext("读取期间文件时间发生变化",
                     details: [("relative_path", path),
                               ("mtime_changed", String(timestamp(a.st_mtimespec) != timestamp(b.st_mtimespec))),
-                              ("ctime_changed", String(timestamp(a.st_ctimespec) != timestamp(b.st_ctimespec)))], level: "TRACE")
+                              ("ctime_changed", String(timestamp(a.st_ctimespec) != timestamp(b.st_ctimespec)))], level: "DIAG")
                 throw TreeCopyError.sourceChanged(path)
             }
         }

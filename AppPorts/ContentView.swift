@@ -3075,7 +3075,7 @@ struct ContentView: View {
         externalLibraryMonitor = nil
         externalMonitor = nil
         guard !isExternalAccessSuppressed(for: url) else {
-            AppLogger.shared.logContext("外盘处于弹出退让期，暂不启动外部目录监控", details: [("path", url.path)], level: "TRACE")
+            AppLogger.shared.logContext("外盘处于弹出退让期，暂不启动外部目录监控", details: [("path", url.path)], level: "DIAG")
             return
         }
         guard FileManager.default.fileExists(atPath: url.path) else { return }
@@ -3142,7 +3142,7 @@ struct ContentView: View {
         AppLogger.shared.logContext(
             "外盘即将卸载，暂停外部扫描与目录监控",
             details: [("reason", reason), ("path", externalDriveURL?.path)],
-            level: "TRACE"
+            level: "DIAG"
         )
     }
 

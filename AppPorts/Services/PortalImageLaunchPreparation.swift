@@ -166,7 +166,7 @@ enum PortalImageLaunchPreparation {
         guard !initial.isEmpty else { return false }
         if await isAlreadyPrepared(initial, store: store) {
             AppLogger.shared.logContext("启动准备：映像及数据已就绪，跳过操作锁",
-                details: [("bundle_id", request.identifier)], level: "TRACE")
+                details: [("bundle_id", request.identifier)], level: "DIAG")
             return true
         }
         try WriterAdmission.registerCurrentWriter()
@@ -253,9 +253,11 @@ enum PortalImageLaunchPreparation {
             do {
                 let request = try readRequest(portal: portal)
                 let handled = try await prepare(request)
+                AppLogger.shared.flush()
                 exit(handled ? 0 : 2)
             } catch {
                 AppLogger.shared.logError("启动应用前接回映像失败", error: error)
+                AppLogger.shared.flush()
                 exit(1)
             }
         }

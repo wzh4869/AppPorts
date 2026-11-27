@@ -880,16 +880,29 @@ struct DiskUtility: Sendable {
         let command = URL(fileURLWithPath: executable).lastPathComponent + " " + arguments.joined(separator: " ")
         try await beforeAttempt?()
         var result = try await runner.run(executable: executable, arguments: arguments, timeout: commandTimeout)
-        AppLogger.shared.logContext(
-            "磁盘命令执行完成",
-            details: [
-                ("command", command),
-                ("status", String(result.status)),
-                ("timed_out", result.timedOut ? "true" : "false"),
-                ("output", String(result.combinedText.prefix(2000)))
-            ],
-            level: "TRACE"
-        )
+        let isRoutinePlistQuery = arguments.contains("-plist") && result.status == 0 && !result.timedOut
+        if isRoutinePlistQuery {
+            AppLogger.shared.logContext(
+                "磁盘查询命令执行完成",
+                details: [
+                    ("command", command),
+                    ("status", "0"),
+                    ("output_bytes", String(result.standardOutput.count))
+                ],
+                level: "TRACE"
+            )
+        } else {
+            AppLogger.shared.logContext(
+                "磁盘命令执行完成",
+                details: [
+                    ("command", command),
+                    ("status", String(result.status)),
+                    ("timed_out", result.timedOut ? "true" : "false"),
+                    ("output", String(result.combinedText.prefix(2000)))
+                ],
+                level: "DIAG"
+            )
+        }
         if result.timedOut {
             throw Failure.timedOut(command: command)
         }
@@ -919,7 +932,7 @@ struct DiskUtility: Sendable {
             AppLogger.shared.logContext(
                 "磁盘命令（管理员权限）执行完成",
                 details: [("command", command), ("status", String(result.status)), ("output", String(result.combinedText.prefix(2000)))],
-                level: "TRACE"
+                level: "DIAG"
             )
         }
         if result.timedOut { throw Failure.timedOut(command: command) }

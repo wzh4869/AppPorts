@@ -101,6 +101,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         MigrationTaskCenter.shared.saveHistoryForExit()
+        AppLogger.shared.flush()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -131,7 +132,7 @@ struct AppMoverApp: App {
     @ObservedObject private var operationState = AppOperationState.shared
     @StateObject private var logMenuState = LogMenuState()
     @AppStorage("LogEnabled") private var loggingEnabled = true
-    @AppStorage("MaxLogSizeBytes") private var maximumLogSize = 2 * 1024 * 1024
+    @AppStorage("MaxLogSizeBytes") private var maximumLogSize = Int(AppLogger.defaultMaxLogSizeBytes)
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
@@ -234,6 +235,12 @@ struct AppMoverApp: App {
                         logMenuState.refresh()
                     }
                 }
+
+                Button("恢复默认日志位置".localized) {
+                    AppLogger.shared.resetLogPathToDefault()
+                    logMenuState.refresh()
+                }
+                .disabled(!logMenuState.isCustomPath)
                 
                 Divider()
                 
@@ -248,9 +255,11 @@ struct AppMoverApp: App {
                     get: { maximumLogSize },
                     set: { AppLogger.shared.maxLogSize = Int64($0) }
                 )) {
-                    ForEach([1, 2, 5, 10, 50, 100], id: \.self) { megabytes in
+                    ForEach(AppLogger.selectableLogSizeMBOptions, id: \.self) { megabytes in
                         Text(verbatim: "\(megabytes) MB").tag(megabytes * 1024 * 1024)
                     }
+                    Divider()
+                    Text("不限".localized).tag(Int(AppLogger.unlimitedMaxLogSizeBytes))
                 }
                 
                 Divider()
@@ -259,8 +268,9 @@ struct AppMoverApp: App {
                     .font(.caption)
                 
                 Button("清空日志".localized) {
-                    AppLogger.shared.clearLog()
-                    logMenuState.refresh()
+                    if AppLogger.shared.confirmAndClearLog() {
+                        logMenuState.refresh()
+                    }
                 }
             }
             
@@ -393,6 +403,7 @@ struct MainWindowAppearance: NSViewRepresentable {
 @MainActor
 private final class LogMenuState: ObservableObject {
     @Published private(set) var size = AppLogger.shared.getLogSizeString()
+    @Published private(set) var isCustomPath = AppLogger.shared.isUsingCustomLogPath
     private var menuObserver: AnyCancellable?
 
     init() {
@@ -403,5 +414,6 @@ private final class LogMenuState: ObservableObject {
 
     func refresh() {
         size = AppLogger.shared.getLogSizeString()
+        isCustomPath = AppLogger.shared.isUsingCustomLogPath
     }
 }

@@ -8,6 +8,7 @@
 import Foundation
 import AppKit
 import Darwin
+import OSLog
 import UniformTypeIdentifiers
 
 // MARK: - 应用日志管理器
@@ -56,20 +57,65 @@ final class AppLogger: @unchecked Sendable {
         let details: [String: String]
     }
 
+    struct AppInventoryEntry: Codable, Sendable, Equatable {
+        let scope: String
+        let name: String
+        let status: String
+        let version: String?
+        let containerKind: String
+        let isSystemApp: Bool
+        let isAppStoreApp: Bool
+        let isRunning: Bool
+    }
+
+    private enum LogStreamKind {
+        case main
+        case trace
+    }
+
+    private struct LogFileSet {
+        let mainCurrent: URL
+        let mainArchive: URL
+        let traceCurrent: URL
+        let traceArchive: URL
+        let lockFile: URL
+        let operationSummariesFile: URL
+    }
+
+    /// 默认最大日志总配额：10 MB（主日志与追踪日志按 6:4 共享该总配额）
+    nonisolated static let defaultMaxLogSizeBytes: Int64 = 10 * 1024 * 1024
+
+    /// 日志大小不限标记值（不执行轮转，永不自动删除或覆盖旧日志）
+    nonisolated static let unlimitedMaxLogSizeBytes: Int64 = -1
+
+    /// 设置与菜单栏共享的可选日志大小档位（MB）
+    nonisolated static let selectableLogSizeMBOptions: [Int] = [1, 2, 5, 10, 20, 50, 100]
+
+    nonisolated private static let maxLogSizeDefaultVersionKey = "MaxLogSizeDefaultVersion"
+    nonisolated private static let currentMaxLogSizeDefaultVersion = 1
+    nonisolated private static let maxDiagnosticExportMainLogBytes: Int64 = 16 * 1024 * 1024
+    nonisolated private static let maxDiagnosticExportTraceLogBytes: Int64 = 8 * 1024 * 1024
+
     /// 单例实例
     static let shared = AppLogger(userDefaults: .standard,
         usesTestLogDirectory: ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil)
     
     // MARK: - 私有属性
     
-    /// 日期格式化器（格式：yyyy-MM-dd HH:mm:ss）
-    private let dateFormatter: DateFormatter
+    /// 线程安全的 POSIX 日期格式化锁与格式化器
+    private let timestampLock = NSLock()
+    private let timestampFormatter: DateFormatter
+    private let archiveNameFormatter: DateFormatter
+
+    /// Apple Unified Logging 通道，支撑系统日志与 `--telemetry`
+    private let mainOSLogger = Logger(subsystem: "com.shimoko.AppPorts", category: "general")
+    private let traceOSLogger = Logger(subsystem: "com.shimoko.AppPorts", category: "trace")
     
     /// 文件管理器
     nonisolated(unsafe) private let fileManager = FileManager.default
 
-    /// 串行日志队列，避免多线程写文件交错
-    private let writeQueue = DispatchQueue(label: "com.shimoko.AppPorts.logger")
+    /// 串行日志队列，避免多线程写文件交错且不阻塞主线程
+    private let writeQueue = DispatchQueue(label: "com.shimoko.AppPorts.logger", qos: .utility)
 
     /// 磁盘查询可能等待设备响应，不占用调用者（尤其是主线程）。
     private let diagnosticQueue = DispatchQueue(label: "com.shimoko.AppPorts.logger.diagnostics", qos: .utility)
@@ -77,6 +123,7 @@ final class AppLogger: @unchecked Sendable {
 
     nonisolated(unsafe) private let userDefaults: UserDefaults
     nonisolated private let usesTestLogDirectory: Bool
+    nonisolated private let trashItemHandler: (@Sendable (URL) throws -> Void)?
 
     /// 当前启动会话 ID，便于用户粘贴日志后快速关联一次运行
     nonisolated private let sessionID: String
@@ -84,16 +131,16 @@ final class AppLogger: @unchecked Sendable {
     /// 当前进程 ID
     nonisolated private let processID: Int32 = ProcessInfo.processInfo.processIdentifier
 
-    /// 最近操作摘要，导出诊断包时直接复用
+    /// 最近操作摘要缓存（同时持久化到磁盘，跨重启与后台代理可见）
     nonisolated(unsafe) private var recentOperationSummaries: [OperationSummaryRecord] = []
+
+    /// 最近一次扫描得到的应用清单快照（仅保存在内存，仅在用户勾选时写入诊断包）
+    nonisolated(unsafe) private var latestAppInventoryByScope: [String: [AppInventoryEntry]] = [:]
     
     /// UserDefaults 存储键
     nonisolated private let logPathKey = "LogFilePath"         // 日志文件路径
     nonisolated private let maxLogSizeKey = "MaxLogSizeBytes"  // 最大日志大小
     nonisolated private let logEnabledKey = "LogEnabled"       // 日志启用状态
-    
-    /// 默认最大日志大小: 2MB
-    nonisolated private let defaultMaxSize: Int64 = 2 * 1024 * 1024
 
     /// 最多保留最近 100 条操作摘要，避免无限增长
     nonisolated private let maxOperationSummaryCount = 100
@@ -103,8 +150,8 @@ final class AppLogger: @unchecked Sendable {
     /// 日志是否启用
     ///
     /// 控制日志是否写入文件。关闭后：
-    /// - 日志仍会输出到控制台（用于开发调试）
-    /// - 不会写入日志文件（节省磁盘空间）
+    /// - 日志仍会写入系统统一日志通道（便于实时遥测/调试）
+    /// - 不会写入本地日志文件（节省磁盘空间）
     ///
     /// - Note: 默认为启用状态
     nonisolated var isLoggingEnabled: Bool {
@@ -113,67 +160,118 @@ final class AppLogger: @unchecked Sendable {
             userDefaults.object(forKey: logEnabledKey) == nil ? true : userDefaults.bool(forKey: logEnabledKey)
         }
         set {
-            userDefaults.set(newValue, forKey: logEnabledKey)
             if newValue {
+                userDefaults.set(true, forKey: logEnabledKey)
                 log("日志记录已启用".localized)
             } else {
                 log("日志记录已禁用".localized)
+                flush()
+                userDefaults.set(false, forKey: logEnabledKey)
             }
         }
     }
-    
-    /// 当前日志文件路径
-    ///
-    /// 返回日志文件的完整 URL。路径来源优先级：
-    /// 1. 用户自定义路径（通过 `setLogPath(_:)` 设置）
-    /// 2. 默认路径：`~/Library/Application Support/AppPorts/AppPorts_Log.txt`
-    ///
-    /// - Note: 如果目录不存在会自动创建
-    nonisolated var logFileURL: URL {
+
+    /// 默认主日志文件路径
+    nonisolated var defaultLogFileURL: URL {
         if usesTestLogDirectory {
             let directory = fileManager.temporaryDirectory.appendingPathComponent("AppPortsTestLogs-\(ProcessInfo.processInfo.processIdentifier)")
             try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
             return directory.appendingPathComponent("AppPorts_Log.txt")
         }
-        if let savedPath = userDefaults.string(forKey: logPathKey) {
-            return URL(fileURLWithPath: savedPath)
-        }
-        // 默认位置: 应用支持目录
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let appDir = appSupport.appendingPathComponent("AppPorts")
         try? fileManager.createDirectory(at: appDir, withIntermediateDirectories: true)
         return appDir.appendingPathComponent("AppPorts_Log.txt")
     }
+
+    /// 是否正在使用用户自定义日志路径
+    nonisolated var isUsingCustomLogPath: Bool {
+        guard !usesTestLogDirectory,
+              let savedPath = userDefaults.string(forKey: logPathKey),
+              !savedPath.isEmpty else {
+            return false
+        }
+        return URL(fileURLWithPath: savedPath).standardizedFileURL != defaultLogFileURL.standardizedFileURL
+    }
     
-    /// 最大日志大小（字节）
+    /// 当前主日志文件路径
     ///
-    /// 当日志文件超过此大小时，会自动执行轮转（删除旧内容，保留后半部分）。
+    /// 返回主日志文件的完整 URL。路径来源优先级：
+    /// 1. 用户自定义路径（通过 `setLogPath(_:)` 设置）
+    /// 2. 默认路径：`~/Library/Application Support/AppPorts/AppPorts_Log.txt`
+    nonisolated var logFileURL: URL {
+        if usesTestLogDirectory {
+            return defaultLogFileURL
+        }
+        if let savedPath = userDefaults.string(forKey: logPathKey), !savedPath.isEmpty {
+            return URL(fileURLWithPath: savedPath)
+        }
+        return defaultLogFileURL
+    }
+
+    /// 当前追踪日志文件路径（与主日志位于同一目录）
+    nonisolated var traceLogFileURL: URL {
+        logFileSet(for: logFileURL).traceCurrent
+    }
+    
+    /// 是否启用不限大小模式（不执行自动轮转，永不删除或覆盖旧日志）
+    nonisolated var isLogSizeUnlimited: Bool {
+        maxLogSize == Self.unlimitedMaxLogSizeBytes
+    }
+
+    /// 最大日志总大小（字节），由主日志（60%）与追踪日志（40%）共同分摊。
     ///
-    /// 常用值：
-    /// - 1 MB = 1,048,576 字节
-    /// - 5 MB = 5,242,880 字节
-    /// - 10 MB = 10,485,760 字节
-    ///
-    /// - Note: 默认为 2 MB
+    /// - Note: 默认为 10 MB；已高于 10 MB 或已设为不限（`-1`）的历史配置保持不变。
     nonisolated var maxLogSize: Int64 {
         get {
             let saved = userDefaults.integer(forKey: maxLogSizeKey)
-            return saved > 0 ? Int64(saved) : defaultMaxSize
+            if saved == Int(Self.unlimitedMaxLogSizeBytes) {
+                return Self.unlimitedMaxLogSizeBytes
+            }
+            return saved > 0 ? Int64(saved) : Self.defaultMaxLogSizeBytes
         }
         set {
             userDefaults.set(Int(newValue), forKey: maxLogSizeKey)
+            userDefaults.set(Self.currentMaxLogSizeDefaultVersion, forKey: Self.maxLogSizeDefaultVersionKey)
         }
     }
     
     // MARK: - 初始化
     
     /// 应用使用标准设置；独立设置可用于隔离诊断测试。
-    nonisolated init(userDefaults: UserDefaults, usesTestLogDirectory: Bool = false) {
+    nonisolated init(
+        userDefaults: UserDefaults,
+        usesTestLogDirectory: Bool = false,
+        trashItemHandler: (@Sendable (URL) throws -> Void)? = nil
+    ) {
         self.usesTestLogDirectory = usesTestLogDirectory
         self.userDefaults = userDefaults
-        dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        sessionID = String(UUID().uuidString.prefix(8))
+        self.trashItemHandler = trashItemHandler
+
+        let posixLocale = Locale(identifier: "en_US_POSIX")
+        let logFormatter = DateFormatter()
+        logFormatter.locale = posixLocale
+        logFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        self.timestampFormatter = logFormatter
+
+        let fileFormatter = DateFormatter()
+        fileFormatter.locale = posixLocale
+        fileFormatter.dateFormat = "yyyyMMdd-HHmmss"
+        self.archiveNameFormatter = fileFormatter
+
+        self.sessionID = String(UUID().uuidString.prefix(8))
+        migrateDefaultMaxLogSizeIfNeeded()
+    }
+
+    /// 一次性将旧版 `< 10 MB` 配置平滑提升到新默认 10 MB；高于 10 MB 的用户配置保持不动。
+    nonisolated private func migrateDefaultMaxLogSizeIfNeeded() {
+        let migratedVersion = userDefaults.integer(forKey: Self.maxLogSizeDefaultVersionKey)
+        guard migratedVersion < Self.currentMaxLogSizeDefaultVersion else { return }
+        let saved = Int64(userDefaults.integer(forKey: maxLogSizeKey))
+        if saved > 0 && saved < Self.defaultMaxLogSizeBytes {
+            userDefaults.set(Int(Self.defaultMaxLogSizeBytes), forKey: maxLogSizeKey)
+        }
+        userDefaults.set(Self.currentMaxLogSizeDefaultVersion, forKey: Self.maxLogSizeDefaultVersionKey)
     }
 
     nonisolated func logLaunchSession() {
@@ -188,7 +286,7 @@ final class AppLogger: @unchecked Sendable {
                 ("current_directory", fileManager.currentDirectoryPath),
                 ("log_enabled", isLoggingEnabled ? "true" : "false"),
                 ("log_file", logFileURL.path),
-                ("max_log_size", formatBytes(maxLogSize)),
+                ("max_log_size", formattedMaxLogSize()),
                 ("app_language", selectedAppLanguageCode()),
                 ("app_locale", selectedAppLocaleIdentifier()),
                 ("locale", Locale.current.identifier),
@@ -205,37 +303,118 @@ final class AppLogger: @unchecked Sendable {
         return "\(compactPrefix)-\(String(UUID().uuidString.prefix(8)))"
     }
     
-    /// 设置日志文件路径
+    /// 设置日志文件路径（主日志、追踪日志与轮转卷自动位于同目录）
     nonisolated func setLogPath(_ url: URL) {
-        userDefaults.set(url.path, forKey: logPathKey)
+        writeQueue.sync {
+            userDefaults.set(url.path, forKey: logPathKey)
+        }
         logContext("日志路径已更改", details: [("path", url.path)])
+    }
+
+    /// 恢复默认日志路径
+    nonisolated func resetLogPathToDefault() {
+        let defaultURL = writeQueue.sync { () -> URL in
+            userDefaults.removeObject(forKey: logPathKey)
+            return defaultLogFileURL
+        }
+        logContext("日志路径已恢复默认", details: [("path", defaultURL.path)])
+    }
+
+    /// 排空异步日志写入队列，确保进程退出或测试读取前所有记录已落盘
+    nonisolated func flush() {
+        writeQueue.sync {}
+    }
+
+    /// 更新内存中最新一次应用扫描清单（仅在用户主动勾选包含应用列表时写入诊断包）
+    nonisolated func updateAppInventorySnapshot(scope: String, entries: [AppInventoryEntry]) {
+        writeQueue.async { [self] in
+            latestAppInventoryByScope[scope] = entries
+        }
     }
     
     /// 在 Finder 中打开日志文件
     @MainActor
     func openLogInFinder() {
-        let url = logFileURL
-        if fileManager.fileExists(atPath: url.path) {
-            NSWorkspace.shared.activateFileViewerSelecting([url])
+        flush()
+        let files = logFileSet(for: logFileURL)
+        if fileManager.fileExists(atPath: files.mainCurrent.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([files.mainCurrent])
+        } else if fileManager.fileExists(atPath: files.traceCurrent.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([files.traceCurrent])
         } else {
-            // 如果日志文件不存在，打开其所在目录
-            NSWorkspace.shared.activateFileViewerSelecting([url.deletingLastPathComponent()])
+            NSWorkspace.shared.activateFileViewerSelecting([files.mainCurrent.deletingLastPathComponent()])
         }
     }
     
-    /// 清空日志
+    /// 弹出二次确认框后再清空日志；默认按回车为取消，避免误点。
+    @MainActor
+    @discardableResult
+    func confirmAndClearLog() -> Bool {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "确定要清空日志吗？".localized
+        alert.informativeText = "现有日志文件将移至废纸篓，可在需要时从废纸篓恢复。".localized
+        if LanguageManager.shared.layoutDirection == .rightToLeft {
+            alert.window.contentView?.userInterfaceLayoutDirection = .rightToLeft
+        }
+        let confirmButton = alert.addButton(withTitle: "清空日志".localized)
+        confirmButton.hasDestructiveAction = true
+        confirmButton.keyEquivalent = ""
+        let cancelButton = alert.addButton(withTitle: "取消".localized)
+        cancelButton.keyEquivalent = "\r"
+        guard alert.runModal() == .alertFirstButtonReturn else { return false }
+        clearLog()
+        return true
+    }
+
+    /// 清空全部主日志、追踪日志、滚动卷及操作摘要缓存（日志文件优先移至废纸篓以便误操作恢复）
     nonisolated func clearLog() {
+        let timestamp = timestampString(for: Date())
         writeQueue.sync {
-            let url = logFileURL
-            do {
-                if fileManager.fileExists(atPath: url.path) {
-                    try fileManager.removeItem(at: url)
+            let files = logFileSet(for: logFileURL)
+            recentOperationSummaries.removeAll()
+            withFileLock(at: files.lockFile) {
+                for url in [files.mainCurrent, files.mainArchive, files.traceCurrent, files.traceArchive] {
+                    if fileManager.fileExists(atPath: url.path) && !isDirectoryPath(url) {
+                        do {
+                            try moveLogFileToTrashOrRemove(at: url)
+                        } catch {
+                            reportLogWriteFailure(error)
+                        }
+                    }
                 }
-                writeLogMessages(["日志已清空".localized], level: "INFO")
+                if fileManager.fileExists(atPath: files.operationSummariesFile.path) && !isDirectoryPath(files.operationSummariesFile) {
+                    do {
+                        try fileManager.removeItem(at: files.operationSummariesFile)
+                    } catch {
+                        reportLogWriteFailure(error)
+                    }
+                }
+            }
+            writeLogMessages(["日志已清空".localized], level: "INFO", timestamp: timestamp, titleForTelemetry: "日志已清空")
+        }
+    }
+
+    nonisolated private func moveLogFileToTrashOrRemove(at url: URL) throws {
+        if let trashItemHandler {
+            do {
+                try trashItemHandler(url)
+                return
             } catch {
-                reportLogWriteFailure(error)
+                try fileManager.removeItem(at: url)
+                return
             }
         }
+        let isRunningUnderTests = usesTestLogDirectory || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        if !isRunningUnderTests {
+            do {
+                try fileManager.trashItem(at: url, resultingItemURL: nil)
+                return
+            } catch {
+                // 不支持废纸篓的卷/网络路径回退为直接删除
+            }
+        }
+        try fileManager.removeItem(at: url)
     }
 
     @MainActor
@@ -289,58 +468,112 @@ final class AppLogger: @unchecked Sendable {
     }
 
     nonisolated func log(_ message: String, level: String = "INFO") {
-        writeQueue.sync {
-            writeLogMessages([message], level: level)
+        let timestamp = timestampString(for: Date())
+        writeQueue.async { [self] in
+            writeLogMessages([message], level: level, timestamp: timestamp, titleForTelemetry: nil)
         }
     }
 
     nonisolated func logContext(_ title: String, details: [(String, String?)], level: String = "INFO") {
+        let timestamp = timestampString(for: Date())
         var messages = [title]
         for (key, value) in details.sorted(by: { $0.0 < $1.0 }) {
             guard let value, !value.isEmpty else { continue }
             messages.append("  \(key): \(value)")
         }
-        writeQueue.sync {
-            writeLogMessages(messages, level: level)
+        writeQueue.async { [self] in
+            writeLogMessages(messages, level: level, timestamp: timestamp, titleForTelemetry: title)
         }
     }
 
-    /// 仅在 writeQueue 内调用，使轮转和整组上下文写入保持在同一事务中。
-    nonisolated private func writeLogMessages(_ messages: [String], level: String) {
-        let logLines = messages.map { buildLogLine(message: $0, level: level) }.joined()
-        print(logLines, terminator: "")
+    /// 仅在 writeQueue 内调用，使跨进程加锁、O(1) 滚动轮转和整组上下文写入保持在同一事务中。
+    nonisolated private func writeLogMessages(_ messages: [String], level: String, timestamp: String, titleForTelemetry: String?) {
+        let normalizedLevel = level.uppercased()
+        let logLines = messages.map { buildLogLine(message: $0, level: normalizedLevel, timestamp: timestamp) }.joined()
+        emitToUnifiedLog(messages: messages, level: normalizedLevel, title: titleForTelemetry)
         guard isLoggingEnabled else { return }
-        rotateLogIfNeeded()
-        writeLogLine(logLines)
+
+        let stream: LogStreamKind = normalizedLevel == "TRACE" ? .trace : .main
+        writeStreamPayload(logLines, stream: stream, timestamp: timestamp)
     }
 
-    nonisolated func logPathState(_ label: String, url: URL, level: String = "TRACE") {
+    nonisolated func logPathState(_ label: String, url: URL, level: String = "DIAG") {
         logContext("路径状态[\(label)]", details: pathStateDetails(for: url), level: level)
     }
-    
-    /// 日志轮转：当日志超过最大大小时，删除旧内容
-    nonisolated private func rotateLogIfNeeded() {
-        let url = logFileURL
-        guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
-              let fileSize = attributes[.size] as? Int64,
-              fileSize > maxLogSize else {
-            return
+
+    nonisolated private func logFileSet(for mainURL: URL) -> LogFileSet {
+        let directory = mainURL.deletingLastPathComponent()
+        let fileName = mainURL.lastPathComponent
+        let ext = mainURL.pathExtension
+        let stem = ext.isEmpty ? fileName : String(fileName.dropLast(ext.count + 1))
+        let archiveName: (String) -> String = { base in
+            ext.isEmpty ? "\(base).1" : "\(base).1.\(ext)"
         }
-        
-        // 读取现有内容，保留后半部分
-        if let data = try? Data(contentsOf: url),
-           let content = String(data: data, encoding: .utf8) {
-            let lines = content.components(separatedBy: "\n")
-            let keepLines = lines.suffix(lines.count / 2) // 保留后半部分
-            let newContent = keepLines.joined(separator: "\n")
-            try? newContent.write(to: url, atomically: true, encoding: .utf8)
-            writeLogLine(
-                buildLogLine(
-                    message: "日志轮转已执行，原大小: \(formatBytes(fileSize))，阈值: \(formatBytes(maxLogSize))",
-                    level: "DIAG"
-                )
-            )
+        let traceStem = stem == "AppPorts_Log" ? "AppPorts_Trace" : "\(stem)_Trace"
+        let traceFileName = ext.isEmpty ? traceStem : "\(traceStem).\(ext)"
+        return LogFileSet(
+            mainCurrent: mainURL,
+            mainArchive: directory.appendingPathComponent(archiveName(stem)),
+            traceCurrent: directory.appendingPathComponent(traceFileName),
+            traceArchive: directory.appendingPathComponent(archiveName(traceStem)),
+            lockFile: directory.appendingPathComponent(".\(stem).lock"),
+            operationSummariesFile: directory.appendingPathComponent(".\(stem).operations.json")
+        )
+    }
+
+    nonisolated private func singleVolumeLimitBytes(for stream: LogStreamKind) -> Int64 {
+        let total = max(maxLogSize, 4 * 1024)
+        let mainTotal = (total * 60) / 100
+        let traceTotal = total - mainTotal
+        switch stream {
+        case .main:
+            return max(mainTotal / 2, 1024)
+        case .trace:
+            return max(traceTotal / 2, 1024)
         }
+    }
+
+    nonisolated private func emitToUnifiedLog(messages: [String], level: String, title: String?) {
+        let joined = messages.joined(separator: " | ")
+        #if DEBUG
+        switch level {
+        case "ERROR":
+            mainOSLogger.error("[\(self.sessionID, privacy: .public)] \(joined, privacy: .public)")
+        case "WARN":
+            mainOSLogger.warning("[\(self.sessionID, privacy: .public)] \(joined, privacy: .public)")
+        case "TRACE":
+            traceOSLogger.debug("[\(self.sessionID, privacy: .public)] \(joined, privacy: .public)")
+        default:
+            mainOSLogger.info("[\(self.sessionID, privacy: .public)] [\(level, privacy: .public)] \(joined, privacy: .public)")
+        }
+        #else
+        switch level {
+        case "ERROR":
+            if let title {
+                mainOSLogger.error("[\(self.sessionID, privacy: .public)] \(title, privacy: .public) \(joined, privacy: .private)")
+            } else {
+                mainOSLogger.error("[\(self.sessionID, privacy: .public)] \(joined, privacy: .private)")
+            }
+        case "WARN":
+            if let title {
+                mainOSLogger.warning("[\(self.sessionID, privacy: .public)] \(title, privacy: .public) \(joined, privacy: .private)")
+            } else {
+                mainOSLogger.warning("[\(self.sessionID, privacy: .public)] \(joined, privacy: .private)")
+            }
+        case "TRACE":
+            if let title {
+                traceOSLogger.debug("[\(self.sessionID, privacy: .public)] \(title, privacy: .public) \(joined, privacy: .private)")
+            } else {
+                traceOSLogger.debug("[\(self.sessionID, privacy: .public)] \(joined, privacy: .private)")
+            }
+        default:
+            if let title {
+                mainOSLogger.info("[\(self.sessionID, privacy: .public)] [\(level, privacy: .public)] \(title, privacy: .public) \(joined, privacy: .private)")
+            } else {
+                mainOSLogger.info("[\(self.sessionID, privacy: .public)] [\(level, privacy: .public)] \(joined, privacy: .private)")
+            }
+        }
+        #endif
     }
     
     nonisolated func logError(
@@ -416,11 +649,8 @@ final class AppLogger: @unchecked Sendable {
             details: filteredDetails
         )
 
-        writeQueue.sync {
-            recentOperationSummaries.append(record)
-            if recentOperationSummaries.count > maxOperationSummaryCount {
-                recentOperationSummaries.removeFirst(recentOperationSummaries.count - maxOperationSummaryCount)
-            }
+        writeQueue.async { [self] in
+            appendOperationSummaryRecord(record)
         }
 
         var summaryDetails: [(String, String?)] = [
@@ -434,15 +664,22 @@ final class AppLogger: @unchecked Sendable {
         logContext("操作结束摘要", details: summaryDetails, level: logLevel(forOperationResult: result))
     }
 
-    /// 获取日志大小的可读字符串
-    nonisolated func getLogSizeString() -> String {
-        let url = logFileURL
-        guard let attributes = try? fileManager.attributesOfItem(atPath: url.path),
-              let fileSize = attributes[.size] as? Int64 else {
-            return "0 KB"
+    /// 获取全部主日志与追踪日志分卷的总大小（字节）
+    nonisolated func totalLogSizeBytes() -> Int64 {
+        writeQueue.sync {
+            let files = logFileSet(for: logFileURL)
+            return fileSizeBytes(at: files.mainCurrent)
+                + fileSizeBytes(at: files.mainArchive)
+                + fileSizeBytes(at: files.traceCurrent)
+                + fileSizeBytes(at: files.traceArchive)
         }
+    }
 
-        return LocalizedByteCountFormatter.string(fromByteCount: fileSize, allowedUnits: [.kb, .mb])
+    /// 获取日志总大小的可读字符串
+    nonisolated func getLogSizeString() -> String {
+        let totalBytes = totalLogSizeBytes()
+        guard totalBytes > 0 else { return "0 KB" }
+        return LocalizedByteCountFormatter.string(fromByteCount: totalBytes, allowedUnits: [.kb, .mb])
     }
     
     // MARK: - 系统诊断信息
@@ -503,16 +740,14 @@ final class AppLogger: @unchecked Sendable {
         let version = ProcessInfo.processInfo.operatingSystemVersion
         let versionString = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
         
-        // 获取 macOS 名称
-        var macOSName = "macOS"
-        if version.majorVersion >= 15 {
-            macOSName = "macOS Sequoia"
-        } else if version.majorVersion >= 14 {
-            macOSName = "macOS Sonoma"
-        } else if version.majorVersion >= 13 {
-            macOSName = "macOS Ventura"
-        } else if version.majorVersion >= 12 {
-            macOSName = "macOS Monterey"
+        let macOSName: String
+        switch version.majorVersion {
+        case 26: macOSName = "macOS Tahoe"
+        case 15: macOSName = "macOS Sequoia"
+        case 14: macOSName = "macOS Sonoma"
+        case 13: macOSName = "macOS Ventura"
+        case 12: macOSName = "macOS Monterey"
+        default: macOSName = "macOS"
         }
         
         return "\(macOSName) \(versionString)"
@@ -525,12 +760,13 @@ final class AppLogger: @unchecked Sendable {
         sysctlbyname("hw.model", &model, &size, nil, 0)
         let modelString = String(cString: model)
         
-        // 尝试获取更友好的名称
-        let friendlyName = getMarketingModelName(modelString)
-        return "\(friendlyName) (\(modelString))"
+        if let friendlyName = getMarketingModelName(modelString) {
+            return "\(friendlyName) (\(modelString))"
+        }
+        return modelString
     }
     
-    nonisolated private func getMarketingModelName(_ identifier: String) -> String {
+    nonisolated private func getMarketingModelName(_ identifier: String) -> String? {
         // 常见 Mac 型号映射
         let models: [String: String] = [
             "Mac14,2": "MacBook Air (M2, 2022)",
@@ -555,6 +791,19 @@ final class AppLogger: @unchecked Sendable {
             "Mac15,11": "MacBook Pro (16-inch, M3 Max, 2023)",
             "Mac15,12": "MacBook Air (13-inch, M3, 2024)",
             "Mac15,13": "MacBook Air (15-inch, M3, 2024)",
+            "Mac15,14": "Mac Studio (M3 Ultra, 2025)",
+            "Mac16,1": "MacBook Pro (14-inch, M4, 2024)",
+            "Mac16,2": "iMac (24-inch, M4, 2024)",
+            "Mac16,3": "iMac (24-inch, M4, 2024)",
+            "Mac16,5": "MacBook Pro (16-inch, M4 Max, 2024)",
+            "Mac16,6": "MacBook Pro (14-inch, M4 Max, 2024)",
+            "Mac16,7": "MacBook Pro (16-inch, M4 Pro, 2024)",
+            "Mac16,8": "MacBook Pro (14-inch, M4 Pro, 2024)",
+            "Mac16,9": "Mac Studio (M4 Max, 2025)",
+            "Mac16,10": "Mac mini (M4, 2024)",
+            "Mac16,11": "Mac mini (M4 Pro, 2024)",
+            "Mac16,12": "MacBook Air (13-inch, M4, 2025)",
+            "Mac16,13": "MacBook Air (15-inch, M4, 2025)",
             "MacBookPro18,3": "MacBook Pro (14-inch, M1 Pro, 2021)",
             "MacBookPro18,4": "MacBook Pro (14-inch, M1 Max, 2021)",
             "MacBookPro18,1": "MacBook Pro (16-inch, M1 Pro, 2021)",
@@ -564,7 +813,7 @@ final class AppLogger: @unchecked Sendable {
             "iMac21,1": "iMac (24-inch, M1, 2021)",
             "iMac21,2": "iMac (24-inch, M1, 2021)"
         ]
-        return models[identifier] ?? "Mac".localized
+        return models[identifier]
     }
     
     nonisolated private func getProcessorInfo() -> String {
@@ -605,25 +854,25 @@ final class AppLogger: @unchecked Sendable {
             ])
             
             if let name = values.volumeName {
-                info.append(("卷名称".localized, name))
+                info.append(("volume_name", name))
             }
             if let total = values.volumeTotalCapacity {
-                info.append(("总容量".localized, formatBytes(Int64(total))))
+                info.append(("total_capacity", formatBytes(Int64(total))))
             }
             if let available = values.volumeAvailableCapacity {
-                info.append(("可用空间".localized, formatBytes(Int64(available))))
+                info.append(("available_capacity", formatBytes(Int64(available))))
             }
             if let format = values.volumeLocalizedFormatDescription {
-                info.append(("文件系统".localized, format))
+                info.append(("file_system", format))
             }
             if let removable = values.volumeIsRemovable {
-                info.append(("可移除".localized, removable ? "是".localized : "否".localized))
+                info.append(("removable", removable ? "true" : "false"))
             }
             if let ejectable = values.volumeIsEjectable {
-                info.append(("可弹出".localized, ejectable ? "是".localized : "否".localized))
+                info.append(("ejectable", ejectable ? "true" : "false"))
             }
         } catch {
-            info.append(("错误".localized, error.localizedDescription))
+            info.append(("volume_info_error", error.localizedDescription))
         }
         
         return info
@@ -645,21 +894,21 @@ final class AppLogger: @unchecked Sendable {
                 
                 // 提取基本信息
                 if let location = plist["DeviceLocation"] as? String {
-                    info.append(("设备位置".localized, location))
+                    info.append(("device_location", location))
                 } else if let mediaName = plist["MediaName"] as? String {
-                    info.append(("设备名称".localized, mediaName))
+                    info.append(("media_name", mediaName))
                 }
                 
                 if let blockSize = plist["DeviceBlockSize"] as? Int {
-                    info.append(("块大小".localized, String(format: "%d Bytes", blockSize)))
+                    info.append(("block_size", String(format: "%d Bytes", blockSize)))
                 }
                 
                 if let protocolName = plist["BusProtocol"] as? String {
-                    info.append(("接口协议".localized, protocolName))
+                    info.append(("bus_protocol", protocolName))
                 }
                 
                 if let uuid = plist["VolumeUUID"] as? String {
-                    info.append(("卷 UUID", uuid))
+                    info.append(("volume_uuid", uuid))
                 }
                 
                 if let deviceIdentifier = plist["DeviceIdentifier"] as? String {
@@ -676,7 +925,7 @@ final class AppLogger: @unchecked Sendable {
                 }
             }
         } catch {
-            info.append(("diskutil错误".localized, error.localizedDescription))
+            info.append(("diskutil_error", error.localizedDescription))
         }
         
         // 2. 使用 system_profiler 获取更详细的速率信息
@@ -725,7 +974,7 @@ final class AppLogger: @unchecked Sendable {
         }
         
         if !foundSpeed {
-            info.append(("接口速率".localized, "未检测到或内置存储".localized))
+            info.append(("interface_speed", "undetected_or_internal"))
         }
         
         return info
@@ -867,17 +1116,17 @@ final class AppLogger: @unchecked Sendable {
                 var info: [(String, String)] = []
                 
                 if type == "USB" {
-                    if let speed = device["device_speed"] as? String { info.append(("设备速率".localized, speed)) }
-                    if let busSpeed = device["host_controller_speed"] as? String { info.append(("总线速率".localized, busSpeed)) }
+                    if let speed = device["device_speed"] as? String { info.append(("device_speed", speed)) }
+                    if let busSpeed = device["host_controller_speed"] as? String { info.append(("host_controller_speed", busSpeed)) }
                 } else if type == "Thunderbolt" {
-                    if let speed = device["link_speed"] as? String { info.append(("链接速率".localized, speed)) }
-                    if let width = device["link_width"] as? String { info.append(("链接带宽".localized, width)) }
+                    if let speed = device["link_speed"] as? String { info.append(("link_speed", speed)) }
+                    if let width = device["link_width"] as? String { info.append(("link_width", width)) }
                 } else if type == "NVMe" {
-                    if let width = device["link_width"] as? String { info.append(("链接宽度".localized, width)) }
-                    if let speed = device["link_speed"] as? String { info.append(("链接速率".localized, speed)) }
+                    if let width = device["link_width"] as? String { info.append(("link_width", width)) }
+                    if let speed = device["link_speed"] as? String { info.append(("link_speed", speed)) }
                 }
                 
-                info.append(("连接类型".localized, type))
+                info.append(("connection_type", type))
                 return info
             }
             
@@ -895,8 +1144,20 @@ final class AppLogger: @unchecked Sendable {
         LocalizedByteCountFormatter.string(fromByteCount: bytes)
     }
 
+    nonisolated private func formattedMaxLogSize() -> String {
+        isLogSizeUnlimited ? "unlimited" : formatBytes(maxLogSize)
+    }
+
     nonisolated private func timestampString(for date: Date) -> String {
-        dateFormatter.string(from: date)
+        timestampLock.lock()
+        defer { timestampLock.unlock() }
+        return timestampFormatter.string(from: date)
+    }
+
+    nonisolated private func archiveTimestampString(for date: Date) -> String {
+        timestampLock.lock()
+        defer { timestampLock.unlock() }
+        return archiveNameFormatter.string(from: date)
     }
 
     nonisolated private func logLevel(forOperationResult result: String) -> String {
@@ -923,12 +1184,10 @@ final class AppLogger: @unchecked Sendable {
     }
 
     nonisolated private func defaultDiagnosticArchiveName() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd-HHmmss"
-        return "AppPorts-Diagnostic-\(formatter.string(from: Date())).zip"
+        "AppPorts-Diagnostic-\(archiveTimestampString(for: Date())).zip"
     }
 
-    nonisolated private func createDiagnosticArchive(includeAppInventory: Bool) throws -> URL {
+    nonisolated func createDiagnosticArchive(includeAppInventory: Bool) throws -> URL {
         let tempRootURL = fileManager.temporaryDirectory.appendingPathComponent("AppPorts-Diagnostic-\(UUID().uuidString)", isDirectory: true)
         try fileManager.createDirectory(at: tempRootURL, withIntermediateDirectories: true)
 
@@ -937,18 +1196,21 @@ final class AppLogger: @unchecked Sendable {
         let packageURL = try buildDiagnosticPackage(in: tempRootURL, includeAppInventory: includeAppInventory)
         let archiveURL = tempRootURL.appendingPathComponent("\(packageURL.lastPathComponent).zip")
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-        process.arguments = ["-c", "-k", "--sequesterRsrc", "--keepParent", packageURL.path, archiveURL.path]
-
-        try process.run()
-        process.waitUntilExit()
-
-        guard process.terminationStatus == 0 else {
+        do {
+            _ = try Self.runDiagnosticCommand(
+                executableURL: URL(fileURLWithPath: "/usr/bin/ditto"),
+                arguments: ["-c", "-k", "--sequesterRsrc", "--keepParent", packageURL.path, archiveURL.path],
+                timeout: 30,
+                maximumOutputBytes: 4 * 1024 * 1024
+            )
+        } catch {
             throw NSError(
                 domain: "AppPorts.AppLogger",
                 code: 7001,
-                userInfo: [NSLocalizedDescriptionKey: "无法压缩诊断包".localized]
+                userInfo: [
+                    NSLocalizedDescriptionKey: "无法压缩诊断包".localized,
+                    NSUnderlyingErrorKey: error
+                ]
             )
         }
 
@@ -961,24 +1223,68 @@ final class AppLogger: @unchecked Sendable {
         includeAppInventory: Bool = false,
         guardianSummary: [String]? = nil
     ) throws -> URL {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let packageURL = rootURL.appendingPathComponent("AppPorts-Diagnostic-\(formatter.string(from: Date()))", isDirectory: true)
+        let packageURL = rootURL.appendingPathComponent("AppPorts-Diagnostic-\(archiveTimestampString(for: Date()))", isDirectory: true)
         try fileManager.createDirectory(at: packageURL, withIntermediateDirectories: true)
 
-        let (currentLogContent, operationSummaries) = writeQueue.sync {
-            (
-                (try? String(contentsOf: logFileURL, encoding: .utf8)) ?? "日志文件不存在或暂时不可读取".localized,
-                recentOperationSummaries
+        let snapshot = writeQueue.sync { () -> (
+            mainLogContent: String,
+            mainLogTruncated: Bool,
+            traceLogContent: String?,
+            traceLogTruncated: Bool,
+            operationSummaries: [OperationSummaryRecord],
+            appInventory: [AppInventoryEntry],
+            mainBytes: Int64,
+            traceBytes: Int64
+        ) in
+            let files = logFileSet(for: logFileURL)
+            let mainRead = readCombinedLogContent(
+                archiveURL: files.mainArchive,
+                currentURL: files.mainCurrent,
+                maxBytes: Self.maxDiagnosticExportMainLogBytes
+            )
+            let traceRead = readCombinedLogContent(
+                archiveURL: files.traceArchive,
+                currentURL: files.traceCurrent,
+                maxBytes: Self.maxDiagnosticExportTraceLogBytes
+            )
+            let summaries = mergedOperationSummaries(for: files)
+            let inventory = latestAppInventoryByScope.values
+                .flatMap { $0 }
+                .sorted { lhs, rhs in
+                    if lhs.scope != rhs.scope { return lhs.scope < rhs.scope }
+                    return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+                }
+            let mainBytes = fileSizeBytes(at: files.mainCurrent) + fileSizeBytes(at: files.mainArchive)
+            let traceBytes = fileSizeBytes(at: files.traceCurrent) + fileSizeBytes(at: files.traceArchive)
+            return (
+                mainRead?.content ?? "日志文件不存在或暂时不可读取".localized,
+                mainRead?.truncated ?? false,
+                traceRead?.content,
+                traceRead?.truncated ?? false,
+                summaries,
+                inventory,
+                mainBytes,
+                traceBytes
             )
         }
-        let exportLogContent = includeAppInventory ? currentLogContent : removingAppInventoryEntries(from: currentLogContent)
-        let redactedLogContent = redactedDiagnosticText(from: exportLogContent)
+
+        let exportMainContent = includeAppInventory
+            ? snapshot.mainLogContent
+            : removingAppInventoryEntries(from: snapshot.mainLogContent)
+        let redactedMainContent = redactedDiagnosticText(from: exportMainContent)
+
+        let redactedTraceContent: String? = snapshot.traceLogContent.map { rawTrace in
+            let filtered = includeAppInventory ? rawTrace : removingAppInventoryEntries(from: rawTrace)
+            return redactedDiagnosticText(from: filtered)
+        }
+
+        let operationSummaries = snapshot.operationSummaries
         let recentFailures = operationSummaries.filter { ["failed", "rolled_back", "success_with_warning"].contains($0.result) }
+        let totalLogBytes = snapshot.mainBytes + snapshot.traceBytes
 
         let volumeInventory = VolumeStateReporting.diagnosticSection(VolumeStateReporting.lastInventory())
         let updateGuardian = guardianSummary ?? UpdateGuardianReporting.diagnosticSection()
-        let metadata: [String: String] = [
+        var metadata: [String: String] = [
             "generated_at": timestampString(for: Date()),
             "session_id": sessionID,
             "pid": String(processID),
@@ -989,7 +1295,13 @@ final class AppLogger: @unchecked Sendable {
             "system_locale": Locale.current.identifier,
             "timezone": TimeZone.current.identifier,
             "log_file_name": logFileURL.lastPathComponent,
-            "log_file_size": getLogSizeString(),
+            "trace_log_file_name": traceLogFileURL.lastPathComponent,
+            "log_file_size": totalLogBytes > 0 ? LocalizedByteCountFormatter.string(fromByteCount: totalLogBytes, allowedUnits: [.kb, .mb]) : "0 KB",
+            "main_log_size": snapshot.mainBytes > 0 ? LocalizedByteCountFormatter.string(fromByteCount: snapshot.mainBytes, allowedUnits: [.kb, .mb]) : "0 KB",
+            "trace_log_size": snapshot.traceBytes > 0 ? LocalizedByteCountFormatter.string(fromByteCount: snapshot.traceBytes, allowedUnits: [.kb, .mb]) : "0 KB",
+            "max_log_size": formattedMaxLogSize(),
+            "main_log_export_truncated": String(snapshot.mainLogTruncated),
+            "trace_log_export_truncated": String(snapshot.traceLogTruncated),
             "redaction_mode": "share_safe",
             "app_inventory_included": String(includeAppInventory),
             "recent_operation_count": String(operationSummaries.count),
@@ -997,10 +1309,17 @@ final class AppLogger: @unchecked Sendable {
             "volume_state_inventory": volumeInventory.joined(separator: "\n"),
             "update_guardian": updateGuardian.joined(separator: "\n")
         ]
+        if includeAppInventory {
+            metadata["app_inventory_count"] = String(snapshot.appInventory.count)
+        }
 
         try writeJSON(metadata, to: packageURL.appendingPathComponent("diagnostic-summary.json"))
         try writeJSON(operationSummaries, to: packageURL.appendingPathComponent("recent-operations.json"))
         try writeJSON(recentFailures.suffix(20), to: packageURL.appendingPathComponent("recent-failures.json"))
+
+        if includeAppInventory {
+            try writeJSON(snapshot.appInventory, to: packageURL.appendingPathComponent("app-inventory.json"))
+        }
 
         let summaryText = redactedDiagnosticText(from: buildDiagnosticSummaryText(
             metadata: metadata,
@@ -1012,11 +1331,18 @@ final class AppLogger: @unchecked Sendable {
             atomically: true,
             encoding: .utf8
         )
-        try redactedLogContent.write(
+        try redactedMainContent.write(
             to: packageURL.appendingPathComponent("AppPorts_Log.share-safe.txt"),
             atomically: true,
             encoding: .utf8
         )
+        if let redactedTraceContent, !redactedTraceContent.isEmpty {
+            try redactedTraceContent.write(
+                to: packageURL.appendingPathComponent("AppPorts_Trace.share-safe.txt"),
+                atomically: true,
+                encoding: .utf8
+            )
+        }
 
         return packageURL
     }
@@ -1052,12 +1378,14 @@ final class AppLogger: @unchecked Sendable {
             if sanitized == homeDirectory { sanitized = "~" }
         }
 
-        // 路径组件允许空格；不能在第一个空格处结束，否则仍会泄露卷名称后半段。
+        // 路径组件允许空格；在引号、逗号、分号、尖括号或下一个斜杠处停止，避免同行过度吞字或破坏 XML 标签。
         // 先对字符串值脱敏，再编码 JSON，避免破坏 JSON 转义和类型。
         let volumeLabels = Self.volumeNameLabels.sorted().map(NSRegularExpression.escapedPattern(for:)).joined(separator: "|")
         let redactionRules: [(pattern: String, replacement: String)] = [
-            (#"/Users/[^/\r\n]+"#, "/Users/<redacted-user>"),
-            (#"/Volumes/[^/\r\n]+"#, "/Volumes/<redacted-volume>"),
+            (#"(?i)\b(smb|afp|cifs|nfs)://[^\s"'<>]+"#, "$1://<redacted-share>"),
+            (#"(<key>VolumeName</key>\s*<string>)[^<]*(</string>)"#, "$1<redacted-volume>$2"),
+            (#"/Users/[^/\r\n"',;<>]+"#, "/Users/<redacted-user>"),
+            (#"/Volumes/[^/\r\n"',;<>]+"#, "/Volumes/<redacted-volume>"),
             (#"(?m)^((?:\[[^\]\r\n]*\][ \t]*)*[ \t]*(?:"# + volumeLabels + #"):[ \t]*)[^\r\n]+"#, "$1<redacted-volume>")
         ]
 
@@ -1083,30 +1411,228 @@ final class AppLogger: @unchecked Sendable {
     }()
 
     nonisolated func recentOperationSummariesSnapshot() -> [OperationSummaryRecord] {
-        writeQueue.sync { recentOperationSummaries }
+        writeQueue.sync {
+            let files = logFileSet(for: logFileURL)
+            return mergedOperationSummaries(for: files)
+        }
     }
 
-
-    nonisolated private func buildLogLine(message: String, level: String) -> String {
-        let timestamp = dateFormatter.string(from: Date())
-        return "[\(timestamp)] [\(level)] [session:\(sessionID)] [pid:\(processID)] \(message)\n"
+    nonisolated private func buildLogLine(message: String, level: String, timestamp: String) -> String {
+        "[\(timestamp)] [\(level)] [session:\(sessionID)] [pid:\(processID)] \(message)\n"
     }
 
-    nonisolated private func writeLogLine(_ logLine: String) {
-        guard let data = logLine.data(using: .utf8) else { return }
+    nonisolated private func writeStreamPayload(_ logLines: String, stream: LogStreamKind, timestamp: String) {
+        guard let payloadData = logLines.data(using: .utf8) else { return }
 
-        let url = logFileURL
+        let files = logFileSet(for: logFileURL)
+        let currentURL = stream == .main ? files.mainCurrent : files.traceCurrent
+        let archiveURL = stream == .main ? files.mainArchive : files.traceArchive
+        let unlimited = isLogSizeUnlimited
+        let limit = unlimited ? Int64.max : singleVolumeLimitBytes(for: stream)
+
+        if isDirectoryPath(currentURL) {
+            reportLogWriteFailure(POSIXError(.EISDIR))
+            return
+        }
+
         do {
-            if fileManager.fileExists(atPath: url.path) {
-                let fileHandle = try FileHandle(forWritingTo: url)
-                defer { try? fileHandle.close() }
-                try Self.appendLogData(data, to: fileHandle)
-            } else {
-                try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try data.write(to: url)
+            try fileManager.createDirectory(at: currentURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try withFileLock(at: files.lockFile) {
+                var dataToWrite = payloadData
+                if !unlimited {
+                    let currentSize = fileSizeBytes(at: currentURL)
+                    if currentSize > 0 && (currentSize >= limit || currentSize + Int64(payloadData.count) > limit) {
+                        if Darwin.rename(currentURL.path, archiveURL.path) == 0 {
+                            let rotationLine = buildLogLine(
+                                message: "日志轮转已执行，上一卷大小: \(formatBytes(currentSize))，单卷阈值: \(formatBytes(limit))",
+                                level: stream == .main ? "DIAG" : "TRACE",
+                                timestamp: timestamp
+                            )
+                            if let headerData = rotationLine.data(using: .utf8) {
+                                dataToWrite = headerData + payloadData
+                            }
+                        }
+                    }
+                }
+                try Self.appendPOSIXData(dataToWrite, to: currentURL)
             }
         } catch {
             reportLogWriteFailure(error)
+        }
+    }
+
+    nonisolated private func appendOperationSummaryRecord(_ record: OperationSummaryRecord) {
+        recentOperationSummaries.append(record)
+        if recentOperationSummaries.count > maxOperationSummaryCount {
+            recentOperationSummaries.removeFirst(recentOperationSummaries.count - maxOperationSummaryCount)
+        }
+
+        guard isLoggingEnabled else { return }
+        let files = logFileSet(for: logFileURL)
+        guard !isDirectoryPath(files.mainCurrent) else { return }
+
+        do {
+            try fileManager.createDirectory(at: files.operationSummariesFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try withFileLock(at: files.lockFile) {
+                let merged = mergeSummaryRecords(
+                    persisted: loadPersistedOperationSummaries(at: files.operationSummariesFile),
+                    inMemory: [record]
+                )
+                let encoded = try JSONEncoder().encode(merged)
+                try encoded.write(to: files.operationSummariesFile, options: .atomic)
+            }
+        } catch {
+            reportLogWriteFailure(error)
+        }
+    }
+
+    nonisolated private func mergedOperationSummaries(for files: LogFileSet) -> [OperationSummaryRecord] {
+        guard !isDirectoryPath(files.mainCurrent) else {
+            return Array(recentOperationSummaries.suffix(maxOperationSummaryCount))
+        }
+        let persisted: [OperationSummaryRecord] = withFileLock(at: files.lockFile) {
+            loadPersistedOperationSummaries(at: files.operationSummariesFile)
+        }
+        return mergeSummaryRecords(persisted: persisted, inMemory: recentOperationSummaries)
+    }
+
+    nonisolated private func loadPersistedOperationSummaries(at url: URL) -> [OperationSummaryRecord] {
+        guard fileManager.fileExists(atPath: url.path),
+              let data = try? Data(contentsOf: url),
+              let decoded = try? JSONDecoder().decode([OperationSummaryRecord].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    nonisolated private func mergeSummaryRecords(
+        persisted: [OperationSummaryRecord],
+        inMemory: [OperationSummaryRecord]
+    ) -> [OperationSummaryRecord] {
+        var result: [OperationSummaryRecord] = []
+        var seen = Set<String>()
+        for record in persisted + inMemory {
+            let key = "\(record.operationID)|\(record.endedAt)|\(record.result)|\(record.sessionID)"
+            if seen.insert(key).inserted {
+                result.append(record)
+            }
+        }
+        if result.count > maxOperationSummaryCount {
+            return Array(result.suffix(maxOperationSummaryCount))
+        }
+        return result
+    }
+
+    nonisolated private func readCombinedLogContent(
+        archiveURL: URL,
+        currentURL: URL,
+        maxBytes: Int64
+    ) -> (content: String, truncated: Bool)? {
+        guard !isDirectoryPath(currentURL) else { return nil }
+        let files = logFileSet(for: logFileURL)
+        return withFileLock(at: files.lockFile) {
+            let archiveSize = fileSizeBytes(at: archiveURL)
+            let currentSize = fileSizeBytes(at: currentURL)
+            let totalSize = archiveSize + currentSize
+            guard totalSize > 0 else { return nil }
+
+            let truncated = totalSize > maxBytes
+            var remainingBudget = min(totalSize, maxBytes)
+            var currentText = ""
+            var archiveText = ""
+
+            if currentSize > 0 && remainingBudget > 0 {
+                let bytesToRead = min(currentSize, remainingBudget)
+                currentText = readTailUTF8String(at: currentURL, maxBytes: bytesToRead, snapToLineStart: bytesToRead < currentSize)
+                remainingBudget -= bytesToRead
+            }
+            if archiveSize > 0 && remainingBudget > 0 {
+                let bytesToRead = min(archiveSize, remainingBudget)
+                archiveText = readTailUTF8String(at: archiveURL, maxBytes: bytesToRead, snapToLineStart: bytesToRead < archiveSize)
+            }
+
+            var chunks: [String] = []
+            if !archiveText.isEmpty { chunks.append(archiveText) }
+            if !currentText.isEmpty { chunks.append(currentText) }
+            guard !chunks.isEmpty else { return nil }
+
+            var combined = chunks.joined(separator: chunks.first?.hasSuffix("\n") == true ? "" : "\n")
+            if truncated {
+                let note = "[DIAG] 诊断包导出副本仅包含最近 \(formatBytes(maxBytes)) 日志（本地完整日志总计 \(formatBytes(totalSize))，未对本地文件作任何删减）。\n"
+                combined = note + combined
+            }
+            return (combined, truncated)
+        }
+    }
+
+    nonisolated private func readTailUTF8String(at url: URL, maxBytes: Int64, snapToLineStart: Bool) -> String {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return "" }
+        defer { try? handle.close() }
+        let fileSize = fileSizeBytes(at: url)
+        guard fileSize > 0 else { return "" }
+        let offset = max(0, fileSize - maxBytes)
+        if offset > 0 {
+            try? handle.seek(toOffset: UInt64(offset))
+        }
+        guard let data = try? handle.readToEnd(), !data.isEmpty else { return "" }
+        let effectiveData: Data
+        if snapToLineStart, let newlineIndex = data.firstIndex(of: 0x0A), newlineIndex + 1 < data.endIndex {
+            effectiveData = data[(newlineIndex + 1)...]
+        } else {
+            effectiveData = data
+        }
+        return String(decoding: effectiveData, as: UTF8.self)
+    }
+
+    nonisolated private func isDirectoryPath(_ url: URL) -> Bool {
+        var isDir: ObjCBool = false
+        return fileManager.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
+    }
+
+    nonisolated private func fileSizeBytes(at url: URL) -> Int64 {
+        guard !isDirectoryPath(url),
+              let attributes = try? fileManager.attributesOfItem(atPath: url.path),
+              let fileSize = attributes[.size] as? Int64 else {
+            return 0
+        }
+        return fileSize
+    }
+
+    nonisolated private func withFileLock<T>(at lockURL: URL, body: () throws -> T) rethrows -> T {
+        let lockFD = Darwin.open(lockURL.path, O_CREAT | O_RDWR | O_CLOEXEC, 0o644)
+        guard lockFD >= 0 else {
+            return try body()
+        }
+        defer {
+            _ = flock(lockFD, LOCK_UN)
+            Darwin.close(lockFD)
+        }
+        while flock(lockFD, LOCK_EX) != 0 {
+            if errno != EINTR { break }
+        }
+        return try body()
+    }
+
+    nonisolated private static func appendPOSIXData(_ data: Data, to url: URL) throws {
+        let fd = Darwin.open(url.path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0o644)
+        guard fd >= 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        defer { Darwin.close(fd) }
+
+        try data.withUnsafeBytes { rawBuffer in
+            guard let baseAddress = rawBuffer.baseAddress else { return }
+            var remaining = rawBuffer.count
+            var offset = 0
+            while remaining > 0 {
+                let written = Darwin.write(fd, baseAddress.advanced(by: offset), remaining)
+                if written < 0 {
+                    if errno == EINTR { continue }
+                    throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+                }
+                remaining -= written
+                offset += written
+            }
         }
     }
 
@@ -1117,7 +1643,7 @@ final class AppLogger: @unchecked Sendable {
 
     nonisolated private func reportLogWriteFailure(_ error: Error) {
         // 不再次调用 log，以免日志磁盘写满或被卸载时递归失败。
-        print(buildLogLine(message: "日志文件写入失败: \(error)", level: "WARN"), terminator: "")
+        mainOSLogger.warning("[\(self.sessionID, privacy: .public)] 日志文件写入失败: \(error.localizedDescription, privacy: .private)")
     }
 
     nonisolated private func pathStateDetails(for url: URL) -> [(String, String?)] {
@@ -1158,10 +1684,10 @@ final class AppLogger: @unchecked Sendable {
             details.append(("volume", volumeName))
         }
         if let createdAt = values?.creationDate {
-            details.append(("created_at", dateFormatter.string(from: createdAt)))
+            details.append(("created_at", timestampString(for: createdAt)))
         }
         if let modifiedAt = values?.contentModificationDate {
-            details.append(("modified_at", dateFormatter.string(from: modifiedAt)))
+            details.append(("modified_at", timestampString(for: modifiedAt)))
         }
 
         if let attributes = try? fileManager.attributesOfItem(atPath: standardizedURL.path) {
@@ -1299,6 +1825,9 @@ final class AppLogger: @unchecked Sendable {
             "system_locale: \(metadata["system_locale"] ?? "unknown")",
             "timezone: \(metadata["timezone"] ?? "unknown")",
             "log_file_size: \(metadata["log_file_size"] ?? "unknown")",
+            "main_log_size: \(metadata["main_log_size"] ?? "unknown")",
+            "trace_log_size: \(metadata["trace_log_size"] ?? "unknown")",
+            "max_log_size: \(metadata["max_log_size"] ?? "unknown")",
             "redaction_mode: share_safe",
             "app_inventory_included: \(metadata["app_inventory_included"] ?? "false")",
             "recent_operation_count: \(operationCount)"

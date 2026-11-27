@@ -1856,7 +1856,7 @@ actor ContainerVolumeMigrator {
                     ("current_mount_point", autoMounted.path),
                     ("mount_point", record.mountPointPath)
                 ],
-                level: "TRACE"
+                level: "DIAG"
             )
             return .mounted(at: autoMounted)
         }

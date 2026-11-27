@@ -23,6 +23,7 @@ enum UpdateRecoveryAgent {
             else { try WriterAdmission(dataDirectory: dataDirectory).registerCurrentProcess() }
         } catch {
             AppLogger.shared.logError("更新守护未取得写入资格", error: error)
+            AppLogger.shared.flush()
             exit(1)
         }
         // Creating NSApplication registers this worker as AppPorts itself and
@@ -45,6 +46,7 @@ enum UpdateRecoveryAgent {
         do { readiness = try GuardianReadiness(executable: URL(fileURLWithPath: initialExecutablePath)) }
         catch {
             AppLogger.shared.logError("无法确认更新守护启动时的进程身份", error: error)
+            AppLogger.shared.flush()
             exit(1)
         }
         Task { @MainActor in
@@ -74,6 +76,7 @@ enum UpdateRecoveryAgent {
                 Task { @MainActor in
                     await monitor.stop(disabledByUser: disabledByUser)
                     AppLogger.shared.log(message)
+                    AppLogger.shared.flush()
                     exit(0)
                 }
             }
