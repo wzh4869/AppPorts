@@ -5,6 +5,17 @@ enum AppMotion {
     static let interaction = Animation.spring(response: 0.28, dampingFraction: 0.82)
 }
 
+private struct IsPageActiveKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    var isPageActive: Bool {
+        get { self[IsPageActiveKey.self] }
+        set { self[IsPageActiveKey.self] = newValue }
+    }
+}
+
 struct AppPageVisibility: ViewModifier {
     let isActive: Bool
     func body(content: Content) -> some View {
@@ -12,9 +23,10 @@ struct AppPageVisibility: ViewModifier {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .transaction { $0.animation = nil }
             .opacity(isActive ? 1 : 0)
-            .zIndex(isActive ? 1 : 0)
+            .zIndex(isActive ? 1 : -1)
             .allowsHitTesting(isActive)
             .accessibilityHidden(!isActive)
+            .environment(\.isPageActive, isActive)
     }
 }
 

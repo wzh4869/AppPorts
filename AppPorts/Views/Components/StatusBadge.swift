@@ -394,6 +394,7 @@ private struct TappableBadge: View {
     var action: (() -> Void)? = nil
     var actionHelp: String = "查看修复步骤".localized
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.isPageActive) private var isPageActive
     @State private var isPresented = false
     @State private var hoverPreview = false
     @State private var overBadge = false
@@ -412,6 +413,10 @@ private struct TappableBadge: View {
         .accessibilityLabel(badge.label.accessibilityTitle)
         .accessibilityHint(action == nil ? (message ?? "") : actionHelp)
         .onHover { inside in
+            guard isPageActive else {
+                overBadge = false
+                return
+            }
             overBadge = inside
             updateHover()
         }
@@ -426,6 +431,15 @@ private struct TappableBadge: View {
                         overMessage = inside
                         updateHover()
                     }
+            }
+        }
+        .onChange(of: isPageActive) { active in
+            if !active {
+                pendingHover?.cancel()
+                overBadge = false
+                overMessage = false
+                hoverPreview = false
+                isPresented = false
             }
         }
         .onChange(of: isPresented) { presented in
@@ -444,7 +458,7 @@ private struct TappableBadge: View {
     }
 
     private func activate(onHover: Bool) {
-        guard isEnabled else { return }
+        guard isEnabled, isPageActive else { return }
         if let action {
             action()
         } else if message != nil {
@@ -455,10 +469,10 @@ private struct TappableBadge: View {
 
     private func updateHover() {
         pendingHover?.cancel()
-        if overBadge && !isPresented && isEnabled && (message != nil || action != nil) {
+        if overBadge && !isPresented && isEnabled && isPageActive && (message != nil || action != nil) {
             pendingHover = Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 250_000_000)
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, isPageActive else { return }
                 activate(onHover: true)
             }
         } else if hoverPreview && isPresented && !overBadge && !overMessage {

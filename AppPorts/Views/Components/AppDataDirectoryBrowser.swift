@@ -16,6 +16,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
     @State private var collapsedGroups: Set<DataDirType> = []
     @AppStorage("appDataDirectoryInformationPanelHeight") private var savedInformationPanelHeight = Double(DirectoryPanelLayout.minimumInformationHeight)
     @State private var informationResizeStartHeight: CGFloat?
+    @Environment(\.isPageActive) private var isPageActive
     @State private var isInformationHandleHovered = false
     @FocusState private var isOutlineFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -93,9 +94,22 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
             .background(Color.primary.opacity(0.03))
             .contentShape(Rectangle())
             .onHover { hovering in
+                guard isPageActive else {
+                    if isInformationHandleHovered {
+                        isInformationHandleHovered = false
+                        NSCursor.arrow.set()
+                    }
+                    return
+                }
                 isInformationHandleHovered = hovering
                 if hovering { NSCursor.resizeUpDown.set() }
                 else { NSCursor.arrow.set() }
+            }
+            .onChange(of: isPageActive) { active in
+                if !active, isInformationHandleHovered {
+                    isInformationHandleHovered = false
+                    NSCursor.arrow.set()
+                }
             }
             .onDisappear {
                 if isInformationHandleHovered { NSCursor.arrow.set() }
