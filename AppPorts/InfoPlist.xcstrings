@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "AppPorts"
+          }
+        }
+      }
+    },
     "NSAppleEventsUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -134,6 +146,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AppPorts 濡楆倥淛 Finder 唻遷迻 App Store 應詠囷彈絀外置硬盤。"
+          }
+        }
+      }
+    },
+    "NSHumanReadableCopyright" : {
+      "comment" : "Copyright (human-readable)",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copyright © 2025-2026 Shimoko.com/wzh4869 and contributors. All rights reserved."
           }
         }
       }

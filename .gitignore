@@ -39,3 +39,4 @@ User_docs/node_modules/
 design/UI-VI-GUIDELINES.md
 .codex/config.toml
 .workbuddy/
+/script/package_dmg.sh
