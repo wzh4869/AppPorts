@@ -56,7 +56,7 @@ Some directories maintain system structure, such as the container root and speci
 
 ## How do I update a moved app? {#updates}
 
-Look for Locked Migration or Unlocked Migration. Under Unlocked Migration, apps can attempt in-app updates, and enabling Application update guardian under Settings → Background agents allows AppPorts to assist with eligible failed ShipIt updates and offer Roll Back Update if recovery fails. Under Locked Migration, move the app back locally, update it and move it out again if updating is blocked. App Store-managed external installations have their own process. Follow [application updates](/docs/core#updates), without deleting the external copy just to get an update through.
+Look for Locked Migration or Unlocked Migration. Under Unlocked Migration, apps can attempt in-app updates, and enabling Application update guardian under Settings → Background agents allows AppPorts to assist with eligible failed ShipIt updates and offer Roll Back Update if recovery fails. Standard single-`.app` casks in a default Homebrew prefix with Unlocked Migration and the local launcher kept can also be upgraded directly with `brew upgrade` while the original drive is connected. Under Locked Migration, move the app back locally, update it and move it out again if updating is blocked. App Store-managed external installations have their own process. Follow [application updates](/docs/core#updates), without deleting the external copy just to get an update through.
 
 ## Why does Disk Utility show extra AppPorts volumes? {#volumes}
 
@@ -78,7 +78,7 @@ Migration runs locally. Logs and diagnostic packages are also stored locally fir
 
 ## Report a problem {#feedback}
 
-In [GitHub Issues](https://github.com/wzh4869/AppPorts/issues), describe AppPorts and macOS versions, drive format, the operation, the complete error message and reproducibility. Use Export Diagnostic Package under Log Settings or Logs → Export Diagnostic Package in the menu bar to obtain records. Check for private paths or content before sharing. Packages are not uploaded automatically; do not publish messages, account details or unrelated files.
+In [GitHub Issues](https://github.com/wzh4869/AppPorts/issues), describe AppPorts and macOS versions, drive format, the operation, the complete error message and reproducibility. Use Export Diagnostic Package under Log Settings or Logs → Export Diagnostic Package in the menu bar to obtain records (the dialog pre-fills a Desktop save path and bundles redacted `AppPorts_Log.share-safe.txt`, `AppPorts_Trace.share-safe.txt`, and recent operation summaries). Check for private paths or content before sharing. Packages are not uploaded automatically; do not publish messages, account details or unrelated files.
 
 ## Automatic mounting stops after ejection or unmounting {#eject}
 

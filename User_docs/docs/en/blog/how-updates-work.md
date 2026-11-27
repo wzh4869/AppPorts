@@ -2,7 +2,7 @@
 
 IINA can install a new version in place on an external drive. Another app may install its new version back on your Mac. The **Available** badge means AppPorts has identified a way to update the app after migration. To find out whether a new version is out today, use the app’s own update command or the App Store. Check for Updates in AppPorts Settings checks AppPorts itself.
 
-The badge and migration examples use the November 21, 2026 AppPorts 2.3.1 candidate (build 82). On November 22, we also verified the guardian’s task history and log entries with build 84. You can check your build number in Settings.
+The badge and migration examples use the November 21, 2026 AppPorts 2.3.1 candidate (build 82). On November 22, we also verified the guardian’s task history and log entries with build 84; these badges, hover previews, and independent-update detections (along with QQ and QQ Music) shipped in the 2.4.0 release. You can check your build number in Settings.
 
 ## What Check for Updates checks {#appports}
 
@@ -12,7 +12,7 @@ When a newer release is available, you can download that version from the China 
 
 ## How to read Checking, Available, and Unknown {#badges}
 
-The item in your Mac’s Applications folder may be a launcher. AppPorts follows it to the real app bundle, then checks its update components, location, and lock state. Click the update badge beneath the app name to see why AppPorts assigned that status. It appears first when present. In the development build with quick hover, resting the pointer on the badge for about 0.25 seconds opens the same explanation. [Badges and status](/docs/badges#apps)
+The item in your Mac’s Applications folder may be a launcher. AppPorts follows it to the real app bundle, then checks its update components, location, and lock state. Click the update badge beneath the app name to see why AppPorts assigned that status, or rest the pointer on the badge for about 0.25 seconds for the same explanation. It appears first when present. [Badges and status](/docs/badges#apps)
 
 | What AppPorts finds | What the list shows |
 | --- | --- |
@@ -21,7 +21,7 @@ The item in your Mac’s Applications folder may be a launcher. AppPorts follows
 | Other recognized Sparkle or Squirrel/ShipIt apps | AppPorts has only identified the framework or a recovery path. The badge shows Available when the guardian is ready, Checking while it starts, and Unknown when it is off. WorkBuddy has a confirmed migration, and DeepSeek Harness has a confirmed guardian recovery. |
 | Electron alone, or a file with “updater” in its name | Unknown. Electron apps can use different installers, and this evidence does not establish where an update will land. |
 | A Mac App Store app | On macOS 15.1 or later, a store receipt and a copy in the `Applications` folder on the drive configured in the App Store qualify as Available. A local store app can also qualify before migration to that destination. The App Store performs the update independently of the guardian. |
-| Apps verified to update in place | Firefox, Thunderbird, Google Chrome, JetBrains Toolbox, Zed, DMG Canvas, Querious, and Screenflick for Mac show Available after an unlocked migration when their bundle identifier and bundled executable match. You can update them in the app with the guardian off. |
+| Apps verified to update in place | Firefox, Thunderbird, Google Chrome, JetBrains Toolbox, Zed, DMG Canvas, Querious, Screenflick, QQ, and QQ Music for Mac show Available after an unlocked migration when their bundle identifier and bundled executable match. You can update them in the app with the guardian off. |
 | Official Tauri updater | Open the app from Applications or its existing Dock icon, then update in the app as usual. AppPorts recognizes the plugin version in standard builds. For versions 2.10.0 through 2.13.1 the entry supplies a temporary directory on the app’s volume. Starting with 2.13.2, the 2.x plugin chooses its own location. Both work with the guardian off. |
 | Another updater | An app can qualify once testing confirms it updates the external copy independently, or installs locally and can then be moved out again. Untested apps show Unknown. |
 

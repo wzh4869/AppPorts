@@ -18,7 +18,7 @@ App Data reuses complete scan results within the current page session so revisit
 
 The app list on the left shows the total size of the data detected for each app. Apps with migrated data appear first and show separate **Migrated** and **Local** sizes. Use the menu beside search to sort each group by **By Size** (the initial setting), **Default**, or **Alphabetical**. Sizes may be incomplete while the external drive is offline, a data volume is locked, or automatic mounting is paused. Reconnect the original drive, restore the mount, and choose **Refresh Cache** to measure again.
 
-App Data shows eligible items and those needing attention by default. Show locked directory structure adds locked ancestors of actionable items to explain the hierarchy; locked directories with no actionable descendants remain hidden. Enable Show unsupported migration directories to see all ineligible directories. A third switch controls zero-byte directories. **An available migration action does not guarantee execution checks will pass.** Space, permissions, processes using data and parent/child relationships with existing migrations still need checking.
+App Data shows eligible items and those needing attention by default. Click **Display** in the header toolbar (with active filter pills shown beside it) to open **Directory display options**, where you can toggle **Zero-byte folders**, **Locked directory structure**, or **Non-migratable folders**, or click **Reset**. Enabling **Locked directory structure** adds locked ancestors of actionable items to explain the hierarchy (locked directories with no actionable descendants stay hidden); **Non-migratable folders** reveals all ineligible directories; and **Zero-byte folders** controls whether empty 0 B directories appear. **An available migration action does not guarantee execution checks will pass.** Space, permissions, processes using data and parent/child relationships with existing migrations still need checking.
 
 Click status totals such as Linked, Mount Migration or Existing Symlink to show matching items. Necessary parent paths remain visible. Selecting a total does not shrink the other status totals, but other search and filter conditions still affect them. Click again or clear the filter to return; changing app or tab also resets this selection.
 
@@ -64,23 +64,28 @@ Choose migration for a recognized WeChat account directory, then select a mode i
 
 - **Whole migration** moves the selected account's entire directory.
 - **Split migration (`msg + business`)** moves media directories while keeping databases (`db_storage`) and configuration local. The confirmation displays moved media size and locally retained size separately.
+- **Large files & videos only (`msg/file + msg/video`)** moves only those two directories while keeping chat attachments (`msg/attach`) and databases on this Mac; files hard-linked across directories get an independent copy externally while the local copy keeps using internal space.
 
 ```mermaid
 flowchart TB
     A["One WeChat account"]
     B["Whole account"]
-    C["Split migration"]
-    D["Entire account moves to the external drive"]
-    E["Media moves out, database stays local"]
+    C["Split migration (msg + business)"]
+    D["Large files & videos only (msg/file + msg/video)"]
+    E["Entire account moves to the external drive"]
+    F["Media moves out, database stays local"]
+    G["Large files & videos move out, attachments and database stay local"]
     A --> B
     A --> C
-    B --> D
-    C --> E
+    A --> D
+    B --> E
+    C --> F
+    D --> G
 ```
 
 Wait for a complete size calculation before starting. Fully restore the account’s migrated data before switching modes. When the drive is offline after split migration, moved `msg`, `msg/file` or `msg/video` entries use the same read-only, traversable protection as other managed offline directories so WeChat does not crash from a path-permission error at login; whether existing messages remain readable depends on the WeChat version, and full offline functionality is not guaranteed. Encrypted destinations also need a [data-volume password](/docs/storage-guide#encrypted-drives).
 
-**Large files & videos only** moves just `msg/file` and `msg/video`. Chat attachments and databases stay on this Mac. Files shared with other folders get a separate external copy, and the original data still uses space on this Mac. Restore copies the external version back and leaves the files in other folders intact.
+When restoring a **Large files & videos only** migration, AppPorts copies the external version back and leaves files in other local folders intact. After restoring a split migration back to your Mac, if an older copy remains on another external drive, click **View Old Copy** on the account row to inspect or clean it up.
 
 [![An existing split migration. The account row shows the combined scope of msg/file and msg/video, its mounted status and the Restore button. WMPF on the next row remains local.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-en-010342b00f838012.png?sign=5kmRssjw9AkI76Ew-8M2v-URb-NkS4LJvccVrz5Y7y4%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-wechat-en-010342b00f838012.png?sign=5kmRssjw9AkI76Ew-8M2v-URb-NkS4LJvccVrz5Y7y4%3D%3A0)
 

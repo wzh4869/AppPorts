@@ -6,8 +6,8 @@
 
 # AppPorts 隐私政策
 
-**更新日期：** 2026 年 11 月 18 日
-**生效日期：** 2026 年 11 月 18 日
+**更新日期：** 2026 年 11 月 27 日
+**生效日期：** 2026 年 11 月 27 日
 **适用版本：** AppPorts 1.8.1 及后续版本
 
 AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用程序迁移工具。本隐私政策（以下称“本政策”）阐释我们如何收集、使用、共享与保护您的个人信息，以及您就此享有的权利。
@@ -79,13 +79,13 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 本软件在您的设备本地存储下列文件与配置，相关内容不涉及个人信息的对外提供：
 
-- `~/Library/Application Support/AppPorts/AppPorts_Log.txt`：操作日志与诊断信息；
+- 默认目录（`~/Library/Application Support/AppPorts/`）或您在设置中指定的自定义日志目录中的日志文件：`AppPorts_Log.txt`、`AppPorts_Trace.txt`、`*.1.txt` 滚动备份、`.AppPorts_Log.lock` 并发锁文件与 `.AppPorts_Log.operations.json`（保留最近 100 条操作摘要），用于操作日志与诊断；
 - 本机登录钥匙串：仅在您选择保存时存储对应加密 APFS 数据卷的密码（`com.appports.encrypted-apfs-volume`），不同步；密码不写入日志或迁移记录，未保存时仅在进程内临时使用；
-- 应用和工具目录大小缓存、应用搜索位置记录（`app-search-records.json`）：用于显示大小、缓存时间及维护应用库和本地入口，不上传文件清单；
+- 应用和工具目录大小缓存、应用搜索位置记录（`app-search-records.json`）以及首页本地/外部应用清单、排序与更新组件识别快照：用于在重开窗口时恢复列表、显示大小、缓存时间并维护应用库和本地入口，不上传文件清单；
 - `migration-task-history.json`：任务名称、类别、相关路径、时间和展示结果；仅用于任务历史展示，不是自动重新执行的队列；
 - `disk-ejection-pauses.plist` 与 `launch-locks`：分别保存主动弹盘、卸载应用库映像或卸载单个数据卷后的自动挂载暂停信息，以及供本机进程协调迁移期间启动保护的锁文件，不会上传；
 - `~/Library/Application Support/AppPorts/contributors-cache.json` 与 `sponsors-cache.json`：贡献者与赞助者名单缓存，用于减少重复网络请求及离线展示；
-- `~/Library/Application Support/AppPorts/` 下的迁移、挂载、签名与恢复记录（含日志、事务 journal 与 `shipit-recovery/` 下的更新恢复收据、回退意图与单次更新状态文件）：保存应用身份、相关路径、卷标识及操作状态，用于接回数据、恢复签名、同步后台更新守护结果和继续未完成的操作；
+- `~/Library/Application Support/AppPorts/` 下的迁移、挂载、签名与恢复记录（含日志、事务 journal、`shipit-recovery/` 下的更新恢复收据、回退意图与单次更新状态文件，以及 Homebrew Cask 升级登记记录）和外盘根目录隐藏的 `.appports-brew` 相对软链入口：保存应用身份、相关路径、卷标识及操作状态，用于接回数据、恢复签名、同步后台更新守护结果、让 `brew upgrade` 直接升级外盘应用以及继续未完成的操作；
 - `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` 与 `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`：仅当您启用对应“后台代理”（容器数据与映像自动挂载或应用更新守护）时按需写入的用户级启动代理定义，用于在登录或外置存储挂载事件发生时于本机执行自动恢复，可随时在设置中关闭移除；
 - 外盘根目录的 `AppPorts Backups` 文件夹：自 1.9.1 build 31 起，保存手动重签前经核对的官方应用原包，内附 `README.txt`；这些原包用于恢复应用内容和签名，不是聊天记录、文档等个人数据的备份；
 - `~/Library/Preferences` 目录下的偏好设置文件：界面语言、外部存储路径、应用库映像位置记录（SMB 共享地址不含密码，或底层卷与映像内 APFS 卷标识）、自定义扫描路径、后台代理开关、引导提醒状态及各项功能开关。
@@ -98,8 +98,8 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 “导出诊断包”功能仅在您主动点击后执行，并且：
 
-- 导出文件的保存位置由您在系统保存面板中自行选择；
-- 导出前，本软件会将日志中的用户名替换为 `~`，将 `/Users/<用户名>` 替换为 `/Users/<redacted-user>`，并对您的外部存储介质名称作脱敏处理；
+- 导出窗口默认预填桌面保存路径，最终保存位置仍由您在系统保存面板中自行选择；
+- 导出前，本软件会合并生成脱敏后的主日志（`AppPorts_Log.share-safe.txt`）、追踪日志（`AppPorts_Trace.share-safe.txt`）与近期操作摘要（仅在您主动勾选“允许包含本机应用列表”时才会附带脱敏后的 `app-inventory.json`），并将日志中的用户名替换为 `~`，将 `/Users/<用户名>` 替换为 `/Users/<redacted-user>`，对您的外部存储介质名称以及 `smb://`、`afp://`、`cifs://`、`nfs://` 等网络共享地址作脱敏处理；
 - 本软件不会自动上传该文件，亦不会将其提供给任何第三方。是否将其提供给我们，完全由您自行决定。
 
 ## 第九条  系统权限
@@ -188,8 +188,8 @@ AppPorts（以下称“本软件”）是一款运行于 macOS 平台的应用�
 
 # AppPorts Privacy Policy
 
-**Last updated:** November 18, 2026
-**Effective date:** November 18, 2026
+**Last updated:** November 27, 2026
+**Effective date:** November 27, 2026
 **Applies to:** AppPorts 1.8.1 and later
 
 AppPorts (the "Software") is an application migration tool for macOS. This Privacy Policy (the "Policy") explains how we collect, use, share, and protect your personal information, and the rights you have in that regard.
@@ -261,13 +261,13 @@ Opening the website, documentation, repository, sponsor page, or other external 
 
 The Software stores the following files and settings locally on your device. None of this involves disclosing personal information to any third party:
 
-- `~/Library/Application Support/AppPorts/AppPorts_Log.txt`: operation logs and diagnostic information;
+- Log files in the default folder (`~/Library/Application Support/AppPorts/`) or the custom log folder you select in Settings: `AppPorts_Log.txt`, `AppPorts_Trace.txt`, `*.1.txt` rollover volumes, `.AppPorts_Log.lock` concurrency lock file, and `.AppPorts_Log.operations.json` (retaining the latest 100 operation summaries) for operation logs and diagnostic information;
 - Local login Keychain: passwords for encrypted APFS data volumes (`com.appports.encrypted-apfs-volume`) only when you choose to save them, without syncing; passwords are never written to logs or migration records and otherwise stay only temporarily in memory;
-- App and tool-directory size caches and application search-location records (`app-search-records.json`): used to display sizes and cache timestamps and maintain app libraries and local entries; file inventories are never uploaded;
+- App and tool-directory size caches, application search-location records (`app-search-records.json`), and home-window local/external app-list, sort-order, and update-component inspection snapshots: used to restore lists on reopen, display sizes and cache timestamps, and maintain app libraries and local entries; file inventories are never uploaded;
 - `migration-task-history.json`: task names, categories, associated paths, times, and display results; display history only, not a queue that automatically repeats operations;
 - `disk-ejection-pauses.plist` and `launch-locks`: local mounting-pause state after an explicit physical-disk eject, app library image unmount, or individual data-volume unmount, plus lock files used by local processes to coordinate launch protection during migration; never uploaded;
 - `~/Library/Application Support/AppPorts/contributors-cache.json` and `sponsors-cache.json`: cached contributor and sponsor lists to reduce repeated requests and support offline display;
-- Migration, mount, signing, and recovery records under `~/Library/Application Support/AppPorts/` (including operation logs, journals, and update recovery receipts, rollback intents, and per-request status files under `shipit-recovery/`): app identity, paths, volume identifiers, and operation states for reconnection, signature restoration, background update-guardian synchronization, and unfinished operations;
+- Migration, mount, signing, and recovery records under `~/Library/Application Support/AppPorts/` (including operation logs, journals, update recovery receipts, rollback intents, and per-request status files under `shipit-recovery/`, plus Homebrew Cask upgrade registration receipts) and the hidden `.appports-brew` relative-symlink directory at the external volume root: app identity, paths, volume identifiers, and operation states for reconnection, signature restoration, background update-guardian synchronization, routing `brew upgrade` directly to external drives, and unfinished operations;
 - `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` and `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`: user LaunchAgent definitions written only when you enable the corresponding background agent (automatic container/image mounting or Application update guardian) to run local recovery on login or storage mount events; disabling an agent in Settings removes it;
 - `AppPorts Backups` at a suitable external drive's root: since 1.9.1 build 31, verified official app originals are saved automatically before manual re-signing, with `README.txt`; these restore app bundles and signatures, not personal files such as chat logs or documents;
 - Preference files under `~/Library/Preferences`: interface language, external storage path, app library image location records (SMB share address without credentials, or backing volume and internal APFS volume identifiers), custom scan paths, background-agent toggles, guidance dismissal state, and feature switches.
@@ -280,8 +280,8 @@ You may delete caches, logs, preferences, and LaunchAgents at any time. Before d
 
 The "Export Diagnostics" function runs only when you click it, and:
 
-- you choose the destination file location in the system save panel;
-- before export, the Software replaces usernames in the logs with `~`, replaces `/Users/<username>` with `/Users/<redacted-user>`, and redacts the names of your external storage volumes;
+- the dialog pre-fills a Desktop path by default, while you still choose the final destination file location in the system save panel;
+- before export, the Software bundles redacted main and trace logs (`AppPorts_Log.share-safe.txt` and `AppPorts_Trace.share-safe.txt`) plus recent operation summaries (including redacted `app-inventory.json` only if you check "Include this Mac's app list"), replaces usernames in the logs with `~`, replaces `/Users/<username>` with `/Users/<redacted-user>`, and redacts the names of your external storage volumes as well as network share URLs such as `smb://`, `afp://`, `cifs://`, and `nfs://`;
 - the Software never uploads that file automatically and never provides it to any third party. Whether to share it with us is entirely your decision.
 
 ## 9. System Permissions

@@ -1,8 +1,8 @@
 # AppPorts Privacy Policy
 
-Updated: November 18, 2026
+Updated: November 27, 2026
 
-Effective: November 18, 2026
+Effective: November 27, 2026
 
 Applies to: AppPorts 1.8.1 and later
 
@@ -73,14 +73,14 @@ Opening the website, documentation, repository, sponsor page, or other external 
 
 The Software stores these files and settings on your local devices without providing their contents externally:
 
-- ~/Library/Application Support/AppPorts/AppPorts_Log.txt: operations and diagnostics.
+- Log files in the default folder (`~/Library/Application Support/AppPorts/`) or the custom log folder you select in Settings: `AppPorts_Log.txt`, `AppPorts_Trace.txt`, `*.1.txt` rollover volumes, `.AppPorts_Log.lock` concurrency lock file, and `.AppPorts_Log.operations.json` (retaining the latest 100 operation summaries) for operations and diagnostics.
 - Local login Keychain: passwords for encrypted data volumes only when you choose to save them, without syncing; passwords are not written to logs or migration records and otherwise remain temporary process credentials;
-- App and tool-directory size caches and application search-location records: used to display sizes and cache times and maintain app libraries and local entries; file inventories are not uploaded;
+- App and tool-directory size caches, application search-location records, and home-window local/external app-list, sort-order, and update-component inspection snapshots: used to restore lists on reopen, display sizes and cache times, and maintain app libraries and local entries; file inventories are not uploaded;
 - `migration-task-history.json`: task names, categories, associated paths, times and display results; this is display history, not a queue that automatically repeats operations;
 - `disk-ejection-pauses.plist` and `launch-locks`: local mounting-pause information after an explicit physical-disk eject, app library image unmount, or individual data-volume unmount, and lock files used by local processes to coordinate launch protection during migration; these are not uploaded;
 - ~/Library/Application Support/AppPorts/contributors-cache.json: contributor cache to reduce repeated requests.
 - ~/Library/Application Support/AppPorts/sponsors-cache.json: sponsor cache for offline display.
-- Migration, mount, signing, and recovery records under ~/Library/Application Support/AppPorts/ (including update recovery receipts, rollback intents, and per-request task status files under `shipit-recovery/`): app identity, paths, volume identifiers, and operation states needed for reconnection, signature restoration, background update-guardian status synchronization, and unfinished operations.
+- Migration, mount, signing, and recovery records under ~/Library/Application Support/AppPorts/ (including update recovery receipts, rollback intents, and per-request task status files under `shipit-recovery/`, plus Homebrew Cask upgrade registration receipts) and the hidden `.appports-brew` relative-symlink directory at the external volume root: app identity, paths, volume identifiers, and operation states needed for reconnection, signature restoration, background update-guardian status synchronization, routing `brew upgrade` directly to external drives, and unfinished operations.
 - `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` and `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`: user LaunchAgent definitions written only when you enable the corresponding background agent (automatic container/image mounting or Application update guardian) to run local recovery at login or when external storage mounts; disabling an agent in Settings removes it.
 - AppPorts Backups at a suitable external drive's root: since 1.9.1 build 31, verified official originals are saved automatically before manual re-signing, with README.txt. They restore app contents and signatures; they are not backups of chats, documents, or other personal data.
 - Preference files under ~/Library/Preferences: interface language, external and custom scan paths, app library image location records (SMB share URL without credentials, or backing volume and internal APFS volume identifiers), background-agent switches, guidance dismissal state, and feature switches.
@@ -93,8 +93,8 @@ You may delete caches, logs, and preferences. Before deleting migration or recov
 
 “Export Diagnostics” runs only when you choose it:
 
-- You select the destination in the system save panel.
-- Before export, the Software replaces usernames in logs with ~, replaces /Users/＜username＞ with /Users/＜redacted-user＞, and redacts external-storage names.
+- The dialog pre-fills a Desktop path by default, while you still choose the final destination in the system save panel.
+- Before export, the Software bundles redacted main and trace logs (`AppPorts_Log.share-safe.txt` and `AppPorts_Trace.share-safe.txt`) plus recent operation summaries (including redacted `app-inventory.json` only if you check “Include this Mac’s app list”), replaces usernames in logs with ~, replaces /Users/＜username＞ with /Users/＜redacted-user＞, and redacts external-storage names as well as network share URLs such as `smb://`, `afp://`, `cifs://`, and `nfs://`.
 - It does not upload or provide the file to any third party automatically. Sharing it with us is entirely your decision.
 
 [![Diagnostics export dialog. Including this Mac’s app list is unchecked by default. You choose the save location.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-en-c1e3fed21079e128.png?sign=3bUYvlhGHcCYG7lsuVQlhVFPtnevKDD_0XHB5rXQZo8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-en-c1e3fed21079e128.png?sign=3bUYvlhGHcCYG7lsuVQlhVFPtnevKDD_0XHB5rXQZo8%3D%3A0)

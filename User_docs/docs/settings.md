@@ -4,7 +4,7 @@
 
 ## 应用信息与应用内更新 {#updates}
 
-设置页右上方卡片展示当前运行的 AppPorts 版本、实际运行路径（可选中复制），以及“检查更新”“官网”“文档”“关于”入口。
+设置页右上方卡片展示当前运行的 AppPorts 版本、实际运行路径（可选中复制），以及“检查更新”“边界与共识”“官网”“文档”“关于”入口；点击“边界与共识”可随时重看只读的“关于 AppPorts 的边界与共识”面板。
 
 点击“检查更新”发现新版本后，可在更新面板中选择：
 
@@ -95,7 +95,11 @@ AppPorts 会保留仍有恢复价值的原包。在确认应用已经恢复官�
 
 ## 日志设置 {#logs}
 
-可以在设置卡片中开关日志记录、调整最大日志大小（1 MB 至 100 MB），直接点击“在 Finder 中查看”“导出诊断包”或“清空日志”（菜单栏“日志 → 导出诊断包”同样可用）；导出不会自动发送。
+可以在“日志设置”卡片中开关日志记录、调整最大日志大小（可选 `1 / 2 / 5 / 10 / 20 / 50 / 100 MB` 与“不限”，默认 `10 MB`；原配置低于 `10 MB` 的用户在升级后会自动一次性提升至 `10 MB`，高于 `10 MB` 或“不限”的设置保持不变）。
+
+主日志（`AppPorts_Log.txt`）与高频追踪日志（`AppPorts_Trace.txt`）按 `6:4` 比例各自独立滚动（每路各含 `.1.txt` 上一卷备份），总大小不超过所选上限；选为“不限”时不再轮转或截断本地日志。设置页同时显示当前日志总大小和日志存放路径，可通过“更换位置”或“恢复默认”修改存放目录（菜单栏日志菜单也提供“恢复默认”与“不限”档位）。
+
+点击“在 Finder 中查看”可打开当前日志目录；点击“清空日志”会弹出二次确认框，确认后将日志文件移入废纸篓（不支持废纸篓的路径才会直接删除），避免误删历史记录；点击“导出诊断包”（菜单栏“日志 → 导出诊断包”同样可用）会默认预填桌面保存路径，合并导出脱敏后的 `AppPorts_Log.share-safe.txt` 与 `AppPorts_Trace.share-safe.txt`，并跨重启保留最近 100 条操作摘要，同时对用户名、外置盘名称及 `smb://` / `afp://` 等网络共享地址脱敏。导出不会自动发送。
 
 [![诊断包导出窗口。默认不勾选「允许包含本机应用列表」，保存位置由你选择。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hans-3642bfd368e295ab.png?sign=3btk3NkmpVvvFpUOzeDTgATr2yBpS2IywUYGaiToDuY%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hans-3642bfd368e295ab.png?sign=3btk3NkmpVvvFpUOzeDTgATr2yBpS2IywUYGaiToDuY%3D%3A0)
 

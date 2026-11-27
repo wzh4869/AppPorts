@@ -4,9 +4,15 @@ You need a Mac running macOS 12 or later and a reliably connected external drive
 
 ## Download and install {#install}
 
-1. Download AppPorts from the [download page](https://file.shimoko.com/AppPorts) or [GitHub Releases](https://github.com/wzh4869/AppPorts/releases).
-2. Open the installer and drag AppPorts into your Mac's Applications folder.
-3. Open AppPorts from Applications and follow the first-run guide. AppPorts verifies that it is running from Applications before starting new migrations, operating on disk images or opening permission guides; do not keep running it from the installer image or a temporary folder.
+1. Download AppPorts from the [download page](https://file.shimoko.com/AppPorts) or [GitHub Releases](https://github.com/wzh4869/AppPorts/releases) and move AppPorts into your Mac's Applications folder. You can also install it with Homebrew:
+
+```sh
+brew install --cask wzh4869/tap/appports
+```
+
+For Homebrew upgrade and uninstall commands, see the [AppPorts tap](https://github.com/wzh4869/homebrew-tap#readme).
+
+2. Open AppPorts from Applications and follow the onboarding guide: first-time users step through core capabilities overview → **Boundaries** → **Readiness**, while users upgrading from an earlier version confirm the single-screen **Boundaries & Shared Understanding of AppPorts** notice once without resetting existing permissions, moved apps, or records (reviewable anytime from **Boundaries** at the top of Settings). AppPorts verifies that it is running from Applications before starting new migrations, operating on disk images or opening permission guides; do not keep running it from the installer image or a temporary folder.
 
 [![Open the DMG, drag AppPorts from the left onto the Applications folder on the right, and release it.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)
 

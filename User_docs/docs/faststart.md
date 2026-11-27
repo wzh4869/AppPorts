@@ -4,9 +4,15 @@
 
 ## 下载并安装 {#install}
 
-1. 从[AppPorts 下载页](https://file.shimoko.com/AppPorts)获取安装包，也可以使用 [GitHub Releases](https://github.com/wzh4869/AppPorts/releases)。
-2. 打开安装包，把 AppPorts 拖入 Mac 的“应用程序”文件夹。
-3. 从“应用程序”打开 AppPorts，按首次使用引导继续。发起新迁移、操作磁盘映像和打开权限引导前，AppPorts 会检查自身是否位于“应用程序”文件夹；不要从安装镜像或临时目录长期运行。
+1. 从[AppPorts 下载页](https://file.shimoko.com/AppPorts)或 [GitHub Releases](https://github.com/wzh4869/AppPorts/releases) 获取安装包，把 AppPorts 拖入 Mac 的“应用程序”文件夹；也可以使用 Homebrew 安装：
+
+```sh
+brew install --cask wzh4869/tap/appports
+```
+
+通过 Homebrew 升级或卸载的命令见 [AppPorts 的 Homebrew 安装说明](https://github.com/wzh4869/homebrew-tap#readme)。
+
+2. 从“应用程序”打开 AppPorts，按引导完成上手：全新用户会依次看到“核心能力概览 → 边界与共识 → 准备情况”3 步引导；从旧版本升级的老用户会看到一次单屏的“关于 AppPorts 的边界与共识”确认，不会重置已有权限、已迁移应用和记录，之后也可随时在设置顶部点击“边界与共识”重看。发起新迁移、操作磁盘映像和打开权限引导前，AppPorts 会检查自身是否位于“应用程序”文件夹；不要从安装镜像或临时目录长期运行。
 
 [![打开 DMG，把左侧的 AppPorts 图标拖到右侧的 Applications 文件夹上，然后松开。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-install-drag-5d967c0d07f9edcb.gif?sign=2fap3x95UNN19dzzLIznjNIjszdqpbwLfVZIy8H99A8%3D%3A0)
 

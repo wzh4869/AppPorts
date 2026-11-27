@@ -4,7 +4,7 @@ Application migration moves the app itself. Messages, projects, models and cache
 
 ## Before moving {#prepare}
 
-Clash Verge, Visual Studio Code (including Insiders), and Xcode stay on this Mac by default. When asked to confirm a move, choose Cancel to keep everything in place, or **Migrate other apps only** for a mixed selection. **Migrate despite risk** applies only to this move. If you selected a folder containing one of these apps, skipping it keeps the whole folder on the Mac. You can move an app back without this confirmation.
+Clash Verge, Visual Studio Code (including Insiders), Xcode, and Claude desktop stay on this Mac by default. When asked to confirm a move, choose Cancel to keep everything in place, or **Migrate other apps only** for a mixed selection. **Migrate despite risk** applies only to this move. If you selected a folder containing one of these apps, skipping it keeps the whole folder on the Mac. You can move an app back without this confirmation.
 
 Connect external storage, select an external application library under Destination Storage in the sidebar, and check free space under Mac Storage / Destination Storage. If the destination is an SMB network share or a non-APFS drive, you can create or open an [APFS app library image](/docs/storage-guide#app-library-image) from the Destination Storage menu to preserve full app metadata. Save your work, quit the app completely, and make sure AppPorts is running from Applications; back up important content first. System apps and protected locations are not suitable for direct moves. Follow the restrictions AppPorts shows.
 
@@ -62,7 +62,7 @@ See [Restore, reconnect and unlink](/docs/restore) for the distinctions and step
 
 ## Lists, size caches and duplicate search results {#search-cache}
 
-The All / Linked / Unlinked filter at the top of Apps filters the list without restoring or deleting apps; hidden selections are excluded from batch actions when switching filters. Local and external lists can each be sorted by name or size. App and tool-directory sizes can show a cache timestamp. If disk contents have changed or sizes look stale, click Refresh Cache at the bottom of the sidebar to recalculate; old cached sizes are not exact current usage.
+The All / Linked / Unlinked filter at the top of Apps filters the list without restoring or deleting apps; hidden selections are excluded from batch actions when switching filters. Local and external lists can each be sorted by name or size. When you reopen AppPorts, both lists immediately restore the previous completed scan results, sort order, and read-only status badges while silently verifying and refreshing in the background; apps removed while closed disappear once the fresh scan finishes, and switching drives or scan sources streams progressively from the new scan. App and tool-directory sizes can show a cache timestamp. If disk contents have changed or sizes look stale, click Refresh Cache at the bottom of the sidebar to recalculate; old cached sizes are not exact current usage.
 
 [![Click Size in Local Apps to compare the example apps, then click Name to sort them by name.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-en-035c023727239ed0.gif?sign=kBt_ERWZrx9XbFNsZpEjs0O7RhJEAAXd58vybxq9KjM%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-sort-app-list-en-035c023727239ed0.gif?sign=kBt_ERWZrx9XbFNsZpEjs0O7RhJEAAXd58vybxq9KjM%3D%3A0)
 

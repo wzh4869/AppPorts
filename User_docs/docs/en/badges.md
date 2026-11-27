@@ -6,7 +6,7 @@ Badges show the current state of an app or directory. The combination of badges 
 
 Badges appear below the app name in both the local and external app lists. When an app has an update status badge, it appears first. Click **Available** to see how to update the app, or **Unknown** to see why AppPorts cannot confirm an update method. Badges and their explanations use your selected AppPorts language in all 22 supported languages.
 
-In the development build with quick hover, resting the pointer on a clickable badge for about 0.25 seconds opens the same content as a click. Moving past it sooner cancels the preview. You can move the pointer into an explanation to keep reading. The preview closes when the pointer leaves both the badge and the explanation. Hovering over a task badge opens its details. Hovering over **Signature replaced** opens the repair panel, where you choose whether to start a repair. In the 2.3.1 candidate (build 84), click the badge to open its details.
+Resting the pointer on a clickable badge for about 0.25 seconds opens the same content as a click; moving past it sooner cancels the preview. You can move the pointer into an explanation to keep reading. The preview closes when the pointer leaves both the badge and the explanation. Hovering over a task badge opens its details, and hovering over **Signature replaced** opens the repair panel, where you choose whether to start a repair.
 
 | Badge | Meaning | What to do |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ In the development build with quick hover, resting the pointer on a clickable ba
 
 *The Mac Local Apps list in an earlier AppPorts build (Simplified Chinese interface). Thunderbird is local and TPH is linked. Trae CN also has a pending signature check that you can run from its row.*
 
-AppPorts recommends keeping Clash Verge, Visual Studio Code (including Insiders), and Xcode on your Mac. Their rows omit the update badge. If you choose to move them, AppPorts explains the risks.
+AppPorts recommends keeping Clash Verge, Visual Studio Code (including Insiders), Xcode, and Claude desktop on your Mac. Their rows omit the update badge. If you choose to move them, AppPorts explains the risks.
 
 “Locked Migration” protects specific update scenarios; it does not replace a backup, and upgrading AppPorts does not automatically unlock previously locked apps. “Pending Move Out” is not an instruction that must be acted on immediately.
 

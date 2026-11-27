@@ -1,8 +1,8 @@
 # AppPorts 隱私政策
 
-更新日期：2026 年 11 月 18 日
+更新日期：2026 年 11 月 27 日
 
-生效日期：2026 年 11 月 18 日
+生效日期：2026 年 11 月 27 日
 
 適用版本：AppPorts 1.8.1 及後續版本
 
@@ -75,14 +75,14 @@ AppPorts（以下稱“本軟體”）是一款執行於 macOS 平臺的應用�
 
 本軟體在您的裝置本地儲存下列檔案與配置，相關內容不涉及個人資訊的對外提供：
 
-- ~/Library/Application Support/AppPorts/AppPorts_Log.txt：操作日誌與診斷資訊；
+- 預設目錄（`~/Library/Application Support/AppPorts/`）或您在設定中指定的自訂日誌目錄中的日誌檔案：`AppPorts_Log.txt`、`AppPorts_Trace.txt`、`*.1.txt` 滾動備份、`.AppPorts_Log.lock` 並發鎖檔案與 `.AppPorts_Log.operations.json`（保留最近 100 筆操作摘要），用於操作日誌與診斷；
 - 本機登入鑰匙圈：僅在您選擇儲存時保存對應加密資料卷宗的密碼，不同步；密碼不寫入日誌或遷移記錄，未儲存時僅在程序內暫時使用；
-- 應用和工具目錄大小快取、應用搜尋位置記錄：用於顯示大小、快取時間及維護應用庫和本機入口；不上傳檔案清單；
+- 應用和工具目錄大小快取、應用搜尋位置記錄以及首頁本地/外部應用清單、排序與更新元件辨識快照：用於在重開視窗時恢復清單、顯示大小、快取時間並維護應用庫和本機入口；不上傳檔案清單；
 - `migration-task-history.json`：任務名稱、類別、相關路徑、時間和顯示結果；僅用於任務歷史，不是自動重新執行的佇列；
 - `disk-ejection-pauses.plist` 與 `launch-locks`：分別儲存主動退出磁碟、卸載應用庫映像或卸載單個資料卷宗後的自動掛載暫停資訊，以及供本機程序協調遷移期間啟動保護的鎖定檔案；不會上傳；
 - ~/Library/Application Support/AppPorts/contributors-cache.json：貢獻者名單快取，用於減少重複的網路請求；
 - ~/Library/Application Support/AppPorts/sponsors-cache.json：贊助者名單快取，用於離線狀態下展示；
-- ~/Library/Application Support/AppPorts/ 下的遷移、掛載、簽名與恢復記錄（含 `shipit-recovery/` 下的更新恢復收據、復原意圖與單次更新狀態檔案）：儲存應用身份、相關路徑、卷標識及操作狀態，用於接回資料、恢復簽名、同步背景更新守護結果和繼續未完成的操作；
+- ~/Library/Application Support/AppPorts/ 下的遷移、掛載、簽名與恢復記錄（含 `shipit-recovery/` 下的更新恢復收據、復原意圖與單次更新狀態檔案，以及 Homebrew Cask 升級登記記錄）和外接磁碟根目錄隱藏的 `.appports-brew` 相對軟連結入口：儲存應用身份、相關路徑、卷標識及操作狀態，用於接回資料、恢復簽名、同步背景更新守護結果、讓 `brew upgrade` 直接升級外接磁碟應用以及繼續未完成的操作；
 - `~/Library/LaunchAgents/com.shimoko.AppPorts.container-mount.plist` 與 `~/Library/LaunchAgents/com.shimoko.AppPorts.update-guardian.plist`：僅當您主動啟用對應背景代理（容器資料與映像自動掛載或應用程式更新守護）時按需寫入的使用者級啟動代理定義，用於在登入或儲存裝置掛載時於本機執行自動恢復，可在設定中隨時關閉並移除；
 - 外接磁碟根目錄的 AppPorts Backups 資料夾：自 1.9.1 build 31 起，自動儲存手動重簽前經核對的官方應用原包，內附 README.txt；這些原包用於恢復應用內容和簽名，不是聊天記錄、文件等個人資料的備份；
 - ~/Library/Preferences 目錄下的偏好設定檔案：介面語言、外部儲存路徑、應用庫映像位置記錄（SMB 共享位址不含密碼，或底層卷宗與映像內 APFS 卷宗標識）、自定義掃描路徑、背景代理開關、引導提醒狀態及各項功能開關。
@@ -95,8 +95,8 @@ AppPorts（以下稱“本軟體”）是一款執行於 macOS 平臺的應用�
 
 “匯出診斷包”功能僅在您主動點選後執行，並且：
 
-- 匯出檔案的儲存位置由您在系統儲存面板中自行選擇；
-- 匯出前，本軟體會將日誌中的使用者名稱替換為 ~，將 /Users/＜使用者名稱＞ 替換為 /Users/＜redacted-user＞，並對您的外部儲存介質名稱作脫敏處理；
+- 匯出視窗預設預填桌面儲存路徑，最終儲存位置仍由您在系統儲存面板中自行選擇；
+- 匯出前，本軟體會合併產生脫敏後的主日誌（`AppPorts_Log.share-safe.txt`）、追蹤日誌（`AppPorts_Trace.share-safe.txt`）與近期操作摘要（僅在您主動勾選「允許包含本機應用程式列表」時才會附帶脫敏後的 `app-inventory.json`），並將日誌中的使用者名稱替換為 ~，將 /Users/＜使用者名稱＞ 替換為 /Users/＜redacted-user＞，對您的外部儲存介質名稱以及 `smb://`、`afp://`、`cifs://`、`nfs://` 等網路共享位址作脫敏處理；
 - 本軟體不會自動上傳該檔案，亦不會將其提供給任何第三方。是否將其提供給我們，完全由您自行決定。
 
 [![診斷套件匯出視窗。「允許包含本機應用程式列表」預設未勾選，儲存位置由你選擇。](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hant-d7fd49f9e2edd480.png?sign=eEyRHO9j7fYJVQpO4Cr0k-D5We0xG7OvPDweQHDFVoI%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-zh-hant-d7fd49f9e2edd480.png?sign=eEyRHO9j7fYJVQpO4Cr0k-D5We0xG7OvPDweQHDFVoI%3D%3A0)

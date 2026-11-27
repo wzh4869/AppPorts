@@ -4,7 +4,7 @@ Open Settings in the main window using the gear at the bottom of the sidebar (or
 
 ## Application info and in-app updates {#updates}
 
-The top-right card in Settings displays the running AppPorts version, its actual bundle path (selectable for copying), Check for Updates, Website, Docs and About.
+The top-right card in Settings displays the running AppPorts version, its actual bundle path (selectable for copying), Check for Updates, Boundaries, Website, Docs and About; click **Boundaries** anytime to reopen the read-only **Boundaries & Shared Understanding of AppPorts** sheet.
 
 When Check for Updates finds a new release, you can choose:
 
@@ -95,7 +95,11 @@ Both agents run windowless modes of the AppPorts bundle installed in Application
 
 ## Log settings {#logs}
 
-Use the Log Settings card to enable or disable logging, adjust maximum log size (1 MB to 100 MB), reveal logs in Finder, export a diagnostic package or clear logs (Logs → Export Diagnostic Package in the menu bar also works). Export does not send the package automatically.
+Use the Log Settings card to enable or disable logging and adjust the maximum log size (`1 / 2 / 5 / 10 / 20 / 50 / 100 MB` or **Unlimited**; the default is `10 MB`, and limits below `10 MB` from earlier versions are raised once to `10 MB` on upgrade while higher limits and **Unlimited** stay intact).
+
+The main log (`AppPorts_Log.txt`) and high-frequency trace log (`AppPorts_Trace.txt`) roll independently in a `6:4` split (each with a `.1.txt` rollover volume), keeping their combined size within the chosen limit; **Unlimited** skips rotation and truncation completely. Settings also shows the current total log size and folder path with **Change Location** and **Reset** buttons (the menu bar Logs menu offers **Reset** and **Unlimited** as well).
+
+Click **Show in Finder** to open the current log folder. Clicking **Clear Log** asks for confirmation and moves log files to the Trash (falling back to direct deletion only on paths without Trash support) to prevent accidental loss. Clicking **Export Diagnostic Package** (Logs → Export Diagnostic Package in the menu bar also works) pre-fills a Desktop save path, bundles redacted `AppPorts_Log.share-safe.txt` and `AppPorts_Trace.share-safe.txt`, preserves the latest 100 operation summaries across restarts, and redacts usernames, external volume names, and network share URLs such as `smb://` and `afp://`. Export does not send the package automatically.
 
 [![Diagnostics export dialog. Including this Mac’s app list is unchecked by default. You choose the save location.](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-en-c1e3fed21079e128.png?sign=3bUYvlhGHcCYG7lsuVQlhVFPtnevKDD_0XHB5rXQZo8%3D%3A0)](https://file.shimoko.com/d/openlist/openlist/%E7%BD%91%E7%AB%99%E5%AA%92%E4%BD%93%E6%96%87%E4%BB%B6/appports-guide-diagnostics-en-c1e3fed21079e128.png?sign=3bUYvlhGHcCYG7lsuVQlhVFPtnevKDD_0XHB5rXQZo8%3D%3A0)
 
