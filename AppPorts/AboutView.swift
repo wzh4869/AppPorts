@@ -367,16 +367,24 @@ final class AboutWindowController: NSWindowController {
         window.isReleasedWhenClosed = false
         window.contentMinSize = NSSize(width: 520, height: 480)
         window.contentView = NSHostingView(rootView: AboutWindowContent())
-        window.title = "关于 AppPorts...".localized.replacingOccurrences(of: "...", with: "")
+        window.title = Self.windowTitle()
         window.center()
         languageObserver = LanguageManager.shared.$language
             .receive(on: RunLoop.main)
             .sink { [weak window] _ in
-                window?.title = "关于 AppPorts...".localized.replacingOccurrences(of: "...", with: "")
+                window?.title = Self.windowTitle()
             }
     }
 
     required init?(coder: NSCoder) { nil }
+
+    nonisolated static func windowTitle() -> String {
+        "关于 AppPorts...".localized
+            .replacingOccurrences(of: "...", with: "")
+            .replacingOccurrences(of: "…", with: "")
+            .replacingOccurrences(of: "⠲⠲⠲", with: "")
+            .trimmingCharacters(in: .whitespaces)
+    }
 
     func present() {
         if window?.isMiniaturized == true { window?.deminiaturize(nil) }
@@ -392,6 +400,7 @@ private struct AboutWindowContent: View {
     var body: some View {
         AboutView()
             .environment(\.locale, languageManager.locale)
+            .environment(\.layoutDirection, languageManager.layoutDirection)
     }
 }
 
@@ -399,6 +408,7 @@ struct AboutView: View {
     @StateObject private var contributorsViewModel = ContributorsViewModel()
     @StateObject private var sponsorsViewModel = SponsorsViewModel()
     @ObservedObject private var languageManager = LanguageManager.shared
+    @State private var linkLabelWidth: CGFloat = 92
 
     private var version: String {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
@@ -429,10 +439,15 @@ struct AboutView: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     VStack(alignment: .leading, spacing: 9) {
-                        AboutLinkRow(label: "项目地址".localized, title: "GitHub 上的 AppPorts".localized, url: "https://github.com/wzh4869/AppPorts")
-                        AboutLinkRow(label: "官方网站".localized, title: "appports.shimoko.com", url: "https://appports.shimoko.com/")
-                        AboutLinkRow(label: "用户文档".localized, title: "docs-appports.shimoko.com", url: DocumentationLink.homeURL().absoluteString)
-                        AboutLinkRow(label: "发布".localized, title: "GitHub Releases", url: "https://github.com/wzh4869/AppPorts/releases")
+                        AboutLinkRow(label: "项目地址".localized, title: "GitHub 上的 AppPorts".localized, url: "https://github.com/wzh4869/AppPorts", labelWidth: linkLabelWidth)
+                        AboutLinkRow(label: "官方网站".localized, title: "appports.shimoko.com", url: "https://appports.shimoko.com/", labelWidth: linkLabelWidth)
+                        AboutLinkRow(label: "用户文档".localized, title: "docs-appports.shimoko.com", url: DocumentationLink.homeURL().absoluteString, labelWidth: linkLabelWidth)
+                        AboutLinkRow(label: "发布".localized, title: "GitHub Releases", url: "https://github.com/wzh4869/AppPorts/releases", labelWidth: linkLabelWidth)
+                    }
+                    .onPreferenceChange(AboutLinkLabelWidthKey.self) { measured in
+                        if measured > 0 {
+                            linkLabelWidth = min(max(92, measured), 220)
+                        }
                     }
                 }
 
@@ -506,14 +521,30 @@ private struct AboutSection<Content: View>: View {
     }
 }
 
+private struct AboutLinkLabelWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
 private struct AboutLinkRow: View {
     let label: String
     let title: String
     let url: String
+    let labelWidth: CGFloat
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 16) {
-            Text(label).foregroundStyle(.secondary).frame(width: 92, alignment: .leading)
+            Text(label)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: AboutLinkLabelWidthKey.self, value: proxy.size.width)
+                    }
+                )
+                .frame(minWidth: labelWidth, alignment: .leading)
             Link(destination: URL(string: url)!) { Text(verbatim: title) }
                 .fixedSize(horizontal: false, vertical: true)
         }

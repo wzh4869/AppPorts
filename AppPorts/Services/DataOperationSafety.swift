@@ -31,7 +31,7 @@ struct DataOperationSafety: Sendable {
                 return String(format: "数据安全检查超时，已停止操作并保留数据：%@".localized, path)
             case .writers(let path, let processes):
                 return String(format: "以下进程正在写入数据，请退出后继续：%@\n%@".localized,
-                    processes.joined(separator: "、"), path)
+                    processes.localizedListJoined, path)
             case .accessDenied(let path):
                 return "AppPorts 暂时无法访问这个位置，请在系统设置中检查访问权限，然后继续：".localized + path
             }

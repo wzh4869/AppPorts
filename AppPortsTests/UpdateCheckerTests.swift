@@ -187,16 +187,30 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertEqual(update?.githubURL?.absoluteString, "https://github.com/wzh4869/AppPorts/releases/tag/1.7.0")
     }
 
-    func testOfficialReleaseNotesFallbackToSimplifiedChineseThenEnglish() async throws {
-        let checker = makeChecker(
+    func testOfficialReleaseNotesFallbackToEnglishForNonChineseAndSimplifiedChineseForChineseVariants() async throws {
+        let germanChecker = makeChecker(
             github: .status(404),
             official: .json(officialRelease(version: "1.7.0", notes: ["zh-Hans": "中文说明", "en": "English notes"])),
             language: "de"
         )
+        let germanUpdate = await germanChecker.checkForUpdates()
+        XCTAssertEqual(germanUpdate?.releaseNotesMarkdown, "English notes")
 
-        let update = await checker.checkForUpdates()
+        let traditionalChecker = makeChecker(
+            github: .status(404),
+            official: .json(officialRelease(version: "1.7.0", notes: ["zh-Hans": "中文说明", "en": "English notes"])),
+            language: "zh-Hant"
+        )
+        let traditionalUpdate = await traditionalChecker.checkForUpdates()
+        XCTAssertEqual(traditionalUpdate?.releaseNotesMarkdown, "中文说明")
 
-        XCTAssertEqual(update?.releaseNotesMarkdown, "中文说明")
+        let chineseOnlyChecker = makeChecker(
+            github: .status(404),
+            official: .json(officialRelease(version: "1.7.0", notes: ["zh-Hans": "仅中文说明"])),
+            language: "de"
+        )
+        let chineseOnlyUpdate = await chineseOnlyChecker.checkForUpdates()
+        XCTAssertEqual(chineseOnlyUpdate?.releaseNotesMarkdown, "仅中文说明")
     }
 
     func testManualCheckReportsLatestWhenOneSourceSucceeds() async {

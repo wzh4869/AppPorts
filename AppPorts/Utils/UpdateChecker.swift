@@ -360,10 +360,10 @@ final class UpdateChecker {
             }
         }
 
-        if let fallback = releaseNotes["zh-Hans"], !fallback.isEmpty {
+        if let fallback = releaseNotes["en"], !fallback.isEmpty {
             return fallback
         }
-        if let fallback = releaseNotes["en"], !fallback.isEmpty {
+        if let fallback = releaseNotes["zh-Hans"], !fallback.isEmpty {
             return fallback
         }
         return releaseNotes.values.first(where: { !$0.isEmpty }) ?? ""
@@ -398,6 +398,7 @@ final class UpdateChecker {
             || lowercased.hasPrefix("zh-hk")
             || lowercased.hasPrefix("zh-mo") {
             candidates.append("zh-Hant")
+            candidates.append("zh-Hans")
         } else if lowercased.hasPrefix("zh") {
             candidates.append("zh-Hans")
         }

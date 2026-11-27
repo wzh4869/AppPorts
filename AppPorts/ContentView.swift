@@ -672,7 +672,7 @@ struct ContentView: View {
                         }
                         if let appCount {
                             if !subtitle.isEmpty { Text(verbatim: "·") }
-                            Text(String(format: "%lld 个应用".localized, Int64(appCount)))
+                            Text("%lld 个应用".localizedFormat(Int64(appCount)))
                                 .fixedSize()
                         }
                         if let sizeSummary, !sizeSummary.isEmpty {
@@ -1387,7 +1387,7 @@ struct ContentView: View {
             return "迁移到外部".localized
         }
         
-        return String(format: "迁移 %lld 个应用".localized, Int64(validApps.count))
+        return "迁移 %lld 个应用".localizedFormat(Int64(validApps.count))
     }
     
     var canMoveOut: Bool {
@@ -1430,7 +1430,7 @@ struct ContentView: View {
             return "链接回本地".localized
         }
         
-        return String(format: "链接 %lld 个应用".localized, Int64(validApps.count))
+        return "链接 %lld 个应用".localizedFormat(Int64(validApps.count))
     }
     
     func getRunningApplications() -> [AppRunningState.RunningApplication] {
@@ -1904,7 +1904,7 @@ struct ContentView: View {
         if customLocalScanPaths.isEmpty {
             return base
         }
-        return base + " + " + String(format: "%lld 个目录".localized, Int64(customLocalScanPaths.count))
+        return base + " + " + "%lld 个目录".localizedFormat(Int64(customLocalScanPaths.count))
     }
 
     private var localScanSourcesMenu: some View {
@@ -2118,7 +2118,7 @@ struct ContentView: View {
                                     acceptedRiskBundles: Set<URL> = [],
                                     replacementChoice: AppMigrationService.ReplacementChoice? = nil,
                                     presentDetails: Bool = true) {
-        let title = (restoring ? "正在还原应用".localized : "正在迁移应用".localized) + " · " + app.displayName
+        let title = (restoring ? "还原应用".localized : "迁移应用".localized) + " · " + app.displayName
         MigrationTaskCenter.shared.submit(title: title, category: .apps,
             resources: MigrationResources.application(paths: [app.path, app.displayURL, destination], appURL: app.displayURL),
             presentDetails: presentDetails, operation: { progress in
@@ -2396,7 +2396,7 @@ struct ContentView: View {
 
     /// 组装「受保护应用」迁移预警的内容快照。
     private func makeProtectedAppsRequest() -> WarningSheetRequest {
-        let names = pendingProtectedApps.map { $0.displayName }.joined(separator: "、")
+        let names = pendingProtectedApps.map { $0.displayName }.localizedListJoined
         return WarningSheetRequest(
             title: "受保护的应用".localized,
             tint: .orange,
@@ -2466,7 +2466,7 @@ struct ContentView: View {
     /// permanent.
     private func makeDegradedRestoreRequest(apps: [AppItem], source: URL,
                                             capabilities: StorageCapabilities? = nil) -> WarningSheetRequest {
-        let names = apps.map { $0.displayName }.joined(separator: "、")
+        let names = apps.map { $0.displayName }.localizedListJoined
         let driveName = MountMigrationGuidance.driveName(for: source.path)
         let resolvedCapabilities = capabilities ?? StorageCapabilityProbe.probe(destination: source)
         let items = (resolvedCapabilities?.missing ?? []).map { $0.localizedDescription }.joined(separator: "\n")
@@ -2531,7 +2531,7 @@ struct ContentView: View {
                 }
             }
             guard !routes.isEmpty else { return nil }
-            self.names = names.joined(separator: "、")
+            self.names = names.localizedListJoined
             self.routes = routes
             self.onChoice = onChoice
         }
@@ -2863,7 +2863,7 @@ struct ContentView: View {
         if validCount <= 1 {
             return "迁移回本地".localized
         }
-        return String(format: "迁移 %lld 个应用".localized, Int64(validCount))
+        return "迁移 %lld 个应用".localizedFormat(Int64(validCount))
     }
     
     // MARK: - 独立签名与官方修复
@@ -3176,12 +3176,12 @@ struct ContentView: View {
     // MARK: - 签名被替换的应用提醒
 
     private var signatureRepairReminderMessage: String {
-        let names = signatureRepairReminderApps.map(\.displayName).joined(separator: "、")
+        let names = signatureRepairReminderApps.map(\.displayName).localizedListJoined
         let count = Int64(signatureRepairReminderApps.count)
         if !MigrationPreferences.isMacOS27OrLater {
-            return String(format: "AppPorts 曾用 Ad-hoc 签名替换了 %lld 个应用的开发者签名：\n\n%@\n\n升级到 macOS 27 后它们可能无法打开。建议升级前检查一遍：点这些应用右侧的「修复」按钮。".localized, count, names)
+            return "AppPorts 曾用 Ad-hoc 签名替换了 %lld 个应用的开发者签名：\n\n%@\n\n升级到 macOS 27 后它们可能无法打开。建议升级前检查一遍：点这些应用右侧的「修复」按钮。".localizedFormat(count, names)
         }
-        return String(format: "AppPorts 曾用 Ad-hoc 签名替换了 %lld 个应用的开发者签名：\n\n%@\n\n在 macOS 27 上它们可能无法打开。能正常打开的可以先不处理；打不开的点右侧的「修复」按钮。".localized, count, names)
+        return "AppPorts 曾用 Ad-hoc 签名替换了 %lld 个应用的开发者签名：\n\n%@\n\n在 macOS 27 上它们可能无法打开。能正常打开的可以先不处理；打不开的点右侧的「修复」按钮。".localizedFormat(count, names)
     }
 
     private var manualResignConfirmMessage: String {

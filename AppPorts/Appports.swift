@@ -165,6 +165,7 @@ struct AppMoverApp: App {
             }
 
             .environment(\.locale, languageManager.locale)
+            .environment(\.layoutDirection, languageManager.layoutDirection)
 
             .id(languageManager.language)
             .frame(idealWidth: initialSize.width, idealHeight: initialSize.height)

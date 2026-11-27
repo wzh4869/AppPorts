@@ -193,12 +193,13 @@ struct SidebarStorageSection: View {
     }
 
     private func spaceUsage(title: String, snapshot: StorageSpaceSnapshot?, hasRead: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        let formattingLocale = LanguageManager.shared.formattingLocale
+        return VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(title).fontWeight(.medium)
                 Spacer(minLength: 4)
                 if let snapshot {
-                    Text(snapshot.usedFraction, format: .percent.precision(.fractionLength(0)))
+                    Text(snapshot.usedFraction.formatted(.percent.precision(.fractionLength(0)).locale(formattingLocale)))
                         .monospacedDigit().foregroundStyle(.secondary)
                 }
             }
@@ -213,7 +214,7 @@ struct SidebarStorageSection: View {
                 }
                 .frame(height: 5)
                 .accessibilityLabel(title + " · " + "使用率".localized)
-                .accessibilityValue(snapshot.usedFraction.formatted(.percent))
+                .accessibilityValue(snapshot.usedFraction.formatted(.percent.locale(formattingLocale)))
                 capacitySummary(for: snapshot)
             } else {
                 Text(hasRead ? "无法读取".localized : "正在检查…".localized).foregroundStyle(.secondary)

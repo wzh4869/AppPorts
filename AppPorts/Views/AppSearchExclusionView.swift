@@ -93,7 +93,7 @@ struct AppSearchExclusionPanel: View {
             }
             Spacer()
             if let report {
-                Text(String(format: "共 %d 个应用".localized, report.entries.count))
+                Text("共 %d 个应用".localizedFormat(report.entries.count))
                     .font(.callout).foregroundStyle(.secondary)
             }
         }
@@ -138,7 +138,7 @@ private struct ExclusionColumn: View {
                     .foregroundStyle(tint)
                     .accessibilityHidden(true)
                 Text(title).font(.headline)
-                Text(entries.count.formatted(.number.locale(locale)))
+                Text(entries.count.formatted(.number.locale(LanguageManager.shared.formattingLocale)))
                     .font(.caption.bold().monospacedDigit())
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .background(tint.opacity(0.12), in: Capsule())

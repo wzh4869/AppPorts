@@ -82,7 +82,7 @@ struct DataMigrationTaskRecoveryView: View {
 
     private func submitRetry(_ operationID: UUID?) {
         guard operationID != nil || showingAll else { return }
-        MigrationTaskCenter.shared.submit(title: "正在继续处理".localized, category: job.category,
+        MigrationTaskCenter.shared.submit(title: "继续处理".localized, category: job.category,
             resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set([operationID].compactMap { $0 })),
             operation: { _ in
                 let warnings = await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: operationID)

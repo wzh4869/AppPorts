@@ -8,7 +8,7 @@ struct MigrationOverallProgress: View {
             HStack {
                 Text("总体进度（估算）".localized)
                 Spacer()
-                Text(fraction, format: .percent.precision(.fractionLength(0)))
+                Text(fraction.formatted(.percent.precision(.fractionLength(0)).locale(LanguageManager.shared.formattingLocale)))
                     .monospacedDigit()
             }
             .font(.caption)
@@ -212,7 +212,7 @@ private struct MigrationTaskRow: View {
                             ProgressView(value: job.fraction)
                                 .progressViewStyle(.linear)
                                 .accessibilityLabel("总体进度".localized)
-                            Text(job.fraction, format: .percent.precision(.fractionLength(0)))
+                            Text(job.fraction.formatted(.percent.precision(.fractionLength(0)).locale(LanguageManager.shared.formattingLocale)))
                                 .font(.caption)
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
@@ -220,14 +220,15 @@ private struct MigrationTaskRow: View {
                         }
                     }
                     HStack {
+                        let formattingLocale = LanguageManager.shared.formattingLocale
                         if let startedAt = job.startedAt {
-                            Text("开始".localized + "：" + startedAt.formatted(.dateTime.hour().minute().second().locale(locale)))
-                                .help(startedAt.formatted(Date.FormatStyle(date: .numeric, time: .standard).locale(locale)))
+                            Text("开始：%@".localizedFormat(startedAt.formatted(.dateTime.hour().minute().second().locale(formattingLocale))))
+                                .help(startedAt.formatted(Date.FormatStyle(date: .numeric, time: .standard).locale(formattingLocale)))
                         } else {
                             Text("尚未开始".localized)
                         }
                         Spacer(minLength: 4)
-                        Text("处理时间".localized + "：" + taskDuration(job.elapsed))
+                        Text("处理时间：%@".localizedFormat(taskDuration(job.elapsed)))
                             .monospacedDigit().foregroundStyle(.secondary)
                     }
                     .font(.system(size: 12))
@@ -301,7 +302,7 @@ struct MigrationTaskDetail: View {
                             .textSelection(.enabled)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    Text("处理时间".localized + "：" + taskDuration(job.elapsed)).font(AppDialogTypography.body).foregroundStyle(.secondary)
+                    Text("处理时间：%@".localizedFormat(taskDuration(job.elapsed))).font(AppDialogTypography.body).foregroundStyle(.secondary)
                     HStack {
                         Button("任务列表".localized) { center.detailID = nil; center.showsList = true }
                         if job.status == .attention, job.observedKey != nil, let action = job.recoveryAction {

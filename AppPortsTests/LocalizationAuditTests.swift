@@ -192,17 +192,21 @@ final class LocalizationAuditTests: XCTestCase {
                   let entry = strings[key] as? [String: Any],
                   entry["shouldTranslate"] as? Bool != false,
                   let localizations = entry["localizations"] as? [String: Any],
-                  let sourceValue = localizedStringValue(localizations["zh-Hans"]) ?? localizedStringValue(localizations["en"]) else {
+                  let sourceNode = localizations["zh-Hans"] ?? localizations["en"],
+                  let expectedSignature = placeholderArgumentSignature(in: sourceNode) else {
                 continue
             }
 
-            let expectedPlaceholders = placeholderSignature(in: sourceValue)
             for locale in supportedLocales {
-                guard let value = localizedStringValue(localizations[locale]) else { continue }
-                let actualPlaceholders = placeholderSignature(in: value)
-                if actualPlaceholders != expectedPlaceholders {
+                guard let node = localizations[locale] else { continue }
+                let signatures = allPlaceholderArgumentSignatures(in: node)
+                if signatures.isEmpty {
+                    findings.append("占位符结构异常: [\(locale)] \(key)")
+                    continue
+                }
+                for actualSignature in signatures where actualSignature != expectedSignature {
                     findings.append(
-                        "占位符不一致: [\(locale)] \(key) expected \(expectedPlaceholders), got \(actualPlaceholders)"
+                        "占位符位置或类型不一致: [\(locale)] \(key) expected \(expectedSignature), got \(actualSignature)"
                     )
                 }
             }
@@ -277,10 +281,10 @@ final class LocalizationAuditTests: XCTestCase {
         let strings = try XCTUnwrap(rawObject["strings"] as? [String: Any])
 
         let localizedPattern = try NSRegularExpression(
-            pattern: #"(?<!")"((?:[^"\\]|\\.)*)"\.localized"#
+            pattern: #"(?<!")"((?:[^"\\]|\\.)*)"\.localized(?:Format)?\b"#
         )
         let multilineLocalizedPattern = try NSRegularExpression(
-            pattern: #"\"\"\"\n(.*?)\n([ \t]*)\"\"\"\.localized"#,
+            pattern: #"\"\"\"\n(.*?)\n([ \t]*)\"\"\"\.localized(?:Format)?\b"#,
             options: [.dotMatchesLineSeparators]
         )
         let nsLocalizedPattern = try NSRegularExpression(
@@ -424,11 +428,15 @@ final class LocalizationAuditTests: XCTestCase {
     /// Native cognates: the target language spells this word exactly like English,
     /// so an identical value is correct rather than a missing translation.
     private let allowedEnglishLookalikes: Set<String> = [
-        "%@ (%lld 个应用)|de",
+        "%@ (%lld 个应用)|de", "%@ (%lld 个应用)|es", "%@ (%lld 个应用)|fr",
+        "%@ (%lld 个应用)|nl", "%@ (%lld 个应用)|pt",
+        "%lld 个应用|de", "%lld 个应用|it",
         "%@/秒|es", "%@/秒|fr", "%@/秒|pt", "%@/秒|it", "%@/秒|de",
         "%@/秒|nl", "%@/秒|pl", "%@/秒|eo",
         "Auto|fr",
         "Version %@|fr", "Version %@|de",
+        "版本 %@（构建 %@）|de",
+        "文件系统|it",
         "• 资源叉|nl",
         "以后再说|nl", "稍后|nl", "更新|nl", "项目|nl",
         "可选|de", "名称|de", "应用|de", "应用|nl", "应用: %@|de", "应用: %@|nl",
@@ -483,27 +491,72 @@ final class LocalizationAuditTests: XCTestCase {
             guard !key.isEmpty,
                   let entry = strings[key] as? [String: Any],
                   entry["shouldTranslate"] as? Bool != false,
-                  let localizations = entry["localizations"] as? [String: Any],
-                  let english = localizedStringValue(localizations["en"]),
-                  english.unicodeScalars.contains(where: CharacterSet.letters.contains) else {
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+            let englishValues = translatableValuesForPlaceholderCheck(localizations["en"])
+            let normalizedEnglish = Set(englishValues.map(normalizedComparisonText))
+            guard englishValues.contains(where: { strippingPlaceholders($0).unicodeScalars.contains(where: CharacterSet.letters.contains) }) else {
                 continue
             }
 
             for locale in auditedLocales.sorted() {
-                guard let value = localizedStringValue(localizations[locale]),
-                      value == english else {
-                    continue
-                }
+                let values = translatableValuesForPlaceholderCheck(localizations[locale])
+                guard !values.isEmpty else { continue }
                 if identicalInEveryLanguage.contains(key) { continue }
                 if allowedEnglishLookalikes.contains("\(key)|\(locale)") { continue }
-                if protectedSelfName(key: key, locale: locale, value: value) { continue }
-                findings.append("英文占位: [\(locale)] \(key)")
+                for value in values {
+                    if protectedSelfName(key: key, locale: locale, value: value) { continue }
+                    if englishValues.contains(value) || normalizedEnglish.contains(normalizedComparisonText(value)) {
+                        findings.append("英文占位: [\(locale)] \(key) -> \(value)")
+                        break
+                    }
+                }
             }
         }
 
         XCTAssertTrue(
             findings.isEmpty,
-            "发现与英文完全相同的译文:\n" + findings.prefix(40).joined(separator: "\n")
+            "发现与英文相同或仅大小写不同的译文:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testNoSharedUntranslatedEnglishPhraseAcrossManyLocales() throws {
+        let strings = try stringCatalog()
+        let auditedLocales = ["es", "fr", "pt", "it", "de", "ru", "ar", "hi", "vi", "th", "tr", "nl", "pl", "id", "eo"]
+        let allowedSharedWords: Set<String> = ["Autor", "App Store"]
+        var findings: [String] = []
+
+        for key in strings.keys.sorted() {
+            guard !key.isEmpty,
+                  !identicalInEveryLanguage.contains(key),
+                  protectedSelfNames[key] == nil,
+                  let entry = strings[key] as? [String: Any],
+                  entry["shouldTranslate"] as? Bool != false,
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+            var asciiBuckets: [String: [String]] = [:]
+            for locale in auditedLocales {
+                if allowedEnglishLookalikes.contains("\(key)|\(locale)") { continue }
+                for value in translatableValuesForPlaceholderCheck(localizations[locale]) {
+                    let cleaned = strippingPlaceholders(value)
+                    guard cleaned.unicodeScalars.allSatisfy({ $0.value < 128 }),
+                          cleaned.unicodeScalars.contains(where: CharacterSet.letters.contains),
+                          !allowedSharedWords.contains(value) else {
+                        continue
+                    }
+                    asciiBuckets[value, default: []].append(locale)
+                }
+            }
+            for (value, locales) in asciiBuckets where Set(locales).count >= 4 {
+                findings.append("多语共享疑似未译英文 (\(Set(locales).sorted().joined(separator: ","))): \(key) -> \(value)")
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "发现多个非英语语种共享相同 ASCII 文案:\n" + findings.prefix(40).joined(separator: "\n")
         )
     }
 
@@ -524,12 +577,11 @@ final class LocalizationAuditTests: XCTestCase {
             }
 
             for locale in latinLocales {
-                guard let value = localizedStringValue(localizations[locale]),
-                      containsHanCharacters(value) else {
-                    continue
+                for value in allLocalizedStringValues(localizations[locale]) where containsHanCharacters(value) {
+                    if protectedSelfName(key: key, locale: locale, value: value) { continue }
+                    findings.append("非中文译文含汉字: [\(locale)] \(key)")
+                    break
                 }
-                if protectedSelfName(key: key, locale: locale, value: value) { continue }
-                findings.append("非中文译文含汉字: [\(locale)] \(key)")
             }
         }
 
@@ -620,6 +672,283 @@ final class LocalizationAuditTests: XCTestCase {
             LocalizedByteCountFormatter.string(fromByteCount: 623),
             "623字节"
         )
+
+        // Braille uses `br`, which ISO 639-1 assigns to Breton; formatting must fall back to English.
+        LanguageManager.shared.language = "br"
+        XCTAssertEqual(
+            LocalizedByteCountFormatter.string(fromByteCount: 623),
+            "623 bytes"
+        )
+    }
+
+    func testInfoPlistCatalogContainsTranslationsForAllSupportedLanguages() throws {
+        let supportedLocales = Set(AppLanguageCatalog.selectableLanguages.map(\.code))
+        let strings = try stringCatalog(named: "InfoPlist.xcstrings")
+        let key = "NSAppleEventsUsageDescription"
+        let entry = try XCTUnwrap(strings[key] as? [String: Any], "InfoPlist.xcstrings 缺少 \(key)")
+        let localizations = try XCTUnwrap(entry["localizations"] as? [String: Any])
+
+        XCTAssertEqual(Set(localizations.keys), supportedLocales)
+        for locale in supportedLocales.sorted() {
+            XCTAssertTrue(
+                localizationHasTranslatedValue(localizations[locale] as Any),
+                "InfoPlist.xcstrings 缺少翻译: [\(locale)] \(key)"
+            )
+        }
+    }
+
+    func testBrailleTranslationsContainBrailleCharactersAndNoBretonText() throws {
+        let strings = try stringCatalog()
+        var findings: [String] = []
+
+        for key in strings.keys.sorted() {
+            guard !key.isEmpty,
+                  !identicalInEveryLanguage.contains(key),
+                  protectedSelfNames[key] == nil,
+                  key != "English",
+                  let entry = strings[key] as? [String: Any],
+                  entry["shouldTranslate"] as? Bool != false,
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+            let enValues = allLocalizedStringValues(localizations["en"])
+            guard enValues.contains(where: { strippingPlaceholders($0).unicodeScalars.contains(where: CharacterSet.letters.contains) }) else {
+                continue
+            }
+            for value in allLocalizedStringValues(localizations["br"]) {
+                let cleaned = strippingPlaceholders(value)
+                let hasBraille = cleaned.unicodeScalars.contains { (0x2800...0x28FF).contains($0.value) }
+                let hasUnexpectedAlpha = cleaned.unicodeScalars.contains { CharacterSet.letters.contains($0) && !(0x2800...0x28FF).contains($0.value) }
+                if !hasBraille || hasUnexpectedAlpha {
+                    findings.append("盲文异常: \(key) -> \(value)")
+                    break
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "盲文 (br) 存在非盲文或布列塔尼语混入:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testNonLatinLocalesContainNativeScript() throws {
+        let strings = try stringCatalog()
+        let scriptChecks: [(String, (UInt32) -> Bool)] = [
+            ("ar", { (0x0600...0x06FF).contains($0) || (0x0750...0x077F).contains($0) }),
+            ("hi", { (0x0900...0x097F).contains($0) }),
+            ("th", { (0x0E00...0x0E7F).contains($0) }),
+            ("ru", { (0x0400...0x04FF).contains($0) }),
+            ("ko", { (0xAC00...0xD7AF).contains($0) || (0x1100...0x11FF).contains($0) }),
+            ("ja", { (0x3040...0x30FF).contains($0) || (0x4E00...0x9FFF).contains($0) }),
+        ]
+        var findings: [String] = []
+
+        for key in strings.keys.sorted() {
+            guard !key.isEmpty,
+                  !identicalInEveryLanguage.contains(key),
+                  protectedSelfNames[key] == nil,
+                  key != "English",
+                  let entry = strings[key] as? [String: Any],
+                  entry["shouldTranslate"] as? Bool != false,
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+            let enValues = allLocalizedStringValues(localizations["en"])
+            guard enValues.contains(where: { strippingPlaceholders($0).unicodeScalars.contains(where: CharacterSet.letters.contains) }) else {
+                continue
+            }
+
+            for (locale, isNativeScalar) in scriptChecks {
+                if allowedEnglishLookalikes.contains("\(key)|\(locale)") { continue }
+                let values = translatableValuesForPlaceholderCheck(localizations[locale])
+                guard !values.isEmpty else { continue }
+                for value in values {
+                    let hasNative = value.unicodeScalars.contains { isNativeScalar($0.value) }
+                    if !hasNative {
+                        findings.append("缺少目标文字脚本: [\(locale)] \(key) -> \(value)")
+                        break
+                    }
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "非拉丁语系存在罗马音或未译英文:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testTraditionalChineseDoesNotLeakSimplifiedCharacters() throws {
+        let strings = try stringCatalog()
+        // Characters that are valid Traditional Chinese orthography or legitimate contextual variants
+        // even when CFStringTransform("Hans-Hant") prefers an alternate glyph.
+        let allowedDoublets = Set(
+            "台裡著啟為眾群線衛峰污才並游匯占制准乾復覆餘藉穀麵鬆鐘範劃歷曆繫徵採託隻捲佈誌讚昇週註釐嚐牠姊兇禦剋僱迴夥曬祕鏽樑摺桿檯夠卻捨舖恆況淨涼減決憑于后發了解"
+        )
+        var findings: [String] = []
+
+        for key in strings.keys.sorted() {
+            guard !key.isEmpty,
+                  protectedSelfNames[key] == nil,
+                  let entry = strings[key] as? [String: Any],
+                  entry["shouldTranslate"] as? Bool != false,
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+            for value in allLocalizedStringValues(localizations["zh-Hant"]) {
+                let mutable = NSMutableString(string: value)
+                CFStringTransform(mutable, nil, "Hans-Hant" as CFString, false)
+                let transformed = mutable as String
+                guard transformed != value else { continue }
+                let leaked = zip(value, transformed).compactMap { original, expected -> String? in
+                    guard original != expected,
+                          !allowedDoublets.contains(original),
+                          !allowedDoublets.contains(expected) else { return nil }
+                    return "\(original)->\(expected)"
+                }
+                if !leaked.isEmpty {
+                    findings.append("繁體中文含簡體字 [\(leaked.joined(separator: ", "))]: \(key) -> \(value)")
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "zh-Hant 存在簡體字洩漏:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testDistinctLongKeysDoNotShareIdenticalTranslations() throws {
+        let strings = try stringCatalog()
+        let allowedSynonymousPairs: Set<Set<String>> = [
+            ["外置盘未连接", "外部存储未连接"],
+            ["显示不可迁移目录", "显示不支持迁移目录"],
+            ["部分数据操作尚未完成，副本已保留。", "部分数据操作尚未完成，已保留副本。"],
+            ["挂载迁移「%@」", "正在挂载迁移「%@」"],
+        ]
+        let auditedLocales = Set(AppLanguageCatalog.selectableLanguages.map(\.code))
+            .subtracting(["en", "zh-Hans", "br", "zh-martian"])
+        var findings: [String] = []
+
+        for locale in auditedLocales.sorted() {
+            var valueToKeys: [String: [String]] = [:]
+            for key in strings.keys.sorted() {
+                guard let entry = strings[key] as? [String: Any],
+                      entry["shouldTranslate"] as? Bool != false,
+                      let localizations = entry["localizations"] as? [String: Any],
+                      let value = localizedStringValue(localizations[locale]),
+                      value.count >= 25 else {
+                    continue
+                }
+                valueToKeys[value, default: []].append(key)
+            }
+            for (value, keys) in valueToKeys where keys.count > 1 {
+                if allowedSynonymousPairs.contains(Set(keys)) { continue }
+                let englishSet = Set(keys.compactMap { key -> String? in
+                    guard let entry = strings[key] as? [String: Any],
+                          let localizations = entry["localizations"] as? [String: Any] else { return nil }
+                    return localizedStringValue(localizations["en"])
+                })
+                if englishSet.count > 1 {
+                    findings.append("[\(locale)] 不同文案共用同一译文 (\(keys.joined(separator: " | "))) -> \(value)")
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "发现疑似复制错位的重复译文:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testBrandNameAppPortsIsNotMisspelledAsAppPort() throws {
+        let strings = try stringCatalog()
+        let auditedLocales = Set(AppLanguageCatalog.selectableLanguages.map(\.code))
+            .subtracting(["br", "zh-martian"])
+        let regex = try NSRegularExpression(pattern: #"\bAppPort(?!s)\b"#)
+        var findings: [String] = []
+
+        for key in strings.keys.sorted() {
+            guard let entry = strings[key] as? [String: Any],
+                  let localizations = entry["localizations"] as? [String: Any],
+                  let zh = localizedStringValue(localizations["zh-Hans"]),
+                  zh.contains("AppPorts") else {
+                continue
+            }
+            for locale in auditedLocales.sorted() {
+                for value in allLocalizedStringValues(localizations[locale]) {
+                    let range = NSRange(value.startIndex..<value.endIndex, in: value)
+                    if regex.firstMatch(in: value, range: range) != nil {
+                        findings.append("品牌名漏写 s: [\(locale)] \(key) -> \(value)")
+                        break
+                    }
+                }
+            }
+        }
+
+        XCTAssertTrue(
+            findings.isEmpty,
+            "译文中存在 AppPort 拼写错误:\n" + findings.prefix(40).joined(separator: "\n")
+        )
+    }
+
+    func testLayoutDirectionAndFormattingLocaleFollowSelectedLanguage() {
+        XCTAssertEqual(LanguageManager.layoutDirection(for: "ar"), .rightToLeft)
+        XCTAssertEqual(LanguageManager.layoutDirection(for: "en"), .leftToRight)
+        XCTAssertEqual(LanguageManager.layoutDirection(for: "zh-Hans"), .leftToRight)
+        XCTAssertEqual(LanguageManager.layoutDirection(for: "br"), .leftToRight)
+        XCTAssertEqual(LanguageManager.formattingLocale(for: "br").identifier, "en")
+        XCTAssertEqual(LanguageManager.formattingLocale(for: "zh-martian").identifier, "zh-Hans")
+
+        LanguageManager.shared.language = "br"
+        XCTAssertFalse(AboutWindowController.windowTitle().contains("⠲⠲⠲"))
+        LanguageManager.shared.language = "en"
+        XCTAssertFalse(AboutWindowController.windowTitle().contains("..."))
+    }
+
+    func testPluralFormatResolvesSelectedAppLanguageRules() {
+        LanguageManager.shared.language = "en"
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(1)), "1 app")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(2)), "2 apps")
+        XCTAssertEqual("%lld 个目录".localizedFormat(Int64(1)), "1 Directory")
+        XCTAssertEqual("%lld 个目录".localizedFormat(Int64(3)), "3 Directories")
+        XCTAssertEqual("%@ (%lld 个应用)".localizedFormat("Tools", Int64(1)), "Tools (1 App)")
+        XCTAssertEqual("%@ (%lld 个应用)".localizedFormat("Tools", Int64(4)), "Tools (4 Apps)")
+        XCTAssertEqual("共 %d 个应用".localizedFormat(1), "Total: 1 app")
+        XCTAssertEqual("共 %d 个应用".localizedFormat(5), "Total: 5 apps")
+
+        LanguageManager.shared.language = "ru"
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(1)), "1 приложение")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(2)), "2 приложения")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(5)), "5 приложений")
+
+        LanguageManager.shared.language = "pl"
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(1)), "1 aplikacja")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(2)), "2 aplikacje")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(5)), "5 aplikacji")
+
+        LanguageManager.shared.language = "ar"
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(1)), "تطبيق واحد (1)")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(2)), "تطبيقان (2)")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(3)), "3 تطبيقات")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(11)), "11 تطبيقًا")
+
+        LanguageManager.shared.language = "br"
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(1)), "1 ⠁⠏⠏")
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(2)), "2 ⠁⠏⠏⠎")
+
+        LanguageManager.shared.language = "zh-Hans"
+        XCTAssertEqual("%lld 个应用".localizedFormat(Int64(1)), "1 个应用")
+    }
+
+    func testLocalizedListJoinedMatchesSelectedLanguage() {
+        LanguageManager.shared.language = "zh-Hans"
+        XCTAssertEqual(["Safari", "Xcode"].localizedListJoined, "Safari、Xcode")
+        LanguageManager.shared.language = "en"
+        XCTAssertEqual(["Safari", "Xcode"].localizedListJoined, "Safari, Xcode")
+        LanguageManager.shared.language = "ar"
+        XCTAssertEqual(["Safari", "Xcode"].localizedListJoined, "Safari، Xcode")
     }
 
     private func repositoryRootURL() throws -> URL {
@@ -649,10 +978,10 @@ final class LocalizationAuditTests: XCTestCase {
         return result
     }
 
-    private func stringCatalog() throws -> [String: Any] {
+    private func stringCatalog(named fileName: String = "Localizable.xcstrings") throws -> [String: Any] {
         let catalogURL = try repositoryRootURL()
             .appendingPathComponent("AppPorts")
-            .appendingPathComponent("Localizable.xcstrings")
+            .appendingPathComponent(fileName)
         let data = try Data(contentsOf: catalogURL)
         let rawObject = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         return try XCTUnwrap(rawObject["strings"] as? [String: Any])
@@ -660,10 +989,10 @@ final class LocalizationAuditTests: XCTestCase {
 
     private func localizedStringUsages(in sourceFiles: [URL]) throws -> [LocalizedStringUsage] {
         let localizedPattern = try NSRegularExpression(
-            pattern: #"(?<!")"((?:[^"\\]|\\.)*)"\.localized"#
+            pattern: #"(?<!")"((?:[^"\\]|\\.)*)"\.localized(?:Format)?\b"#
         )
         let multilineLocalizedPattern = try NSRegularExpression(
-            pattern: #"\"\"\"\n(.*?)\n([ \t]*)\"\"\"\.localized"#,
+            pattern: #"\"\"\"\n(.*?)\n([ \t]*)\"\"\"\.localized(?:Format)?\b"#,
             options: [.dotMatchesLineSeparators]
         )
         let nsLocalizedPattern = try NSRegularExpression(
@@ -736,52 +1065,94 @@ final class LocalizationAuditTests: XCTestCase {
 
     private func localizationHasTranslatedValue(_ node: Any) -> Bool {
         if let dictionary = node as? [String: Any] {
-            if let stringUnit = dictionary["stringUnit"] as? [String: Any],
-               let value = stringUnit["value"] as? String,
-               !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-               stringUnit["state"] as? String == "translated" {
-                return true
+            var checkedBranch = false
+            if let stringUnit = dictionary["stringUnit"] as? [String: Any] {
+                guard let value = stringUnit["value"] as? String,
+                      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                      stringUnit["state"] as? String == "translated" else {
+                    return false
+                }
+                checkedBranch = true
             }
 
-            if let variations = dictionary["variations"] as? [String: Any],
-               variations.values.contains(where: localizationHasTranslatedValue) {
-                return true
+            if let variations = dictionary["variations"] as? [String: Any] {
+                guard !variations.isEmpty else { return false }
+                for variationGroup in variations.values {
+                    guard let branches = variationGroup as? [String: Any], !branches.isEmpty,
+                          branches.values.allSatisfy(localizationHasTranslatedValue) else {
+                        return false
+                    }
+                }
+                checkedBranch = true
             }
 
-            if let substitutions = dictionary["substitutions"] as? [String: Any],
-               substitutions.values.contains(where: localizationHasTranslatedValue) {
-                return true
+            if let substitutions = dictionary["substitutions"] as? [String: Any] {
+                guard !substitutions.isEmpty,
+                      substitutions.values.allSatisfy(localizationHasTranslatedValue) else {
+                    return false
+                }
+                checkedBranch = true
             }
+
+            return checkedBranch
         }
 
         if let array = node as? [Any] {
-            return array.contains(where: localizationHasTranslatedValue)
+            return !array.isEmpty && array.allSatisfy(localizationHasTranslatedValue)
         }
 
         return false
     }
 
     private func localizedStringValue(_ node: Any?) -> String? {
-        if let dictionary = node as? [String: Any] {
-            if let stringUnit = dictionary["stringUnit"] as? [String: Any],
-               let value = stringUnit["value"] as? String {
-                return value
-            }
+        allLocalizedStringValues(node).first
+    }
 
-            if let variations = dictionary["variations"] as? [String: Any] {
-                return variations.values.compactMap(localizedStringValue).first
-            }
-
-            if let substitutions = dictionary["substitutions"] as? [String: Any] {
-                return substitutions.values.compactMap(localizedStringValue).first
+    private func allLocalizedStringValues(_ node: Any?) -> [String] {
+        guard let dictionary = node as? [String: Any] else { return [] }
+        var values: [String] = []
+        if let stringUnit = dictionary["stringUnit"] as? [String: Any],
+           let value = stringUnit["value"] as? String {
+            values.append(value)
+        }
+        if let variations = dictionary["variations"] as? [String: Any] {
+            for key in variations.keys.sorted() {
+                if let group = variations[key] as? [String: Any] {
+                    for branchKey in group.keys.sorted() {
+                        values.append(contentsOf: allLocalizedStringValues(group[branchKey]))
+                    }
+                }
             }
         }
-
-        if let array = node as? [Any] {
-            return array.compactMap(localizedStringValue).first
+        if let substitutions = dictionary["substitutions"] as? [String: Any] {
+            for key in substitutions.keys.sorted() {
+                values.append(contentsOf: allLocalizedStringValues(substitutions[key]))
+            }
         }
+        return values
+    }
 
-        return nil
+    /// Returns the human-readable text units for placeholder/script checks.
+    /// For substitution templates whose outer string carries prose (e.g. multi-line notices),
+    /// inspect the outer template; for placeholder-only shells like `%1$@ (%2$#@apps@)`,
+    /// inspect the substitution plural branches instead.
+    private func translatableValuesForPlaceholderCheck(_ node: Any?) -> [String] {
+        guard let dictionary = node as? [String: Any] else { return [] }
+        if let substitutions = dictionary["substitutions"] as? [String: Any],
+           let stringUnit = dictionary["stringUnit"] as? [String: Any],
+           let outer = stringUnit["value"] as? String {
+            if strippingPlaceholders(outer).unicodeScalars.contains(where: CharacterSet.letters.contains) {
+                return [outer]
+            }
+            var branchValues: [String] = []
+            for key in substitutions.keys.sorted() {
+                branchValues.append(contentsOf: allLocalizedStringValues(substitutions[key]))
+            }
+            return branchValues
+        }
+        return allLocalizedStringValues(node).filter {
+            strippingPlaceholders($0).unicodeScalars.contains(where: CharacterSet.letters.contains)
+        }
     }
 
     private func decodeSwiftStringLiteralContent(_ rawKey: String) -> String {
@@ -804,30 +1175,123 @@ final class LocalizationAuditTests: XCTestCase {
         return decodeSwiftStringLiteralContent(joined)
     }
 
-    private func placeholderSignature(in value: String) -> [String] {
-        let pattern = #"%(?:\d+\$)?[-+#0 ]*(?:\*|\d+)?(?:\.(?:\*|\d+))?(?:hh|h|ll|l|L|z|t|j)?[@diuoxXfFeEgGaAcCsSp]"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
-        let escapedPercentPattern = #"%%"#
-        let valueWithoutEscapedPercents = value.replacingOccurrences(
-            of: escapedPercentPattern,
-            with: "",
-            options: .regularExpression
-        )
-        let range = NSRange(valueWithoutEscapedPercents.startIndex..<valueWithoutEscapedPercents.endIndex, in: valueWithoutEscapedPercents)
+    private func placeholderArgumentSignature(in node: Any) -> [Int: [String]]? {
+        allPlaceholderArgumentSignatures(in: node).first
+    }
 
-        return regex.matches(in: valueWithoutEscapedPercents, range: range)
-            .compactMap { match -> String? in
-                guard let matchRange = Range(match.range, in: valueWithoutEscapedPercents) else {
+    private func allPlaceholderArgumentSignatures(in node: Any) -> [[Int: [String]]] {
+        guard let dictionary = node as? [String: Any] else { return [] }
+
+        if let substitutions = dictionary["substitutions"] as? [String: Any],
+           let stringUnit = dictionary["stringUnit"] as? [String: Any],
+           let template = stringUnit["value"] as? String {
+            guard var base = argumentSignature(in: template, substitutions: substitutions) else {
+                return []
+            }
+            // Verify every substitution plural branch uses %arg or matching specifier cleanly.
+            for (name, rawSub) in substitutions {
+                guard let sub = rawSub as? [String: Any],
+                      let argNum = sub["argNum"] as? Int,
+                      let spec = sub["formatSpecifier"] as? String else {
+                    return []
+                }
+                let branchValues = allLocalizedStringValues(sub)
+                guard !branchValues.isEmpty else { return [] }
+                for branch in branchValues {
+                    if !branch.contains("%arg") && !branch.contains("%\(argNum)$\(spec)") && !branch.contains("%\(spec)") {
+                        return []
+                    }
+                }
+                if base[argNum] == nil {
+                    base[argNum] = ["%" + spec]
+                }
+                _ = name
+            }
+            return [base]
+        }
+
+        if let variations = dictionary["variations"] as? [String: Any] {
+            var results: [[Int: [String]]] = []
+            for groupKey in variations.keys.sorted() {
+                guard let group = variations[groupKey] as? [String: Any] else { continue }
+                for branchKey in group.keys.sorted() {
+                    results.append(contentsOf: allPlaceholderArgumentSignatures(in: group[branchKey] as Any))
+                }
+            }
+            return results
+        }
+
+        if let stringUnit = dictionary["stringUnit"] as? [String: Any],
+           let value = stringUnit["value"] as? String {
+            guard let sig = argumentSignature(in: value, substitutions: nil) else { return [] }
+            return [sig]
+        }
+
+        return []
+    }
+
+    private func argumentSignature(in value: String, substitutions: [String: Any]?) -> [Int: [String]]? {
+        let pattern = #"%(?:(\d+)\$)?(?:#@([A-Za-z0-9_]+)@|[-+#0 ]*(?:\*|\d+)?(?:\.(?:\*|\d+))?(?:hh|h|ll|l|L|z|t|j)?([@diuoxXfFeEgGaAcCsSp]))"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let cleaned = value.replacingOccurrences(of: "%%", with: "")
+        let range = NSRange(cleaned.startIndex..<cleaned.endIndex, in: cleaned)
+        var result: [Int: [String]] = [:]
+        var sequentialIndex = 1
+        var sawPositional = false
+        var sawSequential = false
+
+        for match in regex.matches(in: cleaned, range: range) {
+            let argIndex: Int
+            if match.range(at: 1).location != NSNotFound,
+               let posRange = Range(match.range(at: 1), in: cleaned),
+               let parsed = Int(cleaned[posRange]) {
+                argIndex = parsed
+                sawPositional = true
+            } else {
+                argIndex = sequentialIndex
+                sequentialIndex += 1
+                sawSequential = true
+            }
+
+            if match.range(at: 2).location != NSNotFound,
+               let subNameRange = Range(match.range(at: 2), in: cleaned) {
+                let subName = String(cleaned[subNameRange])
+                guard let sub = substitutions?[subName] as? [String: Any],
+                      let expectedArgNum = sub["argNum"] as? Int,
+                      expectedArgNum == argIndex,
+                      let spec = sub["formatSpecifier"] as? String else {
                     return nil
                 }
-                let placeholder = String(valueWithoutEscapedPercents[matchRange])
-                return placeholder.replacingOccurrences(
+                result[argIndex, default: []].append("%" + spec)
+            } else if match.range(at: 3).location != NSNotFound,
+                      let fullRange = Range(match.range, in: cleaned) {
+                let normalized = String(cleaned[fullRange]).replacingOccurrences(
                     of: #"^%\d+\$"#,
                     with: "%",
                     options: .regularExpression
                 )
+                result[argIndex, default: []].append(normalized)
             }
-            .sorted()
+        }
+
+        if sawPositional && sawSequential {
+            return nil
+        }
+        return result
+    }
+
+    private func strippingPlaceholders(_ value: String) -> String {
+        let pattern = #"%(?:\d+\$)?(?:#@[A-Za-z0-9_]+@|arg|[-+#0 ]*(?:\*|\d+)?(?:\.(?:\*|\d+))?(?:hh|h|ll|l|L|z|t|j)?[@diuoxXfFeEgGaAcCsSp])"#
+        return value
+            .replacingOccurrences(of: "%%", with: "")
+            .replacingOccurrences(of: pattern, with: "", options: .regularExpression)
+    }
+
+    private func normalizedComparisonText(_ value: String) -> String {
+        let folded = value.lowercased()
+            .replacingOccurrences(of: #"[\s.,!?:;…\"'“”‘’()（）\[\]【】]+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return folded
     }
 
     private func firstMatch(in line: String, using regex: NSRegularExpression, captureGroup: Int) -> String? {

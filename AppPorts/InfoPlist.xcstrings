@@ -1,0 +1,143 @@
+{
+  "sourceLanguage" : "zh-Hans",
+  "strings" : {
+    "NSAppleEventsUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج AppPorts إلى التحكم في Finder لنقل تطبيقات App Store وإخراج الأقراص الخارجية."
+          }
+        },
+        "br" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⠠⠁⠏⠏⠠⠏⠕⠗⠞⠎ ⠝⠑⠑⠙⠎ ⠞⠕ ⠉⠕⠝⠞⠗⠕⠇ ⠠⠋⠊⠝⠙⠑⠗ ⠞⠕ ⠍⠊⠛⠗⠁⠞⠑ ⠠⠁⠏⠏ ⠠⠎⠞⠕⠗⠑ ⠁⠏⠏⠎ ⠁⠝⠙ ⠑⠚⠑⠉⠞ ⠑⠭⠞⠑⠗⠝⠁⠇ ⠙⠗⠊⠧⠑⠎⠲"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts muss Finder steuern, um App Store-Apps zu migrieren und externe Laufwerke auszuwerfen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts needs to control Finder to migrate App Store apps and eject external drives."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts bezonas regi Finder por migri aplikaĵojn de App Store kaj elĵeti eksterajn diskojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts necesita controlar Finder para migrar apps de la App Store y expulsar discos externos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts doit contrôler le Finder pour migrer les apps de l’App Store et éjecter les disques externes."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store ऐप्स को माइग्रेट करने और बाहरी ड्राइव को इजेक्ट करने के लिए AppPorts को Finder को नियंत्रित करने की आवश्यकता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts perlu mengontrol Finder untuk memigrasikan aplikasi App Store dan mengeluarkan drive eksternal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts deve controllare il Finder per migrare le app dell’App Store ed espellere le unità esterne."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store アプリの移行と外付けドライブの取り出しのため、AppPorts に Finder の制御を許可してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts가 App Store 앱을 이전하고 외장 드라이브를 추출하려면 Finder를 제어해야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts moet Finder bedienen om App Store-apps te migreren en externe schijven uit te werpen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts wymaga sterowania Finderem, aby przenosić aplikacje z App Store i wysuwać dyski zewnętrzne."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O AppPorts precisa controlar o Finder para migrar apps da App Store e ejetar discos externos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts требуется управление Finder для переноса приложений из App Store и извлечения внешних дисков."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts ต้องควบคุม Finder เพื่อย้ายแอปจาก App Store และดีดไดรฟ์ภายนอกออก"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts, App Store uygulamalarını taşımak ve harici diskleri çıkarmak için Finder’ı kontrol etmelidir."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts cần điều khiển Finder để di chuyển ứng dụng App Store và đẩy ổ đĩa ngoài ra."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 需要控制 Finder 来迁移 App Store 应用和弹出外置硬盘。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 需要控制 Finder 以遷移 App Store 應用程式及退出外接硬碟。"
+          }
+        },
+        "zh-martian" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AppPorts 濡楆倥淛 Finder 唻遷迻 App Store 應詠囷彈絀外置硬盤。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

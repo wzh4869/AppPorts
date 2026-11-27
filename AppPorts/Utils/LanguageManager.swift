@@ -75,12 +75,111 @@ class LanguageManager: ObservableObject {
             return Locale(identifier: language)
         }
     }
+
+    /// 供字节数、数字、日期与复数规则使用的 Locale。
+    ///
+    /// 盲文沿用 `br` 语言代码，但 ISO 639-1 中 `br` 代表布列塔尼语；
+    /// 若直接交给 Foundation 格式化会输出 `okted` / `Go`，因此回退为英语。
+    var formattingLocale: Locale {
+        Self.formattingLocale(for: language)
+    }
+
+    /// 当前界面应使用的排版方向（供 `.environment(\.layoutDirection, ...)` 注入）。
+    var layoutDirection: LayoutDirection {
+        Self.layoutDirection(for: language)
+    }
+
+    static func formattingLocale(for language: String, bundle: Bundle = .main) -> Locale {
+        let effective = effectiveLanguageCode(for: language, bundle: bundle)
+        if effective == "br" {
+            return Locale(identifier: "en")
+        }
+        if effective == "zh-martian" {
+            return Locale(identifier: "zh-Hans")
+        }
+        if language == "system" {
+            return Locale.current
+        }
+        return Locale(identifier: language)
+    }
+
+    /// 与实际加载的 `.lproj` 对齐的复数规则 Locale。
+    static func pluralLocale(for language: String, bundle: Bundle = .main) -> Locale {
+        let effective = effectiveLanguageCode(for: language, bundle: bundle)
+        if effective == "br" {
+            return Locale(identifier: "en")
+        }
+        if effective == "zh-martian" {
+            return Locale(identifier: "zh-Hans")
+        }
+        return Locale(identifier: effective)
+    }
+
+    static func layoutDirection(for language: String, bundle: Bundle = .main) -> LayoutDirection {
+        let effective = effectiveLanguageCode(for: language, bundle: bundle)
+        let directionIdentifier: String
+        if effective == "br" {
+            directionIdentifier = "en"
+        } else if effective == "zh-martian" {
+            directionIdentifier = "zh-Hans"
+        } else {
+            directionIdentifier = effective
+        }
+        return Locale.characterDirection(forLanguage: directionIdentifier) == .rightToLeft
+            ? .rightToLeft
+            : .leftToRight
+    }
+
+    static func effectiveLanguageCode(for language: String, bundle: Bundle = .main) -> String {
+        if language == "system" {
+            return bundle.preferredLocalizations.first ?? Locale.current.identifier
+        }
+        if bundle.path(forResource: language, ofType: "lproj") != nil {
+            return language
+        }
+        let preferred = Bundle.preferredLocalizations(from: bundle.localizations, forPreferences: [language])
+        return preferred.first ?? language
+    }
 }
 
 // MARK: - String 扩展
 
 /// String 的本地化扩展
 extension String {
+    /// 按当前应用语言解析并格式化（支持 `.stringsdict` 复数规则）。
+    func localizedFormat(_ arguments: CVarArg...) -> String {
+        localizedFormat(arguments: arguments)
+    }
+
+    func localizedFormat(
+        arguments: [CVarArg],
+        language: String = LanguageManager.shared.language,
+        bundle: Bundle = .main
+    ) -> String {
+        let format = localizedTemplate(language: language, bundle: bundle)
+        let locale = LanguageManager.pluralLocale(for: language, bundle: bundle)
+        return String(format: format, locale: locale, arguments: arguments)
+    }
+
+    private func localizedTemplate(language: String, bundle: Bundle) -> String {
+        if language == "system" {
+            return bundle.localizedString(forKey: self, value: nil, table: nil)
+        }
+        if let path = bundle.path(forResource: language, ofType: "lproj"),
+           let localizationBundle = Bundle(path: path),
+           let result = localizedValue(in: localizationBundle) {
+            return result
+        }
+        let preferred = Bundle.preferredLocalizations(from: bundle.localizations, forPreferences: [language])
+        if let best = preferred.first,
+           best != language,
+           let path = bundle.path(forResource: best, ofType: "lproj"),
+           let localizationBundle = Bundle(path: path),
+           let result = localizedValue(in: localizationBundle) {
+            return result
+        }
+        return bundle.localizedString(forKey: self, value: nil, table: nil)
+    }
     /// 获取字符串的本地化版本
     ///
     /// 根据 LanguageManager 的当前语言设置返回对应的翻译文本。
@@ -142,5 +241,12 @@ extension String {
         let missing = "\u{0}AppPorts.MissingLocalization"
         let result = bundle.localizedString(forKey: self, value: missing, table: nil)
         return result == missing ? nil : result
+    }
+}
+
+extension Sequence where Element == String {
+    /// 按当前应用语言连接列表项（如中文「、」、西文「, 」、阿语「، 」）。
+    var localizedListJoined: String {
+        joined(separator: "list.separator".localized)
     }
 }

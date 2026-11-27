@@ -19,6 +19,6 @@ enum LocalizedByteCountFormatter {
             includesActualByteCount: false
         )
 
-        return bytes.formatted(style.locale(LanguageManager.shared.locale))
+        return bytes.formatted(style.locale(LanguageManager.shared.formattingLocale))
     }
 }

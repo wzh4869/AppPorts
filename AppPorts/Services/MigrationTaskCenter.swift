@@ -151,6 +151,8 @@ final class MigrationJob: ObservableObject, Identifiable {
     var recoveryAction: (@MainActor () -> Void)?
 
     /// Keep the operation and subject; the row presents running state separately.
+    /// Newly submitted tasks omit progressive prefixes in every language; stripping
+    /// a leading "正在" remains only for previously persisted Chinese history rows.
     var displayTitle: String {
         title.hasPrefix("正在") ? String(title.dropFirst(2)) : title
     }

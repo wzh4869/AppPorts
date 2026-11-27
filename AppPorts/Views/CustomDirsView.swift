@@ -203,7 +203,7 @@ struct CustomDirsView: View {
         VStack(spacing: 0) {
             ContentView.HeaderView(
                 title: "本地文件夹".localized,
-                subtitle: String(format: "%lld 个目录".localized, Int64(configs.count)),
+                subtitle: "%lld 个目录".localizedFormat(Int64(configs.count)),
                 icon: "folder.fill",
                 iconColumnWidth: 40,
                 actionButtonText: "＋",
@@ -264,7 +264,7 @@ struct CustomDirsView: View {
         VStack(spacing: 0) {
             ContentView.HeaderView(
                 title: "外部文件夹".localized,
-                subtitle: String(format: "%lld 个目录".localized, Int64(configs.count)),
+                subtitle: "%lld 个目录".localizedFormat(Int64(configs.count)),
                 icon: "externaldrive.fill",
                 iconColumnWidth: 40,
                 tint: .teal
@@ -350,21 +350,21 @@ struct CustomDirsView: View {
         if migratablePairs.isEmpty {
             return "迁移文件夹".localized
         }
-        return String(format: "迁移 %lld 个文件夹".localized, Int64(migratablePairs.count))
+        return "迁移 %lld 个文件夹".localizedFormat(Int64(migratablePairs.count))
     }
 
     private var relinkButtonTitle: String {
         if relinkablePairs.isEmpty {
             return "接回文件夹".localized
         }
-        return String(format: "接回 %lld 个文件夹".localized, Int64(relinkablePairs.count))
+        return "接回 %lld 个文件夹".localizedFormat(Int64(relinkablePairs.count))
     }
 
     private var restoreButtonTitle: String {
         if restorablePairs.isEmpty {
             return "还原文件夹".localized
         }
-        return String(format: "还原 %lld 个文件夹".localized, Int64(restorablePairs.count))
+        return "还原 %lld 个文件夹".localizedFormat(Int64(restorablePairs.count))
     }
 
     private func addConfig(_ config: CustomDirConfig) -> String? {
@@ -374,7 +374,7 @@ struct CustomDirsView: View {
 
     private func addAndMigrateConfig(_ config: CustomDirConfig) -> String? {
         if let errorMessage = addConfig(config) { return errorMessage }
-        submitDirectoryTasks(title: "正在迁移目录".localized,
+        submitDirectoryTasks(title: "迁移目录".localized,
                              pairs: [CustomDirPair.pendingMigration(for: config)]) { pair, handler in
             try await Self.migratePair(pair, progressHandler: handler)
         }
@@ -461,7 +461,7 @@ struct CustomDirsView: View {
     private func retryPendingOperations() {
         let operationIDs = idleAttentionTransfers.map(\.operationID)
         guard !operationIDs.isEmpty else { return }
-        MigrationTaskCenter.shared.submit(title: "正在继续处理目录".localized, category: .directories,
+        MigrationTaskCenter.shared.submit(title: "继续处理目录".localized, category: .directories,
             resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set(operationIDs)), operation: { _ in
                 var warnings: [String] = []
                 for id in operationIDs {
@@ -519,7 +519,7 @@ struct CustomDirsView: View {
     }
 
     private func startMigration(of selectedPairs: [CustomDirPair]) {
-        submitDirectoryTasks(title: "正在迁移目录".localized, pairs: selectedPairs) { pair, handler in
+        submitDirectoryTasks(title: "迁移目录".localized, pairs: selectedPairs) { pair, handler in
             try await Self.migratePair(pair, progressHandler: handler)
         }
     }
@@ -535,7 +535,7 @@ struct CustomDirsView: View {
     }
 
     private func relinkSelected() {
-        submitDirectoryTasks(title: "正在接回目录".localized, pairs: relinkablePairs) { pair, _ in
+        submitDirectoryTasks(title: "接回目录".localized, pairs: relinkablePairs) { pair, _ in
             try await DataDirMover().createLink(localPath: pair.config.localURL,
                                                externalPath: pair.config.externalDestinationURL)
             return nil
@@ -543,7 +543,7 @@ struct CustomDirsView: View {
     }
 
     private func restoreSelected() {
-        submitDirectoryTasks(title: "正在还原目录".localized, pairs: restorablePairs) { pair, handler in
+        submitDirectoryTasks(title: "还原目录".localized, pairs: restorablePairs) { pair, handler in
             let result = try await DataDirMover().restoreAndComplete(item: pair.local.dataDirItem, progressHandler: handler)
             return result.cleanupWarning
         }

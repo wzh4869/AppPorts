@@ -1045,12 +1045,12 @@ struct DataDirsView: View {
             if displayedItems != nil {
                 Text("应用数据：".localized + totalSize.sizeText)
                     .foregroundColor(totalSize.isIncomplete ? .orange : .secondary)
-                Label(String(format: "%lld 个目录".localized, Int64(visibleItems.count)), systemImage: "folder.fill")
+                Label("%lld 个目录".localizedFormat(Int64(visibleItems.count)), systemImage: "folder.fill")
                     .foregroundColor(.secondary)
                 Text("目录大小：".localized + visibleSize.sizeText)
                     .foregroundColor(visibleSize.isIncomplete ? .orange : .accentColor)
             } else {
-                Label(String(format: "%lld 个目录".localized, Int64(visibleItems.count)), systemImage: "folder.fill")
+                Label("%lld 个目录".localizedFormat(Int64(visibleItems.count)), systemImage: "folder.fill")
                     .foregroundColor(.secondary)
                 if summary.isIncomplete {
                     Label("空间统计不完整".localized, systemImage: "exclamationmark.circle")
@@ -1068,26 +1068,26 @@ struct DataDirsView: View {
                 }
             }
             if linked > 0 {
-                summaryNavigationLabel(String(format: "%lld 个已链接".localized, Int64(linked)),
+                summaryNavigationLabel("%lld 个已链接".localizedFormat(Int64(linked)),
                     systemImage: "link.circle.fill", color: .green,
                     filter: .linked, onSelect: onSelectSummary)
             }
             if mounted > 0 {
-                summaryNavigationLabel(String(format: "%lld 个挂载迁移".localized, Int64(mounted)),
+                summaryNavigationLabel("%lld 个挂载迁移".localizedFormat(Int64(mounted)),
                     systemImage: "externaldrive.fill.badge.checkmark", color: .purple,
                     filter: .mounted, onSelect: onSelectSummary)
             }
             if needsNormalization > 0 {
-                Label(String(format: "%lld 个待整理".localized, Int64(needsNormalization)), systemImage: "arrow.triangle.2.circlepath")
+                Label("%lld 个待整理".localizedFormat(Int64(needsNormalization)), systemImage: "arrow.triangle.2.circlepath")
                     .foregroundColor(.mint)
             }
             if existingSymlinks > 0 {
-                summaryNavigationLabel(String(format: "%lld 个现有软链".localized, Int64(existingSymlinks)),
+                summaryNavigationLabel("%lld 个现有软链".localizedFormat(Int64(existingSymlinks)),
                     systemImage: "questionmark.circle", color: .teal,
                     filter: .existingSymlink, onSelect: onSelectSummary)
             }
             if relinkable > 0 {
-                Label(String(format: "%lld 个待接回".localized, Int64(relinkable)), systemImage: "arrow.triangle.branch")
+                Label("%lld 个待接回".localizedFormat(Int64(relinkable)), systemImage: "arrow.triangle.branch")
                     .foregroundColor(.indigo)
             }
             Spacer()
@@ -2139,7 +2139,7 @@ struct DataDirsView: View {
         let app = associatedApp ?? (selectedTab == .appDirs ? selectedApp : nil)
         if app != nil, !AppInstallationLocation.confirmIfNeeded() { return }
         let preparation = appDataPreparation(for: app, destination: dest)
-        submitDataTask(item, title: String(format: "正在迁移「%@」".localized, item.name),
+        submitDataTask(item, title: "迁移「%@」".localizedFormat(item.name),
                        destinations: [dest.appendingPathComponent(item.path.lastPathComponent)], associatedApp: associatedApp) { progress in
             let fresh = try await preparation?.refresh(item, progress: progress) ?? item
             let result = try await DataDirMover().migrateAndComplete(item: fresh, to: dest,
@@ -2210,7 +2210,7 @@ struct DataDirsView: View {
     }
 
     private func performRestore(_ item: DataDirItem) {
-        submitDataTask(item, title: String(format: "正在还原「%@」".localized, item.name)) { progress in
+        submitDataTask(item, title: "还原「%@」".localizedFormat(item.name)) { progress in
             let result = try await DataDirMover().restoreAndComplete(item: item,
                 progressHandler: { progress.update($0) })
             return result.cleanupWarning
@@ -2342,7 +2342,7 @@ struct DataDirsView: View {
         let preparation = retrying == nil
             ? appDataPreparation(for: app, destination: dest, splitMode: wholeWeChatAccount ? false : nil)
             : nil
-        submitDataTask(item, title: String(format: "正在挂载迁移「%@」".localized, item.name),
+        submitDataTask(item, title: "挂载迁移「%@」".localizedFormat(item.name),
                        mount: true, retrying: retrying, recovery: { error, retry in
             presentAPFSFailure(error, item: item, retryToken: retry, retry: {
                 performMountMigrate(item, encryption: encryption, retrying: retry)
@@ -2366,7 +2366,7 @@ struct DataDirsView: View {
             showError = true
             return
         }
-        submitDataTask(item, title: String(format: "正在挂载「%@」".localized, item.name),
+        submitDataTask(item, title: "挂载「%@」".localizedFormat(item.name),
                        mount: true, requireAppStopped: false, retrying: retrying, recovery: { error, retry in
             presentAPFSFailure(error, item: item, retryToken: retry, retry: { performMount(item, retrying: retry) })
         }) { progress in
@@ -2390,7 +2390,7 @@ struct DataDirsView: View {
             showError = true
             return
         }
-        submitDataTask(item, title: String(format: "正在卸载「%@」".localized, item.name), mount: true) { _ in
+        submitDataTask(item, title: "卸载「%@」".localizedFormat(item.name), mount: true) { _ in
             try await ContainerVolumeMigrator().unmount(record: record)
             return nil
         }
@@ -2442,7 +2442,7 @@ struct DataDirsView: View {
         if requestAssociatedAppExit(for: item, retrying: retrying, continuing: {
             performMountRestore(item, record: record, retrying: retrying)
         }) { return }
-        submitDataTask(item, title: String(format: "正在还原「%@」".localized, item.name),
+        submitDataTask(item, title: "还原「%@」".localizedFormat(item.name),
                        mount: true, retrying: retrying, recovery: { error, retry in
             presentAPFSFailure(error, item: item, retryToken: retry,
                 retry: { performMountRestore(item, record: record, retrying: retry) })
@@ -2477,7 +2477,7 @@ struct DataDirsView: View {
             let planned = (try? previewService.plannedMembers(of: item.path, for: mode)) ?? []
             return planned.isEmpty ? selectedWeChatPolicy.members(of: item.path, group: fallbackGroup) : planned
         }()
-        submitDataTask(item, title: restoring ? "正在还原微信账号数据".localized : "正在拆分迁移微信账号数据".localized,
+        submitDataTask(item, title: restoring ? "还原微信账号数据".localized : "拆分迁移微信账号数据".localized,
                        destinations: members, mount: true, retrying: retrying, recovery: { error, retry in
             presentAPFSFailure(error, item: item, retryToken: retry, retry: {
                 performWeChatSplitOperation(item, mode: mode, restoring: restoring, encryption: encryption, retrying: retry)
@@ -2601,7 +2601,7 @@ struct DataDirsView: View {
             item.associatedBundleIdentifier = identifier
             if requestAssociatedAppExit(for: item, useSelectedApp: false, continuing: { retryPendingOperations(operationID: operationID) }) { return }
         }
-        MigrationTaskCenter.shared.submit(title: "正在继续处理".localized, category: .appData,
+        MigrationTaskCenter.shared.submit(title: "继续处理".localized, category: .appData,
             resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set([operationID].compactMap { $0 })), operation: { _ in
                 let warnings = await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: operationID)
                 try Task.checkCancellation()

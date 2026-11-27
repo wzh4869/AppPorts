@@ -193,7 +193,7 @@ struct AppItem: Identifiable, Equatable, Sendable {
     /// - 单应用容器：返回内部 app 的名称
     nonisolated var displayName: String {
         if isFolder {
-            return String(format: "%@ (%lld 个应用)".localized, name, Int64(appCount))
+            return "%@ (%lld 个应用)".localizedFormat(name, Int64(appCount))
         }
         if let bundleURL {
             return bundleURL.lastPathComponent

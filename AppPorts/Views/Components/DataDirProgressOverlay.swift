@@ -37,8 +37,8 @@ struct DataDirProgressContent: View {
             HStack {
                 let directoryURL = URL(fileURLWithPath: snapshot.directoryPath)
                 Text((directoryURL.pathExtension.lowercased() == "app"
-                    ? "当前应用".localized : "当前目录".localized)
-                    + "：" + PartialWeChatMigrationPolicy.displayMemberLabel(for: directoryURL))
+                    ? "当前应用：%@" : "当前目录：%@")
+                    .localizedFormat(PartialWeChatMigrationPolicy.displayMemberLabel(for: directoryURL)))
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -71,7 +71,7 @@ struct DataDirProgressContent: View {
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 8)
                             if let fraction = snapshot.fraction {
-                                Text(fraction, format: .percent.precision(.fractionLength(0)))
+                                Text(fraction.formatted(.percent.precision(.fractionLength(0)).locale(LanguageManager.shared.formattingLocale)))
                                     .font(.system(size: 13, weight: .medium))
                                     .monospacedDigit()
                             }
@@ -152,7 +152,7 @@ struct DataDirProgressContent: View {
             .monospacedDigit()
         } else if snapshot.completedItems > 0 || snapshot.readBytes > 0 {
             HStack(alignment: .firstTextBaseline) {
-                Text(String(format: "当前步骤已处理 %lld 项".localized, Int64(snapshot.completedItems)))
+                Text("当前步骤已处理 %lld 项".localizedFormat(Int64(snapshot.completedItems)))
                 Spacer(minLength: 8)
                 if snapshot.readBytes > 0 {
                     Text(String(format: "已读取 %@".localized, bytes(snapshot.readBytes)))

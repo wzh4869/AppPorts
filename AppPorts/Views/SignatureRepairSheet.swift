@@ -67,7 +67,7 @@ struct SignatureRepairSheet: View {
                         ? "相关容器未能完整检查，请重新检查或先选择官方原件。".localized
                         : linkedContainerItems.isEmpty
                         ? "当前检查未发现经典容器链接；恢复时还会核对官方原件声明的共享容器。".localized
-                        : String(format: "还有 %lld 个容器目录指向外置盘。重装前必须先还原，否则重装后应用仍读不到数据。".localized, Int64(linkedContainerItems.count)))
+                        : "还有 %lld 个容器目录指向外置盘。重装前必须先还原，否则重装后应用仍读不到数据。".localizedFormat(Int64(linkedContainerItems.count)))
             ) {
                 if !linkedContainerItems.isEmpty {
                     Button(isRestoring ? "正在还原…".localized : "全部还原".localized) {
