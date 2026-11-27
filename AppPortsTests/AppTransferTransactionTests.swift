@@ -277,7 +277,8 @@ final class AppTransferTransactionTests: XCTestCase {
     func testRiskyBundlesRequireApprovalForMoveOutAndCanBeRestoredNormally() async throws {
         let w = try Workspace(); defer { w.cleanup() }
         let service = w.service()
-        for identifier in ["io.github.clash-verge-rev.clash-verge-rev", "com.microsoft.VSCode", "com.apple.dt.Xcode"] {
+        for identifier in ["io.github.clash-verge-rev.clash-verge-rev", "com.microsoft.VSCode",
+                           "com.apple.dt.Xcode", "com.anthropic.claudefordesktop"] {
             let source = w.local.appendingPathComponent(identifier + ".app")
             let destination = w.external.appendingPathComponent(source.lastPathComponent)
             try makeApp(source, identifier: identifier)

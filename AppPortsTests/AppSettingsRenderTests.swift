@@ -28,7 +28,7 @@ final class AppSettingsRenderTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("AppPortsPolicyRows-" + UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let ids = ["com.shimoko.AppPorts", "com.apple.dt.Xcode", "com.microsoft.VSCode", "com.microsoft.VSCodeInsiders",
-                   "io.github.clash-verge-rev.clash-verge-rev", "example.ordinary"]
+                   "io.github.clash-verge-rev.clash-verge-rev", "com.anthropic.claudefordesktop", "example.ordinary"]
         for id in ids {
             let contents = root.appendingPathComponent(id + ".app/Contents")
             try FileManager.default.createDirectory(at: contents.appendingPathComponent("Frameworks/Sparkle.framework"), withIntermediateDirectories: true)

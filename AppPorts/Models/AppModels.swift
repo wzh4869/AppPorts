@@ -22,7 +22,8 @@ enum AppBodyMigrationPolicy: Equatable, Sendable {
         switch bundleIdentifier {
         case "com.shimoko.AppPorts": self = .localOnly
         case "io.github.clash-verge-rev.clash-verge-rev", "com.microsoft.VSCode",
-             "com.microsoft.VSCodeInsiders", "com.apple.dt.Xcode": self = .requiresConfirmation
+             "com.microsoft.VSCodeInsiders", "com.apple.dt.Xcode",
+             "com.anthropic.claudefordesktop": self = .requiresConfirmation
         default: self = .standard
         }
     }
