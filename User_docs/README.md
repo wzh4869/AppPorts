@@ -22,7 +22,7 @@ npm run docs:check
 npm run docs:preview
 ```
 
-Stop the development server before starting the production preview on the same port. `docs:check` requires a fresh build. It verifies all 87 articles and three homepages, chapter IDs, links, metadata, portable Markdown, the navigation contract, removed routes, and public assets.
+Stop the development server before starting the production preview on the same port. `docs:check` requires a fresh build. It verifies all 90 articles and three homepages, chapter IDs, links, metadata, portable Markdown, the navigation contract, removed routes, and public assets.
 
 ## Content and routes
 
@@ -32,7 +32,7 @@ Stop the development server before starting the production preview on the same p
 | Traditional Chinese | `docs/zh-Hant/` | `/zh-Hant` | `/zh-Hant/docs/<slug>` |
 | English | `docs/en/` | `/en` | `/en/docs/<slug>` |
 
-Each language contains the same 29 articles, all listed in the sidebar, with the contributor guide immediately after Sponsor. `config/docs-navigation.json` defines their shared order. `config/locales.json` contains navigation, interface text, and descriptions. Simplified Chinese is the content baseline; update both translations alongside it.
+Each language contains the same 30 articles, all listed in the sidebar, with the contributor guide immediately after Sponsor. `config/docs-navigation.json` defines their shared order. `config/locales.json` contains navigation, interface text, and descriptions. Simplified Chinese is the content baseline; update both translations alongside it.
 
 Keep explicit `{#chapter-id}` markers identical and in the same order across translations. Author language-neutral `/docs/<slug>#chapter-id` links in Markdown; preparation localizes them for each language. Keep experimental dates, app/build versions, measurements, failed cases, and evidence limitations. Do not publish private conversations, account identifiers, or personal paths. Translate visible diagram labels while preserving syntax, paths, and identifiers.
 

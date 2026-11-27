@@ -40,4 +40,4 @@ Decide whether you are moving the application itself or its data, then check sto
 
 *Choose a sidebar section according to what you want to move. Directory Migration is selected here, with the add-folder button on the right (Simplified Chinese interface).*
 
-Continue with [Quick start](/docs/faststart), [external drives](/docs/storage-guide), the [privacy policy](/docs/privacy) or [licenses](/docs/licenses).
+Continue with [Boundaries & Consensus](/docs/consensus), [Quick start](/docs/faststart), [external drives](/docs/storage-guide), the [privacy policy](/docs/privacy) or [licenses](/docs/licenses).

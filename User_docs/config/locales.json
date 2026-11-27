@@ -15,6 +15,7 @@
       "文档目录": "文档目录",
       "项目": "项目",
       "简介": "简介",
+      "边界与共识": "边界与共识",
       "快速开始": "快速开始",
       "迁移应用": "迁移应用",
       "迁移数据": "迁移数据",
@@ -119,6 +120,7 @@
     },
     "descriptions": {
       "AppPorts": "认识 AppPorts，以及这份文档的阅读方式与产品理念。",
+      "consensus": "了解 AppPorts 的能力边界、数据风险与备份共识。",
       "faststart": "从安装到第一次迁移，确认每一步的结果。",
       "core": "把应用本体移到外置盘，并继续管理启动入口与更新。",
       "datamigrae/operation": "按应用数据、工具目录或自选文件夹，找到对应的迁移步骤。",
@@ -165,6 +167,7 @@
       "文档目录": "Documentation",
       "项目": "Project",
       "简介": "Introduction",
+      "边界与共识": "Boundaries & Consensus",
       "快速开始": "Quick start",
       "迁移应用": "Move applications",
       "迁移数据": "Move data",
@@ -269,6 +272,7 @@
     },
     "descriptions": {
       "AppPorts": "Meet AppPorts, its philosophy and these guides.",
+      "consensus": "Understand AppPorts' limits, data risks, and backup expectations before migrating.",
       "faststart": "Install AppPorts and check each step of your first migration.",
       "core": "Move applications to external storage and manage launching and updates.",
       "datamigrae/operation": "Find the steps for app data, tool directories and your own folders.",
@@ -315,6 +319,7 @@
       "文档目录": "文件目錄",
       "项目": "專案",
       "简介": "簡介",
+      "边界与共识": "邊界與共識",
       "快速开始": "快速開始",
       "迁移应用": "遷移應用",
       "迁移数据": "遷移資料",
@@ -419,6 +424,7 @@
     },
     "descriptions": {
       "AppPorts": "認識 AppPorts，以及這份文件的閱讀方式與產品理念。",
+      "consensus": "瞭解 AppPorts 的能力邊界、資料風險與備份共識。",
       "faststart": "從安裝到第一次遷移，確認每一步的結果。",
       "core": "把應用本體移到外接磁碟，並繼續管理啟動入口與更新。",
       "datamigrae/operation": "按應用資料、工具目錄或自選資料夾，找到對應的遷移步驟。",

@@ -3,8 +3,8 @@ import type { Root, Node } from 'fumadocs-core/page-tree';
 import { source } from './source';
 import { entries } from './docs-structure';
 import { createElement } from 'react';
-import { AppWindow, BookOpen, BookA, Rocket, Boxes, Tags, FolderOpen, HardDrive, ShieldCheck, RefreshCw, Settings, CircleHelp, ScrollText, FlaskConical, Heart, Scale, Lock, Undo2, History, Newspaper, FolderLock, Archive, FileText, type LucideIcon } from 'lucide-react';
-const icons: Record<string, LucideIcon> = { AppWindow, BookOpen, BookA, Rocket, Boxes, Tags, FolderOpen, HardDrive, ShieldCheck, RefreshCw, Settings, CircleHelp, ScrollText, FlaskConical, Heart, Scale, Lock, Undo2, History, Newspaper, FolderLock, Archive };
+import { AppWindow, BookOpen, BookA, Rocket, Boxes, Tags, FolderOpen, HardDrive, ShieldAlert, ShieldCheck, RefreshCw, Settings, CircleHelp, ScrollText, FlaskConical, Heart, Scale, Lock, Undo2, History, Newspaper, FolderLock, Archive, FileText, type LucideIcon } from 'lucide-react';
+const icons: Record<string, LucideIcon> = { AppWindow, BookOpen, BookA, Rocket, Boxes, Tags, FolderOpen, HardDrive, ShieldAlert, ShieldCheck, RefreshCw, Settings, CircleHelp, ScrollText, FlaskConical, Heart, Scale, Lock, Undo2, History, Newspaper, FolderLock, Archive };
 
 
 export function docsTree(locale: Locale): Root {

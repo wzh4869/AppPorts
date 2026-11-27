@@ -40,4 +40,4 @@ AppPorts 是一款免费、开源的 macOS 应用与数据迁移工具。它帮�
 
 *侧栏按内容分为「应用」「工具目录」「应用数据」和「目录迁移」。图中选中了「目录迁移」，右侧可添加本地文件夹。*
 
-继续阅读：[快速开始](/docs/faststart) · [外置盘与日常使用](/docs/storage-guide) · [隐私政策](/docs/privacy) · [开源许可](/docs/licenses)
+继续阅读：[边界与共识](/docs/consensus) · [快速开始](/docs/faststart) · [外置盘与日常使用](/docs/storage-guide) · [隐私政策](/docs/privacy) · [开源许可](/docs/licenses)
