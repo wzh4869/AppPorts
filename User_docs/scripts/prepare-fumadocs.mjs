@@ -51,12 +51,26 @@ export function portableMarkdown(tree, sponsorData, locale = 'zh-Hans') {
       const cell = children => ({ type: 'tableCell', children });
       const text = value => ({ type: 'text', value });
       const row = cells => ({ type: 'tableRow', children: cells });
-      const sponsors = [...sponsorData.sponsors].sort((a,b) => b.amount-a.amount || new Date(a.date)-new Date(b.date));
-      return [{ type: 'table', align: [null, 'right'], children: [
-        row([cell([text(label(locale, '赞助者'))]), cell([text(label(locale, '金额（CNY）'))])]),
-        ...sponsors.map(sponsor => row([
-          cell([sponsor.link ? { type: 'link', url: sponsor.link, children: [text(sponsor.name)] } : text(sponsor.name)]),
-          cell([text(sponsor.amount.toLocaleString(locale, { maximumFractionDigits: 2 }))]),
+      const parseSponsorDate = raw => {
+        const parts = String(raw ?? '').trim().split('-').map(Number);
+        if (parts.length === 3 && parts.every(Number.isFinite)) {
+          return Date.UTC(parts[0], parts[1] - 1, parts[2]);
+        }
+        const timestamp = Date.parse(raw);
+        return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+      };
+      const entries = [
+        ...sponsorData.sponsors.map(sponsor => ({ ...sponsor, anonymous: false })),
+        ...(sponsorData.anonymousSponsors ?? []).map(sponsor => ({ ...sponsor, anonymous: true })),
+      ].sort((a, b) => b.amount - a.amount || parseSponsorDate(a.date) - parseSponsorDate(b.date));
+      return [{ type: 'table', align: [null, null, 'right'], children: [
+        row([cell([text(label(locale, '赞助者'))]), cell([text(label(locale, '留言'))]), cell([text(label(locale, '金额（CNY）'))])]),
+        ...entries.map(entry => row([
+          cell([entry.anonymous
+            ? text(label(locale, '匿名赞助者'))
+            : (entry.link ? { type: 'link', url: entry.link, children: [text(entry.name)] } : text(entry.name))]),
+          cell([text(entry.message || '—')]),
+          cell([text(entry.amount.toLocaleString(locale, { maximumFractionDigits: 2 }))]),
         ])),
       ] }];
     }

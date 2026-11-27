@@ -162,6 +162,40 @@ final class SponsorsTests: XCTestCase {
         XCTAssertEqual(ranked.map(\.name), ["Top", "Early", "Late"])
     }
 
+    func testAnonymousSponsorsAndMessagesAreIgnoredByAppDecoder() throws {
+        let json = """
+        {
+          "updatedAt": "2026-11-27T00:00:00Z",
+          "sponsors": [
+            {
+              "name": "南极风🔒🔐（唐山锁之家）",
+              "link": "",
+              "amount": 1,
+              "date": "2026-10-24",
+              "message": "好软件"
+            }
+          ],
+          "anonymousSponsors": [
+            {
+              "message": "非常好用",
+              "amount": 10,
+              "date": "2026-11-23"
+            }
+          ]
+        }
+        """
+        let payload = try JSONDecoder().decode(SponsorsPayload.self, from: Data(json.utf8))
+        XCTAssertEqual(payload.sponsors, [Sponsor(name: "南极风🔒🔐（唐山锁之家）", link: "", amount: 1, date: "2026-10-24")])
+
+        let bundled = try XCTUnwrap(SponsorsService().loadBundledSponsors())
+        let names = bundled.sponsors.map(\.name)
+        XCTAssertTrue(names.contains("ฅฅฅฅ"))
+        XCTAssertTrue(names.contains("南极风🔒🔐（唐山锁之家）"))
+        XCTAssertFalse(names.contains("非常好用"))
+        XCTAssertFalse(names.contains("🎂"))
+        XCTAssertFalse(names.contains("谢谢[爱心][玫瑰]"))
+    }
+
     private func makeService() -> SponsorsService {
         SponsorsService(session: session, cacheURL: cacheURL)
     }

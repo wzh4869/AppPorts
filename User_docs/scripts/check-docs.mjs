@@ -81,7 +81,12 @@ for (const page of pages) {
   const canonical = pages.find(item => item.locale === 'zh-Hans' && item.slug === page.slug);
   assert.deepEqual(page.headings, canonical.headings, `Chapter mismatch: ${page.url}`);
   if (page.slug === 'sponsor') {
-    for (const value of ['a@shimoko.com', '350', '0.63']) assert.ok(markdown.includes(value), `Sponsor export missing ${value}: ${page.url}`);
+    for (const value of ['a@shimoko.com', '350', '0.63', 'ฅฅฅฅ', '南极风🔒🔐（唐山锁之家）', '100', '非常好用', '好软件']) {
+      assert.ok(markdown.includes(value), `Sponsor export missing ${value}: ${page.url}`);
+    }
+    for (const value of ['sponsor-card', '非常好用', '好软件']) {
+      assert.ok(rendered.includes(value), `Sponsor page missing ${value}: ${page.url}`);
+    }
   }
   if (page.slug === 'AppPorts') for (const link of ['https://deepwiki.com/wzh4869/AppPorts', 'https://www.shimoko.com/p/appports/']) assert.ok(markdown.includes(link));
   if (page.slug === 'migration-strategy/portal') assert.ok(markdown.includes('```mermaid'));

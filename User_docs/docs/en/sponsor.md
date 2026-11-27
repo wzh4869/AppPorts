@@ -8,7 +8,7 @@ If AppPorts has helped you recover dozens of GB of local storage, you are welcom
 
 <SponsorList />
 
-This list also appears in “About AppPorts” in the app. Sponsors are sorted by amount, highest first, then by donation time, earliest first when amounts match. **Donation amounts appear only on this web page.**
+Named sponsors in this list also appear in “About AppPorts” in the app. Entries are sorted by amount, highest first, then by donation time, earliest first when amounts match. **Donation amounts, messages, and anonymous donations with messages appear only on this web page.**
 
 ## Scan to donate {#section-2}
 
@@ -23,7 +23,7 @@ Include your **nickname** in the donation note. A **personal link is optional**:
 After receiving your donation, we will add your nickname and link to the list above and to “About AppPorts” as a thank-you.
 
 ::: tip You can remain private
-If no nickname is provided, we do not display the donation. If you provide a nickname without a link, we display only the name, without a clickable link.
+If neither a nickname nor a message is provided, we do not display the donation. If you leave a message without a nickname, only this web page displays your message and amount anonymously — it will not appear in the AppPorts app or on GitHub. If you provide a nickname without a link, we display only the name, without a clickable link.
 :::
 
 To change your nickname, personal link, or other displayed information, contact [a@shimoko.com](mailto:a@shimoko.com) with the original nickname and requested changes.

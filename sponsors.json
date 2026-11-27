@@ -2,7 +2,7 @@
   "sponsorPage": "https://docs-appports.shimoko.com/docs/sponsor",
   "qrCode": "https://pic.cdn.shimoko.com/thanks.png",
   "currency": "CNY",
-  "updatedAt": "2026-10-05T00:00:00Z",
+  "updatedAt": "2026-11-27T00:00:00Z",
   "sponsors": [
     {
       "name": "师杀",
@@ -27,6 +27,36 @@
       "link": "",
       "amount": 50,
       "date": "2026-10-05"
+    },
+    {
+      "name": "ฅฅฅฅ",
+      "link": "",
+      "amount": 10,
+      "date": "2026-10-20"
+    },
+    {
+      "name": "南极风🔒🔐（唐山锁之家）",
+      "link": "",
+      "amount": 1,
+      "date": "2026-10-24",
+      "message": "好软件"
+    }
+  ],
+  "anonymousSponsors": [
+    {
+      "message": "谢谢[爱心][玫瑰]",
+      "amount": 1,
+      "date": "2026-10-25"
+    },
+    {
+      "message": "🎂",
+      "amount": 100,
+      "date": "2026-11-20"
+    },
+    {
+      "message": "非常好用",
+      "amount": 10,
+      "date": "2026-11-23"
     }
   ]
 }

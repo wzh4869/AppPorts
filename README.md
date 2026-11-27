@@ -187,6 +187,8 @@ Thanks to the following sponsors (this list is kept in sync with `sponsors.json`
 - **师杀** · [space.bilibili.com/396481888](https://space.bilibili.com/396481888)
 - **zed**
 - **VC**
+- **ฅฅฅฅ**
+- **南极风🔒🔐（唐山锁之家）**
 - **符华**
 
 
