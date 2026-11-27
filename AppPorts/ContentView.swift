@@ -1642,6 +1642,8 @@ struct ContentView: View {
             _ = AppPortalMaintenance.refreshEntries(at: app.path, expectedGeneration: maintenanceGeneration)
         }
         guard await MainActor.run(body: { isCurrentScan(request, isLocal: true) }) else { return [] }
+        let retired = AppMigrationService().reconcileHomebrew(expectedGeneration: maintenanceGeneration)
+        if !retired.isEmpty { apps.removeAll { retired.contains(HomebrewCaskRouting.localPath($0.path)) } }
         do { try AppSearchRecordStore.shared.reconcileLocalPresence() }
         catch { AppLogger.shared.logError("核对本地入口搜索状态失败", error: error) }
         return apps

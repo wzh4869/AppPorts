@@ -48,6 +48,10 @@ macOS 15.1 及以上可在 App Store 設定中開啟「下載並安裝大型 App
 
 「應用程式更新守護」目前僅接手明確失敗且快取經簽名驗證通過的 ShipIt 更新，不保證涵蓋所有更新框架或全部 ShipIt 變體；詳見[更新保護與更新守護](/docs/migration-strategy/portal#updates)。
 
+**使用 Homebrew 更新。** 如果 App 由位於預設安裝位置的 Homebrew 管理，cask 安裝的是單一標準 `.app`，採用非鎖定遷移並保留本機啟動入口後，接上原磁碟，照常執行 `brew upgrade`。新版會直接安裝到外接磁碟，原入口可以開啟新版，升級時可以結束 AppPorts。先前已遷出的 App，在原磁碟連線時打開 AppPorts 並重新整理 App 列表即可補登記。遷回後，Homebrew 會繼續在原本的本機目錄升級。
+
+拔除磁碟時，該 App 的升級會失敗；接回原磁碟後重新執行同一個指令。進行檔案層級備份時，請排除卷宗根目錄的 `.appports-brew`。如果同名備份磁碟完整複製了這個隱藏目錄及 App，Homebrew 可能更新備份磁碟，並將原磁碟上仍是舊版的 App 記為已升級。
+
 ## 想遷回或恢復入口 {#restore-links}
 
 - 把真實應用搬回內建磁碟：使用「遷移回本地」。

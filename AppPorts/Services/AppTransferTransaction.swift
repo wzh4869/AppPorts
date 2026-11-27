@@ -33,16 +33,19 @@ final class AppTransferTransaction {
     private let facts: SignatureFactStore
     private let hooks: AppTransferHooks
     private let protection: AppUpdateProtectionStore
+    private let homebrew: HomebrewCaskRouting?
     private let allowsAdministratorPrompt: Bool
 
     init(store: AppTransferStore, fileManager: FileManager, facts: SignatureFactStore,
          buildPortal: @escaping PortalBuilder, portalMatches: @escaping PortalMatcher,
          updateDock: @escaping AppMigrationService.DockShortcutUpdater,
          prepareUpdaterCaches: @escaping (URL, Bool) throws -> Void = { _, _ in },
+         homebrew: HomebrewCaskRouting?,
          runningApplications: @escaping () -> [AppRunningState.RunningApplication], hooks: AppTransferHooks,
          allowsAdministratorPrompt: Bool = true) {
         self.store = store; self.fileManager = fileManager; self.facts = facts
         self.buildPortal = buildPortal; self.portalMatches = portalMatches; self.updateDock = updateDock
+        self.homebrew = homebrew
         self.prepareUpdaterCaches = prepareUpdaterCaches
         self.runningApplications = runningApplications; self.hooks = hooks
         self.protection = AppUpdateProtectionStore(transferStore: store)
@@ -726,9 +729,30 @@ final class AppTransferTransaction {
         }
     }
 
+    private func finishHomebrewRouting(_ journal: Journal) throws {
+        let record = journal.record
+        guard let homebrew, !record.usesFolderOperation, !record.protectDestination,
+              record.successorActivation == nil, record.homebrewRoutingFinished != true else { return }
+        let source = URL(fileURLWithPath: record.sourcePath)
+        let destination = URL(fileURLWithPath: record.destinationPath)
+        do {
+            switch record.direction {
+            case .migrate:
+                try homebrew.register(local: source, external: destination, installations: homebrew.inventory)
+            case .restore:
+                try homebrew.restore(local: destination, external: source)
+            }
+        } catch {
+            throw Self.failure("Homebrew · " + error.localizedDescription, at: destination)
+        }
+        journal.record.homebrewRoutingFinished = true
+        try journal.save()
+    }
+
     private func finishCommitted(_ journal: Journal) throws -> AppTransferResult {
         try recordCommit(journal)
         try commitPredecessorActivations(journal)
+        try finishHomebrewRouting(journal)
         var warnings: [String] = []
         if !journal.record.signatureFactsCommitted {
             do {

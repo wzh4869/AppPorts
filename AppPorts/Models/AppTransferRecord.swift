@@ -47,6 +47,7 @@ struct AppTransferRecord: Codable, Identifiable, Sendable {
     var committedAt: Date?
     var signatureFactsCommitted = false
     var destinationProtected = false
+    var homebrewRoutingFinished: Bool?
     var dockSynchronized = false
     var stagingCleanupComplete = false
     var cleanupItems: [AppTransferCleanupItem] = []

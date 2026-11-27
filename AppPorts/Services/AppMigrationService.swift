@@ -66,6 +66,7 @@ struct AppMigrationService {
     private let runningApplications: () -> [AppRunningState.RunningApplication]
     private let transferStore: AppTransferStore
     private let signatureFactStore: SignatureFactStore
+    private let homebrewRouting: HomebrewCaskRouting?
     private let transferHooks: AppTransferHooks
     private let writerAdmissionCheck: (() throws -> Void)?
 
@@ -77,6 +78,7 @@ struct AppMigrationService {
         transferStore: AppTransferStore = .shared,
         signatureFactStore: SignatureFactStore = SignatureFactStore(),
         transferHooks: AppTransferHooks = .init(),
+        homebrewRouting: HomebrewCaskRouting? = nil,
         writerAdmissionCheck: (() throws -> Void)? = nil,
         updaterCacheDirectory: URL? = nil,
         runningApplications: @escaping () -> [AppRunningState.RunningApplication] = {
@@ -102,6 +104,7 @@ struct AppMigrationService {
         self.runningApplications = runningApplications
         self.transferStore = transferStore
         self.signatureFactStore = signatureFactStore
+        self.homebrewRouting = homebrewRouting ?? (transferStore === AppTransferStore.shared ? .system : nil)
         self.transferHooks = transferHooks
         self.writerAdmissionCheck = writerAdmissionCheck
     }
@@ -445,6 +448,17 @@ struct AppMigrationService {
             NotificationCenter.default.post(name: .appPortalPresentationDidChange, object: portal.local)
         }
         try? fileManager.removeItem(at: journalURL)
+        if let homebrewRouting {
+            for local in localURLs {
+                do {
+                    guard try homebrewRouting.savedRegistration(local: local) != nil else { continue }
+                    try homebrewRouting.register(local: local, external: destination, installations: homebrewRouting.inventory)
+                } catch {
+                    // The app and portal already moved. Local discovery retries the cask receipt.
+                    AppLogger.shared.logError("更新 Homebrew 应用位置失败", error: error, relatedURLs: [("app", local)])
+                }
+            }
+        }
         let dockOK = synchronizeDockShortcuts(from: source, to: destination,
                                               operationID: AppLogger.shared.makeOperationID(prefix: "search-exclusion"))
         return .init(destination: destination, dockSynchronized: dockOK)
@@ -781,7 +795,7 @@ struct AppMigrationService {
             prepareUpdaterCaches: { source, isFolder in
                 try self.unlockUpdaterCaches(at: source, isFolder: isFolder)
             },
-            runningApplications: runningApplications, hooks: transferHooks, allowsAdministratorPrompt: !retrying)
+            homebrew: homebrewRouting, runningApplications: runningApplications, hooks: transferHooks, allowsAdministratorPrompt: !retrying)
     }
 
     private func sameApplicationContainer(_ source: URL, _ destination: URL, folder: Bool) -> Bool {
@@ -1112,6 +1126,7 @@ struct AppMigrationService {
                 ?? "其他操作正在使用应用记录，请稍后重试。".localized, at: app.path)
         }
         defer { operationLock.release() }
+        try homebrewRouting?.verifyRestoreSource(local: localDestinationURL, external: app.path)
         _ = try await finishPendingMigration(external: app.path, local: localDestinationURL, progress: progressHandler)
         try Self.checkWritePermission(at: localDestinationURL, fileManager: fileManager)
         let existing = localPortalKind(at: localDestinationURL, linkedTo: app.path)
@@ -1192,6 +1207,9 @@ struct AppMigrationService {
         defaultDirectory: URL,
         additionalDirectories: [URL] = []
     ) -> URL {
+        if let registered = try? homebrewRouting?.registrations().first(where: { $0.external.path == app.path.path }) {
+            return registered.local
+        }
         for directory in [defaultDirectory] + additionalDirectories {
             let candidate = directory.appendingPathComponent(app.name)
             if localPortalKind(at: candidate, linkedTo: app.path) != nil {
@@ -2124,6 +2142,44 @@ struct AppMigrationService {
             AppLogger.shared.logError("创建应用入口失败", error: error, relatedURLs: [("stage", localURL), ("external", externalURL)])
             throw error
         }
+    }
+
+    /// Runs once per local discovery, so all older migrations share one read of the Caskrooms.
+    func reconcileHomebrew(records store: AppSearchRecordStore = .shared, expectedGeneration: UInt64?) -> Set<String> {
+        guard let routing = homebrewRouting,
+              Self.mutationCoordinator.tryBeginMaintenance(expectedGeneration: expectedGeneration) else { return [] }
+        defer { Self.mutationCoordinator.end() }
+        let lock = makeOperationLock()
+        guard lock.tryAcquire() else { return [] }
+        defer { lock.release() }
+        var retired = Set<String>()
+        do {
+            try recheckWriterAdmission()
+            for record in try routing.registrations() {
+                do {
+                    if try routing.retireUninstalled(record) { retired.insert(record.local.path) }
+                } catch { AppLogger.shared.logError("核对 Homebrew 卸载状态失败", error: error) }
+            }
+            var inventory: [HomebrewCaskInstallation]?
+            for record in try store.records() where !record.isRestored && record.expectsLocalEntry {
+                let external = URL(fileURLWithPath: record.externalPath)
+                let local = URL(fileURLWithPath: record.localPath)
+                guard !retired.contains(HomebrewCaskRouting.localPath(local)),
+                      let uuid = record.volumeUUID, (try? external.resourceValues(forKeys: [.volumeUUIDStringKey]).volumeUUIDString) == uuid,
+                      let bundleID = record.targetBundleIdentifier,
+                      (NSDictionary(contentsOf: local.appendingPathComponent("Contents/Info.plist")))?["AppPortsTargetBundleIdentifier"] as? String == bundleID
+                else { continue }
+                do {
+                    try routing.register(local: local, external: external) {
+                        if let inventory { return inventory }
+                        let items = try routing.inventory()
+                        inventory = items
+                        return items
+                    }
+                } catch { AppLogger.shared.logError("核对 Homebrew 应用位置失败", error: error, relatedURLs: [("app", local)]) }
+            }
+        } catch { AppLogger.shared.logError("读取 Homebrew 应用位置记录失败", error: error) }
+        return retired
     }
 
     /// 刷新 Stub Portal 的 Info.plist 和图标（同步外置 app 的版本等元数据）

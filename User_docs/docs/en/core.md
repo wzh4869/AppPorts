@@ -48,6 +48,10 @@ On macOS 15.1 and later, App Store settings offer “Download and install large 
 
 Application update guardian currently covers only explicitly failed ShipIt updates whose complete cached bundle passes signature verification; it does not guarantee compatibility with every updater framework or every ShipIt variant. See [update protection and guardian](/docs/migration-strategy/portal#updates).
 
+**Updating with Homebrew.** For an unlocked app installed by a standard single-`.app` cask in a default Homebrew prefix, keep the local AppPorts launcher, connect the original drive, and run `brew upgrade` as usual. Homebrew installs the new version on the external drive. The local launcher opens it even with AppPorts closed. For an app you moved earlier, refresh the app list in AppPorts with the original drive connected to register its location. After you move the app back, Homebrew uses its original local installation directory again.
+
+If the drive is disconnected, the upgrade for that cask fails. Reconnect the original drive and run the same command again. Exclude the volume’s top-level `.appports-brew` directory from file-level backups. If a backup drive has the same name and contains copies of both that directory and the app, Homebrew can update the backup and record a successful upgrade while the original drive still holds the old version.
+
 ## Move back or repair an entry {#restore-links}
 
 - Move the real app onto the internal drive: use Move Back to Local.
