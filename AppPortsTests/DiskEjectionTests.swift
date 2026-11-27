@@ -371,11 +371,12 @@ struct DiskEjectionTests {
         #expect(!controller.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/Other")))
 
         let deadline = Date().addingTimeInterval(3)
-        while (controller.isWorking || state.isBusy) && Date() < deadline {
+        while (controller.isWorking || state.isBusy || controller.connectionStates.isEmpty) && Date() < deadline {
             try await Task.sleep(nanoseconds: 25_000_000)
         }
         #expect(!controller.isWorking)
         #expect(!state.isBusy)
+        #expect(!controller.connectionStates.isEmpty)
         #expect(controller.errorMessage == nil)
         #expect(state.recordsRevision == 0)
         #expect(await calls.paths == ["/Volumes/USB"])
@@ -392,6 +393,7 @@ struct DiskEjectionTests {
             operationState: state
         )
         await replacedController.refresh()
+        #expect(!replacedController.needsRefresh)
         #expect(!replacedController.suppressesVolumeAccess(at: URL(fileURLWithPath: "/Volumes/USB/Apps")))
     }
 

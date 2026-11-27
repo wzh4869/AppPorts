@@ -8,7 +8,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         let fixture = try Fixture()
         defer { fixture.clean() }
         let process = try fixture.launch()
-        defer { if process.isRunning { process.terminate() }; process.waitUntilExit() }
+        defer { Fixture.terminate(process) }
         try await wait { try fixture.observation() != nil }
         let before = try XCTUnwrap(fixture.observation())
         XCTAssertEqual(before["windows"], 0)
@@ -17,7 +17,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         try await Task.sleep(nanoseconds: 6_200_000_000)
         XCTAssertEqual(try fixture.observation()?["checks"], before["checks"])
         process.terminate()
-        try await wait { !process.isRunning }
+        try await wait(timeout: 10) { !process.isRunning }
         XCTAssertEqual(process.terminationStatus, 0)
     }
 
@@ -27,7 +27,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         fixture.defaults.set(false, forKey: BackgroundAgentPreferences.updateGuardianKey)
         XCTAssertTrue(fixture.defaults.synchronize())
         let process = try fixture.launch()
-        defer { if process.isRunning { process.terminate() }; process.waitUntilExit() }
+        defer { Fixture.terminate(process) }
         try await wait { !process.isRunning }
         XCTAssertEqual(process.terminationStatus, 0)
         XCTAssertNil(try fixture.observation())
@@ -38,7 +38,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         let fixture = try Fixture()
         defer { fixture.clean() }
         let process = try fixture.launch()
-        defer { if process.isRunning { process.terminate() }; process.waitUntilExit() }
+        defer { Fixture.terminate(process) }
         try await wait { try fixture.observation() != nil }
         let checks = try XCTUnwrap(fixture.observation()?["checks"])
         let lock = OperationLock(fileURL: fixture.root.appendingPathComponent("operation.lock"), writerAdmissionCheck: {})
@@ -73,7 +73,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         let center = MigrationTaskCenter(historyStore: history, operationState: AppOperationState())
         let observer = ShipItTaskObserver(store: store, taskCenter: center, defaults: fixture.defaults)
         let first = try fixture.launch()
-        defer { if first.isRunning { first.terminate(); first.waitUntilExit() } }
+        defer { Fixture.terminate(first) }
         try await wait { try store.entries().first?.status == .queued }
         observer.refresh()
         let id = try XCTUnwrap(center.jobs.first?.id)
@@ -98,7 +98,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         fixture.defaults.set(true, forKey: BackgroundAgentPreferences.updateGuardianKey)
         XCTAssertTrue(fixture.defaults.synchronize())
         let second = try fixture.launch()
-        defer { if second.isRunning { second.terminate(); second.waitUntilExit() } }
+        defer { Fixture.terminate(second) }
         try await wait { try store.entries().first?.status == .queued }
         coldObserver.refresh()
         XCTAssertEqual(reopened.jobs.map(\.id), [id])
@@ -110,7 +110,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         let fixture = try Fixture()
         defer { fixture.clean() }
         let worker = try fixture.launch()
-        defer { if worker.isRunning { worker.terminate(); worker.waitUntilExit() } }
+        defer { Fixture.terminate(worker) }
         let executable = try XCTUnwrap(Bundle.main.executableURL)
         try await wait {
             GuardianReadiness.matches(pid: worker.processIdentifier, executable: executable, directory: fixture.root)
@@ -130,7 +130,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
         let records = root.appendingPathComponent("app-search-records.json")
         try Data("invalid".utf8).write(to: records)
         let worker = try fixture.launch()
-        defer { if worker.isRunning { worker.terminate(); worker.waitUntilExit() } }
+        defer { Fixture.terminate(worker) }
         let pid = worker.processIdentifier
         let executable = try XCTUnwrap(Bundle.main.executableURL)
         let sync = AppLibraryAgentSync(synchronize: {})
@@ -166,7 +166,7 @@ final class UpdateRecoveryAgentTests: XCTestCase {
             let executable = installedApp.appendingPathComponent("Contents/MacOS/AppPorts")
 
             let process = try fixture.launch(executableURL: executable)
-            defer { if process.isRunning { process.terminate() }; process.waitUntilExit() }
+            defer { Fixture.terminate(process) }
             try await wait { try fixture.observation() != nil }
 
             if mode == "move" {
@@ -250,6 +250,22 @@ final class UpdateRecoveryAgentTests: XCTestCase {
                 expectsLocalEntry: true, targetBundleIdentifier: identifier)
             try JSONEncoder().encode([record]).write(to: root.appendingPathComponent("app-search-records.json"), options: .atomic)
             return target
+        }
+
+        static func terminate(_ process: Process, timeout: TimeInterval = 5) {
+            guard process.isRunning else { return }
+            process.terminate()
+            let deadline = Date().addingTimeInterval(timeout)
+            while process.isRunning && Date() < deadline {
+                Thread.sleep(forTimeInterval: 0.02)
+            }
+            if process.isRunning {
+                kill(process.processIdentifier, SIGKILL)
+            }
+            let killDeadline = Date().addingTimeInterval(2)
+            while process.isRunning && Date() < killDeadline {
+                Thread.sleep(forTimeInterval: 0.02)
+            }
         }
 
         func clean() {
