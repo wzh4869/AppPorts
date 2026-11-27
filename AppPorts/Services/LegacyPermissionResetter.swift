@@ -103,7 +103,7 @@ final class LegacyPermissionResetter: Sendable {
         var store: Store
 
         static let live = Dependencies(
-            hasCompletedWelcome: { UserDefaults.standard.bool(forKey: WelcomeView.completionDefaultsKey) },
+            hasCompletedWelcome: { UserDefaults.standard.bool(forKey: WelcomeLaunchPolicy.welcomeCompletedDefaultsKey) },
             isAllowedLocation: { AppInstallationLocation.isAllowed() },
             bundleIdentifier: { Bundle.main.bundleIdentifier },
             bundleURL: { Bundle.main.bundleURL.resolvingSymlinksInPath().standardizedFileURL },

@@ -149,9 +149,9 @@ final class DiskEjectionController: ObservableObject {
     private var lastRefreshError: String?
 
     init(service: DiskEjectionService = DiskEjectionService(),
-         operationState: AppOperationState = .shared) {
+         operationState: AppOperationState? = nil) {
         self.service = service
-        self.operationState = operationState
+        self.operationState = operationState ?? .shared
     }
 
     private var refreshing = false
