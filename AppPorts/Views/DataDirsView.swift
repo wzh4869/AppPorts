@@ -53,8 +53,55 @@ struct DataDirsView: View {
     var onRepairSignature: ((AppItem) -> Void)? = nil
     /// 独立手动重签，不与迁移组成一个操作。
     let onResignApp: ((AppItem) -> Void)?
+    /// 恢复已重签名应用的原始签名（由右侧面板触发，避免页面顶栏动态跳动）
+    var onRestoreSignature: ((AppItem) -> Void)? = nil
+    /// 工具目录页搜索关键词（与统一顶栏联动）
+    @Binding var toolDirsSearchText: String
+    /// 应用数据左侧应用搜索关键词（与统一顶栏联动）
+    @Binding var appSearchText: String
+    /// 左侧应用批量测算状态变化回调（供统一顶栏排序按钮展示进度）
+    var onBatchSizingChanged: ((Bool) -> Void)? = nil
     /// 解析应用真实路径（已链接→外部，未链接→本地），不返回假壳路径
     let resolveRealAppURL: (AppItem) throws -> URL
+
+    init(
+        isActive: Bool = true,
+        externalDriveURL: URL?,
+        localApps: [AppItem],
+        selectedTab: Binding<DataTab>,
+        selectedApp: Binding<AppItem?>,
+        isScanning: Binding<Bool>,
+        isScanningApps: Bool = false,
+        classicModeActive: Bool,
+        refreshTrigger: Int,
+        toolDirsSearchText: Binding<String> = .constant(""),
+        appSearchText: Binding<String> = .constant(""),
+        onBatchSizingChanged: ((Bool) -> Void)? = nil,
+        onSelectExternalDrive: @escaping () -> URL?,
+        onRepairSignature: ((AppItem) -> Void)? = nil,
+        onResignApp: ((AppItem) -> Void)?,
+        onRestoreSignature: ((AppItem) -> Void)? = nil,
+        resolveRealAppURL: @escaping (AppItem) throws -> URL
+    ) {
+        self.isActive = isActive
+        self._isVisible = State(initialValue: isActive)
+        self.externalDriveURL = externalDriveURL
+        self.localApps = localApps
+        self._selectedTab = selectedTab
+        self._selectedApp = selectedApp
+        self._isScanning = isScanning
+        self.isScanningApps = isScanningApps
+        self.classicModeActive = classicModeActive
+        self.refreshTrigger = refreshTrigger
+        self._toolDirsSearchText = toolDirsSearchText
+        self._appSearchText = appSearchText
+        self.onBatchSizingChanged = onBatchSizingChanged
+        self.onSelectExternalDrive = onSelectExternalDrive
+        self.onRepairSignature = onRepairSignature
+        self.onResignApp = onResignApp
+        self.onRestoreSignature = onRestoreSignature
+        self.resolveRealAppURL = resolveRealAppURL
+    }
 
     private struct EncryptedMigrationRequest: Identifiable {
         let id = UUID()
@@ -87,7 +134,6 @@ struct DataDirsView: View {
     @AppStorage("showNonMigratableAppDataDirectories") private var showNonMigratableDirectories = false
     @AppStorage("showNonMigratableToolDirectories") private var showNonMigratableToolDirectories = false
 
-    @State private var showAppDataFilters = false
     @State private var selectedPriorityFilters: Set<DataDirPriority> = []
     @State private var selectedStatusFilters: Set<String> = []
     @State private var selectedTypeFilters: Set<DataDirType> = []
@@ -139,12 +185,25 @@ struct DataDirsView: View {
     @State private var isBatchSizingApps = false
     @State private var appListSizeTask: Task<Void, Never>?
     @State private var appListSizeScanToken = UUID()
-    @State private var lastBatchSizedAppIDs: Set<String> = []
+    @State private var completedBatchSizedAppIDs: Set<String> = []
+    @State private var inFlightBatchSizedAppIDs: Set<String> = []
     @State private var appListSizeNeedsResume = false
     @State private var deferredTabReloadAfterBusy = false
+    @State private var hasOpenedToolDirs = false
+    @State private var hasOpenedAppDirs = false
+    @State private var lastObservedTab: DataTab?
+    @State private var isVisible: Bool
+
+    private struct ActiveTabKey: Equatable {
+        let isActive: Bool
+        let tab: DataTab
+    }
+
+    private var activeTabKey: ActiveTabKey {
+        ActiveTabKey(isActive: isActive, tab: selectedTab)
+    }
 
     // 搜索
-    @State private var appSearchText = ""
     @State private var directorySearchText = ""
 
     enum DataTab: String, CaseIterable {
@@ -196,41 +255,22 @@ struct DataDirsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if selectedTab == .appDirs && (!attentionTransfers.isEmpty || !attentionCleanups.isEmpty || !attentionMaterials.isEmpty) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        let cleanupOnly = attentionCleanups.isEmpty && attentionMaterials.isEmpty
-                            && attentionTransfers.allSatisfy(\.isDataSwitchComplete)
-                        Text((cleanupOnly ? "已保留旧副本" : "部分数据操作尚未完成，已保留副本。").localized)
-                        if let reason = attentionTransfers.compactMap(\.recoverableReason).first ?? attentionMaterials.first?.reason {
-                            Text(verbatim: reason).font(.caption).foregroundStyle(.secondary)
-                                .lineLimit(2).help(reason)
-                        }
-                    }
-                    Spacer()
-                    Button("处理异常".localized) { cleanupResolution = .all }
-                }
-                .padding(12)
-            }
-            if selectedTab == .appDirs && dataTransfers.contains(where: { $0.cleanupDisposition == .keep }) {
-                HStack {
-                    Text("已保留旧副本".localized).foregroundStyle(.secondary)
-                    Spacer()
-                    Button("查看旧副本".localized) { cleanupResolution = .all }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-            }
-            // ── 主内容区 ────────────────────────────────────────
+            // ── 主内容区（保留已访问子页面实例，避免切换重建 HSplitView 与目录树）────────
             ZStack(alignment: .topLeading) {
-                if selectedTab == .toolDirs {
+                if selectedTab == .toolDirs || hasOpenedToolDirs {
                     toolDirsContent
-                        .padding(.top, 8)
-                        .transaction { $0.animation = nil }
-                } else {
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 10)
+                        .padding(.top, 2)
+                        .modifier(AppPageVisibility(isActive: isActive && selectedTab == .toolDirs))
+                }
+                if selectedTab == .appDirs || hasOpenedAppDirs {
                     appDirsContent
-                        .ignoresSafeArea(.container, edges: .top)
-                        .transaction { $0.animation = nil }
+                        .modifier(AppListPanelStyle())
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 10)
+                        .padding(.top, 2)
+                        .modifier(AppPageVisibility(isActive: isActive && selectedTab == .appDirs))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -238,42 +278,52 @@ struct DataDirsView: View {
         }
         .disabled(operationState.blocksInteraction)
         .onAppear {
+            isVisible = isActive
+            markSubTabOpened(selectedTab)
+            lastObservedTab = selectedTab
             guard !hasLoadedDirectories else { return }
             hasLoadedDirectories = true
             reloadCurrentTab(useCachedAppData: true)
         }
-        .onChange(of: selectedTab) { _ in
-            directoryRevealRequest = nil
-            summaryFilter = nil
-            reloadCurrentTab(useCachedAppData: true)
-        }
         .onDisappear {
+            isVisible = false
             suspendDirectoryScans()
+            onBatchSizingChanged?(false)
         }
-        .onChange(of: isActive) { active in
-            if active {
+        .onChange(of: activeTabKey) { next in
+            isVisible = next.isActive
+            if next.isActive {
+                markSubTabOpened(next.tab)
+                if lastObservedTab != next.tab {
+                    directoryRevealRequest = nil
+                    summaryFilter = nil
+                    lastObservedTab = next.tab
+                }
                 hasLoadedDirectories = true
                 reloadCurrentTab(useCachedAppData: true)
             } else {
                 suspendDirectoryScans()
             }
         }
+        .onChange(of: isBatchSizingApps) { sizing in
+            onBatchSizingChanged?(sizing)
+        }
         .onChange(of: operationState.recordsRevision) { _ in
-            appDataScanCache.removeAll()
-            if isActive { reloadCurrentTab() }
+            invalidateAppDataCaches()
+            if isVisible { reloadCurrentTab() }
         }
         .onChange(of: externalDriveURL) { _ in
-            appDataScanCache.removeAll()
+            invalidateAppDataCaches()
             reloadCurrentTab()
         }
         .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didMountNotification)) { notification in
             if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
                 invalidateSizeCache(for: volumeURL)
             }
-            appDataScanCache.removeAll()
+            invalidateAppDataCaches()
             if operationState.isBusy {
                 deferredTabReloadAfterBusy = true
-            } else if isActive {
+            } else if isVisible {
                 reloadCurrentTab()
             }
         }
@@ -293,19 +343,19 @@ struct DataDirsView: View {
             if let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL {
                 invalidateSizeCache(for: volumeURL)
             }
-            appDataScanCache.removeAll()
+            invalidateAppDataCaches()
             if isExternalVolumeSuppressedAndMounted {
                 deferredTabReloadAfterBusy = false
                 return
             }
             if operationState.isBusy {
                 deferredTabReloadAfterBusy = true
-            } else if isActive {
+            } else if isVisible {
                 reloadCurrentTab()
             }
         }
         .onChange(of: refreshTrigger) { _ in
-            appDataScanCache.removeAll()
+            invalidateAppDataCaches()
             clearSizeCache()
             ToolDirectorySizeCacheStore.appDataDirectories.removeAll()
             reloadCurrentTab(forceToolSizeRefresh: true)
@@ -322,10 +372,10 @@ struct DataDirsView: View {
             } else if deferredTabReloadAfterBusy {
                 deferredTabReloadAfterBusy = false
                 appListSizeNeedsResume = false
-                if isActive {
+                if isVisible {
                     reloadCurrentTab()
                 }
-            } else if appListSizeNeedsResume, isActive, selectedTab == .appDirs {
+            } else if appListSizeNeedsResume, isVisible, selectedTab == .appDirs {
                 appListSizeNeedsResume = false
                 scanAppListSizes(forceSizeRefresh: false)
             }
@@ -391,7 +441,7 @@ struct DataDirsView: View {
         .warningSheet($mountMigrationRequest)
         .sheet(isPresented: $showReadinessCheck, onDismiss: {
             if appDataPermissionIncomplete, let app = selectedApp { scanLibraryDirs(for: app) }
-            if isActive, selectedTab == .appDirs, (appDataPermissionIncomplete || appDataSizeSummaries.isEmpty) {
+            if isVisible, selectedTab == .appDirs, (appDataPermissionIncomplete || appDataSizeSummaries.isEmpty) {
                 scanAppListSizes(forceSizeRefresh: false)
             }
         }) {
@@ -430,6 +480,24 @@ struct DataDirsView: View {
                 statsBar(items: filteredDotFolderItems)
             }
 
+            HStack(spacing: 12) {
+                Text("名称".localized)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("大小".localized + " · " + "状态".localized)
+                    .frame(width: 110, alignment: .trailing)
+                Text("操作".localized)
+                    .frame(width: 96, alignment: .trailing)
+            }
+            .font(.system(size: 11, weight: .medium))
+            .foregroundColor(.secondary)
+            .padding(.horizontal, 16)
+            .frame(height: 30)
+            .background(Color.primary.opacity(0.03))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.horizontal, 12)
+            .padding(.top, dotFolderItems.isEmpty ? 10 : 0)
+            .padding(.bottom, 4)
+
             // 列表
             ZStack {
                 AppSurfaceColors.content.ignoresSafeArea()
@@ -465,6 +533,7 @@ struct DataDirsView: View {
                 }
             }
         }
+        .modifier(AppListPanelStyle())
     }
 
     // MARK: - 应用数据 Tab
@@ -473,8 +542,6 @@ struct DataDirsView: View {
         HSplitView {
             // 左侧：应用选择列表
             VStack(spacing: 0) {
-                appSelectionHeader
-
                 if localApps.isEmpty {
                     if isScanningApps {
                         ContentView.EmptyStateView(icon: "magnifyingglass", text: "正在扫描...".localized)
@@ -512,6 +579,7 @@ struct DataDirsView: View {
                                 .accessibilityAddTraits(selectedApp?.id == app.id ? .isSelected : [])
                             }
                         }
+                        .padding(.top, 10)
                         .padding(.bottom, 12)
                         .padding(.horizontal, 12)
                     }
@@ -519,7 +587,6 @@ struct DataDirsView: View {
             }
             .frame(minWidth: 200, maxWidth: 280)
             .frame(maxHeight: .infinity, alignment: .top)
-            .ignoresSafeArea(.container, edges: .top)
             .onChange(of: selectedApp?.path) { _ in
                 requestedRestoredPaths = nil
                 selectedAppIsWeChat = false
@@ -538,7 +605,9 @@ struct DataDirsView: View {
                     selectedApp = refreshed
                 }
                 let currentIDs = Set(newApps.map(\.id))
-                if currentIDs != lastBatchSizedAppIDs, isActive, selectedTab == .appDirs {
+                if currentIDs != completedBatchSizedAppIDs,
+                   !(isBatchSizingApps && currentIDs == inFlightBatchSizedAppIDs),
+                   isVisible, selectedTab == .appDirs {
                     scanAppListSizes(forceSizeRefresh: false)
                 }
             }
@@ -546,14 +615,19 @@ struct DataDirsView: View {
             // 右侧：关联数据目录
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 12) {
-                        if let app = selectedApp {
-                            Text(String(format: "%@ 的数据目录".localized, app.displayName))
-                        } else if isScanningApps {
-                            Text("正在扫描...".localized)
-                        } else {
-                            Text("请从左侧选择应用".localized)
+                    HStack(spacing: 10) {
+                        Group {
+                            if let app = selectedApp {
+                                Text(String(format: "%@ 的数据目录".localized, app.displayName))
+                            } else if isScanningApps {
+                                Text("正在扫描...".localized)
+                            } else {
+                                Text("请从左侧选择应用".localized)
+                            }
                         }
+                        .font(.system(size: 14, weight: .semibold))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                         if selectedAppIsWeChat {
                             Toggle("微信账号拆分迁移".localized, isOn: partialWeChatMigrationBinding)
                                 .toggleStyle(.switch)
@@ -561,14 +635,21 @@ struct DataDirsView: View {
                                 .font(.system(size: 12))
                                 .fixedSize()
                         }
-                        Spacer()
-                        if selectedApp != nil {
+                        Spacer(minLength: 8)
+                        if let app = selectedApp {
+                            if app.isResigned, !app.needsSignatureAttention, let onRestoreSignature {
+                                Button(action: { onRestoreSignature(app) }) {
+                                    Label("恢复原始签名".localized, systemImage: "arrow.counterclockwise")
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                                .help("恢复选中应用的原始代码签名".localized)
+                            }
                             appDataSortMenu
                             appDataVisibilityButton
                             appDataFilterButton
                         }
                     }
-                    .frame(height: 24)
 
                     if selectedApp != nil {
                         directorySearchField
@@ -584,9 +665,12 @@ struct DataDirsView: View {
                         }
                     }
                 }
-                .font(.headline)
-                .settingsCardBackground(opacity: 0.05)
-                .padding(12)
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 10)
+
+                Divider()
+                    .opacity(0.6)
 
                 if let app = selectedApp, app.needsSignatureAttention {
                     signatureReplacedBanner(for: app)
@@ -635,84 +719,12 @@ struct DataDirsView: View {
             }
             .frame(minWidth: 340, maxWidth: .infinity)
             .frame(maxHeight: .infinity, alignment: .top)
-            .ignoresSafeArea(.container, edges: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppSurfaceColors.content)
     }
 
     // MARK: - 辅助子视图
-
-    private var appSelectionHeader: some View {
-        HStack(spacing: 6) {
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 12))
-                    .foregroundColor(.primary.opacity(0.6))
-                    .frame(width: 20)
-                TextField(
-                    "搜索应用...".localized,
-                    text: $appSearchText,
-                    prompt: Text("搜索应用...".localized).foregroundColor(.primary.opacity(0.6))
-                )
-                    .textFieldStyle(.plain)
-                    .foregroundColor(.primary)
-                    .onExitCommand { appSearchText = "" }
-                if !appSearchText.isEmpty {
-                    Button { appSearchText = "" } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("清除搜索".localized)
-                }
-            }
-            .font(.system(size: 12))
-            .padding(.horizontal, 10)
-            .frame(height: 30)
-            .background(Color.primary.opacity(0.045))
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-
-            Menu {
-                ForEach(AppDataAppListSortMode.allCases, id: \.self) { mode in
-                    Button(action: { appListSortModeRaw = mode.rawValue }) {
-                        HStack {
-                            Text(mode.localizedTitle)
-                            Spacer()
-                            if appListSortMode == mode {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                }
-            } label: {
-                HStack(spacing: 4) {
-                    if isBatchSizingApps {
-                        ProgressView()
-                            .controlSize(.mini)
-                    } else {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .font(.system(size: 11, weight: .medium))
-                    }
-                    Text(appListSortMode.localizedTitle)
-                        .font(.system(size: 11, weight: .medium))
-                        .lineLimit(1)
-                }
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 8)
-                .frame(height: 30)
-                .background(Color.primary.opacity(0.045))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .help(String(format: "排序：%@".localized, appListSortMode.localizedTitle))
-            .accessibilityLabel(String(format: "排序：%@".localized, appListSortMode.localizedTitle))
-        }
-        .padding(.horizontal, 12)
-        .padding(.top, 12)
-        .padding(.bottom, 12)
-    }
 
     private func signatureReplacedBanner(for app: AppItem) -> some View {
         HStack(spacing: 10) {
@@ -725,6 +737,12 @@ struct DataDirsView: View {
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer()
+            if app.isResigned, let onRestoreSignature {
+                Button("恢复原始签名".localized) { onRestoreSignature(app) }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .help("恢复选中应用的原始代码签名".localized)
+            }
             if let onRepairSignature {
                 Button(app.signatureCheckUnavailable ? "检查签名".localized : "查看修复步骤".localized) { onRepairSignature(app) }
                     .buttonStyle(.bordered)
@@ -737,20 +755,23 @@ struct DataDirsView: View {
     }
 
     private var directorySearchField: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 7) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.primary.opacity(0.6))
+                .font(.system(size: 11.5))
+                .foregroundColor(.secondary.opacity(0.8))
             TextField(
                 "搜索目录或路径…".localized,
                 text: $directorySearchText,
-                prompt: Text("搜索目录或路径…".localized).foregroundColor(.primary.opacity(0.6))
+                prompt: Text("搜索目录或路径…".localized).foregroundColor(.secondary.opacity(0.75))
             )
                 .textFieldStyle(.plain)
+                .font(.system(size: 12))
                 .foregroundColor(.primary)
                 .onExitCommand { directorySearchText = "" }
             if !directorySearchText.isEmpty {
                 Button { directorySearchText = "" } label: {
                     Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -758,22 +779,30 @@ struct DataDirsView: View {
             }
             Text(String(format: "显示 %lld / %lld".localized, Int64(visibleLibraryItemCount), Int64(libraryItems.count)))
                 .font(.system(size: 11))
-                .foregroundColor(.secondary)
+                .monospacedDigit()
+                .foregroundColor(.secondary.opacity(0.8))
                 .fixedSize()
         }
-        .font(.system(size: 13))
         .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(Color.primary.opacity(0.045))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .frame(height: 28)
+        .background(Color.primary.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.09), lineWidth: 0.5)
+        )
     }
 
     private var appDataFilterButton: some View {
-        Button(action: { showAppDataFilters.toggle() }) {
-            HStack(spacing: 6) {
-                Image(systemName: hasActiveAppDataFilters
-                      ? "line.3.horizontal.decrease.circle.fill"
-                      : "line.3.horizontal.decrease.circle")
+        AppPopoverButton(
+            preferredEdge: .maxY,
+            isHighlighted: hasActiveAppDataFilters,
+            help: "筛选".localized,
+            accessibilityLabel: "筛选".localized
+        ) {
+            HStack(spacing: 5) {
+                Image(systemName: "line.3.horizontal.decrease")
+                    .font(.system(size: 11.5, weight: .medium))
                 Text("筛选".localized)
                 if hasActiveAppDataFilters {
                     Text("\(activeAppDataFilterCount)")
@@ -784,10 +813,7 @@ struct DataDirsView: View {
                         .clipShape(Capsule())
                 }
             }
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
-        .popover(isPresented: $showAppDataFilters, arrowEdge: .top) {
+        } popoverContent: {
             appDataFilterPopover
         }
     }
@@ -806,22 +832,32 @@ struct DataDirsView: View {
                 }
             }
         } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "arrow.up.arrow.down.circle")
+            HStack(spacing: 5) {
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.system(size: 11, weight: .medium))
                 Text(selectedAppDataSortMode.localizedTitle)
+                    .font(.system(size: 12, weight: .medium))
             }
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
+        .foregroundColor(.secondary)
+        .tint(.secondary)
+        .padding(.horizontal, 9)
+        .frame(height: 26)
+        .background(
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(Color.primary.opacity(0.035))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
     }
 
     private var appDataFilterSummary: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                Text(String(format: "显示 %lld / %lld".localized, Int64(visibleLibraryItemCount), Int64(libraryItems.count)))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
-
                 Text(String(format: "排序：%@".localized, selectedAppDataSortMode.localizedTitle))
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
@@ -900,6 +936,7 @@ struct DataDirsView: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxHeight: 420)
         }
@@ -922,13 +959,10 @@ struct DataDirsView: View {
                 directoryReadWarning(issues: dotFolderReadFailures)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.primary.opacity(0.05))
-        .cornerRadius(12)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
     }
 
     private var appDataVisibilityButton: some View {
@@ -1024,6 +1058,7 @@ struct DataDirsView: View {
         .accessibilityElement(children: .combine)
     }
 
+    @ViewBuilder
     private func statsSummary(
         items: [DataDirItem], allItems: [DataDirItem], readIssues: [DataDirReadIssue], hasIdentityIssue: Bool = false,
         displayedItems: [DataDirItem]? = nil,
@@ -1035,80 +1070,144 @@ struct DataDirsView: View {
         )
         let totalSize = DataDirDisplaySizeSummary(items: allItems,
             hasReadIssues: !readIssues.isEmpty || hasIdentityIssue)
-        let visibleSize = DataDirDisplaySizeSummary(items: visibleItems)
         let linked = items.filter { $0.status == "已链接" }.count
         let mounted = items.filter { DataDirStatus.mountStatuses.contains($0.status) }.count
         let needsNormalization = items.filter { $0.status == "待规范" }.count
         let existingSymlinks = items.filter { $0.status == "现有软链" && !$0.isUserDirectoryLink }.count
         let relinkable = items.filter { $0.status == "待接回" }.count
-        return HStack(spacing: 14) {
-            if displayedItems != nil {
+        if displayedItems != nil {
+            let visibleSize = DataDirDisplaySizeSummary(items: visibleItems)
+            HStack(spacing: 8) {
                 Text("应用数据：".localized + totalSize.sizeText)
-                    .foregroundColor(totalSize.isIncomplete ? .orange : .secondary)
-                Label("%lld 个目录".localizedFormat(Int64(visibleItems.count)), systemImage: "folder.fill")
+                    .fontWeight(.medium)
+                    .monospacedDigit()
+                    .foregroundColor(totalSize.isIncomplete ? .orange : .primary.opacity(0.82))
+                statsDotSeparator()
+                Text("%lld 个目录".localizedFormat(Int64(visibleItems.count)))
+                    .monospacedDigit()
                     .foregroundColor(.secondary)
-                Text("目录大小：".localized + visibleSize.sizeText)
-                    .foregroundColor(visibleSize.isIncomplete ? .orange : .accentColor)
-            } else {
-                Label("%lld 个目录".localizedFormat(Int64(visibleItems.count)), systemImage: "folder.fill")
+                if visibleItems.count != allItems.count {
+                    statsDotSeparator()
+                    Text("目录大小：".localized + visibleSize.sizeText)
+                        .fontWeight(.medium)
+                        .monospacedDigit()
+                        .foregroundColor(visibleSize.isIncomplete ? .orange : .accentColor)
+                }
+                if linked > 0 {
+                    statsDotSeparator()
+                    summaryNavigationLabel("%lld 个已链接".localizedFormat(Int64(linked)),
+                        color: .green,
+                        filter: .linked, onSelect: onSelectSummary)
+                }
+                if mounted > 0 {
+                    statsDotSeparator()
+                    summaryNavigationLabel("%lld 个挂载迁移".localizedFormat(Int64(mounted)),
+                        color: .purple,
+                        filter: .mounted, onSelect: onSelectSummary)
+                }
+                if needsNormalization > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个待整理".localizedFormat(Int64(needsNormalization)), color: .mint)
+                }
+                if existingSymlinks > 0 {
+                    statsDotSeparator()
+                    summaryNavigationLabel("%lld 个现有软链".localizedFormat(Int64(existingSymlinks)),
+                        color: .teal,
+                        filter: .existingSymlink, onSelect: onSelectSummary)
+                }
+                if relinkable > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个待接回".localizedFormat(Int64(relinkable)), color: .indigo)
+                }
+                Spacer()
+            }
+            .font(.system(size: 12))
+        } else {
+            HStack(spacing: 8) {
+                Text("%lld 个目录".localizedFormat(Int64(visibleItems.count)))
+                    .monospacedDigit()
                     .foregroundColor(.secondary)
+
                 if summary.isIncomplete {
-                    Label("空间统计不完整".localized, systemImage: "exclamationmark.circle")
-                        .foregroundColor(.orange)
+                    statsDotSeparator()
+                    toolDirStatusBadge("空间统计不完整".localized, color: .orange)
                 } else if summary.isCalculating {
-                    Label("计算中...".localized, systemImage: "hourglass")
+                    statsDotSeparator()
+                    Text("计算中...".localized)
                         .foregroundColor(.secondary)
                 } else if summary.reclaimableBytes > 0 {
-                    Label(
-                        LocalizedByteCountFormatter.string(fromByteCount: summary.reclaimableBytes, allowedUnits: [.mb, .gb]) + " 可释放".localized,
-                        systemImage: "sparkles"
-                    )
+                    statsDotSeparator()
+                    Text(LocalizedByteCountFormatter.string(fromByteCount: summary.reclaimableBytes, allowedUnits: [.mb, .gb]) + " 可释放".localized)
+                        .fontWeight(.medium)
+                        .monospacedDigit()
                         .foregroundColor(.accentColor)
                         .help("原件仍保留，清理后才会释放空间。".localized)
                 }
+
+                if linked > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个已链接".localizedFormat(Int64(linked)), color: .green)
+                }
+                if mounted > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个挂载迁移".localizedFormat(Int64(mounted)), color: .purple)
+                }
+                if needsNormalization > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个待整理".localizedFormat(Int64(needsNormalization)), color: .mint)
+                }
+                if existingSymlinks > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个现有软链".localizedFormat(Int64(existingSymlinks)), color: .teal)
+                }
+                if relinkable > 0 {
+                    statsDotSeparator()
+                    toolDirStatusBadge("%lld 个待接回".localizedFormat(Int64(relinkable)), color: .indigo)
+                }
+                Spacer()
             }
-            if linked > 0 {
-                summaryNavigationLabel("%lld 个已链接".localizedFormat(Int64(linked)),
-                    systemImage: "link.circle.fill", color: .green,
-                    filter: .linked, onSelect: onSelectSummary)
-            }
-            if mounted > 0 {
-                summaryNavigationLabel("%lld 个挂载迁移".localizedFormat(Int64(mounted)),
-                    systemImage: "externaldrive.fill.badge.checkmark", color: .purple,
-                    filter: .mounted, onSelect: onSelectSummary)
-            }
-            if needsNormalization > 0 {
-                Label("%lld 个待整理".localizedFormat(Int64(needsNormalization)), systemImage: "arrow.triangle.2.circlepath")
-                    .foregroundColor(.mint)
-            }
-            if existingSymlinks > 0 {
-                summaryNavigationLabel("%lld 个现有软链".localizedFormat(Int64(existingSymlinks)),
-                    systemImage: "questionmark.circle", color: .teal,
-                    filter: .existingSymlink, onSelect: onSelectSummary)
-            }
-            if relinkable > 0 {
-                Label("%lld 个待接回".localizedFormat(Int64(relinkable)), systemImage: "arrow.triangle.branch")
-                    .foregroundColor(.indigo)
-            }
-            Spacer()
+            .font(.system(size: 12))
         }
-        .font(.system(size: 12))
+    }
+
+    private func statsDotSeparator() -> some View {
+        Text(verbatim: "·")
+            .foregroundColor(.secondary.opacity(0.45))
+    }
+
+    private func toolDirStatusBadge(_ title: String, color: Color) -> some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(title)
+                .monospacedDigit()
+                .foregroundColor(.secondary)
+        }
     }
 
     @ViewBuilder
-    private func summaryNavigationLabel(_ title: String, systemImage: String, color: Color,
+    private func summaryNavigationLabel(_ title: String, color: Color,
                                         filter: DataDirTree.SummaryFilter, onSelect: ((DataDirTree.SummaryFilter) -> Void)?) -> some View {
+        let content = HStack(spacing: 5) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(title)
+                .monospacedDigit()
+                .foregroundColor(summaryFilter == filter ? color : .secondary)
+        }
         if let onSelect {
             Button { onSelect(filter) } label: {
-                Label(title, systemImage: systemImage)
-                    .padding(.horizontal, 5).padding(.vertical, 3)
-                    .background(RoundedRectangle(cornerRadius: 5).fill(color.opacity(summaryFilter == filter ? 0.16 : 0)))
-                    .contentShape(Rectangle())
+                content
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(color.opacity(summaryFilter == filter ? 0.12 : 0)))
+                    .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .foregroundColor(color)
         } else {
-            Label(title, systemImage: systemImage).foregroundColor(color)
+            content
         }
     }
 
@@ -1116,30 +1215,6 @@ struct DataDirsView: View {
         var urls = [item.path] + item.weChatSplitMembers.map(\.path)
         if let target = item.linkedDestination { urls.append(target) }
         return migrationTasks.activeJob(overlappingSubject: urls)
-    }
-
-    private var attentionTransfers: [DataTransferRecord] {
-        dataTransfers.filter { transfer in
-            transfer.needsAttention && !migrationTasks.hasActiveJob(
-                overlappingSubject: [transfer.originalPath, transfer.activePath, transfer.destinationPath]
-                    + [transfer.backupPath, transfer.stagingPath].compactMap { $0 }
-            )
-        }
-    }
-
-    private var attentionCleanups: [ContainerCleanupRecord] {
-        pendingCleanups.filter { cleanup in
-            !migrationTasks.hasActiveJob(
-                overlappingSubject: [cleanup.localPath, cleanup.mountRecord.mountPointPath]
-                    + [cleanup.restoreStagingPath].compactMap { $0 }
-            )
-        }
-    }
-
-    private var attentionMaterials: [DataTransferMaterial] {
-        preservedMaterials.filter { material in
-            !migrationTasks.hasActiveJob(overlappingSubject: [material.originalPath] + material.paths)
-        }
     }
 
     private func directoryOperationButtons(for item: DataDirItem) -> DataDirOperationButtons {
@@ -1176,9 +1251,14 @@ struct DataDirsView: View {
     }
 
     private var filteredDotFolderItems: [DataDirItem] {
-        dotFolderItems.filter {
+        let query = toolDirsSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return dotFolderItems.filter {
             (showNonMigratableToolDirectories || !$0.isMigrationUnsupported)
                 && (showZeroByteDirectories || !$0.isEmptyLocalDirectory)
+                && (query.isEmpty
+                    || $0.name.localizedCaseInsensitiveContains(query)
+                    || $0.path.path.localizedCaseInsensitiveContains(query)
+                    || $0.description.localizedCaseInsensitiveContains(query))
         }
     }
 
@@ -1339,7 +1419,7 @@ struct DataDirsView: View {
     // MARK: - 扫描逻辑
 
     private func refreshOperationRecords() {
-        guard isActive else { return }
+        guard isVisible else { return }
         recordRefreshTask?.cancel()
         let token = UUID()
         recordRefreshToken = token
@@ -1410,6 +1490,7 @@ struct DataDirsView: View {
     private func cancelAppListSizeScan() {
         appListSizeTask?.cancel()
         appListSizeScanToken = UUID()
+        inFlightBatchSizedAppIDs.removeAll()
         isBatchSizingApps = false
     }
 
@@ -1445,7 +1526,7 @@ struct DataDirsView: View {
     }
 
     private func reloadCurrentTab(forceToolSizeRefresh: Bool = false, useCachedAppData: Bool = false) {
-        guard isActive else { return }
+        guard isVisible else { return }
         if selectedTab == .appDirs {
             refreshOperationRecords()
         } else {
@@ -1476,24 +1557,53 @@ struct DataDirsView: View {
         }
     }
 
+    private func markSubTabOpened(_ tab: DataTab) {
+        switch tab {
+        case .toolDirs: hasOpenedToolDirs = true
+        case .appDirs: hasOpenedAppDirs = true
+        }
+    }
+
+    private func invalidateAppDataCaches() {
+        appDataScanCache.removeAll()
+        completedBatchSizedAppIDs.removeAll()
+        inFlightBatchSizedAppIDs.removeAll()
+    }
+
     private func scanAppListSizes(forceSizeRefresh: Bool = false) {
-        guard isActive, selectedTab == .appDirs else { return }
+        guard isVisible, selectedTab == .appDirs else { return }
         if operationState.isBusy {
             appListSizeNeedsResume = true
             cancelAppListSizeScan()
             return
         }
         appListSizeNeedsResume = false
+        let apps = localApps
+        let appIDs = Set(apps.map(\.id))
+        if !forceSizeRefresh, !appIDs.isEmpty {
+            if completedBatchSizedAppIDs == appIDs,
+               appIDs.allSatisfy({ appDataSizeSummaries[$0] != nil }) {
+                isBatchSizingApps = false
+                return
+            }
+            if isBatchSizingApps, inFlightBatchSizedAppIDs == appIDs {
+                return
+            }
+        }
+        if forceSizeRefresh {
+            completedBatchSizedAppIDs.removeAll()
+        }
         appListSizeTask?.cancel()
         let token = UUID()
         appListSizeScanToken = token
-        let apps = localApps
-        lastBatchSizedAppIDs = Set(apps.map(\.id))
         guard !apps.isEmpty else {
+            completedBatchSizedAppIDs.removeAll()
+            inFlightBatchSizedAppIDs.removeAll()
             appDataSizeSummaries = [:]
             isBatchSizingApps = false
             return
         }
+        inFlightBatchSizedAppIDs = appIDs
         isBatchSizingApps = true
         let selectedExternalRoot = externalDriveURL
         let priorityIDs = Set([selectedApp?.id].compactMap { $0 }).union(migratedAppDataIDs)
@@ -1503,8 +1613,11 @@ struct DataDirsView: View {
             guard permission == .granted else {
                 await MainActor.run {
                     guard self.appListSizeScanToken == token else { return }
+                    self.completedBatchSizedAppIDs.removeAll()
+                    self.inFlightBatchSizedAppIDs.removeAll()
                     self.appDataSizeSummaries = [:]
                     self.isBatchSizingApps = false
+                    AppLogger.shared.log("应用列表大小统计已停止：完全磁盘访问权限未就绪", level: "WARN")
                 }
                 return
             }
@@ -1529,13 +1642,15 @@ struct DataDirsView: View {
                 guard self.appListSizeScanToken == token else { return }
                 let validIDs = Set(apps.map(\.id))
                 self.appDataSizeSummaries = self.appDataSizeSummaries.filter { validIDs.contains($0.key) }
+                self.completedBatchSizedAppIDs = validIDs
+                self.inFlightBatchSizedAppIDs.removeAll()
                 self.isBatchSizingApps = false
             }
         }
     }
 
     private func scanDotFolders(forceSizeRefresh: Bool = false) {
-        guard isActive else { return }
+        guard isVisible else { return }
         directoryScanTask?.cancel()
         let scanToken = UUID()
         dotFolderScanToken = scanToken
@@ -1657,7 +1772,7 @@ struct DataDirsView: View {
     private func scanLibraryDirs(for app: AppItem, useCachedResult: Bool = true,
                                  forceSizeRefresh: Bool = false,
                                  completion: (([DataDirItem]) -> Void)? = nil) {
-        guard isActive else { return }
+        guard isVisible else { return }
         directoryScanTask?.cancel()
         let scanToken = UUID()
         libraryScanToken = scanToken

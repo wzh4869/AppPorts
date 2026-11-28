@@ -37,6 +37,8 @@ enum CustomDirRecoveryEligibility {
 struct CustomDirsView: View {
     var isActive: Bool = true
     var refreshTrigger: Int = 0
+    var addTrigger: Int = 0
+    @Binding var searchText: String
     var onScanningChanged: ((Bool) -> Void)? = nil
     @Environment(\.locale) private var locale
     @ObservedObject private var operationState = AppOperationState.shared
@@ -59,15 +61,39 @@ struct CustomDirsView: View {
     @State private var managedLinks: [ManagedDataLinkRecord] = []
     private var transferGroups: [DataTransferGroup] { DataTransferGroup.groups(from: retainedTransfers) }
 
+    init(
+        isActive: Bool = true,
+        refreshTrigger: Int = 0,
+        addTrigger: Int = 0,
+        searchText: Binding<String> = .constant(""),
+        onScanningChanged: ((Bool) -> Void)? = nil
+    ) {
+        self.isActive = isActive
+        self.refreshTrigger = refreshTrigger
+        self.addTrigger = addTrigger
+        self._searchText = searchText
+        self.onScanningChanged = onScanningChanged
+    }
+
     /// 目标盘存不住文件所有者时的确认框；没有提示就保持 nil，不打扰用户。
     @State private var ownershipAdvisoryRequest: WarningSheetRequest?
 
+    private var filteredPairs: [CustomDirPair] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return pairs }
+        return pairs.filter {
+            $0.config.displayName.localizedCaseInsensitiveContains(query)
+                || $0.config.localURL.path.localizedCaseInsensitiveContains(query)
+                || $0.config.externalDestinationURL.path.localizedCaseInsensitiveContains(query)
+        }
+    }
+
     private var localEntries: [CustomDirEntry] {
-        pairs.map(\.local)
+        filteredPairs.map(\.local)
     }
 
     private var externalEntries: [CustomDirEntry] {
-        pairs.map { pair in
+        filteredPairs.map { pair in
             var entry = pair.external
             if pair.local.status == CustomDirStatus.local,
                CustomDirRecoveryEligibility.isRetainedExternalCopy(config: pair.config, groups: transferGroups) {
@@ -87,15 +113,6 @@ struct CustomDirsView: View {
 
     private func activeJob(for config: CustomDirConfig) -> MigrationJob? {
         migrationTasks.activeJob(overlappingSubject: [config.localURL, config.externalDestinationURL])
-    }
-
-    private var idleAttentionTransfers: [DataTransferRecord] {
-        retainedTransfers.filter { transfer in
-            transfer.needsAttention && !migrationTasks.hasActiveJob(
-                overlappingSubject: [transfer.originalPath, transfer.activePath, transfer.destinationPath]
-                    + [transfer.backupPath, transfer.stagingPath].compactMap { $0 }
-            )
-        }
     }
 
     private var migratablePairs: [CustomDirPair] {
@@ -123,16 +140,7 @@ struct CustomDirsView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                if !idleAttentionTransfers.isEmpty {
-                    HStack {
-                        Text(idleAttentionTransfers.contains(where: { $0.cleanupDisposition == .deferred })
-                            ? "部分操作已暂停，可手动重试。".localized
-                            : "部分数据操作尚未完成，副本已保留。".localized).foregroundStyle(.secondary)
-                        Spacer()
-                        Button("重试".localized) { retryPendingOperations() }
-                    }.padding(12)
-                }
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     localPane
                         .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
                         .modifier(AppListPanelStyle())
@@ -141,7 +149,9 @@ struct CustomDirsView: View {
                         .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
                         .modifier(AppListPanelStyle())
                 }
-                .padding(6)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
+                .padding(.top, 2)
             }
             .disabled(operationState.blocksInteraction)
 
@@ -158,6 +168,10 @@ struct CustomDirsView: View {
         .onChange(of: refreshTrigger) { _ in
             guard isActive, !isScanning, !operationState.blocksInteraction else { return }
             refresh(forceSizeRefresh: true)
+        }
+        .onChange(of: addTrigger) { _ in
+            guard isActive, !operationState.blocksInteraction else { return }
+            showAddSheet = true
         }
         .onChange(of: isScanning) { scanning in
             onScanningChanged?(scanning)
@@ -456,22 +470,6 @@ struct CustomDirsView: View {
         recordRefreshTask?.cancel()
         refreshRequestID = nil
         isScanning = false
-    }
-
-    private func retryPendingOperations() {
-        let operationIDs = idleAttentionTransfers.map(\.operationID)
-        guard !operationIDs.isEmpty else { return }
-        MigrationTaskCenter.shared.submit(title: "继续处理目录".localized, category: .directories,
-            resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set(operationIDs)), operation: { _ in
-                var warnings: [String] = []
-                for id in operationIDs {
-                    try await MigrationExecution.control?.checkpointAsync()
-                    try Task.checkCancellation()
-                    warnings += await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: id)
-                }
-                try Task.checkCancellation()
-                return warnings.isEmpty ? nil : warnings.joined(separator: "\n\n")
-            }, completion: { refresh() })
     }
 
     private func beginOperation() -> UUID? {

@@ -16,19 +16,29 @@ struct AppStoreSettingsView: View {
     @State private var isRetryingAutoResignCleanup = false
     @State private var showClassicModeAcknowledgement = false
     @State private var classicModeAcknowledged = false
-    @State private var logSizeText = AppLogger.shared.getLogSizeString()
+    @State private var logSizeText = ""
     @State private var logDirectoryPath = AppLogger.shared.logFileURL.deletingLastPathComponent().path
     @State private var isUsingCustomLogPath = AppLogger.shared.isUsingCustomLogPath
+    @State private var logSizeRefreshTask: Task<Void, Never>?
     @StateObject private var readiness: ReadinessCheckModel
     @ObservedObject private var operationState = AppOperationState.shared
     @ObservedObject private var permissionReadiness = PermissionReadiness.shared
     @ObservedObject private var agentSync: AppLibraryAgentSync
     @ObservedObject private var appStoreInstall: AppStoreExternalInstallSettings
+    private let canOpenSearchExclusion: Bool
+    private let onOpenSearchExclusion: (() -> Void)?
 
-    init(agentSync: AppLibraryAgentSync? = nil, readiness: ReadinessCheckModel? = nil,
-         appStoreInstall: AppStoreExternalInstallSettings? = nil) {
+    init(
+        agentSync: AppLibraryAgentSync? = nil,
+        readiness: ReadinessCheckModel? = nil,
+        appStoreInstall: AppStoreExternalInstallSettings? = nil,
+        canOpenSearchExclusion: Bool = false,
+        onOpenSearchExclusion: (() -> Void)? = nil
+    ) {
         self.agentSync = agentSync ?? .shared
         self.appStoreInstall = appStoreInstall ?? .shared
+        self.canOpenSearchExclusion = canOpenSearchExclusion
+        self.onOpenSearchExclusion = onOpenSearchExclusion
         _readiness = StateObject(wrappedValue: readiness ?? ReadinessCheckModel())
     }
 
@@ -49,7 +59,7 @@ struct AppStoreSettingsView: View {
         .controlSize(AppSettingsStyle.controlSize)
         .buttonStyle(.bordered)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppSettingsStyle.background)
+        .background(AppSettingsStyle.canvasBackground)
         .sheet(isPresented: $showClassicModeAcknowledgement) { classicModeAcknowledgementSheet }
         .modifier(AppUpdatePresentationDismissal {
             showClassicModeAcknowledgement = false
@@ -65,6 +75,10 @@ struct AppStoreSettingsView: View {
         .onChange(of: externalDrivePath) { _ in refreshAppStoreInstall() }
         .onChange(of: diskMaintenanceEnabled) { _ in agentSync.selectionDidChange() }
         .onChange(of: updateGuardianEnabled) { _ in agentSync.selectionDidChange() }
+        .onDisappear {
+            logSizeRefreshTask?.cancel()
+            logSizeRefreshTask = nil
+        }
     }
 
     @ViewBuilder
@@ -106,6 +120,7 @@ struct AppStoreSettingsView: View {
                     applicationReadinessSection
                     classicModeSection
                     taskCenterSection
+                    searchExclusionSection
                 }
                 .frame(width: columnWidth)
             }
@@ -117,15 +132,42 @@ struct AppStoreSettingsView: View {
                 classicModeSection
                 logsSection
                 taskCenterSection
+                searchExclusionSection
             }
         }
     }
 
     private var taskCenterSection: some View {
         AppSettingsSection(title: "任务中心".localized) {
-            Toggle("退出后清理已完成的任务列表".localized, isOn: $clearCompletedTasksOnExit)
-                .toggleStyle(.checkbox)
-                .fixedSize(horizontal: false, vertical: true)
+            AppSettingsToggle(
+                title: "退出后清理已完成的任务列表".localized,
+                detail: "",
+                isOn: $clearCompletedTasksOnExit
+            )
+        }
+    }
+
+    private var searchExclusionSection: some View {
+        AppSettingsSection(title: "排除外盘应用索引".localized) {
+            HStack(alignment: .center, spacing: AppSettingsStyle.sectionGap) {
+                VStack(alignment: .leading, spacing: AppSettingsStyle.relatedGap) {
+                    Text("避免 Spotlight 同时索引本地入口和外盘应用，导致搜索结果重复。".localized)
+                        .font(AppSettingsStyle.secondaryFont)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !canOpenSearchExclusion {
+                        Text("请先选择外部存储路径".localized)
+                            .font(AppSettingsStyle.secondaryFont)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Button("检查".localized) {
+                    onOpenSearchExclusion?()
+                }
+                .fixedSize()
+                .disabled(operationState.isBusy || !canOpenSearchExclusion || onOpenSearchExclusion == nil)
+            }
         }
     }
 
@@ -326,9 +368,16 @@ struct AppStoreSettingsView: View {
 
     @MainActor
     private func refreshLogSettingsState() {
-        logSizeText = AppLogger.shared.getLogSizeString()
         logDirectoryPath = AppLogger.shared.logFileURL.deletingLastPathComponent().path
         isUsingCustomLogPath = AppLogger.shared.isUsingCustomLogPath
+        logSizeRefreshTask?.cancel()
+        logSizeRefreshTask = Task.detached(priority: .utility) {
+            let size = AppLogger.shared.getLogSizeString()
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                logSizeText = size
+            }
+        }
     }
 
     @MainActor
