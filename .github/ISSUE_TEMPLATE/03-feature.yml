@@ -3,6 +3,13 @@ description: "提出新功能或改进建议 / Suggest a new feature or improvem
 title: "[FEAT] "
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        正文不限语言，无需双语；**建议标题使用英文或中文**简述需求（例如：`Support batch migration of custom folders`）。
+
+        Any language is welcome in the body (no need for both); an **English or Chinese title** summarizing your idea is recommended (e.g. `Support batch migration of custom folders`).
+
   - type: textarea
     id: idea
     attributes:

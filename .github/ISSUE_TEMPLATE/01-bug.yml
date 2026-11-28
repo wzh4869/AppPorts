@@ -6,11 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        中文或英文填写均可，无需双语；不确定的环境信息可选择“不清楚”。<br>
-        Chinese or English is welcome (no need for both); choose “Not sure” when needed.
+        正文不限语言，无需双语；不确定的环境信息可选“不清楚”。**建议标题使用英文或中文**简述现象（例如：`Moving an app back reports an existing destination`）。
 
-        标题请简述现象，例如：`迁回应用后提示目标已存在`。<br>
-        Summarize the symptom in the title, e.g. `Moving an app back reports an existing destination`.
+        Any language is welcome in the body (no need for both); choose “Not sure” when needed. An **English or Chinese title** summarizing the symptom is recommended (e.g. `Moving an app back reports an existing destination`).
 
   - type: textarea
     id: problem

@@ -6,11 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        中文或英文填写均可，无需双语；每次请只反馈**一款应用**，提交前先搜索已有 Issue。<br>
-        Chinese or English is welcome (no need for both); please submit one app per issue and search existing issues first.
+        正文不限语言，无需双语；每次请只反馈**一款应用**，提交前先搜索已有 Issue。**建议标题使用英文或中文**（例如：`Cursor - Request external update support` 或 `IINA - 外盘更新失败`）。
 
-        标题建议格式：`[UPDATE] 应用名 - 申请兼容` 或 `[UPDATE] 应用名 - 更新失败`。<br>
-        Suggested title: `[UPDATE] App Name - Request support` or `[UPDATE] App Name - Update failed`.
+        Any language is welcome in the body (no need for both); please submit one app per issue and search existing issues first. An **English or Chinese title** is recommended (e.g. `Cursor - Request external update support` or `IINA - Update fails on external drive`).
 
   - type: dropdown
     id: feedback_type

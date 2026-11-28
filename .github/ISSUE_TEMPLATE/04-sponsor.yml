@@ -6,8 +6,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        > **建议优先发送邮件至 [a@shimoko.com](mailto:a@shimoko.com) 联系修改**，尤其涉及「实名改匿名」「匿名改实名」或核对微信赞赏截图时，可避免在公开 Issue 中留下关联记录与付款时间。<br>
-        > **Emailing [a@shimoko.com](mailto:a@shimoko.com) first is strongly recommended**, especially for anonymity changes or private receipt verification.
+        > **建议优先发送邮件至 [a@shimoko.com](mailto:a@shimoko.com) 联系修改**，尤其涉及「实名改匿名」「匿名改实名」或核对微信赞赏截图时，可避免在公开 Issue 中留下关联记录与付款时间。正文不限语言；若公开提交，**建议标题使用英文或中文**（例如：`Update sponsor name`）。
+        >
+        > **Emailing [a@shimoko.com](mailto:a@shimoko.com) first is strongly recommended**, especially for anonymity changes or private receipt verification. Any language is welcome in the body; an **English or Chinese title** is recommended (e.g. `Update sponsor name`).
 
   - type: checkboxes
     id: change_types
