@@ -30,6 +30,8 @@ struct SidebarTargetSection: View {
     let onChoose: () -> Void
     let onImageReady: (URL) -> Void
     @ObservedObject private var images = AppLibraryImageController.shared
+    @State private var isChooseHovered = false
+
     private var selectedImage: AppLibraryImageService.Record? {
         guard let directory, let record = images.record,
               directory.path == record.libraryPath || directory.path == record.mountPath else { return nil }
@@ -45,22 +47,33 @@ struct SidebarTargetSection: View {
 
     var body: some View {
         if showsTarget {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("目标存储".localized)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 4) {
-                    Text(verbatim: displayName)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(directory == nil ? Color.secondary : Color.primary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+                    Text("目标存储".localized)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
                     Spacer(minLength: 4)
-                    DiskEjectionControls(externalURL: directory, compact: true)
-                    AppLibraryImageControls(onReady: onImageReady,
-                                            onChooseLocation: onChoose, hasLocation: directory != nil)
+                    if directory == nil {
+                        AppLibraryImageControls(onReady: onImageReady,
+                                                onChooseLocation: onChoose, hasLocation: false)
+                            .controlSize(.small)
+                    }
                 }
                 if let directory {
+                    HStack(alignment: .center, spacing: 6) {
+                        Text(verbatim: displayName)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Spacer(minLength: 4)
+                        HStack(spacing: 2) {
+                            DiskEjectionControls(externalURL: directory, compact: true)
+                            AppLibraryImageControls(onReady: onImageReady,
+                                                    onChooseLocation: onChoose, hasLocation: true)
+                        }
+                        .controlSize(.small)
+                    }
                     Text(verbatim: directory.path)
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
@@ -74,12 +87,28 @@ struct SidebarTargetSection: View {
                                 NSPasteboard.general.setString(directory.path, forType: .string)
                             }
                         }
+                } else {
+                    Button(action: onChoose) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "folder.badge.plus")
+                                .font(.system(size: 11, weight: .medium))
+                            Text("选择文件夹".localized)
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(Color.primary.opacity(isChooseHovered ? 0.09 : 0.055))
+                        )
+                        .contentShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.accentColor)
+                    .onHover { isChooseHovered = $0 }
                 }
             }
-            .font(.system(size: 12))
-            .controlSize(.small)
             .padding(.horizontal, 6)
-            .padding(.vertical, 2)
         }
     }
 }
@@ -109,7 +138,7 @@ struct SidebarStorageSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             spaceUsage(title: "本机磁盘".localized, snapshot: localSpace,
                        hasRead: hasReadLocal)
             if showsTarget, directory != nil {
@@ -117,6 +146,7 @@ struct SidebarStorageSection: View {
             }
         }
         .font(.system(size: 11))
+        .padding(.horizontal, 6)
         .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willUnmountNotification)) { notification in
             guard let volumeURL = notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL else { return }
             let volumePath = DiskEjectionController.standardizedPath(volumeURL.path)
@@ -204,17 +234,7 @@ struct SidebarStorageSection: View {
                 }
             }
             if let snapshot {
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Color.secondary.opacity(0.15))
-                        Rectangle().fill(Color.accentColor)
-                            .frame(width: geometry.size.width * snapshot.usedFraction)
-                    }
-                    .clipShape(Capsule())
-                }
-                .frame(height: 5)
-                .accessibilityLabel(title + " · " + "使用率".localized)
-                .accessibilityValue(snapshot.usedFraction.formatted(.percent.locale(formattingLocale)))
+                capacityBar(fraction: snapshot.usedFraction, label: title, locale: formattingLocale)
                 capacitySummary(for: snapshot)
             } else {
                 Text(hasRead ? "无法读取".localized : "正在检查…".localized).foregroundStyle(.secondary)
@@ -222,20 +242,34 @@ struct SidebarStorageSection: View {
         }
     }
 
-    private func capacitySummary(for snapshot: StorageSpaceSnapshot) -> some View {
-        let availableSize: String = LocalizedByteCountFormatter.string(fromByteCount: snapshot.available)
-        let usedSize: String = LocalizedByteCountFormatter.string(fromByteCount: snapshot.used)
-        let totalSize: String = LocalizedByteCountFormatter.string(fromByteCount: snapshot.total)
-        let usedDescription: String = "已用".localized + " " + usedSize
-        let totalDescription: String = "总容量".localized + " " + totalSize
-        let helpText: String = usedDescription + " · " + totalDescription
+    private func capacityBar(fraction: Double, label: String, locale: Locale) -> some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.secondary.opacity(0.15))
+                Rectangle().fill(Color.accentColor)
+                    .frame(width: geometry.size.width * fraction)
+            }
+            .clipShape(Capsule())
+        }
+        .frame(height: 5)
+        .accessibilityLabel(label + " · " + "使用率".localized)
+        .accessibilityValue(fraction.formatted(.percent.locale(locale)))
+    }
 
+    private func usedAndTotalHelpText(for snapshot: StorageSpaceSnapshot) -> String {
+        let usedSize = LocalizedByteCountFormatter.string(fromByteCount: snapshot.used)
+        let totalSize = LocalizedByteCountFormatter.string(fromByteCount: snapshot.total)
+        return "已用".localized + " " + usedSize + " · " + "总容量".localized + " " + totalSize
+    }
+
+    private func capacitySummary(for snapshot: StorageSpaceSnapshot) -> some View {
+        let availableSize = LocalizedByteCountFormatter.string(fromByteCount: snapshot.available)
         return HStack(spacing: 4) {
             Text("空余".localized)
             Text(availableSize).monospacedDigit()
             Spacer(minLength: 0)
         }
         .foregroundStyle(.secondary)
-        .help(helpText)
+        .help(usedAndTotalHelpText(for: snapshot))
     }
 }

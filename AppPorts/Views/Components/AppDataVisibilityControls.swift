@@ -30,7 +30,6 @@ struct AppDataVisibilityButton: View {
     @Binding var showLockedStructure: Bool
     @Binding var showNonMigratableDirectories: Bool
 
-    @State private var isPopoverPresented = false
     @Environment(\.layoutDirection) private var layoutDirection
     @ObservedObject private var languageManager = LanguageManager.shared
 
@@ -41,16 +40,25 @@ struct AppDataVisibilityButton: View {
     }
 
     var body: some View {
-        Button(action: { isPopoverPresented.toggle() }) {
-            HStack(spacing: 6) {
+        AppPopoverButton(
+            preferredEdge: .maxY,
+            isHighlighted: activeCount > 0,
+            help: "目录显示选项".localized,
+            accessibilityLabel: "目录显示选项".localized
+        ) {
+            HStack(spacing: 5) {
                 Image(systemName: activeCount > 0 ? "eye.fill" : "eye")
-                    .foregroundColor(activeCount > 0 ? .accentColor : .primary)
-                    .frame(width: 15, height: 14)
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundColor(activeCount > 0 ? .accentColor : .secondary)
                 Text("显示".localized)
             }
+        } popoverContent: {
+            AppDataVisibilityPopover(
+                showZeroByteDirectories: $showZeroByteDirectories,
+                showLockedStructure: $showLockedStructure,
+                showNonMigratableDirectories: $showNonMigratableDirectories
+            )
         }
-        .buttonStyle(.bordered)
-        .controlSize(.small)
         .fixedSize()
         .overlay(alignment: .topTrailing) {
             if activeCount > 0 {
@@ -68,15 +76,6 @@ struct AppDataVisibilityButton: View {
                     .offset(x: layoutDirection == .rightToLeft ? -5 : 5, y: -5)
                     .allowsHitTesting(false)
             }
-        }
-        .help("目录显示选项".localized)
-        .accessibilityLabel("目录显示选项".localized)
-        .popover(isPresented: $isPopoverPresented, arrowEdge: .top) {
-            AppDataVisibilityPopover(
-                showZeroByteDirectories: $showZeroByteDirectories,
-                showLockedStructure: $showLockedStructure,
-                showNonMigratableDirectories: $showNonMigratableDirectories
-            )
         }
     }
 }
@@ -307,7 +306,7 @@ struct DirectoryVisibilityChip: View {
         if colorScheme == .dark {
             return Color.white.opacity(isHovered ? 0.10 : 0.06)
         }
-        return Color.white.opacity(isHovered ? 0.98 : 0.85)
+        return Color.primary.opacity(isHovered ? 0.07 : 0.04)
     }
 
     private var chipBorder: Color {

@@ -4,7 +4,7 @@ import SwiftUI
 /// Show current ledger facts and use maintenance for any explicit recovery.
 @MainActor
 struct DataMigrationTaskRecoveryView: View {
-    let job: MigrationJob
+    let job: MigrationJob?
     @Environment(\.dismiss) private var dismiss
     @State private var transfers: [DataTransferRecord] = []
     @State private var pendingCleanups: [ContainerCleanupRecord] = []
@@ -13,9 +13,14 @@ struct DataMigrationTaskRecoveryView: View {
     @State private var currentDataPaths: [UUID: String] = [:]
     @State private var errorMessage: String?
     @State private var loading = true
-    @State private var showingAll = false
+    @State private var showingAll: Bool
 
-    private var title: String { showingAll ? "全部待处理项".localized : job.displayTitle }
+    init(job: MigrationJob? = nil) {
+        self.job = job
+        _showingAll = State(initialValue: job == nil)
+    }
+
+    private var title: String { showingAll ? "全部待处理项".localized : (job?.displayTitle ?? "全部待处理项".localized) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,12 +45,15 @@ struct DataMigrationTaskRecoveryView: View {
                     HStack {
                         Button("刷新".localized) { Task { await loadRecords() } }
                         if !showingAll { Button("查看全部待处理项".localized) { showingAll = true } }
-                        Button(job.category.title) {
-                            dismiss()
-                            MigrationTaskCenter.shared.recoveryJobID = job.id
+                        if let job {
+                            Button(job.category.title) {
+                                dismiss()
+                                MigrationTaskCenter.shared.recoveryJobID = job.id
+                            }
                         }
                         Spacer()
                         Button("关闭".localized) { dismiss() }
+                            .keyboardShortcut(.cancelAction)
                     }
                 }
                 .padding(20)
@@ -60,12 +68,18 @@ struct DataMigrationTaskRecoveryView: View {
         loading = true
         errorMessage = nil
         do {
-            let global = showingAll
-            let scope = DataTaskRecoveryScope(jobID: job.id, resources: job.resources, startedAt: job.startedAt, elapsed: job.elapsed)
+            let global = showingAll || job == nil
+            let scope = job.map {
+                DataTaskRecoveryScope(jobID: $0.id, resources: $0.resources, startedAt: $0.startedAt, elapsed: $0.elapsed)
+            }
             let (inspection, selected, material, paths) = try await Task.detached(priority: .utility) {
                 let inventory = try ContainerMountStore.shared.recordsForInspection()
                 if let error = inventory.validationError { throw error }
-                let ids = global ? [] : scope.operationIDs(transfers: inventory.transfers, materials: inventory.preservedMaterials)
+                let ids: Set<UUID> = if global || scope == nil {
+                    []
+                } else {
+                    scope!.operationIDs(transfers: inventory.transfers, materials: inventory.preservedMaterials)
+                }
                 let selected = inventory.transfers.filter { $0.retainedCopyRemovedAt == nil && (global || ids.contains($0.id)) }
                 let material = inventory.preservedMaterials.filter { global || ids.contains($0.id) }
                 return (inventory, selected, material, DataCleanupResolution.currentDataPaths(for: selected))
@@ -82,7 +96,7 @@ struct DataMigrationTaskRecoveryView: View {
 
     private func submitRetry(_ operationID: UUID?) {
         guard operationID != nil || showingAll else { return }
-        MigrationTaskCenter.shared.submit(title: "继续处理".localized, category: job.category,
+        MigrationTaskCenter.shared.submit(title: "继续处理".localized, category: job?.category ?? .appData,
             resources: MigrationResources(paths: [], keys: ["all-file-operations"], dataOperationIDs: Set([operationID].compactMap { $0 })),
             operation: { _ in
                 let warnings = await OperationMaintenance.shared.runManagedDataOperations(retryOperationID: operationID)

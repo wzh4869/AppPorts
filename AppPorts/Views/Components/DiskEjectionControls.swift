@@ -59,6 +59,8 @@ struct DiskEjectionControls: View {
         .menuIndicator(compact ? .hidden : .visible)
         .menuStyle(.borderlessButton)
         .fixedSize()
+        .foregroundColor(.secondary)
+        .tint(.secondary)
         .disabled(operations.isBusy || controller.isWorking)
         .accessibilityLabel(actionTitle)
         .help(selectedImage != nil ? "卸载映像并暂停自动挂载，选择“重新挂载映像”可恢复。".localized

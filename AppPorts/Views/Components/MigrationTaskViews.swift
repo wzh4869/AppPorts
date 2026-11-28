@@ -59,8 +59,12 @@ private struct MigrationTaskListHeightKey: PreferenceKey {
 @MainActor
 struct MigrationTaskList: View {
     @ObservedObject private var center: MigrationTaskCenter
+    @ObservedObject private var operationState = AppOperationState.shared
     @State private var selection: Set<UUID> = []
     @State private var contentHeight: CGFloat = 90
+    @State private var showsAllPendingItems = false
+    @State private var pendingCleanupCount = 0
+    @State private var hasAttentionCleanup = false
     private let isEmbedded: Bool
 
     init(center: MigrationTaskCenter? = nil, isEmbedded: Bool = false) {
@@ -70,44 +74,106 @@ struct MigrationTaskList: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("任务中心".localized).font(.headline)
+            HStack(spacing: 12) {
+                if !isEmbedded {
+                    Text("任务中心".localized)
+                        .font(.system(size: 14, weight: .semibold))
+                }
                 Spacer()
+                if isEmbedded {
+                    Button {
+                        showsAllPendingItems = true
+                    } label: {
+                        HStack(spacing: 5) {
+                            if hasAttentionCleanup {
+                                Circle()
+                                    .fill(Color.orange)
+                                    .frame(width: 6, height: 6)
+                            }
+                            Text("查看全部待处理项".localized)
+                            if pendingCleanupCount > 0 {
+                                Text(pendingCleanupCount, format: .number)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .monospacedDigit()
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 1)
+                                    .background((hasAttentionCleanup ? Color.orange : Color.secondary).opacity(0.18), in: Capsule())
+                            }
+                        }
+                    }
+                    .help("查看全部待处理项".localized)
+                }
                 Button(selection.count == center.jobs.count ? "取消全选".localized : "全选".localized) {
                     selection = selection.count == center.jobs.count ? [] : Set(center.jobs.map(\.id))
                 }
                 .disabled(center.jobs.isEmpty)
+                Button("清空已完成".localized) { center.clearCompleted() }
+                    .disabled(!center.jobs.contains { $0.status == .completed })
+                    .help("只清空已完成的任务记录，不删除文件".localized)
                 if !isEmbedded {
                     Button("关闭".localized) { center.showsList = false }
                 }
             }
-            .padding(10)
-            Divider()
-            if center.jobs.isEmpty {
-                Text("暂无迁移任务".localized)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: 60, maxHeight: isEmbedded ? .infinity : 60)
+            .padding(.horizontal, 10)
+            .frame(height: isEmbedded ? 48 : nil)
+            .padding(.vertical, isEmbedded ? 0 : 10)
+            if isEmbedded {
+                taskPanelBody
+                    .modifier(AppListPanelStyle())
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
+                    .padding(.top, 2)
             } else {
-                ScrollView {
-                    LazyVStack(spacing: isEmbedded ? 0 : 6) {
-                        ForEach(Array(center.jobs.reversed())) { job in
-                            MigrationTaskRow(job: job, center: center, selected: Binding(
-                                get: { selection.contains(job.id) },
-                                set: { value in
-                                    if value { selection.insert(job.id) } else { selection.remove(job.id) }
-                                }), isEmbedded: isEmbedded)
-                            if isEmbedded { Divider() }
-                        }
-                    }
-                    .padding(10)
-                    .background(GeometryReader { geometry in
-                        Color.clear.preference(key: MigrationTaskListHeightKey.self, value: geometry.size.height)
-                    })
-                }
-                .frame(maxHeight: isEmbedded ? .infinity : min(contentHeight, 300))
-                .onPreferenceChange(MigrationTaskListHeightKey.self) { contentHeight = $0 }
+                Divider()
+                taskPanelBody
             }
+        }
+        .onChange(of: center.jobs.map(\.id)) { ids in
+            selection.formIntersection(Set(ids))
+        }
+        .task(id: "\(center.jobs.count)-\(operationState.recordsRevision)-\(showsAllPendingItems)") {
+            guard isEmbedded else { return }
+            await refreshPendingCleanupSummary()
+        }
+        .sheet(isPresented: $showsAllPendingItems) {
+            DataMigrationTaskRecoveryView()
+        }
+        .controlSize(.small)
+        .frame(width: isEmbedded ? nil : 420)
+        .frame(maxWidth: isEmbedded ? .infinity : nil, maxHeight: isEmbedded ? .infinity : nil)
+        .background(isEmbedded ? AppSurfaceColors.canvas : AppSurfaceColors.content)
+    }
+
+    private var taskPanelBody: some View {
+        VStack(spacing: 0) {
+            Group {
+                if center.jobs.isEmpty {
+                    Text("暂无迁移任务".localized)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 60, maxHeight: isEmbedded ? .infinity : 60)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: isEmbedded ? 0 : 6) {
+                            ForEach(Array(center.jobs.reversed())) { job in
+                                MigrationTaskRow(job: job, center: center, selected: Binding(
+                                    get: { selection.contains(job.id) },
+                                    set: { value in
+                                        if value { selection.insert(job.id) } else { selection.remove(job.id) }
+                                    }), isEmbedded: isEmbedded)
+                                if isEmbedded { Divider() }
+                            }
+                        }
+                        .padding(10)
+                        .background(GeometryReader { geometry in
+                            Color.clear.preference(key: MigrationTaskListHeightKey.self, value: geometry.size.height)
+                        })
+                    }
+                    .frame(maxHeight: isEmbedded ? .infinity : min(contentHeight, 300))
+                    .onPreferenceChange(MigrationTaskListHeightKey.self) { contentHeight = $0 }
+                }
+            }
+            .background(AppSurfaceColors.content)
             Divider()
             HStack(spacing: 8) {
                 HStack(spacing: 8) {
@@ -117,19 +183,26 @@ struct MigrationTaskList: View {
                 }
                 .disabled(!center.jobs.contains { selection.contains($0.id) && $0.supportsExecutionControls && !$0.status.isFinished })
                 Spacer(minLength: 0)
-                Button("清空已完成".localized) { center.clearCompleted() }
-                    .disabled(!center.jobs.contains { $0.status == .completed })
-                    .help("只清空已完成的任务记录，不删除文件".localized)
             }
             .padding(10)
         }
-        .onChange(of: center.jobs.map(\.id)) { ids in
-            selection.formIntersection(Set(ids))
-        }
-        .controlSize(.small)
-        .frame(width: isEmbedded ? nil : 420)
-        .frame(maxWidth: isEmbedded ? .infinity : nil, maxHeight: isEmbedded ? .infinity : nil)
-        .background(AppSurfaceColors.content)
+    }
+
+    private func refreshPendingCleanupSummary() async {
+        let summary = await Task.detached(priority: .utility) { () -> (Int, Bool) in
+            guard let inspection = try? ContainerMountStore.shared.recordsForInspection(),
+                  inspection.validationError == nil else { return (0, false) }
+            let unremoved = inspection.transfers.filter { $0.retainedCopyRemovedAt == nil }
+            let attention = unremoved.filter(\.needsAttention).count
+                + inspection.cleanups.count
+                + inspection.preservedMaterials.count
+                + inspection.remountInterventions.count
+            let kept = unremoved.filter { $0.cleanupDisposition == .keep }.count
+            return (attention + kept, attention > 0)
+        }.value
+        guard !Task.isCancelled else { return }
+        pendingCleanupCount = summary.0
+        hasAttentionCleanup = summary.1
     }
 }
 
@@ -319,6 +392,7 @@ struct MigrationTaskDetail: View {
                         }
                         Spacer()
                         Button("关闭".localized) { center.detailID = nil }
+                            .keyboardShortcut(.cancelAction)
                     }
                 }
                 .padding(24)
@@ -337,6 +411,7 @@ struct MigrationTaskDetail: View {
                         Button("任务列表".localized) { center.detailID = nil; center.showsList = true }
                         Spacer()
                         Button("关闭".localized) { center.detailID = nil }
+                            .keyboardShortcut(.cancelAction)
                     }
                 }
                 .padding(24)
@@ -351,6 +426,7 @@ struct MigrationTaskDetail: View {
                 }
             }
         }
+        .contentShape(RoundedRectangle(cornerRadius: 16))
         .sheet(isPresented: $showsAppRecovery) {
             AppMigrationTaskRecoveryView(job: job)
         }
@@ -383,6 +459,7 @@ struct MigrationTaskDetail: View {
                 .disabled(job.control.snapshot().cancelled)
                 Spacer()
                 Button("加入后台".localized) { center.detailID = nil }
+                    .keyboardShortcut(.cancelAction)
             }
         }
         .font(.system(size: 12))

@@ -134,9 +134,10 @@ struct AppLibraryImageControls: View {
         } label: {
             if controller.isWorking {
                 ProgressView().controlSize(.small)
+                    .frame(width: 26, height: 24)
             } else if onChooseLocation != nil {
                 Image(systemName: "ellipsis")
-                    .frame(width: 28, height: 24)
+                    .frame(width: 26, height: 24)
                     .contentShape(Rectangle())
             } else {
                 Text("磁盘映像".localized)
@@ -147,6 +148,8 @@ struct AppLibraryImageControls: View {
         .menuIndicator(onChooseLocation == nil ? .visible : .hidden)
         .menuStyle(.borderlessButton)
         .fixedSize()
+        .foregroundColor(.secondary)
+        .tint(.secondary)
         .disabled(operations.isBusy)
         .sheet(isPresented: $showsCreation) {
             AppLibraryImageCreationSheet { directory, name, capacity in

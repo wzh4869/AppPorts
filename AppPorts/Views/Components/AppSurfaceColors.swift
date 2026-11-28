@@ -2,6 +2,12 @@ import AppKit
 import SwiftUI
 
 enum AppSurfaceColors {
+    static let canvas = Color(nsColor: NSColor(name: nil) { appearance in
+        appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            ? NSColor(srgbRed: 26 / 255, green: 27 / 255, blue: 29 / 255, alpha: 1)
+            : NSColor(srgbRed: 246 / 255, green: 246 / 255, blue: 248 / 255, alpha: 1)
+    })
+
     static let content = Color(nsColor: NSColor(name: nil) { appearance in
         appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
             ? NSColor(srgbRed: 35 / 255, green: 37 / 255, blue: 39 / 255, alpha: 1)

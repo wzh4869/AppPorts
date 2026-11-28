@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum AppSettingsStyle {
+    static let canvasBackground = AppSurfaceColors.canvas
     static let background = AppSurfaceColors.content
     static let border = Color(nsColor: .separatorColor).opacity(0.7)
     static let success = Color.green
@@ -30,7 +31,11 @@ struct AppSettingsPanelStyle: ViewModifier {
             .padding(AppSettingsStyle.panelInset)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppSettingsStyle.background)
-            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(AppSettingsStyle.border, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+            )
     }
 }
 

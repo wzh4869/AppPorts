@@ -215,15 +215,36 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
             if let selectedItem {
                 details(for: selectedItem, isCompact: height < 88)
             } else {
-                Label("选择目录以查看完整路径".localized, systemImage: "info.circle")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(16)
+                HStack(spacing: 8) {
+                    Label("选择目录以查看完整路径".localized, systemImage: "info.circle")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    Spacer(minLength: 0)
+                    informationExpandButton(isCompact: height < 88)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color.primary.opacity(0.03))
+    }
+
+    private func informationExpandButton(isCompact: Bool) -> some View {
+        Button {
+            withAnimation(outlineAnimation) {
+                informationPanelHeight = isCompact ? 180 : DirectoryPanelLayout.minimumInformationHeight
+            }
+        } label: {
+            Image(systemName: isCompact ? "chevron.up" : "chevron.down")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(.secondary)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("调整信息栏高度".localized)
+        .accessibilityLabel("调整信息栏高度".localized)
     }
 
     private var columnHeader: some View {
@@ -256,11 +277,15 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
                 .minimumScaleFactor(0.85)
                 .frame(width: DirectoryRowColumns.actionsWidth, alignment: .trailing)
         }
-        .font(.system(size: 12, weight: .medium))
+        .font(.system(size: 11, weight: .medium))
         .foregroundColor(.secondary)
-        .padding(.leading, 20)
-        .padding(.trailing, 20)
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .background(Color.primary.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
 
     private func groupHeader(_ group: DataDirGroup) -> some View {
@@ -316,6 +341,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
                     PriorityBadge(priority: item.priority)
                 }
                 Spacer(minLength: 4)
+                informationExpandButton(isCompact: isCompact)
                 Button { reveal(item) } label: {
                     Label("在 Finder 中显示".localized, systemImage: "folder")
                         .labelStyle(.iconOnly)
@@ -458,7 +484,7 @@ struct AppDataDirectoryBrowser<Actions: View>: View {
 
 private enum DirectoryRowColumns {
     static let metadataWidth: CGFloat = 136
-    static let actionsWidth: CGFloat = 128
+    static let actionsWidth: CGFloat = 168
 }
 
 private enum DirectoryPanelLayout {
