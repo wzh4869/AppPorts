@@ -260,6 +260,7 @@ enum AppPortsEntryPoint {
         AppLibraryImageFileAccess.runIfRequested()
         AppLibraryImageRecovery.runNetworkMountIfRequested()
         PortalImageLaunchPreparation.runIfRequested()
+        MainWindowAppearance.applyOverlayScrollbarsIfAutomatic()
         AppMoverApp.main()
     }
 }

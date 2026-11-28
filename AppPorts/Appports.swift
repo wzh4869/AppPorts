@@ -293,6 +293,28 @@ struct AppMoverApp: App {
 
 struct MainWindowAppearance: NSViewRepresentable {
     static let defaultsKey = "appAppearance"
+    static let scrollBarsDefaultsKey = "AppleShowScrollBars"
+
+    static func overlayScrollBarOverride(for currentValue: String?) -> String? {
+        guard currentValue == nil || currentValue == "Automatic" else { return nil }
+        return "WhenScrolling"
+    }
+
+    /// 外接鼠标且系统滚动条为默认自动模式时，仅在当前进程内存域启用悬浮细滚动条，
+    /// 避免白色圆角卡片边缘出现常驻粗灰轨道；若用户在系统设置中明确选择“始终显示”，则尊重系统设置。
+    static func applyOverlayScrollbarsIfAutomatic(
+        defaults: UserDefaults = .standard,
+        targetVolatileDomain: String = UserDefaults.argumentDomain,
+        appliesInTests: Bool = false
+    ) {
+        guard appliesInTests || !isRunningTests else { return }
+        guard let overrideValue = overlayScrollBarOverride(
+            for: defaults.string(forKey: scrollBarsDefaultsKey)
+        ) else { return }
+        var domain = defaults.volatileDomain(forName: targetVolatileDomain)
+        domain[scrollBarsDefaultsKey] = overrideValue
+        defaults.setVolatileDomain(domain, forName: targetVolatileDomain)
+    }
 
     var appearance = "system"
     var appliesAppearanceInTests = false

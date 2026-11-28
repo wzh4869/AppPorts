@@ -140,6 +140,54 @@ final class MainWindowAppearanceTests: XCTestCase {
         XCTAssertEqual(secondaryRecorder.colorScheme, expectedSystemScheme)
     }
 
+    func testApplyOverlayScrollbarsIfAutomaticOverridesNilAndAutomaticOnly() throws {
+        XCTAssertEqual(MainWindowAppearance.overlayScrollBarOverride(for: nil), "WhenScrolling")
+        XCTAssertEqual(MainWindowAppearance.overlayScrollBarOverride(for: "Automatic"), "WhenScrolling")
+        XCTAssertNil(MainWindowAppearance.overlayScrollBarOverride(for: "Always"))
+        XCTAssertNil(MainWindowAppearance.overlayScrollBarOverride(for: "WhenScrolling"))
+
+        let suiteName = "MainWindowAppearanceTests.\(UUID().uuidString)"
+        let volatileDomain = "\(suiteName).volatile"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer {
+            defaults.removeVolatileDomain(forName: volatileDomain)
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+
+        defaults.set("Automatic", forKey: MainWindowAppearance.scrollBarsDefaultsKey)
+        MainWindowAppearance.applyOverlayScrollbarsIfAutomatic(
+            defaults: defaults,
+            targetVolatileDomain: volatileDomain,
+            appliesInTests: true
+        )
+        XCTAssertEqual(
+            defaults.volatileDomain(forName: volatileDomain)[MainWindowAppearance.scrollBarsDefaultsKey] as? String,
+            "WhenScrolling"
+        )
+
+        defaults.removeVolatileDomain(forName: volatileDomain)
+        defaults.set("Always", forKey: MainWindowAppearance.scrollBarsDefaultsKey)
+        MainWindowAppearance.applyOverlayScrollbarsIfAutomatic(
+            defaults: defaults,
+            targetVolatileDomain: volatileDomain,
+            appliesInTests: true
+        )
+        XCTAssertNil(
+            defaults.volatileDomain(forName: volatileDomain)[MainWindowAppearance.scrollBarsDefaultsKey]
+        )
+
+        defaults.removeVolatileDomain(forName: volatileDomain)
+        defaults.set("WhenScrolling", forKey: MainWindowAppearance.scrollBarsDefaultsKey)
+        MainWindowAppearance.applyOverlayScrollbarsIfAutomatic(
+            defaults: defaults,
+            targetVolatileDomain: volatileDomain,
+            appliesInTests: true
+        )
+        XCTAssertNil(
+            defaults.volatileDomain(forName: volatileDomain)[MainWindowAppearance.scrollBarsDefaultsKey]
+        )
+    }
+
     private func settleAppearance(hosts: [NSView]) async throws {
         for host in hosts {
             host.layoutSubtreeIfNeeded()
