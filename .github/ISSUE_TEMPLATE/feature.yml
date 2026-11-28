@@ -19,7 +19,9 @@ body:
     id: alternatives
     attributes:
       label: "Alternatives (Optional) / 备选方案（可选）"
-      placeholder: "Any alternative solutions you considered? / 你考虑过的其他方案"
+      placeholder: |
+        你考虑过的其他方案
+        Any alternative solutions you considered?
     validations:
       required: false
 

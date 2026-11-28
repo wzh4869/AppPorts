@@ -7,16 +7,21 @@ body:
     attributes:
       value: |
         中文或英文填写均可，无需双语填写。不确定的环境信息可选择“不清楚”。
+
         Chinese or English is welcome; you do not need to write both. Choose “Not sure” when needed.
 
         标题请简述现象，例如“迁回应用后提示目标已存在”。
+
         Summarize the symptom in the title, e.g. “Moving an app back reports an existing destination”.
 
   - type: textarea
     id: problem
     attributes:
       label: "问题描述 / Problem"
-      description: "说明你想完成的操作、预期结果和实际发生的情况。 / Describe the action, expected result and actual outcome."
+      description: |
+        说明你想完成的操作、预期结果和实际发生的情况。
+
+        Describe the action, expected result and actual outcome.
       placeholder: |
         我想进行的操作 / What I was trying to do:
         预期结果 / Expected result:
@@ -28,7 +33,10 @@ body:
     id: steps
     attributes:
       label: "复现步骤（选填） / Steps to reproduce (optional)"
-      description: "偶发或记不清步骤也可以反馈，请尽量说明最后一次操作。 / Intermittent issues are welcome; describe the last action if exact steps are unknown."
+      description: |
+        偶发或记不清步骤也可以反馈，请尽量说明最后一次操作。
+
+        Intermittent issues are welcome; describe the last action if exact steps are unknown.
       placeholder: |
         1. 从哪个页面开始 / Which page I opened
         2. 选择了什么、点击了什么 / What I selected and clicked
@@ -58,8 +66,13 @@ body:
     id: app_version
     attributes:
       label: "AppPorts 版本 / AppPorts version"
-      description: "在“关于 AppPorts”查看；其他版本可在下方补充。 / Check About AppPorts; add unlisted versions below."
+      description: |
+        在“关于 AppPorts”查看；其他版本可在下方补充。
+
+        Check About AppPorts; add unlisted versions below.
       options:
+        - "2.4.1"
+        - "2.4.0"
         - "2.3.0"
         - "2.2.0"
         - "2.1.0"
@@ -78,7 +91,10 @@ body:
     id: app_build
     attributes:
       label: "Build 号（选填） / Build number (optional)"
-      description: "“关于 AppPorts”中版本后的括号数字，找不到可留空。 / The number in parentheses after the version in About AppPorts; leave blank if unknown."
+      description: |
+        “关于 AppPorts”中版本后的括号数字，找不到可留空。
+
+        The number in parentheses after the version in About AppPorts; leave blank if unknown.
       placeholder: "例如 74 / e.g. 74"
     validations:
       required: false
@@ -87,7 +103,10 @@ body:
     id: os_version
     attributes:
       label: "macOS 版本 / macOS version"
-      description: "苹果菜单 → 关于本机；小版本可在下方补充。 / Apple menu → About This Mac; add the minor version below if relevant."
+      description: |
+        苹果菜单 → 关于本机；小版本可在下方补充。
+
+        Apple menu → About This Mac; add the minor version below if relevant.
       options:
         - "macOS 27"
         - "macOS 26"
@@ -115,7 +134,10 @@ body:
     id: external_storage_type
     attributes:
       label: "外置存储类型 / External storage type"
-      description: "选择与本次问题相关的存储，不需要填写品牌或型号。 / Choose the storage involved; no brand or model is needed."
+      description: |
+        选择与本次问题相关的存储，不需要填写品牌或型号。
+
+        Choose the storage involved; no brand or model is needed.
       options:
         - "外置 SSD / External SSD"
         - "外置机械硬盘 / External HDD"
@@ -133,7 +155,10 @@ body:
     id: filesystem
     attributes:
       label: "目标存储的文件系统 / Destination filesystem"
-      description: "可在“磁盘工具”或 Finder 的“显示简介”查看；加密情况在下一项选择。 / Check Disk Utility or Finder’s Get Info; select encryption separately below."
+      description: |
+        可在“磁盘工具”或 Finder 的“显示简介”查看；加密情况在下一项选择。
+
+        Check Disk Utility or Finder’s Get Info; select encryption separately below.
       options:
         - "APFS"
         - "Mac OS 扩展（HFS+） / Mac OS Extended (HFS+)"
@@ -150,7 +175,10 @@ body:
     id: encryption
     attributes:
       label: "相关外置卷或数据卷是否加密 / External or data volume encryption"
-      description: "若外盘与 AppPorts 数据卷的加密状态不同，可在下方补充。 / If the drive and AppPorts data volume differ, explain below."
+      description: |
+        若外盘与 AppPorts 数据卷的加密状态不同，可在下方补充。
+
+        If the drive and AppPorts data volume differ, explain below.
       options:
         - "已加密 / Encrypted"
         - "未加密 / Not encrypted"
@@ -163,7 +191,10 @@ body:
     id: environment_details
     attributes:
       label: "环境补充（选填） / Additional environment details (optional)"
-      description: "仅在选项不足时填写，例如系统小版本、未列出的 AppPorts 版本、受影响应用及版本。 / Only if needed: minor OS version, an unlisted AppPorts version, or the affected app and version."
+      description: |
+        仅在选项不足时填写，例如系统小版本、未列出的 AppPorts 版本、受影响应用及版本。
+
+        Only if needed: minor OS version, an unlisted AppPorts version, or the affected app and version.
       placeholder: "例如 macOS 27.0.1；受影响应用及版本 / e.g. macOS 27.0.1; affected app and version"
     validations:
       required: false
@@ -172,16 +203,20 @@ body:
     id: screenshots
     attributes:
       label: "截图（选填） / Screenshots (optional)"
-      description: "可拖入完整错误提示或相关页面截图；上传前检查姓名、路径等个人信息。 / Drag in screenshots of the error or relevant page; check names, paths and other personal details first."
+      description: |
+        可拖入完整错误提示或相关页面截图；上传前检查姓名、路径等个人信息。
+
+        Drag in screenshots of the error or relevant page; check names, paths and other personal details first.
     validations:
       required: false
 
   - type: textarea
     id: diagnostic_package
     attributes:
-      label: "诊断包或相关日志（选填） / Diagnostic package or relevant logs (optional)"
+      label: "诊断日志包（强烈推荐） / Diagnostic log package (strongly recommended)"
       description: |
-        导出：AppPorts 菜单栏“日志 → 导出诊断包”，或“设置 → 日志设置 → 导出诊断包”，将 .zip 拖入这里。无法导出也可以提交问题，无需解释原因；没有诊断包时可粘贴相关日志。上传前检查个人信息。若选择邮件提供，可发至 a@shimoko.com 并注明 Issue 链接。
-        Export from AppPorts: menu bar Log → Export Diagnostics, or Settings → Log Settings → Export Diagnostics, then drop the .zip here. You can submit without it and do not need to explain why. Paste relevant logs if no package is available. Check personal information before uploading. If you prefer email, send it to a@shimoko.com with the issue link.
+        **强烈建议提交诊断日志包**，能大幅加快定位和排查问题。导出路径：点击 AppPorts 窗口左下角设置图标（⚙️）→「日志设置」→「导出诊断包」，将生成的 `.zip` 文件拖入下方（上传前请留意检查个人路径等信息）。如果不方便在公开 Issue 上传，也可以发送至 **a@shimoko.com**，并在邮件中做好备注（注明 Issue 链接或编号）。实在无法导出时，也可直接提交或在下方粘贴相关日志。
+
+        **Attaching a diagnostic log package is strongly recommended** to help pinpoint the issue much faster. Export via the Settings icon (⚙️) in the bottom-left corner of AppPorts → Log Settings → Export Diagnostics Package, then drop the `.zip` file below (check personal paths before uploading). Alternatively, email it to **a@shimoko.com** with a note (include the Issue link or number), or paste relevant logs if exporting is not possible.
     validations:
       required: false

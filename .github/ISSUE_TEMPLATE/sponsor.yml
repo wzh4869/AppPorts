@@ -1,0 +1,71 @@
+name: "❤️ 赞助者信息修改 / Sponsor Info Update"
+description: "修改赞助名字、赞助备注/留言、个人链接，或申请匿名与实名切换 / Update sponsor name, message, link, or switch anonymous/named status"
+title: "[SPONSOR] "
+labels: ["sponsor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **建议优先通过发送邮件至 [a@shimoko.com](mailto:a@shimoko.com) 联系修改。**
+        尤其是申请**实名改为匿名**、**匿名改为实名**，或需要提供微信赞赏凭证截图核对时，发邮件可以更好地保护你的隐私，避免在公开 Issue 中留下原昵称、付款时间或修改关联记录。
+        发送邮件时，请注明：原赞助名字/原备注、付款时间（匿名改实名至少精确到小时）、赞助金额以及希望修改的内容。
+
+        **Emailing [a@shimoko.com](mailto:a@shimoko.com) first is strongly recommended**, especially when switching between named and anonymous status or verifying a payment receipt privately.
+        If you are comfortable submitting publicly, fill out the form below (Chinese or English is welcome).
+
+  - type: checkboxes
+    id: change_types
+    attributes:
+      label: "需要修改的内容 / Requested changes"
+      description: |
+        请勾选一项或多项；若涉及「匿名改为实名」，请在下方提供至少精确到小时的付款时间。
+
+        Check all that apply; if switching from anonymous to named, payment time (at least to the hour) is required below.
+      options:
+        - label: "修改赞助名字 / Update sponsor name"
+        - label: "修改赞助备注（留言） / Update sponsor message"
+        - label: "修改赞助链接 / Update sponsor link"
+        - label: "实名改为匿名 / Switch from named to anonymous"
+        - label: "匿名改为实名（需提供至少精确到小时的付款时间） / Switch from anonymous to named (hourly payment time required)"
+
+  - type: textarea
+    id: original_info
+    attributes:
+      label: "原赞助信息与付款时间 / Original sponsor info & payment time"
+      description: |
+        请填写用于定位名单记录的信息。**如果是「匿名改为实名」，必须提供付款时间（至少精确到小时，例如 `2026-11-23 14:xx` 或 `2026-11-23 14:30`）**以及赞助金额、原备注（如有），以便核对对应记录。若不愿在公开 Issue 披露付款时间或原昵称，请改为发送邮件至 **a@shimoko.com** 联系。
+
+        Provide details to locate your record. **For anonymous-to-named requests, payment time (at least to the hour, e.g. `2026-11-23 14:xx`) is required**, along with the amount and any original message. Email **a@shimoko.com** instead if you prefer to keep these private.
+      placeholder: |
+        原赞助名字（匿名赞助请填“匿名”及原备注） / Original name (or “Anonymous” + original message):
+        赞助金额 / Amount:
+        付款时间（匿名改实名必填，至少精确到小时，如 2026-11-23 14:30） / Payment time (required for anonymous → named, at least to the hour):
+    validations:
+      required: true
+
+  - type: textarea
+    id: updated_info
+    attributes:
+      label: "修改后的内容 / Updated details"
+      description: |
+        按需填写修改后的名字、备注留言或个人链接。若选择「实名改为匿名」，请注明希望**「仅隐藏名字、保留备注在文档页匿名展示」**，还是**「从所有公开名单中完全撤下」**。
+
+        Provide the new name, message, or link as needed. When switching from named to anonymous, specify whether to **keep your message anonymously on the docs page** or **remove the entry completely**.
+      placeholder: |
+        新赞助名字 / New sponsor name:
+        新赞助备注（留言） / New sponsor message:
+        新赞助链接（如 https://...，清空请写“删除”） / New sponsor link (write “Remove” to clear):
+        匿名展示方式（仅实名改匿名时填写：保留备注匿名展示 / 完全撤下） / Anonymity preference (if switching to anonymous):
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra_notes
+    attributes:
+      label: "补充说明与隐私提醒（选填） / Additional notes & privacy reminder (optional)"
+      description: |
+        **请勿在公开 Issue 中上传包含真实姓名、微信号或完整交易单号的支付截图。**如需附带赞赏截图进一步核对，请将截图发送至 **a@shimoko.com**，并在邮件中做好备注（注明本 Issue 链接/编号、付款时间与对应修改诉求）。
+
+        **Do not upload payment screenshots containing your real name, WeChat ID, or transaction ID in a public issue.** If verification screenshots are needed, email them to **a@shimoko.com** with your issue link/number and payment time noted.
+    validations:
+      required: false
