@@ -15,28 +15,28 @@ body:
     attributes:
       label: "修改项目 / Requested changes"
       description: |
-        勾选需要修改的项；涉及「匿名改为实名」时，须在下方提供至少精确到小时的付款时间。<br>
-        Check all that apply; hourly payment time is required below when switching from anonymous to named.
+        勾选需要修改的项；无论哪种修改，均须在下方提供至少精确到小时的付款时间。<br>
+        Check all that apply; payment time (at least to the hour) is required below for any change.
       options:
         - label: "修改赞助名字 / Update sponsor name"
         - label: "修改赞助备注（留言） / Update sponsor message"
         - label: "修改赞助链接 / Update sponsor link"
         - label: "实名改为匿名 / Named → Anonymous"
-        - label: "匿名改为实名（须提供精确到小时的付款时间） / Anonymous → Named (hourly payment time required)"
+        - label: "匿名改为实名 / Anonymous → Named"
 
   - type: textarea
     id: original_info
     attributes:
       label: "原赞助信息与付款时间 / Original info & payment time"
       description: |
-        填写原名字（或原备注）与金额以定位记录；**「匿名改为实名」必须提供至少精确到小时的付款时间**（如 `2026-11-23 14:30`）。不愿公开请改发邮件至 **a@shimoko.com**。<br>
-        Provide original name/message and amount; **hourly payment time is required for Anonymous → Named** (e.g. `2026-11-23 14:30`). Email **a@shimoko.com** to keep these private.
+        **无论申请哪种修改，均须提供至少精确到小时的付款时间**（如 `2026-11-23 14:30`），以及原名字（或原备注）与金额以便核对。不愿公开请改发邮件至 **a@shimoko.com**。<br>
+        **Hourly payment time is required for any update** (e.g. `2026-11-23 14:30`), along with your original name/message and amount. Email **a@shimoko.com** to keep these private.
       placeholder: |
+        付款时间（必填，至少精确到小时，如 2026-11-23 14:30）：
         原赞助名字（匿名可填“匿名”及原备注）：
         赞助金额：
-        付款时间（匿名改实名必填，至少精确到小时，如 2026-11-23 14:30）：
 
-        Original name / Amount / Payment time:
+        Payment time (required, at least to the hour) / Original name / Amount:
     validations:
       required: true
 

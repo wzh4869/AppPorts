@@ -26,7 +26,7 @@ After receiving your donation, we will add your nickname and link to the list ab
 If neither a nickname nor a message is provided, we do not display the donation. If you leave a message without a nickname, only this web page displays your message and amount anonymously — it will not appear in the AppPorts app or on GitHub. If you provide a nickname without a link, we display only the name, without a clickable link.
 :::
 
-To change your nickname, personal link, or other displayed information, contact [a@shimoko.com](mailto:a@shimoko.com) with the original nickname and requested changes.
+To add or update your nickname, message, or personal link on the sponsor list—or to switch between named and anonymous display—we recommend emailing [a@shimoko.com](mailto:a@shimoko.com) first, or submitting a request via [GitHub Issue](https://github.com/wzh4869/AppPorts/issues/new?template=04-sponsor.yml). For any change request, please include **your payment time (at least to the hour)**, your original nickname (or message), and the requested updates so we can verify your record.
 
 ## Display order {#section-4}
 
