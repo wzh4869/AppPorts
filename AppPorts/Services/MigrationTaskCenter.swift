@@ -273,21 +273,19 @@ final class MigrationTaskCenter: ObservableObject {
     }
 
     func activeJob(overlappingSubject urls: [URL], includeObserved: Bool = false) -> MigrationJob? {
+        let candidates = jobs.filter { !$0.status.isFinished && (includeObserved || $0.supportsExecutionControls) }
+        guard !candidates.isEmpty else { return nil }
         let queryPaths = Self.normalizedPathSet(urls)
         guard !queryPaths.isEmpty else { return nil }
-        return jobs.first { job in
-            guard !job.status.isFinished, (includeObserved || job.supportsExecutionControls) else { return false }
-            return job.resources.overlapsSubjectPaths(queryPaths)
-        }
+        return candidates.first { $0.resources.overlapsSubjectPaths(queryPaths) }
     }
 
     func activeJob(overlappingAllPaths urls: [URL], includeObserved: Bool = false) -> MigrationJob? {
+        let candidates = jobs.filter { !$0.status.isFinished && (includeObserved || $0.supportsExecutionControls) }
+        guard !candidates.isEmpty else { return nil }
         let queryPaths = Self.normalizedPathSet(urls)
         guard !queryPaths.isEmpty else { return nil }
-        return jobs.first { job in
-            guard !job.status.isFinished, (includeObserved || job.supportsExecutionControls) else { return false }
-            return job.resources.overlapsAllPaths(queryPaths)
-        }
+        return candidates.first { $0.resources.overlapsAllPaths(queryPaths) }
     }
 
     func hasActiveJob(overlappingSubject pathStrings: [String]) -> Bool {

@@ -479,6 +479,39 @@ struct MigrationTaskCenterTests {
         #expect(reloaded.stateTitle == MigrationJob.Status.completed.title)
     }
 
+    @Test("activeJob returns nil once jobs finish and still matches unfinished jobs")
+    func activeJobSkipsFinishedJobsAndMatchesUnfinished() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let appURL = fixture.root.appendingPathComponent("Sample.app")
+        let completedResources = MigrationResources(paths: [appURL], keys: ["application:sample"], subjectPaths: [appURL])
+
+        #expect(fixture.center.activeJob(overlappingSubject: [appURL]) == nil)
+        #expect(fixture.center.activeJob(overlappingAllPaths: [appURL]) == nil)
+
+        let finishedID = fixture.center.submit(title: "Finished job", category: .apps, resources: completedResources) { _ in nil }
+        let finishedJob = try #require(fixture.center.jobs.first(where: { $0.id == finishedID }))
+        await finishedJob.worker?.value
+        #expect(finishedJob.status == .completed)
+
+        #expect(fixture.center.activeJob(overlappingSubject: [appURL]) == nil)
+        #expect(fixture.center.activeJob(overlappingAllPaths: [appURL]) == nil)
+
+        let gate = AsyncGate()
+        let runningID = fixture.center.submit(title: "Running job", category: .apps, resources: completedResources) { _ in
+            await gate.wait()
+            return nil
+        }
+        #expect(fixture.center.activeJob(overlappingSubject: [appURL])?.id == runningID)
+        #expect(fixture.center.activeJob(overlappingAllPaths: [appURL])?.id == runningID)
+
+        await gate.open()
+        let runningJob = try #require(fixture.center.jobs.first(where: { $0.id == runningID }))
+        await runningJob.worker?.value
+        #expect(fixture.center.activeJob(overlappingSubject: [appURL]) == nil)
+        #expect(fixture.center.activeJob(overlappingAllPaths: [appURL]) == nil)
+    }
+
     @MainActor
     private struct Fixture {
         let root: URL
