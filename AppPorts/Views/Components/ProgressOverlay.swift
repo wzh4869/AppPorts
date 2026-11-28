@@ -68,11 +68,13 @@ struct ProgressOverlay: View {
                 .progressViewStyle(.linear)
                 .frame(width: 300)
             
-            // 显示已复制/总大小
-            Text(formatProgress(copiedBytes: copiedBytes, totalBytes: totalBytes))
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .monospacedDigit()
+            // 仅在存在字节进度时显示已复制/总大小，避免非拷贝操作显示 0 B
+            if let byteProgressText = Self.formatProgress(copiedBytes: copiedBytes, totalBytes: totalBytes) {
+                Text(byteProgressText)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .monospacedDigit()
+            }
 
             if !currentFile.isEmpty {
                 Text(verbatim: currentFile)
@@ -91,13 +93,14 @@ struct ProgressOverlay: View {
     
     /// 格式化进度信息
     ///
-    /// 将字节数转换为人类可读的格式（MB/GB）
+    /// 将字节数转换为人类可读的格式（MB/GB）；当已复制和总字节数均为 0 时返回 nil
     ///
     /// - Parameters:
     ///   - copiedBytes: 已复制的字节数
     ///   - totalBytes: 总字节数
-    /// - Returns: 格式化后的字符串，如 "1.2 GB / 3.5 GB"
-    private func formatProgress(copiedBytes: Int64, totalBytes: Int64) -> String {
+    /// - Returns: 格式化后的字符串，如 "1.2 GB / 3.5 GB"；无字节进度时为 nil
+    static func formatProgress(copiedBytes: Int64, totalBytes: Int64) -> String? {
+        guard copiedBytes > 0 || totalBytes > 0 else { return nil }
         if totalBytes == 0 {
             return LocalizedByteCountFormatter.string(fromByteCount: copiedBytes)
         }
