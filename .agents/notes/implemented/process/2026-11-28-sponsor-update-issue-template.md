@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-在 `.github/ISSUE_TEMPLATE/` 新增双语表单模板 [sponsor.yml](../../../.github/ISSUE_TEMPLATE/sponsor.yml)，使用专用标签 `["sponsor"]` 与标题前缀 `[SPONSOR] `。表单支持多选修改类型（修改赞助名字、修改备注留言、修改个人链接、实名改为匿名、匿名改为实名），并在顶部引导优先通过邮件联系 `a@shimoko.com` 以避免在公开 Issue 暴露原昵称、付款时间或赞赏截图关联信息。针对「匿名改为实名」场景，在说明与必填字段中明确要求提供至少精确到小时的付款时间及金额/原备注用于核对；针对「实名改为匿名」，引导区分“仅隐藏名字保留备注匿名展示”与“完全撤下”，与 [sponsors.json](../../../sponsors.json) 的数据结构保持一致。
+在 `.github/ISSUE_TEMPLATE/` 新增双语表单模板 [04-sponsor.yml](../../../.github/ISSUE_TEMPLATE/04-sponsor.yml)，使用专用标签 `["sponsor"]` 与标题前缀 `[SPONSOR] `。表单支持多选修改类型（修改赞助名字、修改备注留言、修改个人链接、实名改为匿名、匿名改为实名），并在顶部引导优先通过邮件联系 `a@shimoko.com` 以避免在公开 Issue 暴露原昵称、付款时间或赞赏截图关联信息。针对「匿名改为实名」场景，在说明与必填字段中明确要求提供至少精确到小时的付款时间及金额/原备注用于核对；针对「实名改为匿名」，引导区分“仅隐藏名字保留备注匿名展示”与“完全撤下”，与 [sponsors.json](../../../sponsors.json) 的数据结构保持一致。
 
 ## Existing-note audit
 

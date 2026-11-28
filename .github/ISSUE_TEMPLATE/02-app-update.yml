@@ -1,0 +1,169 @@
+name: "🔄 应用更新反馈 / App Update"
+description: "申请兼容外盘自更新，或反馈更新失败 / Request update support or report a broken update"
+title: "[UPDATE] "
+labels: ["app-update"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        中文或英文填写均可，无需双语；每次请只反馈**一款应用**，提交前先搜索已有 Issue。<br>
+        Chinese or English is welcome (no need for both); please submit one app per issue and search existing issues first.
+
+        标题建议格式：`[UPDATE] 应用名 - 申请兼容` 或 `[UPDATE] 应用名 - 更新失败`。<br>
+        Suggested title: `[UPDATE] App Name - Request support` or `[UPDATE] App Name - Update failed`.
+
+  - type: dropdown
+    id: feedback_type
+    attributes:
+      label: "反馈类型 / Feedback type"
+      options:
+        - "申请兼容：希望 AppPorts 支持这款应用的外盘自更新 / Request support: support external self-update"
+        - "更新异常：AppPorts 显示「更新：可用」，但实际无法更新 / Update broken: marked Available, failed to update"
+        - "其他外盘更新问题 / Other external app update issue"
+    validations:
+      required: true
+
+  - type: input
+    id: target_app
+    attributes:
+      label: "应用名称与版本 / App name & version"
+      description: |
+        填写应用名称与当前版本，知道更新后的目标版本也可注明。<br>
+        Enter the app name and current version (and target version if known).
+      placeholder: "例如：Cursor 1.2.3 或 IINA 1.3.5 → 1.5.1 / e.g. Cursor 1.2.3"
+    validations:
+      required: true
+
+  - type: input
+    id: app_source_and_id
+    attributes:
+      label: "下载来源与 Bundle ID（选填） / Source & Bundle ID (optional)"
+      description: |
+        如官网、Homebrew、App Store、GitHub；知道 Bundle ID 可一并填写。<br>
+        e.g. official site, Homebrew, App Store, GitHub; include Bundle ID if known.
+      placeholder: "例如：官网下载，com.example.app / e.g. Official site, com.example.app"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: update_status_and_guardian
+    attributes:
+      label: "更新状态与守护设置 / Update badge & guardian"
+      description: |
+        对照 AppPorts 列表胶囊徽章与“设置 → 后台代理 → 应用更新守护”状态选择。<br>
+        Match the badge in AppPorts and the App Update Guardian toggle in Settings.
+      options:
+        - "显示「更新：可用」，且已开启“应用更新守护” / Available, Guardian enabled"
+        - "显示「更新：可用」，未开启“应用更新守护” / Available, Guardian disabled"
+        - "显示「更新：未知」或仅支持「锁定迁移」 / Unknown or Locked Migration only"
+        - "显示「更新：检测中」 / Checking"
+        - "显示「待迁出」 / Pending Move Out"
+        - "Mac App Store 应用（显示「商店」） / Mac App Store app (Store badge)"
+        - "不清楚 / Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "具体现象 / Details"
+      description: |
+        说明平时更新方式、迁到外盘后点更新发生了什么，以及是否从本机原入口启动（如新版装回本机、重启仍是旧版、签名异常或任务中心回退等）。<br>
+        Describe how it normally updates, what happened after updating on external storage, and whether you launched from the local portal.
+      placeholder: |
+        常规更新方式（应用内更新 / 自动更新 / Homebrew）：
+        实际发生的情况或完整错误提示：
+        是否通过本机原入口（“应用程序”或 Dock 原图标）启动：
+
+        Update method / Actual outcome or error / Launched from local portal:
+    validations:
+      required: true
+
+  - type: dropdown
+    id: app_version
+    attributes:
+      label: "AppPorts 版本 / AppPorts version"
+      description: |
+        在“关于 AppPorts”查看，其他版本可在下方补充。<br>
+        Check About AppPorts; add unlisted versions below.
+      options:
+        - "2.4.1"
+        - "2.4.0"
+        - "2.3.0"
+        - "2.2.0"
+        - "2.1.0"
+        - "2.0.0"
+        - "1.9.3 或更早 / 1.9.3 or earlier"
+        - "其他版本或自行编译 / Other version or self-built"
+        - "不清楚 / Not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os_version
+    attributes:
+      label: "macOS 版本 / macOS version"
+      description: |
+        苹果菜单 → 关于本机；小版本可在下方补充。<br>
+        Apple menu → About This Mac; add minor version below if relevant.
+      options:
+        - "macOS 27"
+        - "macOS 26"
+        - "macOS 15"
+        - "macOS 14"
+        - "macOS 13"
+        - "macOS 12"
+        - "其他版本 / Other version"
+        - "不清楚 / Not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: filesystem
+    attributes:
+      label: "目标文件系统（选填） / Destination filesystem (optional)"
+      description: |
+        可在“磁盘工具”或 Finder“显示简介”查看。<br>
+        Check Disk Utility or Finder’s Get Info.
+      options:
+        - "APFS"
+        - "Mac OS 扩展（HFS+） / Mac OS Extended (HFS+)"
+        - "exFAT"
+        - "FAT32 / MS-DOS (FAT)"
+        - "SMB / NFS 等网络共享 / Network share"
+        - "其他 / Other"
+        - "不清楚 / Not sure"
+    validations:
+      required: false
+
+  - type: input
+    id: environment_details
+    attributes:
+      label: "环境补充（选填） / Environment details (optional)"
+      description: |
+        可补充 macOS 小版本、Build 号、Mac 芯片（Apple Silicon / Intel）或未列出版本。<br>
+        Optional minor OS version, build number, Mac chip, or unlisted versions.
+      placeholder: "例如：macOS 15.7.7；Build 103；Apple Silicon"
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "截图（选填） / Screenshots (optional)"
+      description: |
+        可拖入徽章、更新报错或任务中心截图，上传前请检查个人隐私信息。<br>
+        Drag in badge, error, or Task Center screenshots; check personal details first.
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostic_package
+    attributes:
+      label: "诊断日志包（强烈推荐） / Diagnostic logs (strongly recommended)"
+      description: |
+        **强烈推荐提交诊断日志包**，有助于排查更新机制、更新守护与签名校验：<br>
+        点击 AppPorts 窗口左下角设置图标（⚙️）→「日志设置」→「导出诊断包」，将 `.zip` 拖入下方；若不方便公开上传，可发送至 **a@shimoko.com** 并注明 Issue 链接、应用名与发生时间。<br>
+        **Strongly recommended** — click the Settings icon (⚙️) in the bottom-left → Log Settings → Export Diagnostics Package, and drop the `.zip` below (or email **a@shimoko.com** with Issue link, app name, and time).
+    validations:
+      required: false

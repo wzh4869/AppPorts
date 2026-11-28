@@ -1,0 +1,45 @@
+name: "✨ 功能建议 / Feature Request"
+description: "提出新功能或改进建议 / Suggest a new feature or improvement"
+title: "[FEAT] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: "问题或新想法 / Idea or problem"
+      description: |
+        描述你想解决的问题，或你的新功能想法。<br>
+        Describe the problem you want to solve or the new idea you have.
+      placeholder: |
+        想解决的问题或场景：
+        期望的功能或交互方式：
+
+        Problem to solve / Desired feature:
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "备选方案（选填） / Alternatives (optional)"
+      description: |
+        如果你还考虑过其他实现思路，欢迎一并补充。<br>
+        Any alternative solutions you considered?
+      placeholder: |
+        你考虑过的其他方案：
+
+        Alternative solutions considered:
+    validations:
+      required: false
+
+  - type: dropdown
+    id: importance
+    attributes:
+      label: "需求程度 / Priority"
+      options:
+        - "低 / Low"
+        - "中 / Medium"
+        - "高 / High"
+        - "很高 / Very High"
+    validations:
+      required: true

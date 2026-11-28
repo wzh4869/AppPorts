@@ -1,0 +1,67 @@
+name: "❤️ 赞助信息修改 / Sponsor Update"
+description: "修改赞助名称、备注、链接或匿名状态 / Update sponsor name, note, link, or anonymity"
+title: "[SPONSOR] "
+labels: ["sponsor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **建议优先发送邮件至 [a@shimoko.com](mailto:a@shimoko.com) 联系修改**，尤其涉及「实名改匿名」「匿名改实名」或核对微信赞赏截图时，可避免在公开 Issue 中留下关联记录与付款时间。<br>
+        > **Emailing [a@shimoko.com](mailto:a@shimoko.com) first is strongly recommended**, especially for anonymity changes or private receipt verification.
+
+  - type: checkboxes
+    id: change_types
+    attributes:
+      label: "修改项目 / Requested changes"
+      description: |
+        勾选需要修改的项；涉及「匿名改为实名」时，须在下方提供至少精确到小时的付款时间。<br>
+        Check all that apply; hourly payment time is required below when switching from anonymous to named.
+      options:
+        - label: "修改赞助名字 / Update sponsor name"
+        - label: "修改赞助备注（留言） / Update sponsor message"
+        - label: "修改赞助链接 / Update sponsor link"
+        - label: "实名改为匿名 / Named → Anonymous"
+        - label: "匿名改为实名（须提供精确到小时的付款时间） / Anonymous → Named (hourly payment time required)"
+
+  - type: textarea
+    id: original_info
+    attributes:
+      label: "原赞助信息与付款时间 / Original info & payment time"
+      description: |
+        填写原名字（或原备注）与金额以定位记录；**「匿名改为实名」必须提供至少精确到小时的付款时间**（如 `2026-11-23 14:30`）。不愿公开请改发邮件至 **a@shimoko.com**。<br>
+        Provide original name/message and amount; **hourly payment time is required for Anonymous → Named** (e.g. `2026-11-23 14:30`). Email **a@shimoko.com** to keep these private.
+      placeholder: |
+        原赞助名字（匿名可填“匿名”及原备注）：
+        赞助金额：
+        付款时间（匿名改实名必填，至少精确到小时，如 2026-11-23 14:30）：
+
+        Original name / Amount / Payment time:
+    validations:
+      required: true
+
+  - type: textarea
+    id: updated_info
+    attributes:
+      label: "修改后内容 / Updated details"
+      description: |
+        填写新名字、新备注或新链接；「实名改为匿名」请注明「仅隐藏名字保留备注」或「完全撤下」。<br>
+        Enter the new name, message, or link; for Named → Anonymous, specify “keep message anonymously” or “remove completely”.
+      placeholder: |
+        新赞助名字：
+        新赞助备注（留言）：
+        新赞助链接（清空请写“删除”）：
+        匿名方式（仅实名改匿名时填写）：
+
+        New name / New message / New link / Anonymity preference:
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra_notes
+    attributes:
+      label: "补充说明（选填） / Additional notes (optional)"
+      description: |
+        **请勿在公开 Issue 上传含真实姓名、微信号或单号的支付截图**；如需核对凭证请发送至 **a@shimoko.com** 并备注 Issue 链接与付款时间。<br>
+        **Do not upload payment screenshots containing personal/transaction IDs publicly.** Email them to **a@shimoko.com** with your Issue link and payment time.
+    validations:
+      required: false
